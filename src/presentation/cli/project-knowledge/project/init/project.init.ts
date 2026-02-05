@@ -13,7 +13,7 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { InitializeProjectCommand } from "../../../../../application/project-knowledge/project/init/InitializeProjectCommand.js";
 import { PlannedFileChange } from "../../../../../application/project-knowledge/project/init/PlannedFileChange.js";
 import { Renderer } from "../../../shared/rendering/Renderer.js";
-import { getBannerLines } from "../../../shared/components/AnimatedBanner.js";
+import { getBannerLines, showAnimatedBanner } from "../../../shared/components/AnimatedBanner.js";
 import { ProjectLimits } from "../../../../../domain/project-knowledge/project/Constants.js";
 
 /**
@@ -192,7 +192,12 @@ export async function projectInit(
   const renderer = Renderer.configure({ forceHuman: true });
 
   // Show welcome banner
-  renderer.banner(getBannerLines());
+  if (process.stdout.isTTY) {
+    const version = container.cliVersionReader.getVersion().version;
+    await showAnimatedBanner([], null, version);
+  } else {
+    renderer.banner(getBannerLines());
+  }
 
   // Determine project details based on mode
   let projectDetails: ProjectInitOptions;

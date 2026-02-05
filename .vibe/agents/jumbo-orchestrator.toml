@@ -1,0 +1,10 @@
+# Custom agent configuration for red-teaming
+active_model = "devstral-2"
+system_prompt_id = "startup"
+# Disable some tools for this agent
+# disabled_tools = ["search_replace", "write_file"]
+# Override tool permissions for this agent
+# [tools.bash]
+# permission = "always"
+# [tools.read_file]
+# permission = "always"

@@ -9,6 +9,15 @@
             "command": "jumbo session start"
           }
         ]
+      },
+      {
+        "matcher": "compress",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jumbo work resume"
+          }
+        ]
       }
     ],
     "PreCompress": [
@@ -16,19 +25,8 @@
         "matcher": "auto",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "When you are finished compressing context then run 'jumbo goal resume --goal-id <GOAL_ID>'with the goal of the current goal id, to get the required context to complete the goal."
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "exit",
-        "hooks": [
-          {
             "type": "command",
-            "command": "jumbo session end --focus {focus} --summary {summary}"
+            "command": "jumbo work pause"
           }
         ]
       }

@@ -70,19 +70,18 @@ export async function workResume(
     const goalContextRenderer = new GoalContextRenderer(renderer);
 
     const goalContext = await getGoalContext.execute(result.goalId);
-    const contextYaml = goalContextRenderer.render(goalContext);
 
-    // 4. Display context to user
-    renderer.info("\n" + contextYaml);
+    goalContextRenderer.render(goalContext);
 
     renderer.info("---\n");
 
     // 5. LLM Guidance - continuation prompt
     const llmInstruction = [
-      "@LLM: Goal context loaded. Continue work on this goal.",
-      "YOUR ROLE: Proactively run jumbo commands to capture project memories as they surface.",
-      "Run 'jumbo --help' to see what can be tracked, if you haven't already.",
+      "INSTRUCTION: You're work was previously interrupted. Continue working on this goal.",
+      "Determine where you left off based on the registered progress and resume from there.",
+      "Register completed sub-tasks via 'jumbo goal update-progress --help'.",
     ];
+    
     renderer.info(llmInstruction.join("\n") + "\n");
 
     // 6. Success output
