@@ -15,6 +15,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed commands: `jumbo session pause` and `jumbo session resume`
   - Goal pause/resume functionality remains unchanged
 
+- **Goal completion workflow changed**: Goals must now go through a review and qualification process before completion. This ensures quality gates are met before marking work as done.
+  - Goals must be submitted for review with `jumbo goal review` after work is done
+  - After review, goals must be qualified with `jumbo goal qualify`
+  - Only goals with `qualified` status can be completed with `jumbo goal complete`
+  - **Migration**: If you have goals in `doing` status that you want to complete, you'll need to first run `jumbo goal review --goal-id <id>` then `jumbo goal qualify --goal-id <id>` before completing them
+
+- **Command renamed**: The `jumbo goal updateProgress` command has been renamed to `jumbo goal update-progress` (kebab-case) for consistency with other multi-word commands.
+  - Old command: `jumbo goal updateProgress` (no longer works)
+  - New command: `jumbo goal update-progress`
+  - **Migration**: Update any scripts or automation to use the new kebab-case command name
+
+### Added
+
+- **Goal review workflow**: New two-step quality assurance workflow for goals before completion:
+  - `jumbo goal review --goal-id <id>` - Submit a goal for review (transitions from `doing` to `in-review`)
+  - `jumbo goal qualify --goal-id <id>` - Qualify a reviewed goal (transitions from `in-review` to `qualified`)
+  - Goals in `in-review` or `qualified` status are included in session context
+
+- **Goal pause/resume**: Goals can now be paused and resumed independently of sessions:
+  - `jumbo goal pause --goal-id <id>` - Pause work on a goal
+  - `jumbo goal resume --goal-id <id>` - Resume a paused goal
+  - Paused goals are included in session context and goals list
+
+- **Goal progress tracking**: Track progress notes on goals with `jumbo goal update-progress --goal-id <id> --progress <text>`
+
+- **Worker identification**: The system now tracks which worker (agent/user) is working on each goal, enabling proper claim management across sessions
+
+- **Architecture view command**: New `jumbo architecture view` command to display the current architecture definition
+
+- **Enhanced session context**: Paused and blocked goals are now included in session context output, providing complete visibility into all active work
+
+- **Agent configuration improvements**:
+  - Updated Claude and Gemini configurers to match current repository settings
+  - Added GitHub hooks configurer for `.github/hooks/hooks.json`
+  - Agent init now adds `jumbo --help` permission to Claude Code settings
+  - Agent init now adds `jumbo --help` to Gemini CLI tools.allowed list
+
+### Changed
+
+- **Goal complete simplified**: The `jumbo goal complete` command no longer handles QA mode or commit logic. Goals must be pre-qualified through the review workflow. The `--commit` flag has been removed.
+
+- **Internal architecture**: Implemented Host/HostBuilder pattern for cleaner infrastructure composition (no user-facing impact)
+
+### Removed
+
+- **QA mode from goal complete**: The `--commit` flag and interactive QA logic have been removed from `jumbo goal complete`. Use the new `jumbo goal review` and `jumbo goal qualify` commands instead for quality assurance.
+
+- **Deprecated events**: Removed `GoalReviewedEvent` and `ReviewTurnTracker` which have been superseded by the new review workflow events
+
 ## [1.0.1] - 2026-01-10
 
 ### Changed
