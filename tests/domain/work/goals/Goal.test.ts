@@ -2,8 +2,8 @@
  * Tests for Goal aggregate
  */
 
-import { Goal } from "../../../../src/domain/work/goals/Goal";
-import { GoalEventType, GoalStatus } from "../../../../src/domain/work/goals/Constants";
+import { Goal } from "../../../../src/domain/goals/Goal";
+import { GoalEventType, GoalStatus } from "../../../../src/domain/goals/Constants";
 
 describe("Goal Aggregate", () => {
   describe("define()", () => {

@@ -2,12 +2,12 @@
  * Tests for Audience aggregate
  */
 
-import { Audience } from "../../../../src/domain/project-knowledge/audiences/Audience";
-import { AudienceEventType } from "../../../../src/domain/project-knowledge/audiences/Constants";
+import { Audience } from "../../../../src/domain/audiences/Audience";
+import { AudienceEventType } from "../../../../src/domain/audiences/Constants";
 import {
   AudienceAddedEvent,
   AudienceUpdatedEvent,
-} from "../../../../src/domain/project-knowledge/audiences/EventIndex";
+} from "../../../../src/domain/audiences/EventIndex";
 
 describe("Audience Aggregate", () => {
   describe("add()", () => {

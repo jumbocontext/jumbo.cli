@@ -2,8 +2,8 @@
  * Tests for ReasonRules validation
  */
 
-import { ReasonRequiredRule, ReasonMaxLengthRule, REASON_RULES } from "../../../../../src/domain/solution/decisions/rules/ReasonRules.js";
-import { DecisionLimits } from "../../../../../src/domain/solution/decisions/Constants.js";
+import { ReasonRequiredRule, ReasonMaxLengthRule, REASON_RULES } from "../../../../../src/domain/decisions/rules/ReasonRules.js";
+import { DecisionLimits } from "../../../../../src/domain/decisions/Constants.js";
 
 describe("ReasonRules", () => {
   describe("ReasonRequiredRule", () => {

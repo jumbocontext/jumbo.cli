@@ -2,9 +2,9 @@
  * Tests for CanQualifyRule validation rule
  */
 
-import { CanQualifyRule } from "../../../../../src/domain/work/goals/rules/CanQualifyRule";
-import { GoalState } from "../../../../../src/domain/work/goals/Goal";
-import { GoalStatus } from "../../../../../src/domain/work/goals/Constants";
+import { CanQualifyRule } from "../../../../../src/domain/goals/rules/CanQualifyRule";
+import { GoalState } from "../../../../../src/domain/goals/Goal";
+import { GoalStatus } from "../../../../../src/domain/goals/Constants";
 
 // Helper to create a minimal GoalState for testing
 function createGoalState(overrides: Partial<GoalState> = {}): GoalState {

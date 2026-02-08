@@ -1,15 +1,15 @@
 import { PauseWorkCommand } from "./PauseWorkCommand.js";
 import { IWorkerIdentityReader } from "../../host/workers/IWorkerIdentityReader.js";
-import { IGoalStatusReader } from "../goals/IGoalStatusReader.js";
-import { IGoalPausedEventWriter } from "../goals/pause/IGoalPausedEventWriter.js";
-import { IGoalPausedEventReader } from "../goals/pause/IGoalPausedEventReader.js";
-import { IGoalReader } from "../goals/pause/IGoalReader.js";
-import { IEventBus } from "../../shared/messaging/IEventBus.js";
-import { PauseGoalCommandHandler } from "../goals/pause/PauseGoalCommandHandler.js";
-import { PauseGoalCommand } from "../goals/pause/PauseGoalCommand.js";
-import { GoalPausedReasons } from "../../../domain/work/goals/GoalPausedReasons.js";
-import { GoalStatus } from "../../../domain/work/goals/Constants.js";
-import { GoalView } from "../goals/GoalView.js";
+import { IGoalStatusReader } from "../../goals/IGoalStatusReader.js";
+import { IGoalPausedEventWriter } from "../../goals/pause/IGoalPausedEventWriter.js";
+import { IGoalPausedEventReader } from "../../goals/pause/IGoalPausedEventReader.js";
+import { IGoalReader } from "../../goals/pause/IGoalReader.js";
+import { IEventBus } from "../../messaging/IEventBus.js";
+import { PauseGoalCommandHandler } from "../../goals/pause/PauseGoalCommandHandler.js";
+import { PauseGoalCommand } from "../../goals/pause/PauseGoalCommand.js";
+import { GoalPausedReasons } from "../../../domain/goals/GoalPausedReasons.js";
+import { GoalStatus } from "../../../domain/goals/Constants.js";
+import { GoalView } from "../../goals/GoalView.js";
 
 /**
  * Result of pausing work.

@@ -2,8 +2,8 @@
  * Tests for Guideline aggregate
  */
 
-import { Guideline } from "../../../../src/domain/solution/guidelines/Guideline";
-import { GuidelineEventType } from "../../../../src/domain/solution/guidelines/Constants";
+import { Guideline } from "../../../../src/domain/guidelines/Guideline";
+import { GuidelineEventType } from "../../../../src/domain/guidelines/Constants";
 
 describe("Guideline Aggregate", () => {
   describe("remove()", () => {

@@ -16,8 +16,8 @@ import fs from "fs-extra";
 import path from "path";
 import { Host } from "../../src/infrastructure/host/Host.js";
 import { IApplicationContainer } from "../../src/application/host/IApplicationContainer.js";
-import { GetLatestSessionSummaryQueryHandler } from "../../src/application/work/sessions/get-context/GetLatestSessionSummaryQueryHandler.js";
-import { SessionStartTextRenderer } from "../../src/presentation/cli/work/sessions/start/SessionStartTextRenderer.js";
+import { GetLatestSessionSummaryQueryHandler } from "../../src/application/sessions/get-context/GetLatestSessionSummaryQueryHandler.js";
+import { SessionStartTextRenderer } from "../../src/presentation/cli/commands/sessions/start/SessionStartTextRenderer.js";
 
 describe("Integration: Goal Lifecycle Tracking", () => {
   const testRoot = path.join(process.cwd(), ".jumbo-goal-lifecycle-test");

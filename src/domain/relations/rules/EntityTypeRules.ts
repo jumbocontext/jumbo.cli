@@ -1,4 +1,4 @@
-import { ValidationRule, ValidationResult } from "../../shared/validation/ValidationRule.js";
+import { ValidationRule, ValidationResult } from "../../validation/ValidationRule.js";
 import { EntityType, RelationErrorMessages, formatErrorMessage } from "../Constants.js";
 
 export class EntityTypeRequiredRule implements ValidationRule<string> {

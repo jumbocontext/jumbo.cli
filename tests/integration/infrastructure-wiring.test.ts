@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { Host } from "../../src/infrastructure/host/Host.js";
 import { IApplicationContainer } from "../../src/application/host/IApplicationContainer.js";
-import { BaseEvent } from "../../src/domain/shared/BaseEvent.js";
+import { BaseEvent } from "../../src/domain/BaseEvent.js";
 
 describe("Infrastructure Wiring Integration", () => {
   let tmpDir: string;

@@ -16,16 +16,14 @@ describe('Command Compliance', () => {
     // Scan Clean Screaming Architecture directories for command files
     // Commands are identified by having a dot in the filename (e.g., goal.add.ts, db.rebuild.ts)
     commandFiles = await fastGlob([
-      'src/presentation/cli/work/**/*.*.ts',
-      'src/presentation/cli/solution/**/*.*.ts',
-      'src/presentation/cli/project-knowledge/**/*.*.ts',
-      'src/presentation/cli/relations/**/*.*.ts',
-      'src/presentation/cli/maintenance/**/*.*.ts'
+      'src/presentation/cli/commands/**/*.*.ts'
     ], {
-      ignore: ['**/*.test.ts', '**/index.ts'],
+      ignore: ['**/*.test.ts', '**/index.ts', '**/*.d.ts'],
       cwd: process.cwd(),
       absolute: true
     });
+
+
   });
 
   test('all command files exist and are readable', () => {
@@ -49,11 +47,7 @@ describe('Command Compliance', () => {
       }
     }
 
-    if (violations.length > 0) {
-      throw new Error(
-        `Commands missing container parameter:\n${violations.map(v => `  - ${v}`).join('\n')}`
-      );
-    }
+    expect(violations).toEqual([]);
   });
 
   test('no commands call SqliteConnectionManager.close()', async () => {
@@ -103,7 +97,7 @@ describe('Command Compliance', () => {
       const content = await fs.readFile(file, 'utf-8');
       const relativePath = path.relative(process.cwd(), file);
 
-      if (content.includes('from "../../../../infrastructure/persistence/shared/SqliteConnectionManager.js"')) {
+      if (content.includes('from "../../../../infrastructure/persistence/SqliteConnectionManager.js"')) {
         violations.push(relativePath);
       }
     }

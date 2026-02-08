@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import { FsEventStore } from "../../../src/infrastructure/shared/persistence/FsEventStore";
-import { BaseEvent } from "../../../src/domain/shared/BaseEvent";
+import { FsEventStore } from "../../../src/infrastructure/persistence/FsEventStore";
+import { BaseEvent } from "../../../src/domain/BaseEvent";
 
 describe("FsEventStore", () => {
   let tmpDir: string;

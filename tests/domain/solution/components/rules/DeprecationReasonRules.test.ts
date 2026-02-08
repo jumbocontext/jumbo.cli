@@ -2,8 +2,8 @@
  * Tests for Component Deprecation Reason validation rules
  */
 
-import { DeprecationReasonMaxLengthRule } from "../../../../../src/domain/solution/components/rules/DeprecationReasonRules";
-import { ComponentLimits } from "../../../../../src/domain/solution/components/Constants";
+import { DeprecationReasonMaxLengthRule } from "../../../../../src/domain/components/rules/DeprecationReasonRules";
+import { ComponentLimits } from "../../../../../src/domain/components/Constants";
 
 describe("Component Deprecation Reason Rules", () => {
   describe("DeprecationReasonMaxLengthRule", () => {

@@ -2,8 +2,8 @@
  * Tests for GuidelineIdRules
  */
 
-import { GuidelineIdRequiredRule } from "../../../../../src/domain/solution/guidelines/rules/GuidelineIdRules";
-import { GuidelineErrorMessages } from "../../../../../src/domain/solution/guidelines/Constants";
+import { GuidelineIdRequiredRule } from "../../../../../src/domain/guidelines/rules/GuidelineIdRules";
+import { GuidelineErrorMessages } from "../../../../../src/domain/guidelines/Constants";
 
 describe("GuidelineIdRules", () => {
   describe("GuidelineIdRequiredRule", () => {

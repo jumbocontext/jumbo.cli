@@ -2,8 +2,8 @@
  * Tests for Invariant aggregate
  */
 
-import { Invariant } from "../../../../src/domain/solution/invariants/Invariant";
-import { InvariantEventType } from "../../../../src/domain/solution/invariants/Constants";
+import { Invariant } from "../../../../src/domain/invariants/Invariant";
+import { InvariantEventType } from "../../../../src/domain/invariants/Constants";
 
 describe("Invariant Aggregate", () => {
   describe("add()", () => {

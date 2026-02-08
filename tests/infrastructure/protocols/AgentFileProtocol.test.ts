@@ -4,8 +4,8 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { AgentFileProtocol } from "../../../src/infrastructure/project-knowledge/project/init/AgentFileProtocol";
-import { AgentInstructions } from "../../../src/domain/project-knowledge/project/AgentInstructions";
+import { AgentFileProtocol } from "../../../src/infrastructure//project/init/AgentFileProtocol";
+import { AgentInstructions } from "../../../src/domain/project/AgentInstructions";
 
 describe("AgentFileProtocol", () => {
   let tmpDir: string;

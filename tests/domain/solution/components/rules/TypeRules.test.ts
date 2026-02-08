@@ -2,8 +2,8 @@
  * Tests for Component Type validation rules
  */
 
-import { TypeRequiredRule, TypeValidRule } from "../../../../../src/domain/solution/components/rules/TypeRules";
-import { ComponentType } from "../../../../../src/domain/solution/components/Constants";
+import { TypeRequiredRule, TypeValidRule } from "../../../../../src/domain/components/rules/TypeRules";
+import { ComponentType } from "../../../../../src/domain/components/Constants";
 
 describe("Component Type Rules", () => {
   describe("TypeRequiredRule", () => {

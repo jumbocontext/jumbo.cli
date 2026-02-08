@@ -24,8 +24,8 @@ import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
 import { HostBuilder } from "./HostBuilder.js";
-import { MigrationRunner } from "../shared/persistence/MigrationRunner.js";
-import { getNamespaceMigrations } from "../shared/persistence/migrations.config.js";
+import { MigrationRunner } from "../persistence/MigrationRunner.js";
+import { getNamespaceMigrations } from "../persistence/migrations.config.js";
 
 export class Host {
   private readonly rootDir: string;

@@ -3,9 +3,9 @@
  * (formerly GoalProjection)
  */
 
-import { Goal, GoalState } from "../../../../src/domain/work/goals/Goal";
-import { GoalAddedEvent, GoalStartedEvent, GoalCompletedEvent, GoalPausedEvent, GoalResumedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent } from "../../../../src/domain/work/goals/EventIndex";
-import { GoalEventType, GoalStatus } from "../../../../src/domain/work/goals/Constants";
+import { Goal, GoalState } from "../../../../src/domain/goals/Goal";
+import { GoalAddedEvent, GoalStartedEvent, GoalCompletedEvent, GoalPausedEvent, GoalResumedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent } from "../../../../src/domain/goals/EventIndex";
+import { GoalEventType, GoalStatus } from "../../../../src/domain/goals/Constants";
 
 function createEmptyGoalState(id: string): GoalState {
   return {

@@ -2,12 +2,12 @@
  * Tests for AudiencePain aggregate
  */
 
-import { AudiencePain } from "../../../../src/domain/project-knowledge/audience-pains/AudiencePain";
-import { AudiencePainEventType } from "../../../../src/domain/project-knowledge/audience-pains/Constants";
+import { AudiencePain } from "../../../../src/domain/audience-pains/AudiencePain";
+import { AudiencePainEventType } from "../../../../src/domain/audience-pains/Constants";
 import {
   AudiencePainAddedEvent,
   AudiencePainUpdatedEvent,
-} from "../../../../src/domain/project-knowledge/audience-pains/EventIndex";
+} from "../../../../src/domain/audience-pains/EventIndex";
 
 describe("AudiencePain Aggregate", () => {
   describe("add()", () => {

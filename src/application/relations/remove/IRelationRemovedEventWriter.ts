@@ -1,5 +1,5 @@
 import { RelationRemovedEvent } from "../../../domain/relations/remove/RelationRemovedEvent.js";
-import { AppendResult } from "../../shared/persistence/IEventStore.js";
+import { AppendResult } from "../../persistence/IEventStore.js";
 
 /**
  * Port interface for writing RelationRemovedEvent event to the event store.

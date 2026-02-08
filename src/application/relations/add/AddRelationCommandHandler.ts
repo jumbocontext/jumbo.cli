@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { AddRelationCommand } from "./AddRelationCommand.js";
 import { IRelationAddedEventWriter } from "./IRelationAddedEventWriter.js";
 import { IRelationAddedReader } from "./IRelationAddedReader.js";
-import { IEventBus } from "../../shared/messaging/IEventBus.js";
+import { IEventBus } from "../../messaging/IEventBus.js";
 import { Relation } from "../../../domain/relations/Relation.js";
 
 /**

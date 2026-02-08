@@ -2,13 +2,13 @@
  * Tests for ValueProposition aggregate
  */
 
-import { ValueProposition } from "../../../../src/domain/project-knowledge/value-propositions/ValueProposition";
-import { ValuePropositionEventType } from "../../../../src/domain/project-knowledge/value-propositions/Constants";
+import { ValueProposition } from "../../../../src/domain/value-propositions/ValueProposition";
+import { ValuePropositionEventType } from "../../../../src/domain/value-propositions/Constants";
 import {
   ValuePropositionAddedEvent,
   ValuePropositionUpdatedEvent,
   ValuePropositionRemovedEvent,
-} from "../../../../src/domain/project-knowledge/value-propositions/EventIndex";
+} from "../../../../src/domain/value-propositions/EventIndex";
 
 describe("ValueProposition Aggregate", () => {
   describe("add()", () => {

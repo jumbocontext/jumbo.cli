@@ -1,6 +1,6 @@
 import { RebuildDatabaseCommand } from "./RebuildDatabaseCommand.js";
-import { IEventStore } from "../../../shared/persistence/IEventStore.js";
-import { IEventBus } from "../../../shared/messaging/IEventBus.js";
+import { IEventStore } from "../../../persistence/IEventStore.js";
+import { IEventBus } from "../../../messaging/IEventBus.js";
 
 /**
  * Handler for rebuilding the database from the event store.

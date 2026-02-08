@@ -2,12 +2,12 @@
  * Tests for Session aggregate
  */
 
-import { Session } from "../../../../src/domain/work/sessions/Session";
+import { Session } from "../../../../src/domain/sessions/Session";
 import {
   SessionEventType,
   SessionStatus,
   SessionErrorMessages,
-} from "../../../../src/domain/work/sessions/Constants";
+} from "../../../../src/domain/sessions/Constants";
 
 describe("Session Aggregate", () => {
   describe("start()", () => {

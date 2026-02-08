@@ -6,7 +6,7 @@ import { AddRelationCommandHandler } from "../../../../src/application/relations
 import { AddRelationCommand } from "../../../../src/application/relations/add/AddRelationCommand";
 import { IRelationAddedEventWriter } from "../../../../src/application/relations/add/IRelationAddedEventWriter";
 import { IRelationAddedReader } from "../../../../src/application/relations/add/IRelationAddedReader";
-import { IEventBus } from "../../../../src/application/shared/messaging/IEventBus";
+import { IEventBus } from "../../../../src/application/messaging/IEventBus";
 import { RelationEventType, EntityType } from "../../../../src/domain/relations/Constants";
 import { RelationView } from "../../../../src/application/relations/RelationView";
 

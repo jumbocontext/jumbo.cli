@@ -1,6 +1,6 @@
-import { BaseAggregate, AggregateState } from "../shared/BaseAggregate.js";
-import { UUID } from "../shared/BaseEvent.js";
-import { ValidationRuleSet } from "../shared/validation/ValidationRule.js";
+import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
+import { UUID } from "../BaseEvent.js";
+import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { RelationAddedEvent } from "./add/RelationAddedEvent.js";
 import { RelationRemovedEvent } from "./remove/RelationRemovedEvent.js";
 import { RelationEventType, EntityTypeValue, RelationStrengthValue, RelationErrorMessages, formatErrorMessage } from "./Constants.js";

@@ -3,9 +3,9 @@
  * Verifies pub/sub pattern, wildcard routing, parallel execution, and error handling
  */
 
-import { InProcessEventBus } from "../../../../src/infrastructure/shared/messaging/InProcessEventBus";
-import { IEventHandler } from "../../../../src/application/shared/messaging/IEventHandler";
-import { BaseEvent } from "../../../../src/domain/shared/BaseEvent";
+import { InProcessEventBus } from "../../../../src/infrastructure/messaging/InProcessEventBus";
+import { IEventHandler } from "../../../../src/application/messaging/IEventHandler";
+import { BaseEvent } from "../../../../src/domain/BaseEvent";
 
 class MockHandler implements IEventHandler {
   public calls: BaseEvent[] = [];

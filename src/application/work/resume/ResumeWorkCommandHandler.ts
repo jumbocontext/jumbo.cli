@@ -1,24 +1,24 @@
 import { ResumeWorkCommand } from "./ResumeWorkCommand.js";
 import { IWorkerIdentityReader } from "../../host/workers/IWorkerIdentityReader.js";
-import { IGoalStatusReader } from "../goals/IGoalStatusReader.js";
-import { IGoalResumedEventWriter } from "../goals/resume/IGoalResumedEventWriter.js";
-import { IGoalResumedEventReader } from "../goals/resume/IGoalResumedEventReader.js";
-import { IGoalReader } from "../goals/resume/IGoalReader.js";
-import { IEventBus } from "../../shared/messaging/IEventBus.js";
-import { ResumeGoalCommandHandler } from "../goals/resume/ResumeGoalCommandHandler.js";
-import { ResumeGoalCommand } from "../goals/resume/ResumeGoalCommand.js";
-import { GoalClaimPolicy } from "../goals/claims/GoalClaimPolicy.js";
-import { ISettingsReader } from "../../shared/settings/ISettingsReader.js";
-import { GoalStatus } from "../../../domain/work/goals/Constants.js";
-import { GoalView } from "../goals/GoalView.js";
-import { SessionContextQueryHandler } from "../sessions/get-context/SessionContextQueryHandler.js";
-import { SessionResumeContextEnricher } from "../sessions/get-context/SessionResumeContextEnricher.js";
-import { SessionContextView } from "../sessions/get-context/SessionContext.js";
-import { ISessionSummaryReader } from "../sessions/get-context/ISessionSummaryReader.js";
-import { IProjectContextReader } from "../../project-knowledge/project/query/IProjectContextReader.js";
-import { IAudienceContextReader } from "../../project-knowledge/audiences/query/IAudienceContextReader.js";
-import { IAudiencePainContextReader } from "../../project-knowledge/audience-pains/query/IAudiencePainContextReader.js";
-import { UnprimedBrownfieldQualifier } from "../../solution/UnprimedBrownfieldQualifier.js";
+import { IGoalStatusReader } from "../../goals/IGoalStatusReader.js";
+import { IGoalResumedEventWriter } from "../../goals/resume/IGoalResumedEventWriter.js";
+import { IGoalResumedEventReader } from "../../goals/resume/IGoalResumedEventReader.js";
+import { IGoalReader } from "../../goals/resume/IGoalReader.js";
+import { IEventBus } from "../../messaging/IEventBus.js";
+import { ResumeGoalCommandHandler } from "../../goals/resume/ResumeGoalCommandHandler.js";
+import { ResumeGoalCommand } from "../../goals/resume/ResumeGoalCommand.js";
+import { GoalClaimPolicy } from "../../goals/claims/GoalClaimPolicy.js";
+import { ISettingsReader } from "../../settings/ISettingsReader.js";
+import { GoalStatus } from "../../../domain/goals/Constants.js";
+import { GoalView } from "../../goals/GoalView.js";
+import { SessionContextQueryHandler } from "../../sessions/get-context/SessionContextQueryHandler.js";
+import { SessionResumeContextEnricher } from "../../sessions/get-context/SessionResumeContextEnricher.js";
+import { SessionContextView } from "../../sessions/get-context/SessionContext.js";
+import { ISessionSummaryReader } from "../../sessions/get-context/ISessionSummaryReader.js";
+import { IProjectContextReader } from "../../project/query/IProjectContextReader.js";
+import { IAudienceContextReader } from "../../audiences/query/IAudienceContextReader.js";
+import { IAudiencePainContextReader } from "../../audience-pains/query/IAudiencePainContextReader.js";
+import { UnprimedBrownfieldQualifier } from "../../UnprimedBrownfieldQualifier.js";
 
 /**
  * Result of resuming work.

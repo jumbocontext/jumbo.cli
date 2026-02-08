@@ -1,5 +1,5 @@
 import { RelationAddedEvent } from "../../../domain/relations/add/RelationAddedEvent.js";
-import { AppendResult } from "../../shared/persistence/IEventStore.js";
+import { AppendResult } from "../../persistence/IEventStore.js";
 
 /**
  * Port interface for writing RelationAddedEvent event to the event store.

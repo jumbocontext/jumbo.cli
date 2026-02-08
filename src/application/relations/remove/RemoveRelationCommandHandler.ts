@@ -2,11 +2,11 @@ import { RemoveRelationCommand } from "./RemoveRelationCommand.js";
 import { IRelationRemovedEventWriter } from "./IRelationRemovedEventWriter.js";
 import { IRelationRemovedEventReader } from "./IRelationRemovedEventReader.js";
 import { IRelationRemovedReader } from "./IRelationRemovedReader.js";
-import { IEventBus } from "../../shared/messaging/IEventBus.js";
+import { IEventBus } from "../../messaging/IEventBus.js";
 import { Relation } from "../../../domain/relations/Relation.js";
 import { RelationEvent } from "../../../domain/relations/EventIndex.js";
 import { RelationErrorMessages, formatErrorMessage } from "../../../domain/relations/Constants.js";
-import { ValidationRuleSet } from "../../../domain/shared/validation/ValidationRule.js";
+import { ValidationRuleSet } from "../../../domain/validation/ValidationRule.js";
 import { RELATION_ID_RULES } from "../../../domain/relations/rules/RelationIdRules.js";
 
 /**

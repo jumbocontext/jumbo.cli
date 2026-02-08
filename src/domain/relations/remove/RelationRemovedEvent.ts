@@ -1,4 +1,4 @@
-import { BaseEvent } from "../../shared/BaseEvent.js";
+import { BaseEvent } from "../../BaseEvent.js";
 import { EntityTypeValue } from "../Constants.js";
 
 /**

@@ -2,8 +2,8 @@
  * Tests for Component aggregate
  */
 
-import { Component } from "../../../../src/domain/solution/components/Component";
-import { ComponentEventType, ComponentStatus } from "../../../../src/domain/solution/components/Constants";
+import { Component } from "../../../../src/domain/components/Component";
+import { ComponentEventType, ComponentStatus } from "../../../../src/domain/components/Constants";
 
 describe("Component Aggregate", () => {
   describe("add()", () => {

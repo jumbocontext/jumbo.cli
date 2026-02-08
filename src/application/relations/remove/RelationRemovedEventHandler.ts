@@ -1,5 +1,5 @@
-import { IEventHandler } from "../../shared/messaging/IEventHandler.js";
-import { BaseEvent } from "../../../domain/shared/BaseEvent.js";
+import { IEventHandler } from "../../messaging/IEventHandler.js";
+import { BaseEvent } from "../../../domain/BaseEvent.js";
 import { RelationRemovedEvent } from "../../../domain/relations/remove/RelationRemovedEvent.js";
 import { IRelationRemovedProjector } from "./IRelationRemovedProjector.js";
 

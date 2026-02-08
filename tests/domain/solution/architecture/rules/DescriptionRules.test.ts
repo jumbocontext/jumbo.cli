@@ -6,8 +6,8 @@ import {
   DescriptionRequiredRule,
   DescriptionMaxLengthRule,
   DESCRIPTION_RULES
-} from "../../../../../src/domain/solution/architecture/rules/DescriptionRules.js";
-import { ValidationRuleSet } from "../../../../../src/domain/shared/validation/ValidationRule.js";
+} from "../../../../../src/domain/architecture/rules/DescriptionRules.js";
+import { ValidationRuleSet } from "../../../../../src/domain/validation/ValidationRule.js";
 
 describe("DescriptionRequiredRule", () => {
   it("should pass for valid description", () => {

@@ -18,8 +18,8 @@ import {
   IDatabaseRebuildService,
   DatabaseRebuildResult,
 } from "../../application/maintenance/db/rebuild/IDatabaseRebuildService.js";
-import { IEventStore } from "../../application/shared/persistence/IEventStore.js";
-import { IEventBus } from "../../application/shared/messaging/IEventBus.js";
+import { IEventStore } from "../../application/persistence/IEventStore.js";
+import { IEventBus } from "../../application/messaging/IEventBus.js";
 
 export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
   constructor(

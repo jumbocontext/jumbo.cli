@@ -11,9 +11,9 @@
 
 import fs from "fs-extra";
 import path from "path";
-import { CommandMetadata } from "../../../shared/registry/CommandMetadata.js";
-import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { Renderer } from "../../../shared/rendering/Renderer.js";
+import { CommandMetadata } from "../../../registry/CommandMetadata.js";
+import { IApplicationContainer } from "../../../../../../application/host/IApplicationContainer.js";
+import { Renderer } from "../../../../rendering/Renderer.js";
 
 /**
  * Command metadata for auto-registration

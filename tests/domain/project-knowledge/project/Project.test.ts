@@ -2,8 +2,8 @@
  * Tests for Project aggregate
  */
 
-import { Project } from "../../../../src/domain/project-knowledge/project/Project";
-import { ProjectEventType } from "../../../../src/domain/project-knowledge/project/Constants";
+import { Project } from "../../../../src/domain/project/Project";
+import { ProjectEventType } from "../../../../src/domain/project/Constants";
 
 describe("Project Aggregate", () => {
   describe("initialize()", () => {

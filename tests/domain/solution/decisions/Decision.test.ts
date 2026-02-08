@@ -2,8 +2,8 @@
  * Tests for Decision aggregate
  */
 
-import { Decision } from "../../../../src/domain/solution/decisions/Decision.js";
-import { DecisionEventType, DecisionStatus } from "../../../../src/domain/solution/decisions/Constants.js";
+import { Decision } from "../../../../src/domain/decisions/Decision.js";
+import { DecisionEventType, DecisionStatus } from "../../../../src/domain/decisions/Constants.js";
 
 describe("Decision aggregate", () => {
   describe("reverse()", () => {

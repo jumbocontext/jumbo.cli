@@ -3,9 +3,9 @@
  */
 
 import { RebuildDatabaseCommandHandler } from "../../../../../src/application/maintenance/db/rebuild/RebuildDatabaseCommandHandler";
-import { IEventStore } from "../../../../../src/application/shared/persistence/IEventStore";
-import { IEventBus } from "../../../../../src/application/shared/messaging/IEventBus";
-import { BaseEvent } from "../../../../../src/domain/shared/BaseEvent";
+import { IEventStore } from "../../../../../src/application/persistence/IEventStore";
+import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
+import { BaseEvent } from "../../../../../src/domain/BaseEvent";
 import { RebuildDatabaseCommand } from "../../../../../src/application/maintenance/db/rebuild/RebuildDatabaseCommand";
 
 describe("RebuildDatabaseCommandHandler", () => {

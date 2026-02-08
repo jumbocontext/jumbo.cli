@@ -2,8 +2,8 @@
  * Tests for Dependency aggregate
  */
 
-import { Dependency } from "../../../../src/domain/solution/dependencies/Dependency";
-import { DependencyEventType, DependencyStatus } from "../../../../src/domain/solution/dependencies/Constants";
+import { Dependency } from "../../../../src/domain/dependencies/Dependency";
+import { DependencyEventType, DependencyStatus } from "../../../../src/domain/dependencies/Constants";
 
 describe("Dependency Aggregate", () => {
   describe("add()", () => {

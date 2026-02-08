@@ -2,9 +2,9 @@
  * Tests for Architecture aggregate
  */
 
-import { Architecture } from "../../../../src/domain/solution/architecture/Architecture.js";
-import { ArchitectureEventType } from "../../../../src/domain/solution/architecture/Constants.js";
-import { DataStore } from "../../../../src/domain/solution/architecture/EventIndex.js";
+import { Architecture } from "../../../../src/domain/architecture/Architecture.js";
+import { ArchitectureEventType } from "../../../../src/domain/architecture/Constants.js";
+import { DataStore } from "../../../../src/domain/architecture/EventIndex.js";
 
 describe("Architecture aggregate", () => {
   describe("define()", () => {

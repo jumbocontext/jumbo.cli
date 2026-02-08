@@ -7,35 +7,36 @@
 
 import fs from 'fs-extra';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 const srcInfraDir = path.join(rootDir, 'src', 'infrastructure');
 const distInfraDir = path.join(rootDir, 'dist', 'infrastructure');
 
-// All namespace migration directories following Clean Screaming Architecture
-const namespaces = [
-  'work/sessions',
-  'work/goals',
-  'solution/decisions',
-  'solution/architecture',
-  'solution/components',
-  'solution/dependencies',
-  'solution/guidelines',
-  'solution/invariants',
-  'project-knowledge/project',
-  'project-knowledge/audiences',
-  'project-knowledge/audience-pains',
-  'project-knowledge/value-propositions',
-  'relations',
-];
-
 let copiedCount = 0;
 
-for (const namespace of namespaces) {
-  const srcMigrationsDir = path.join(srcInfraDir, namespace, 'migrations');
-  const distMigrationsDir = path.join(distInfraDir, namespace, 'migrations');
+const migrationsConfigPath = path.join(
+  distInfraDir,
+  'persistence',
+  'migrations.config.js'
+);
+
+if (!fs.existsSync(migrationsConfigPath)) {
+  throw new Error(
+    `Missing ${migrationsConfigPath}. Run \"npm run build\" (tsc) before copying migrations.`
+  );
+}
+
+const { getNamespaceMigrations } = await import(
+  pathToFileURL(migrationsConfigPath).href
+);
+
+const namespaces = getNamespaceMigrations(srcInfraDir);
+
+for (const { path: srcMigrationsDir } of namespaces) {
+  const relPath = path.relative(srcInfraDir, srcMigrationsDir);
+  const distMigrationsDir = path.join(distInfraDir, relPath);
 
   if (fs.existsSync(srcMigrationsDir)) {
     fs.copySync(srcMigrationsDir, distMigrationsDir);

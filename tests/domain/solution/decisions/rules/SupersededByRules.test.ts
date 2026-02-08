@@ -2,7 +2,7 @@
  * Tests for SupersededByRules validation
  */
 
-import { SupersededByRequiredRule, SUPERSEDED_BY_RULES } from "../../../../../src/domain/solution/decisions/rules/SupersededByRules.js";
+import { SupersededByRequiredRule, SUPERSEDED_BY_RULES } from "../../../../../src/domain/decisions/rules/SupersededByRules.js";
 
 describe("SupersededByRules", () => {
   describe("SupersededByRequiredRule", () => {

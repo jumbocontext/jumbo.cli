@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import { SqliteConnectionManager } from "../../../../src/infrastructure/shared/persistence/SqliteConnectionManager";
+import { SqliteConnectionManager } from "../../../../src/infrastructure/persistence/SqliteConnectionManager";
 
 describe("SqliteConnectionManager", () => {
   let tmpDir: string;

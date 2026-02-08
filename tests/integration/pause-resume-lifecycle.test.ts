@@ -7,15 +7,15 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { Host } from "../../src/infrastructure/host/Host.js";
 import { IApplicationContainer } from "../../src/application/host/IApplicationContainer.js";
-import { AddGoalCommandHandler } from "../../src/application/work/goals/add/AddGoalCommandHandler.js";
-import { AddGoalCommand } from "../../src/application/work/goals/add/AddGoalCommand.js";
-import { StartGoalCommandHandler } from "../../src/application/work/goals/start/StartGoalCommandHandler.js";
-import { StartGoalCommand } from "../../src/application/work/goals/start/StartGoalCommand.js";
-import { PauseGoalCommandHandler } from "../../src/application/work/goals/pause/PauseGoalCommandHandler.js";
-import { PauseGoalCommand } from "../../src/application/work/goals/pause/PauseGoalCommand.js";
-import { ResumeGoalCommandHandler } from "../../src/application/work/goals/resume/ResumeGoalCommandHandler.js";
-import { ResumeGoalCommand } from "../../src/application/work/goals/resume/ResumeGoalCommand.js";
-import { GoalStatus, GoalEventType } from "../../src/domain/work/goals/Constants.js";
+import { AddGoalCommandHandler } from "../../src/application/goals/add/AddGoalCommandHandler.js";
+import { AddGoalCommand } from "../../src/application/goals/add/AddGoalCommand.js";
+import { StartGoalCommandHandler } from "../../src/application/goals/start/StartGoalCommandHandler.js";
+import { StartGoalCommand } from "../../src/application/goals/start/StartGoalCommand.js";
+import { PauseGoalCommandHandler } from "../../src/application/goals/pause/PauseGoalCommandHandler.js";
+import { PauseGoalCommand } from "../../src/application/goals/pause/PauseGoalCommand.js";
+import { ResumeGoalCommandHandler } from "../../src/application/goals/resume/ResumeGoalCommandHandler.js";
+import { ResumeGoalCommand } from "../../src/application/goals/resume/ResumeGoalCommand.js";
+import { GoalStatus, GoalEventType } from "../../src/domain/goals/Constants.js";
 
 describe("Pause-Resume Lifecycle Integration", () => {
   let tmpDir: string;

@@ -6,7 +6,7 @@ import {
   ValidationRule,
   ValidationResult,
   ValidationRuleSet,
-} from "../../../../src/domain/shared/validation/ValidationRule.js";
+} from "../../../../src/domain/validation/ValidationRule.js";
 
 // Mock synchronous rule
 class MockSyncRule implements ValidationRule<string> {

@@ -5,8 +5,8 @@
 import {
   FocusRequiredRule,
   FocusMaxLengthRule,
-} from "../../../../../src/domain/work/sessions/rules/FocusRules";
-import { SessionLimits } from "../../../../../src/domain/work/sessions/Constants";
+} from "../../../../../src/domain/sessions/rules/FocusRules";
+import { SessionLimits } from "../../../../../src/domain/sessions/Constants";
 
 describe("FocusRequiredRule", () => {
   const rule = new FocusRequiredRule();

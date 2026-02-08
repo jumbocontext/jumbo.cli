@@ -2,7 +2,7 @@
  * Tests for AgentInstructions value object
  */
 
-import { AgentInstructions } from "../../../../src/domain/project-knowledge/project/AgentInstructions";
+import { AgentInstructions } from "../../../../src/domain/project/AgentInstructions";
 
 describe("AgentInstructions Value Object", () => {
   describe("getJumboSection()", () => {

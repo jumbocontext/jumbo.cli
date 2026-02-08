@@ -5,7 +5,7 @@
  * Extends the base FsEventStore implementation.
  */
 
-import { FsEventStore } from "../../shared/persistence/FsEventStore.js";
+import { FsEventStore } from "../../persistence/FsEventStore.js";
 import { IRelationAddedEventWriter } from "../../../application/relations/add/IRelationAddedEventWriter.js";
 
 export class FsRelationAddedEventStore

@@ -22,10 +22,10 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..');
 const CLI_DIR = path.join(ROOT_DIR, 'src', 'presentation', 'cli');
 const COMMANDS_DIR = path.join(CLI_DIR, 'commands');
-const OUTPUT_FILE = path.join(ROOT_DIR, 'src', 'presentation', 'cli', 'shared', 'registry', 'generated-commands.ts');
+const OUTPUT_FILE = path.join(ROOT_DIR, 'src', 'presentation', 'cli', 'commands', 'registry', 'generated-commands.ts');
 
 // Clean Screaming Architecture directories to scan
-// Import paths are relative from shared/registry/ to feature folders (../../)
+// Import paths are relative from commands/registry/ to feature folders (../../)
 const CLEAN_SCREAMING_DIRS = [
   { dir: path.join(CLI_DIR, 'host'), importPrefix: '../../host' },
   { dir: path.join(CLI_DIR, 'work'), importPrefix: '../../work' },

@@ -7,9 +7,9 @@ import {
   SuccessCriteriaMaxCountRule,
   SuccessCriterionMaxLengthRule,
   SUCCESS_CRITERIA_RULES,
-} from "../../../../../src/domain/work/goals/rules/SuccessCriteriaRules";
-import { ValidationRuleSet } from "../../../../../src/domain/shared/validation/ValidationRule";
-import { GoalLimits } from "../../../../../src/domain/work/goals/Constants";
+} from "../../../../../src/domain/goals/rules/SuccessCriteriaRules";
+import { ValidationRuleSet } from "../../../../../src/domain/validation/ValidationRule";
+import { GoalLimits } from "../../../../../src/domain/goals/Constants";
 
 describe("SuccessCriteriaRules", () => {
   describe("SuccessCriteriaRequiredRule", () => {

@@ -6,9 +6,9 @@ import {
   ScopeMaxCountRule,
   ScopeItemMaxLengthRule,
   SCOPE_RULES,
-} from "../../../../../src/domain/work/goals/rules/ScopeRules";
-import { ValidationRuleSet } from "../../../../../src/domain/shared/validation/ValidationRule";
-import { GoalLimits } from "../../../../../src/domain/work/goals/Constants";
+} from "../../../../../src/domain/goals/rules/ScopeRules";
+import { ValidationRuleSet } from "../../../../../src/domain/validation/ValidationRule";
+import { GoalLimits } from "../../../../../src/domain/goals/Constants";
 
 describe("ScopeRules", () => {
   describe("ScopeMaxCountRule", () => {
@@ -62,8 +62,8 @@ describe("ScopeRules", () => {
     it("should pass for valid scope item lengths", () => {
       const rule = new ScopeItemMaxLengthRule();
       const result = rule.validate([
-        "src/domain/work/goals",
-        "src/application/work/goals",
+        "src/domain/goals",
+        "src/domain/goals",
       ]);
       expect(result.isValid).toBe(true);
       expect(result.errors).toEqual([]);

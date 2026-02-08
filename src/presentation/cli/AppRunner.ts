@@ -18,16 +18,16 @@
 import path from "path";
 import fs from "fs-extra";
 import { IApplicationContainer } from "../../application/host/IApplicationContainer.js";
-import { commands } from "./shared/registry/generated-commands.js";
-import { CommanderApplicator } from "./shared/registry/CommanderApplicator.js";
-import { createProgram } from "./shared/program/ProgramFactory.js";
-import { attachGlobalOptions } from "./shared/program/GlobalOptionsHandler.js";
-import { validateProjectRequirement } from "./shared/guards/ProjectGuard.js";
+import { commands } from "./commands/registry/generated-commands.js";
+import { CommanderApplicator } from "./commands/registry/CommanderApplicator.js";
+import { createProgram } from "./program/ProgramFactory.js";
+import { attachGlobalOptions } from "./program/GlobalOptionsHandler.js";
+import { validateProjectRequirement } from "./guards/ProjectGuard.js";
 import {
   isBareCommand,
   showBannerWithContainer,
-} from "./shared/banner/BannerOrchestrator.js";
-import { Renderer } from "./shared/rendering/Renderer.js";
+} from "./banner/BannerOrchestrator.js";
+import { Renderer } from "./rendering/Renderer.js";
 
 /**
  * Invocation type classification

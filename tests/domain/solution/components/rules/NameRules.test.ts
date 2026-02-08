@@ -2,8 +2,8 @@
  * Tests for Component Name validation rules
  */
 
-import { NameRequiredRule, NameMaxLengthRule } from "../../../../../src/domain/solution/components/rules/NameRules";
-import { ComponentLimits } from "../../../../../src/domain/solution/components/Constants";
+import { NameRequiredRule, NameMaxLengthRule } from "../../../../../src/domain/components/rules/NameRules";
+import { ComponentLimits } from "../../../../../src/domain/components/Constants";
 
 describe("Component Name Rules", () => {
   describe("NameRequiredRule", () => {

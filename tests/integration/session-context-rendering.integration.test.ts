@@ -17,7 +17,7 @@ import path from "path";
 import Database from "better-sqlite3";
 import { Host } from "../../src/infrastructure/host/Host.js";
 import { IApplicationContainer } from "../../src/application/host/IApplicationContainer.js";
-import { GetLatestSessionSummaryQueryHandler } from "../../src/application/work/sessions/get-context/GetLatestSessionSummaryQueryHandler.js";
+import { GetLatestSessionSummaryQueryHandler } from "../../src/application/sessions/get-context/GetLatestSessionSummaryQueryHandler.js";
 
 describe("Integration: Session Context Rendering", () => {
   const testRoot = path.join(process.cwd(), ".jumbo-integration-test");

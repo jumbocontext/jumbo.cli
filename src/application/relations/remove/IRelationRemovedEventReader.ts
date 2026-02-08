@@ -1,4 +1,4 @@
-import { BaseEvent } from "../../../domain/shared/BaseEvent.js";
+import { BaseEvent } from "../../../domain/BaseEvent.js";
 
 /**
  * Port interface for reading RelationRemoved events from the event store.

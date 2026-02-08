@@ -1,6 +1,6 @@
-import { IActiveSessionReader } from "../sessions/end/IActiveSessionReader.js";
-import { IGoalStatusReader } from "../goals/IGoalStatusReader.js";
-import { GoalStatus } from "../../../domain/work/goals/Constants.js";
+import { IActiveSessionReader } from "../../sessions/end/IActiveSessionReader.js";
+import { IGoalStatusReader } from "../../goals/IGoalStatusReader.js";
+import { GoalStatus } from "../../../domain/goals/Constants.js";
 import { WorkSummaryView } from "../views/WorkSummaryView.js";
 
 /**

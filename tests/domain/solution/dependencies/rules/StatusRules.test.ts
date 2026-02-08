@@ -5,9 +5,9 @@
 import {
   StatusValueRule,
   STATUS_RULES,
-} from "../../../../../src/domain/solution/dependencies/rules/StatusRules";
-import { ValidationRuleSet } from "../../../../../src/domain/shared/validation/ValidationRule";
-import { DependencyStatus } from "../../../../../src/domain/solution/dependencies/Constants";
+} from "../../../../../src/domain/dependencies/rules/StatusRules";
+import { ValidationRuleSet } from "../../../../../src/domain/validation/ValidationRule";
+import { DependencyStatus } from "../../../../../src/domain/dependencies/Constants";
 
 describe("StatusRules", () => {
   describe("StatusValueRule", () => {
