@@ -1,11 +1,5 @@
 import { IGoalContextReader } from "./IGoalContextReader.js";
-import {
-  GoalContextView,
-  InvariantContextView,
-  GuidelineContextView,
-  ComponentContextView,
-  DependencyContextView,
-} from "./GoalContextView.js";
+import { GoalContextView } from "./GoalContextView.js";
 import { IComponentContextReader } from "./IComponentContextReader.js";
 import { IDependencyContextReader } from "./IDependencyContextReader.js";
 import { IDecisionContextReader } from "./IDecisionContextReader.js";
@@ -14,7 +8,6 @@ import { IGuidelineContextReader } from "./IGuidelineContextReader.js";
 import { IArchitectureReader } from "../../../application/architecture/IArchitectureReader.js";
 import { IRelationReader } from "../../relations/IRelationReader.js";
 import { InvariantView } from "../../invariants/InvariantView.js";
-import { GoalView } from "../GoalView.js";
 
 /**
  * GetGoalContextQueryHandler - Query handler for goal context retrieval
@@ -31,65 +24,38 @@ import { GoalView } from "../GoalView.js";
 export class GetGoalContextQueryHandler {
   constructor(
     private readonly goalReader: IGoalContextReader,
-    private readonly componentReader?: IComponentContextReader,
-    private readonly dependencyReader?: IDependencyContextReader,
-    private readonly decisionReader?: IDecisionContextReader,
-    private readonly invariantReader?: IInvariantContextReader,
-    private readonly guidelineReader?: IGuidelineContextReader,
-    private readonly architectureReader?: IArchitectureReader,
-    private readonly relationReader?: IRelationReader
+    private readonly componentReader: IComponentContextReader,
+    private readonly dependencyReader: IDependencyContextReader,
+    private readonly decisionReader: IDecisionContextReader,
+    private readonly invariantReader: IInvariantContextReader,
+    private readonly guidelineReader: IGuidelineContextReader,
+    private readonly architectureReader: IArchitectureReader,
+    private readonly relationReader: IRelationReader
   ) {}
 
   /**
    * Execute the query to get goal context
    *
-   * Prefers embedded context when available (from --interactive goal creation).
-   * Falls back to querying all context when embedded fields are empty/null.
+   * Always queries dedicated readers for all context categories.
    *
    * @param goalId - ID of the goal to get context for
    * @returns GoalContextView with all context data
    * @throws Error if goal not found
    */
   async execute(goalId: string): Promise<GoalContextView> {
-    // Phase 1: Get goal details
     const goal = await this.goalReader.findById(goalId);
 
     if (!goal) {
       throw new Error(`Goal not found: ${goalId}`);
     }
 
-    // Phase 2: Get components - prefer embedded, else filter by scope
-    const components = this.hasEmbeddedComponents(goal)
-      ? this.mapEmbeddedComponents(goal.relevantComponents!)
-      : await this.filterComponents(goal.scopeIn, goal.scopeOut);
-
-    // Phase 2: Get dependencies - prefer embedded, else filter by scoped components
-    const dependencies = this.hasEmbeddedDependencies(goal)
-      ? this.mapEmbeddedDependencies(goal.relevantDependencies!)
-      : await this.filterDependencies(components);
-
-    // Phase 2: Get active decisions (no embedded field for decisions)
+    const components = await this.filterComponents(goal.scopeIn, goal.scopeOut);
+    const dependencies = await this.filterDependencies(components);
     const decisions = await this.getDecisions();
-
-    // Phase 3: Get invariants - prefer embedded, else query all
-    const invariants = this.hasEmbeddedInvariants(goal)
-      ? this.mapEmbeddedInvariants(goal.relevantInvariants!)
-      : await this.getInvariants();
-
-    // Phase 3: Get guidelines - prefer embedded, else query all
-    const guidelines = this.hasEmbeddedGuidelines(goal)
-      ? this.mapEmbeddedGuidelines(goal.relevantGuidelines!)
-      : await this.getGuidelines();
-
-    // Phase 3: Get architecture - prefer embedded, else query global
-    const architecture = this.hasEmbeddedArchitecture(goal)
-      ? goal.architecture
-      : await this.getArchitecture();
-
-    // Phase 4: Get relations (only when using queried components)
-    const relations = this.hasEmbeddedComponents(goal)
-      ? []
-      : await this.getRelations(components);
+    const invariants = await this.getInvariants();
+    const guidelines = await this.getGuidelines();
+    const architecture = await this.getArchitecture();
+    const relations = await this.getRelations(components);
 
     return {
       goal,
@@ -104,86 +70,6 @@ export class GetGoalContextQueryHandler {
   }
 
   /**
-   * Check if goal has embedded invariants
-   */
-  private hasEmbeddedInvariants(goal: GoalView): boolean {
-    return Array.isArray(goal.relevantInvariants) && goal.relevantInvariants.length > 0;
-  }
-
-  /**
-   * Check if goal has embedded guidelines
-   */
-  private hasEmbeddedGuidelines(goal: GoalView): boolean {
-    return Array.isArray(goal.relevantGuidelines) && goal.relevantGuidelines.length > 0;
-  }
-
-  /**
-   * Check if goal has embedded architecture
-   */
-  private hasEmbeddedArchitecture(goal: GoalView): boolean {
-    return goal.architecture !== undefined && goal.architecture !== null;
-  }
-
-  /**
-   * Check if goal has embedded components
-   */
-  private hasEmbeddedComponents(goal: GoalView): boolean {
-    return Array.isArray(goal.relevantComponents) && goal.relevantComponents.length > 0;
-  }
-
-  /**
-   * Check if goal has embedded dependencies
-   */
-  private hasEmbeddedDependencies(goal: GoalView): boolean {
-    return Array.isArray(goal.relevantDependencies) && goal.relevantDependencies.length > 0;
-  }
-
-  /**
-   * Map embedded invariants to InvariantContextView format
-   */
-  private mapEmbeddedInvariants(invariants: NonNullable<GoalView["relevantInvariants"]>): InvariantContextView[] {
-    return invariants.map((inv, index) => ({
-      invariantId: `embedded_inv_${index}`,
-      category: inv.title,
-      description: inv.description,
-    }));
-  }
-
-  /**
-   * Map embedded guidelines to GuidelineContextView format
-   */
-  private mapEmbeddedGuidelines(guidelines: NonNullable<GoalView["relevantGuidelines"]>): GuidelineContextView[] {
-    return guidelines.map((g, index) => ({
-      guidelineId: `embedded_guide_${index}`,
-      category: g.title,
-      description: g.description,
-    }));
-  }
-
-  /**
-   * Map embedded components to ComponentContextView format
-   */
-  private mapEmbeddedComponents(components: NonNullable<GoalView["relevantComponents"]>): ComponentContextView[] {
-    return components.map((c, index) => ({
-      componentId: `embedded_comp_${index}`,
-      name: c.name,
-      description: c.responsibility,
-      status: "active",
-    }));
-  }
-
-  /**
-   * Map embedded dependencies to DependencyContextView format
-   */
-  private mapEmbeddedDependencies(dependencies: NonNullable<GoalView["relevantDependencies"]>): DependencyContextView[] {
-    return dependencies.map((d, index) => ({
-      dependencyId: `embedded_dep_${index}`,
-      name: `${d.consumer} → ${d.provider}`,
-      purpose: "Architectural dependency",
-    }));
-  }
-
-  /**
    * Filter components by scopeIn and scopeOut
    *
    * @param scopeIn - Component names to include
@@ -191,10 +77,6 @@ export class GetGoalContextQueryHandler {
    * @returns Filtered component context views
    */
   private async filterComponents(scopeIn: string[], scopeOut: string[]): Promise<Array<{ componentId: string; name: string; description: string; status: string }>> {
-    if (!this.componentReader) {
-      return [];
-    }
-
     const allComponents = await this.componentReader.findAll();
 
     // Filter by scopeIn (case-insensitive) and exclude scopeOut
@@ -234,7 +116,7 @@ export class GetGoalContextQueryHandler {
    * @returns Dependency context views
    */
   private async filterDependencies(components: any[]): Promise<any[]> {
-    if (!this.dependencyReader || components.length === 0) {
+    if (components.length === 0) {
       return [];
     }
 
@@ -268,10 +150,6 @@ export class GetGoalContextQueryHandler {
    * @returns Decision context views
    */
   private async getDecisions(): Promise<any[]> {
-    if (!this.decisionReader) {
-      return [];
-    }
-
     const activeDecisions = await this.decisionReader.findAllActive();
 
     return activeDecisions.map((d) => ({
@@ -288,17 +166,11 @@ export class GetGoalContextQueryHandler {
    * @returns Invariant context views
    */
   private async getInvariants(): Promise<any[]> {
-    if (!this.invariantReader) {
-      return [];
-    }
-
     const allInvariants = await this.invariantReader.findAll();
 
-    // For Phase 3, include all invariants
-    // Future optimization: could filter based on goal scope
     return allInvariants.map((inv: InvariantView) => ({
       invariantId: inv.invariantId,
-      category: inv.title, // Use title as category for display
+      category: inv.title,
       description: inv.description,
     }));
   }
@@ -309,10 +181,6 @@ export class GetGoalContextQueryHandler {
    * @returns Guideline context views
    */
   private async getGuidelines(): Promise<any[]> {
-    if (!this.guidelineReader) {
-      return [];
-    }
-
     const allGuidelines = await this.guidelineReader.findAll();
 
     // Filter out removed guidelines
@@ -331,10 +199,6 @@ export class GetGoalContextQueryHandler {
    * @returns Architecture view or undefined
    */
   private async getArchitecture(): Promise<any> {
-    if (!this.architectureReader) {
-      return undefined;
-    }
-
     const architecture = await this.architectureReader.find();
 
     if (!architecture) {
@@ -357,7 +221,7 @@ export class GetGoalContextQueryHandler {
    * @returns Relation context views
    */
   private async getRelations(components: any[]): Promise<any[]> {
-    if (!this.relationReader || components.length === 0) {
+    if (components.length === 0) {
       return [];
     }
 

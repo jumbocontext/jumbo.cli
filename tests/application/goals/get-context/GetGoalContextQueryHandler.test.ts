@@ -5,19 +5,25 @@ import { IInvariantContextReader } from "../../../../src/application/goals/get-c
 import { IGuidelineContextReader } from "../../../../src/application/goals/get-context/IGuidelineContextReader.js";
 import { IComponentContextReader } from "../../../../src/application/goals/get-context/IComponentContextReader.js";
 import { IDependencyContextReader } from "../../../../src/application/goals/get-context/IDependencyContextReader.js";
+import { IDecisionContextReader } from "../../../../src/application/goals/get-context/IDecisionContextReader.js";
+import { IArchitectureReader } from "../../../../src/application/architecture/IArchitectureReader.js";
+import { IRelationReader } from "../../../../src/application/relations/IRelationReader.js";
 import { GoalView } from "../../../../src/application/goals/GoalView.js";
 import { InvariantView } from "../../../../src/application/invariants/InvariantView.js";
 import { GuidelineView } from "../../../../src/application/guidelines/GuidelineView.js";
 import { ComponentView } from "../../../../src/application/components/ComponentView.js";
+import { DecisionView } from "../../../../src/application/decisions/DecisionView.js";
+import { ArchitectureView } from "../../../../src/application/architecture/ArchitectureView.js";
+import { RelationView } from "../../../../src/application/relations/RelationView.js";
+import { EntityTypeValue } from "../../../../src/domain/relations/Constants.js";
 
 /**
  * Tests for GetGoalContextQueryHandler
  *
  * Tests cover:
  * - Basic goal retrieval
- * - Embedded context preference (interactive creation)
- * - Fallback behavior (legacy goals)
- * - Mapping of embedded fields to context views
+ * - Context reader behavior (always uses dedicated readers)
+ * - Component filtering by scope
  */
 
 // Mock implementation of IGoalContextReader
@@ -89,13 +95,84 @@ class MockDependencyContextReader implements IDependencyContextReader {
   }
 }
 
+// Mock implementation of IDecisionContextReader
+class MockDecisionContextReader implements IDecisionContextReader {
+  private decisions: DecisionView[] = [];
+
+  async findAllActive(): Promise<DecisionView[]> {
+    return this.decisions;
+  }
+
+  setDecisions(decisions: DecisionView[]): void {
+    this.decisions = decisions;
+  }
+}
+
+// Mock implementation of IArchitectureReader
+class MockArchitectureReader implements IArchitectureReader {
+  private architecture: ArchitectureView | null = null;
+
+  async find(): Promise<ArchitectureView | null> {
+    return this.architecture;
+  }
+
+  setArchitecture(architecture: ArchitectureView | null): void {
+    this.architecture = architecture;
+  }
+}
+
+// Mock implementation of IRelationReader
+class MockRelationReader implements IRelationReader {
+  private fromRelations: Map<string, RelationView[]> = new Map();
+  private toRelations: Map<string, RelationView[]> = new Map();
+
+  async findByFromEntity(_entityType: EntityTypeValue, entityId: string): Promise<RelationView[]> {
+    return this.fromRelations.get(entityId) || [];
+  }
+
+  async findByToEntity(_entityType: EntityTypeValue, entityId: string): Promise<RelationView[]> {
+    return this.toRelations.get(entityId) || [];
+  }
+
+  setFromRelations(entityId: string, relations: RelationView[]): void {
+    this.fromRelations.set(entityId, relations);
+  }
+
+  setToRelations(entityId: string, relations: RelationView[]): void {
+    this.toRelations.set(entityId, relations);
+  }
+}
+
 describe("GetGoalContextQueryHandler", () => {
   let mockReader: MockGoalContextReader;
+  let mockComponentReader: MockComponentContextReader;
+  let mockDependencyReader: MockDependencyContextReader;
+  let mockDecisionReader: MockDecisionContextReader;
+  let mockInvariantReader: MockInvariantContextReader;
+  let mockGuidelineReader: MockGuidelineContextReader;
+  let mockArchitectureReader: MockArchitectureReader;
+  let mockRelationReader: MockRelationReader;
   let query: GetGoalContextQueryHandler;
 
   beforeEach(() => {
     mockReader = new MockGoalContextReader();
-    query = new GetGoalContextQueryHandler(mockReader);
+    mockComponentReader = new MockComponentContextReader();
+    mockDependencyReader = new MockDependencyContextReader();
+    mockDecisionReader = new MockDecisionContextReader();
+    mockInvariantReader = new MockInvariantContextReader();
+    mockGuidelineReader = new MockGuidelineContextReader();
+    mockArchitectureReader = new MockArchitectureReader();
+    mockRelationReader = new MockRelationReader();
+    query = new GetGoalContextQueryHandler(
+      mockReader,
+      mockComponentReader,
+      mockDependencyReader,
+      mockDecisionReader,
+      mockInvariantReader,
+      mockGuidelineReader,
+      mockArchitectureReader,
+      mockRelationReader
+    );
   });
 
   describe("execute", () => {
@@ -128,7 +205,7 @@ describe("GetGoalContextQueryHandler", () => {
       expect(context.goal.boundaries).toHaveLength(2);
     });
 
-    it("should return empty arrays for Phase 1 implementation", async () => {
+    it("should return empty arrays when readers have no data", async () => {
       // Arrange
       const goal: GoalView = {
         goalId: "goal_456",
@@ -149,7 +226,7 @@ describe("GetGoalContextQueryHandler", () => {
       // Act
       const context = await query.execute("goal_456");
 
-      // Assert - Phase 1 returns empty arrays for other categories
+      // Assert
       expect(context.components).toEqual([]);
       expect(context.dependencies).toEqual([]);
       expect(context.decisions).toEqual([]);
@@ -193,12 +270,11 @@ describe("GetGoalContextQueryHandler", () => {
     });
   });
 
-  describe("embedded context - invariants", () => {
-    it("should use embedded invariants when present", async () => {
-      // Arrange - goal created with --interactive has embedded invariants
+  describe("context reader behavior", () => {
+    it("should query invariants from reader", async () => {
       const goal: GoalView = {
-        goalId: "goal_embedded_inv",
-        objective: "Test embedded invariants",
+        goalId: "goal_inv",
+        objective: "Test invariants",
         successCriteria: ["Test"],
         scopeIn: [],
         scopeOut: [],
@@ -207,245 +283,6 @@ describe("GetGoalContextQueryHandler", () => {
         version: 1,
         createdAt: "2025-01-01T00:00:00Z",
         updatedAt: "2025-01-01T00:00:00Z",
-        relevantInvariants: [
-          { title: "Single Responsibility", description: "One class, one reason to change" },
-          { title: "No Junk Drawers", description: "No utils/ or helpers/ folders" },
-        ],
-        progress: [],
-      };
-
-      mockReader.addGoal(goal);
-
-      // Act
-      const context = await query.execute("goal_embedded_inv");
-
-      // Assert - embedded invariants are mapped to InvariantContextView format
-      expect(context.invariants).toHaveLength(2);
-      expect(context.invariants[0].category).toBe("Single Responsibility");
-      expect(context.invariants[0].description).toBe("One class, one reason to change");
-      expect(context.invariants[1].category).toBe("No Junk Drawers");
-    });
-
-    it("should map embedded invariants with synthetic IDs", async () => {
-      const goal: GoalView = {
-        goalId: "goal_inv_ids",
-        objective: "Test ID generation",
-        successCriteria: ["Test"],
-        scopeIn: [],
-        scopeOut: [],
-        boundaries: [],
-        status: "doing",
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-        relevantInvariants: [
-          { title: "Rule 1", description: "Description 1" },
-        ],
-        progress: [],
-      };
-
-      mockReader.addGoal(goal);
-      const context = await query.execute("goal_inv_ids");
-
-      expect(context.invariants[0].invariantId).toBe("embedded_inv_0");
-    });
-  });
-
-  describe("embedded context - guidelines", () => {
-    it("should use embedded guidelines when present", async () => {
-      const goal: GoalView = {
-        goalId: "goal_embedded_guide",
-        objective: "Test embedded guidelines",
-        successCriteria: ["Test"],
-        scopeIn: [],
-        scopeOut: [],
-        boundaries: [],
-        status: "doing",
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-        relevantGuidelines: [
-          { title: "Coding Style", description: "Use descriptive variable names" },
-          { title: "Testing", description: "All business rules must be unit tested" },
-        ],
-        progress: [],
-      };
-
-      mockReader.addGoal(goal);
-      const context = await query.execute("goal_embedded_guide");
-
-      expect(context.guidelines).toHaveLength(2);
-      expect(context.guidelines[0].category).toBe("Coding Style");
-      expect(context.guidelines[0].description).toBe("Use descriptive variable names");
-      expect(context.guidelines[1].category).toBe("Testing");
-    });
-
-    it("should map embedded guidelines with synthetic IDs", async () => {
-      const goal: GoalView = {
-        goalId: "goal_guide_ids",
-        objective: "Test ID generation",
-        successCriteria: ["Test"],
-        scopeIn: [],
-        scopeOut: [],
-        boundaries: [],
-        status: "doing",
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-        relevantGuidelines: [
-          { title: "Guide 1", description: "Description 1" },
-        ],
-        progress: [],
-      };
-
-      mockReader.addGoal(goal);
-      const context = await query.execute("goal_guide_ids");
-
-      expect(context.guidelines[0].guidelineId).toBe("embedded_guide_0");
-    });
-  });
-
-  describe("embedded context - components", () => {
-    it("should use embedded components when present", async () => {
-      const goal: GoalView = {
-        goalId: "goal_embedded_comp",
-        objective: "Test embedded components",
-        successCriteria: ["Test"],
-        scopeIn: [],
-        scopeOut: [],
-        boundaries: [],
-        status: "doing",
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-        relevantComponents: [
-          { name: "GoalAggregate", responsibility: "Manages goal lifecycle" },
-          { name: "EventStore", responsibility: "Persists domain events" },
-        ],
-        progress: [],
-      };
-
-      mockReader.addGoal(goal);
-      const context = await query.execute("goal_embedded_comp");
-
-      expect(context.components).toHaveLength(2);
-      expect(context.components[0].name).toBe("GoalAggregate");
-      expect(context.components[0].description).toBe("Manages goal lifecycle");
-      expect(context.components[0].status).toBe("active");
-      expect(context.components[1].name).toBe("EventStore");
-    });
-
-    it("should map embedded components with synthetic IDs", async () => {
-      const goal: GoalView = {
-        goalId: "goal_comp_ids",
-        objective: "Test ID generation",
-        successCriteria: ["Test"],
-        scopeIn: [],
-        scopeOut: [],
-        boundaries: [],
-        status: "doing",
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-        relevantComponents: [
-          { name: "Component1", responsibility: "Does something" },
-        ],
-        progress: [],
-      };
-
-      mockReader.addGoal(goal);
-      const context = await query.execute("goal_comp_ids");
-
-      expect(context.components[0].componentId).toBe("embedded_comp_0");
-    });
-  });
-
-  describe("embedded context - dependencies", () => {
-    it("should use embedded dependencies when present", async () => {
-      const goal: GoalView = {
-        goalId: "goal_embedded_dep",
-        objective: "Test embedded dependencies",
-        successCriteria: ["Test"],
-        scopeIn: [],
-        scopeOut: [],
-        boundaries: [],
-        status: "doing",
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-        relevantDependencies: [
-          { consumer: "GoalAggregate", provider: "EventStore" },
-          { consumer: "QueryHandler", provider: "ProjectionStore" },
-        ],
-        progress: [],
-      };
-
-      mockReader.addGoal(goal);
-      const context = await query.execute("goal_embedded_dep");
-
-      expect(context.dependencies).toHaveLength(2);
-      expect(context.dependencies[0].name).toBe("GoalAggregate → EventStore");
-      expect(context.dependencies[0].purpose).toBe("Architectural dependency");
-      expect(context.dependencies[1].name).toBe("QueryHandler → ProjectionStore");
-    });
-
-    it("should map embedded dependencies with synthetic IDs", async () => {
-      const goal: GoalView = {
-        goalId: "goal_dep_ids",
-        objective: "Test ID generation",
-        successCriteria: ["Test"],
-        scopeIn: [],
-        scopeOut: [],
-        boundaries: [],
-        status: "doing",
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-        relevantDependencies: [
-          { consumer: "A", provider: "B" },
-        ],
-        progress: [],
-      };
-
-      mockReader.addGoal(goal);
-      const context = await query.execute("goal_dep_ids");
-
-      expect(context.dependencies[0].dependencyId).toBe("embedded_dep_0");
-    });
-  });
-
-  describe("fallback behavior - legacy goals", () => {
-    let mockInvariantReader: MockInvariantContextReader;
-    let mockGuidelineReader: MockGuidelineContextReader;
-    let queryWithReaders: GetGoalContextQueryHandler;
-
-    beforeEach(() => {
-      mockInvariantReader = new MockInvariantContextReader();
-      mockGuidelineReader = new MockGuidelineContextReader();
-      queryWithReaders = new GetGoalContextQueryHandler(
-        mockReader,
-        undefined, // componentReader
-        undefined, // dependencyReader
-        undefined, // decisionReader
-        mockInvariantReader,
-        mockGuidelineReader
-      );
-    });
-
-    it("should query invariants from reader when no embedded invariants", async () => {
-      // Arrange - legacy goal without embedded context
-      const goal: GoalView = {
-        goalId: "goal_legacy_inv",
-        objective: "Legacy goal",
-        successCriteria: ["Test"],
-        scopeIn: [],
-        scopeOut: [],
-        boundaries: [],
-        status: "doing",
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-        // No relevantInvariants field
         progress: [],
       };
 
@@ -463,19 +300,17 @@ describe("GetGoalContextQueryHandler", () => {
         },
       ]);
 
-      // Act
-      const context = await queryWithReaders.execute("goal_legacy_inv");
+      const context = await query.execute("goal_inv");
 
-      // Assert - should use queried invariants
       expect(context.invariants).toHaveLength(1);
       expect(context.invariants[0].invariantId).toBe("inv_123");
       expect(context.invariants[0].category).toBe("DB Invariant");
     });
 
-    it("should query guidelines from reader when no embedded guidelines", async () => {
+    it("should query guidelines from reader", async () => {
       const goal: GoalView = {
-        goalId: "goal_legacy_guide",
-        objective: "Legacy goal",
+        goalId: "goal_guide",
+        objective: "Test guidelines",
         successCriteria: ["Test"],
         scopeIn: [],
         scopeOut: [],
@@ -484,7 +319,6 @@ describe("GetGoalContextQueryHandler", () => {
         version: 1,
         createdAt: "2025-01-01T00:00:00Z",
         updatedAt: "2025-01-01T00:00:00Z",
-        // No relevantGuidelines field
         progress: [],
       };
 
@@ -507,51 +341,11 @@ describe("GetGoalContextQueryHandler", () => {
         },
       ]);
 
-      const context = await queryWithReaders.execute("goal_legacy_guide");
+      const context = await query.execute("goal_guide");
 
       expect(context.guidelines).toHaveLength(1);
       expect(context.guidelines[0].guidelineId).toBe("guide_123");
       expect(context.guidelines[0].category).toBe("codingStyle");
-    });
-
-    it("should prefer embedded over queried when embedded exists", async () => {
-      const goal: GoalView = {
-        goalId: "goal_prefer_embedded",
-        objective: "Goal with both",
-        successCriteria: ["Test"],
-        scopeIn: [],
-        scopeOut: [],
-        boundaries: [],
-        status: "doing",
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-        relevantInvariants: [
-          { title: "Embedded Rule", description: "From goal creation" },
-        ],
-        progress: [],
-      };
-
-      mockReader.addGoal(goal);
-      mockInvariantReader.setInvariants([
-        {
-          invariantId: "inv_db",
-          title: "DB Rule",
-          description: "From database",
-          rationale: null,
-          enforcement: "automatic",
-          version: 1,
-          createdAt: "2025-01-01T00:00:00Z",
-          updatedAt: "2025-01-01T00:00:00Z",
-        },
-      ]);
-
-      const context = await queryWithReaders.execute("goal_prefer_embedded");
-
-      // Should use embedded, not queried
-      expect(context.invariants).toHaveLength(1);
-      expect(context.invariants[0].category).toBe("Embedded Rule");
-      expect(context.invariants[0].invariantId).toBe("embedded_inv_0");
     });
 
     it("should filter out removed guidelines when querying", async () => {
@@ -603,16 +397,17 @@ describe("GetGoalContextQueryHandler", () => {
         },
       ]);
 
-      const context = await queryWithReaders.execute("goal_filter_removed");
+      const context = await query.execute("goal_filter_removed");
 
       expect(context.guidelines).toHaveLength(1);
       expect(context.guidelines[0].guidelineId).toBe("guide_active");
     });
 
-    it("should treat empty embedded array as no embedded context", async () => {
+    it("should use readers even when goal has embedded context fields", async () => {
+      // Arrange - goal has embedded fields, but handler should ignore them
       const goal: GoalView = {
-        goalId: "goal_empty_embedded",
-        objective: "Empty embedded arrays",
+        goalId: "goal_embedded_ignored",
+        objective: "Goal with embedded context",
         successCriteria: ["Test"],
         scopeIn: [],
         scopeOut: [],
@@ -621,16 +416,35 @@ describe("GetGoalContextQueryHandler", () => {
         version: 1,
         createdAt: "2025-01-01T00:00:00Z",
         updatedAt: "2025-01-01T00:00:00Z",
-        relevantInvariants: [], // Empty array should trigger fallback
+        relevantInvariants: [
+          { title: "Embedded Rule", description: "Should be ignored" },
+        ],
+        relevantGuidelines: [
+          { title: "Embedded Guideline", description: "Should be ignored" },
+        ],
+        relevantComponents: [
+          { name: "EmbeddedComponent", responsibility: "Should be ignored" },
+        ],
+        relevantDependencies: [
+          { consumer: "A", provider: "B" },
+        ],
+        architecture: {
+          description: "Embedded arch",
+          organization: "Embedded org",
+          patterns: ["embedded-pattern"],
+          principles: ["embedded-principle"],
+        },
         progress: [],
       };
 
       mockReader.addGoal(goal);
+
+      // Set up reader data
       mockInvariantReader.setInvariants([
         {
-          invariantId: "inv_fallback",
-          title: "Fallback Rule",
-          description: "Should be used",
+          invariantId: "inv_from_reader",
+          title: "Reader Invariant",
+          description: "From reader",
           rationale: null,
           enforcement: "automatic",
           version: 1,
@@ -638,27 +452,42 @@ describe("GetGoalContextQueryHandler", () => {
           updatedAt: "2025-01-01T00:00:00Z",
         },
       ]);
+      mockGuidelineReader.setGuidelines([
+        {
+          guidelineId: "guide_from_reader",
+          category: "codingStyle",
+          title: "Reader Guideline",
+          description: "From reader",
+          rationale: "",
+          enforcement: "manual",
+          examples: [],
+          isRemoved: false,
+          removedAt: null,
+          removalReason: null,
+          version: 1,
+          createdAt: "2025-01-01T00:00:00Z",
+          updatedAt: "2025-01-01T00:00:00Z",
+        },
+      ]);
 
-      const context = await queryWithReaders.execute("goal_empty_embedded");
+      // Act
+      const context = await query.execute("goal_embedded_ignored");
 
-      // Empty array should trigger fallback to queried invariants
+      // Assert - should use reader data, not embedded fields
       expect(context.invariants).toHaveLength(1);
-      expect(context.invariants[0].category).toBe("Fallback Rule");
+      expect(context.invariants[0].invariantId).toBe("inv_from_reader");
+      expect(context.invariants[0].category).toBe("Reader Invariant");
+
+      expect(context.guidelines).toHaveLength(1);
+      expect(context.guidelines[0].guidelineId).toBe("guide_from_reader");
+      expect(context.guidelines[0].category).toBe("codingStyle");
+
+      // Components come from reader (empty), not embedded
+      expect(context.components).toEqual([]);
     });
   });
 
   describe("component filtering by scope", () => {
-    let mockComponentReader: MockComponentContextReader;
-    let queryWithComponents: GetGoalContextQueryHandler;
-
-    beforeEach(() => {
-      mockComponentReader = new MockComponentContextReader();
-      queryWithComponents = new GetGoalContextQueryHandler(
-        mockReader,
-        mockComponentReader
-      );
-    });
-
     it("should filter components by scopeIn", async () => {
       const goal: GoalView = {
         goalId: "goal_scope_filter",
@@ -704,7 +533,7 @@ describe("GetGoalContextQueryHandler", () => {
         },
       ]);
 
-      const context = await queryWithComponents.execute("goal_scope_filter");
+      const context = await query.execute("goal_scope_filter");
 
       expect(context.components).toHaveLength(1);
       expect(context.components[0].name).toBe("GoalAggregate");
@@ -755,7 +584,7 @@ describe("GetGoalContextQueryHandler", () => {
         },
       ]);
 
-      const context = await queryWithComponents.execute("goal_scope_out");
+      const context = await query.execute("goal_scope_out");
 
       expect(context.components).toHaveLength(1);
       expect(context.components[0].name).toBe("GoalAggregate");
@@ -806,7 +635,7 @@ describe("GetGoalContextQueryHandler", () => {
         },
       ]);
 
-      const context = await queryWithComponents.execute("goal_active_only");
+      const context = await query.execute("goal_active_only");
 
       expect(context.components).toHaveLength(1);
       expect(context.components[0].name).toBe("ActiveComponent");
