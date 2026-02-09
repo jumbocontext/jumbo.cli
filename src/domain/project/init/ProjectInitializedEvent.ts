@@ -6,9 +6,10 @@
  */
 
 import { BaseEvent } from "../../BaseEvent.js";
+import { ProjectEventType } from "../Constants.js";
 
 export interface ProjectInitializedEvent extends BaseEvent {
-  readonly type: "ProjectInitializedEvent";
+  readonly type: typeof ProjectEventType.INITIALIZED;
   readonly payload: {
     readonly name: string;
     readonly purpose: string | null;
