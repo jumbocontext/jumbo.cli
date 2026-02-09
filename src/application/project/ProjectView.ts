@@ -11,7 +11,6 @@ export interface ProjectView {
   projectId: UUID;
   name: string;
   purpose: string | null;
-  boundaries: string[];
   version: number; // For event sourcing
   createdAt: ISO8601; // From first event timestamp
   updatedAt: ISO8601; // From latest event timestamp

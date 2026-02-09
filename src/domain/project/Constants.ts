@@ -20,16 +20,12 @@ export const ProjectErrorMessages = {
   NAME_REQUIRED: "Project name must be provided",
   NAME_TOO_LONG: "Project name must be less than {max} characters",
   PURPOSE_TOO_LONG: "Purpose must be less than {max} characters",
-  BOUNDARY_TOO_LONG: "Boundary item must be less than {max} characters",
-  TOO_MANY_BOUNDARIES: "Cannot have more than {max} boundaries",
 } as const;
 
 // Numeric limits
 export const ProjectLimits = {
   NAME_MAX_LENGTH: 100,
   PURPOSE_MAX_LENGTH: 1000,
-  BOUNDARY_MAX_LENGTH: 200,
-  MAX_BOUNDARIES: 20,
 } as const;
 
 /**

@@ -7,5 +7,4 @@
 
 export interface UpdateProjectCommand {
   readonly purpose?: string | null;
-  readonly boundaries?: string[];
 }

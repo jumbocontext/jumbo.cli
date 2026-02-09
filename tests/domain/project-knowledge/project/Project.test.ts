@@ -20,7 +20,6 @@ describe("Project Aggregate", () => {
       expect(event.version).toBe(1);
       expect(event.payload.name).toBe("My Project");
       expect(event.payload.purpose).toBeNull();
-      expect(event.payload.boundaries).toEqual([]);
       expect(event.timestamp).toBeDefined();
     });
 
@@ -32,16 +31,11 @@ describe("Project Aggregate", () => {
       const event = project.initialize(
         "My Project",
         "Context management for LLM coding agents",
-        ["Does not replace git", "Does not execute code"]
       );
 
       // Assert
       expect(event.payload.name).toBe("My Project");
       expect(event.payload.purpose).toBe("Context management for LLM coding agents");
-      expect(event.payload.boundaries).toEqual([
-        "Does not replace git",
-        "Does not execute code",
-      ]);
     });
 
     it("should throw error if project is already initialized", () => {
@@ -87,42 +81,17 @@ describe("Project Aggregate", () => {
       ).toThrow("Purpose must be less than 1000 characters");
     });
 
-    it("should throw error if too many boundaries", () => {
-      // Arrange
-      const project = Project.create("project");
-      const tooManyBoundaries = Array.from({ length: 21 }, (_, i) => `Boundary ${i}`);
-
-      // Act & Assert
-      expect(() =>
-        project.initialize("My Project", undefined, tooManyBoundaries)
-      ).toThrow("Cannot have more than 20 boundaries");
-    });
-
-    it("should throw error if boundary item is too long", () => {
-      // Arrange
-      const project = Project.create("project");
-      const longBoundary = "a".repeat(201); // Max is 200
-
-      // Act & Assert
-      expect(() =>
-        project.initialize("My Project", undefined, [longBoundary])
-      ).toThrow("Boundary item must be less than 200 characters");
-    });
-
     it("should update aggregate state after event creation", () => {
       // Arrange
       const project = Project.create("project");
 
       // Act
-      project.initialize("My Project", "Amazing purpose", [
-        "Boundary 1",
-      ]);
+      project.initialize("My Project", "Amazing purpose");
 
       // Assert
       const snapshot = project.snapshot;
       expect(snapshot.name).toBe("My Project");
       expect(snapshot.purpose).toBe("Amazing purpose");
-      expect(snapshot.boundaries).toEqual(["Boundary 1"]);
       expect(snapshot.version).toBe(1);
     });
   });
@@ -193,35 +162,6 @@ describe("Project Aggregate", () => {
       expect(event!.aggregateId).toBe("project");
       expect(event!.version).toBe(2);
       expect(event!.payload.purpose).toBe("New purpose");
-      expect(event!.payload.boundaries).toBeUndefined();
-    });
-
-    it("should create ProjectUpdated event with only changed boundaries", () => {
-      // Arrange
-      const project = Project.create("project");
-      project.initialize("My Project", "Original purpose", ["Old boundary"]);
-
-      // Act
-      const event = project.update(undefined, ["New boundary 1", "New boundary 2"]);
-
-      // Assert
-      expect(event).not.toBeNull();
-      expect(event!.payload.purpose).toBeUndefined();
-      expect(event!.payload.boundaries).toEqual(["New boundary 1", "New boundary 2"]);
-    });
-
-    it("should create ProjectUpdated event with multiple changed fields", () => {
-      // Arrange
-      const project = Project.create("project");
-      project.initialize("My Project", "Original purpose");
-
-      // Act
-      const event = project.update("New purpose", ["Boundary 1"]);
-
-      // Assert
-      expect(event).not.toBeNull();
-      expect(event!.payload.purpose).toBe("New purpose");
-      expect(event!.payload.boundaries).toEqual(["Boundary 1"]);
     });
 
     it("should allow setting purpose to null", () => {
@@ -246,18 +186,6 @@ describe("Project Aggregate", () => {
       // Act & Assert
       expect(() => project.update(longPurpose)).toThrow(
         "Purpose must be less than 1000 characters"
-      );
-    });
-
-    it("should throw error if too many boundaries", () => {
-      // Arrange
-      const project = Project.create("project");
-      project.initialize("My Project");
-      const tooManyBoundaries = Array.from({ length: 21 }, (_, i) => `Boundary ${i}`);
-
-      // Act & Assert
-      expect(() => project.update(undefined, tooManyBoundaries)).toThrow(
-        "Cannot have more than 20 boundaries"
       );
     });
 

@@ -2,7 +2,7 @@
  * Project Aggregate
  *
  * Domain aggregate representing the project being managed by Jumbo.
- * Captures the core project knowledge: name, purpose, and boundaries.
+ * Captures the core project knowledge: name and purpose.
  */
 
 import {
@@ -15,7 +15,6 @@ import { ProjectEvent, ProjectInitializedEvent, ProjectUpdatedEvent } from "./Ev
 import { ProjectEventType, ProjectErrorMessages } from "./Constants.js";
 import { NAME_RULES } from "./rules/NameRules.js";
 import { PURPOSE_RULES } from "./rules/PurposeRules.js";
-import { BOUNDARY_RULES } from "./rules/BoundaryRules.js";
 
 /**
  * Domain state: business properties + aggregate metadata
@@ -24,7 +23,6 @@ export interface ProjectState extends AggregateState {
   id: UUID; // Aggregate identity
   name: string; // Required: project name
   purpose: string | null; // Optional: high-level what
-  boundaries: string[]; // Optional: what's out of scope
   version: number; // Aggregate version for event sourcing
 }
 
@@ -43,14 +41,12 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
         const e = event as ProjectInitializedEvent;
         state.name = e.payload.name;
         state.purpose = e.payload.purpose;
-        state.boundaries = e.payload.boundaries;
         state.version = e.version;
         break;
       }
       case ProjectEventType.UPDATED: {
         const e = event as ProjectUpdatedEvent;
         if (e.payload.purpose !== undefined) state.purpose = e.payload.purpose;
-        if (e.payload.boundaries !== undefined) state.boundaries = e.payload.boundaries;
         state.version = e.version;
         break;
       }
@@ -66,7 +62,6 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
       id,
       name: "",
       purpose: null,
-      boundaries: [],
       version: 0,
     };
     return new Project(state);
@@ -81,7 +76,6 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
       id,
       name: "",
       purpose: null,
-      boundaries: [],
       version: 0,
     };
 
@@ -98,14 +92,12 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
    *
    * @param name - Project name (required)
    * @param purpose - High-level project purpose (optional)
-   * @param boundaries - What's out of scope (optional)
    * @returns ProjectInitialized event
    * @throws Error if project is already initialized or validation fails
    */
   initialize(
     name: string,
     purpose?: string,
-    boundaries?: string[]
   ): ProjectInitializedEvent {
     // State validation - can't initialize twice
     if (this.state.version > 0) {
@@ -115,7 +107,6 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
     // Input validation using rule pattern
     ValidationRuleSet.ensure(name, NAME_RULES);
     if (purpose) ValidationRuleSet.ensure(purpose, PURPOSE_RULES);
-    if (boundaries) ValidationRuleSet.ensure(boundaries, BOUNDARY_RULES);
 
     // Use BaseAggregate.makeEvent (no need to reimplement!)
     return this.makeEvent<ProjectInitializedEvent>(
@@ -123,7 +114,6 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
       {
         name,
         purpose: purpose || null,
-        boundaries: boundaries || [],
       },
       Project.apply // Pass projection's apply function
     );
@@ -135,13 +125,11 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
    * Name cannot be updated after initialization (immutable).
    *
    * @param purpose - Updated project purpose (optional)
-   * @param boundaries - Updated project boundaries (optional)
    * @returns ProjectUpdated event or null if no changes
    * @throws Error if project is not initialized or validation fails
    */
   update(
     purpose?: string | null,
-    boundaries?: string[]
   ): ProjectUpdatedEvent | null {
     // State validation - must be initialized
     if (this.state.version === 0) {
@@ -152,21 +140,14 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
     if (purpose !== undefined && purpose !== null) {
       ValidationRuleSet.ensure(purpose, PURPOSE_RULES);
     }
-    if (boundaries !== undefined) {
-      ValidationRuleSet.ensure(boundaries, BOUNDARY_RULES);
-    }
 
     // Check if anything actually changed
     const changes: {
       purpose?: string | null;
-      boundaries?: string[];
     } = {};
 
     if (purpose !== undefined && purpose !== this.state.purpose) {
       changes.purpose = purpose;
-    }
-    if (boundaries !== undefined && JSON.stringify(boundaries) !== JSON.stringify(this.state.boundaries)) {
-      changes.boundaries = boundaries;
     }
 
     // No changes? Return null (idempotent)

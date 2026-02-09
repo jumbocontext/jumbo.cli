@@ -21,7 +21,6 @@ export class SqliteProjectContextReader implements IProjectContextReader {
       projectId: row.projectId as string,
       name: row.name as string,
       purpose: (row.purpose as string) ?? null,
-      boundaries: JSON.parse((row.boundaries as string) || "[]"),
       version: row.version as number,
       createdAt: row.createdAt as string,
       updatedAt: row.updatedAt as string,

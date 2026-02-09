@@ -19,11 +19,6 @@ export class SqliteProjectUpdatedProjector implements IProjectUpdatedProjector, 
       updates.push("purpose = ?");
       params.push(event.payload.purpose);
     }
-    if (event.payload.boundaries !== undefined) {
-      updates.push("boundaries = ?");
-      params.push(JSON.stringify(event.payload.boundaries));
-    }
-
     updates.push("version = ?", "updatedAt = ?");
     params.push(event.version, event.timestamp);
     params.push(event.aggregateId);
@@ -49,7 +44,6 @@ export class SqliteProjectUpdatedProjector implements IProjectUpdatedProjector, 
       projectId: row.projectId as string,
       name: row.name as string,
       purpose: (row.purpose as string) ?? null,
-      boundaries: JSON.parse((row.boundaries as string) || "[]"),
       version: row.version as number,
       createdAt: row.createdAt as string,
       updatedAt: row.updatedAt as string,

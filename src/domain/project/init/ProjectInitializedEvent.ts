@@ -12,6 +12,5 @@ export interface ProjectInitializedEvent extends BaseEvent {
   readonly payload: {
     readonly name: string;
     readonly purpose: string | null;
-    readonly boundaries: string[];
   };
 }

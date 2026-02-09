@@ -63,7 +63,6 @@ describe("InitializeProjectCommandHandler", () => {
         projectId: "project",
         name: "Existing Project",
         purpose: "Already set",
-        boundaries: [],
         version: 1,
         createdAt: "2025-01-01T00:00:00.000Z",
         updatedAt: "2025-01-01T00:00:00.000Z",
@@ -74,7 +73,6 @@ describe("InitializeProjectCommandHandler", () => {
       const command: InitializeProjectCommand = {
         name: "New Project",
         purpose: "New purpose",
-        boundaries: ["out of scope"],
       };
 
       await expect(handler.execute(command, "/repo")).rejects.toThrow(
@@ -93,7 +91,6 @@ describe("InitializeProjectCommandHandler", () => {
       const command: InitializeProjectCommand = {
         name: "Jumbo",
         purpose: "LLM context management",
-        boundaries: ["mobile app"],
       };
 
       const result = await handler.execute(command, "/repo");
@@ -107,7 +104,6 @@ describe("InitializeProjectCommandHandler", () => {
       expect(appendedEvent.version).toBe(1);
       expect(appendedEvent.payload.name).toBe(command.name);
       expect(appendedEvent.payload.purpose).toBe(command.purpose);
-      expect(appendedEvent.payload.boundaries).toEqual(command.boundaries);
 
       expect(eventBus.publish).toHaveBeenCalledWith(appendedEvent);
       expect(agentFileProtocol.ensureAgentsMd).toHaveBeenCalledWith("/repo");

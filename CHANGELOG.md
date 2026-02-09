@@ -60,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **Project boundaries**: Removed `boundaries` field from the Project domain model, commands, views, and CLI options. The `--boundary` flag has been removed from `jumbo project init` and `jumbo project update`. Existing databases will have the column dropped via migration.
+
 - **QA mode from goal complete**: The `--commit` flag and interactive QA logic have been removed from `jumbo goal complete`. Use the new `jumbo goal review` and `jumbo goal qualify` commands instead for quality assurance.
 
 - **Deprecated events**: Removed `GoalReviewedEvent` and `ReviewTurnTracker` which have been superseded by the new review workflow events

@@ -41,7 +41,6 @@ export class UpdateProjectCommandHandler {
     // 3. Domain logic produces event (or null if no changes)
     const event = project.update(
       command.purpose,
-      command.boundaries
     );
 
     // 4. If no changes, return early (idempotent)

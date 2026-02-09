@@ -80,10 +80,6 @@ export const metadata: CommandMetadata = {
       description: "High-level project purpose"
     },
     {
-      flags: "--boundary <boundary...>",
-      description: "What's out of scope (can specify multiple)"
-    },
-    {
       flags: "--non-interactive",
       description: "Skip interactive prompts, use command line options only"
     },
@@ -116,7 +112,6 @@ export const metadata: CommandMetadata = {
 interface ProjectInitOptions {
   name: string;
   purpose?: string;
-  boundaries?: string[];
 }
 
 /**
@@ -152,26 +147,11 @@ async function promptForProjectDetails(): Promise<ProjectInitOptions> {
         return true;
       },
     },
-    {
-      type: "input",
-      name: "boundariesInput",
-      message: "Boundaries (optional):",
-      suffix: "\n  What's explicitly out of scope? Comma-separated list (e.g., 'mobile app, billing integration')\n>",
-    },
   ]);
-
-  // Parse boundaries from comma-separated input
-  const boundaries = answers.boundariesInput
-    ? answers.boundariesInput
-        .split(",")
-        .map((b: string) => b.trim())
-        .filter((b: string) => b.length > 0)
-    : undefined;
 
   return {
     name: answers.name.trim(),
     purpose: answers.purpose?.trim() || undefined,
-    boundaries: boundaries?.length ? boundaries : undefined,
   };
 }
 
@@ -182,7 +162,6 @@ export async function projectInit(
   options: {
     name?: string;
     purpose?: string;
-    boundary?: string[];
     nonInteractive?: boolean;
     yolo?: boolean;
   },
@@ -199,8 +178,6 @@ export async function projectInit(
     renderer.banner(getBannerLines());
   }
 
-  // FOR REMOVAL
-
   // Determine project details based on mode
   let projectDetails: ProjectInitOptions;
 
@@ -213,7 +190,6 @@ export async function projectInit(
     projectDetails = {
       name: options.name,
       purpose: options.purpose,
-      boundaries: options.boundary,
     };
   } else {
     // Interactive mode (default): prompt for all fields
@@ -242,7 +218,6 @@ export async function projectInit(
   const command: InitializeProjectCommand = {
     name: projectDetails.name,
     purpose: projectDetails.purpose,
-    boundaries: projectDetails.boundaries,
   };
 
   const result = await container.initializationProtocol.execute(command, projectRoot);

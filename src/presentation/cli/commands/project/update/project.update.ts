@@ -1,7 +1,7 @@
 /**
  * CLI Command: jumbo project update
  *
- * Updates project metadata (purpose, boundaries).
+ * Updates project metadata (purpose).
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
@@ -19,20 +19,12 @@ export const metadata: CommandMetadata = {
     {
       flags: "--purpose <purpose>",
       description: "Updated project purpose"
-    },
-    {
-      flags: "--boundary <boundary...>",
-      description: "Updated project boundaries"
     }
   ],
   examples: [
     {
       command: "jumbo project update --purpose 'Updated purpose'",
       description: "Update project purpose"
-    },
-    {
-      command: "jumbo project update --purpose 'Updated purpose' --boundary 'Does not replace git'",
-      description: "Update multiple fields"
     }
   ],
   related: ["project init"]
@@ -44,7 +36,6 @@ export const metadata: CommandMetadata = {
  */
 export async function projectUpdate(options: {
   purpose?: string | null;
-  boundary?: string[];
 }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
 
@@ -59,11 +50,10 @@ export async function projectUpdate(options: {
     // 2. Build command (convert CLI options)
     const command: any = {};
     if (options.purpose !== undefined) command.purpose = options.purpose;
-    if (options.boundary !== undefined) command.boundaries = options.boundary;
 
     // Check if any fields provided
     if (Object.keys(command).length === 0) {
-      renderer.error("No fields provided. Specify --purpose or --boundary");
+      renderer.error("No fields provided. Specify --purpose");
       process.exit(1);
     }
 

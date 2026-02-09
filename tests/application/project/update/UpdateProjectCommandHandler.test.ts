@@ -59,7 +59,6 @@ describe("UpdateProjectCommandHandler", () => {
         projectId: "project",
         name: "My Project",
         purpose: "Original purpose",
-        boundaries: [],
         version: 1,
         createdAt: "2025-01-01T00:00:00.000Z",
         updatedAt: "2025-01-01T00:00:00.000Z",
@@ -73,8 +72,7 @@ describe("UpdateProjectCommandHandler", () => {
         payload: {
           name: "My Project",
           purpose: "Original purpose",
-          boundaries: [],
-        },
+          },
       };
 
       mockReader.getProject.mockResolvedValue(existingView);
@@ -98,56 +96,10 @@ describe("UpdateProjectCommandHandler", () => {
       expect(appendedEvent.aggregateId).toBe("project");
       expect(appendedEvent.version).toBe(2);
       expect(appendedEvent.payload.purpose).toBe("New purpose");
-      expect(appendedEvent.payload.boundaries).toBeUndefined();
 
       // Verify event was published to event bus
       expect(mockEventBus.publish).toHaveBeenCalledTimes(1);
       expect(mockEventBus.publish).toHaveBeenCalledWith(appendedEvent);
-    });
-
-    it("should update multiple fields", async () => {
-      // Arrange
-      const existingView: ProjectView = {
-        projectId: "project",
-        name: "My Project",
-        purpose: "Original purpose",
-        boundaries: [],
-        version: 1,
-        createdAt: "2025-01-01T00:00:00.000Z",
-        updatedAt: "2025-01-01T00:00:00.000Z",
-      };
-
-      const initEvent: ProjectEvent = {
-        type: ProjectEventType.INITIALIZED,
-        aggregateId: "project",
-        version: 1,
-        timestamp: "2025-01-01T00:00:00.000Z",
-        payload: {
-          name: "My Project",
-          purpose: "Original purpose",
-          boundaries: [],
-        },
-      };
-
-      mockReader.getProject.mockResolvedValue(existingView);
-      mockEventWriter.readStream.mockResolvedValue([initEvent]);
-
-      const command: UpdateProjectCommand = {
-        purpose: "New purpose",
-        boundaries: ["Boundary 1", "Boundary 2"],
-      };
-
-      // Act
-      const result = await handler.execute(command);
-
-      // Assert
-      expect(result.updated).toBe(true);
-      expect(result.changedFields).toContain("purpose");
-      expect(result.changedFields).toContain("boundaries");
-
-      const appendedEvent = mockEventWriter.append.mock.calls[0][0] as ProjectUpdatedEvent;
-      expect(appendedEvent.payload.purpose).toBe("New purpose");
-      expect(appendedEvent.payload.boundaries).toEqual(["Boundary 1", "Boundary 2"]);
     });
 
     it("should return false if no changes detected (idempotent)", async () => {
@@ -156,7 +108,6 @@ describe("UpdateProjectCommandHandler", () => {
         projectId: "project",
         name: "My Project",
         purpose: "Original purpose",
-        boundaries: [],
         version: 1,
         createdAt: "2025-01-01T00:00:00.000Z",
         updatedAt: "2025-01-01T00:00:00.000Z",
@@ -170,8 +121,7 @@ describe("UpdateProjectCommandHandler", () => {
         payload: {
           name: "My Project",
           purpose: "Original purpose",
-          boundaries: [],
-        },
+          },
       };
 
       mockReader.getProject.mockResolvedValue(existingView);
@@ -197,7 +147,6 @@ describe("UpdateProjectCommandHandler", () => {
         projectId: "project",
         name: "My Project",
         purpose: "Original purpose",
-        boundaries: [],
         version: 1,
         createdAt: "2025-01-01T00:00:00.000Z",
         updatedAt: "2025-01-01T00:00:00.000Z",
@@ -211,8 +160,7 @@ describe("UpdateProjectCommandHandler", () => {
         payload: {
           name: "My Project",
           purpose: "Original purpose",
-          boundaries: [],
-        },
+          },
       };
 
       mockReader.getProject.mockResolvedValue(existingView);
@@ -236,7 +184,6 @@ describe("UpdateProjectCommandHandler", () => {
         projectId: "project",
         name: "My Project",
         purpose: "Updated purpose",
-        boundaries: [],
         version: 2,
         createdAt: "2025-01-01T00:00:00.000Z",
         updatedAt: "2025-01-02T00:00:00.000Z",
@@ -250,7 +197,6 @@ describe("UpdateProjectCommandHandler", () => {
         payload: {
           name: "My Project",
           purpose: "Original purpose",
-          boundaries: [],
         },
       };
 
@@ -268,7 +214,7 @@ describe("UpdateProjectCommandHandler", () => {
       mockEventWriter.readStream.mockResolvedValue([initEvent, firstUpdateEvent]);
 
       const command: UpdateProjectCommand = {
-        boundaries: ["New boundary"],
+        purpose: "Final purpose",
       };
 
       // Act
@@ -277,7 +223,7 @@ describe("UpdateProjectCommandHandler", () => {
       // Assert
       const appendedEvent = mockEventWriter.append.mock.calls[0][0] as ProjectUpdatedEvent;
       expect(appendedEvent.version).toBe(3); // Should be version 3 after two previous events
-      expect(appendedEvent.payload.boundaries).toEqual(["New boundary"]);
+      expect(appendedEvent.payload.purpose).toBe("Final purpose");
     });
   });
 });

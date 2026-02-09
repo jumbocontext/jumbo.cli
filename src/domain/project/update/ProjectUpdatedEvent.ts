@@ -10,6 +10,5 @@ export interface ProjectUpdatedEvent extends BaseEvent {
   readonly type: "ProjectUpdatedEvent";
   readonly payload: {
     readonly purpose?: string | null;
-    readonly boundaries?: string[];
   };
 }

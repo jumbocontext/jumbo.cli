@@ -47,7 +47,6 @@ export class InitializeProjectCommandHandler {
     const event = project.initialize(
       command.name,
       command.purpose,
-      command.boundaries
     );
 
     // 3. Persist event to file store
