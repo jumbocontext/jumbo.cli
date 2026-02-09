@@ -29,13 +29,9 @@ export class GoalContextRenderer {
   }
 
   /**
-   * Render goal context as
-   *
-   * Prefers embedded context when available (from --interactive goal creation).
-   * Falls back to queried context for legacy goals.
+   * Render goal context for LLM consumption.
    *
    * @param context - GoalContextView to render
-   * @returns YAML string with goal context
    */
   render(context: GoalContextView) {
 
@@ -102,13 +98,6 @@ export class GoalContextRenderer {
           renderer.info(`- ${item}`);
         });
         renderer.info("\n" + "INSTRUCTION: Your (the developer) work MUST NOT overlap these items.");
-      }
-
-      if(goal.boundaries && goal.boundaries.length > 0){
-        goal.boundaries.forEach((boundary) => {
-          renderer.info(`- ${boundary}`);
-        });
-        renderer.info("\n" + "INSTRUCTION: Your (the developer) work MUST NOT exceed the following boundaries for this goal:");
       }
     }
 
@@ -185,7 +174,6 @@ export class GoalContextRenderer {
     return (
       (Array.isArray(context.goal.scopeIn) && context.goal.scopeIn.length > 0) ||
       (Array.isArray(context.goal.scopeOut) && context.goal.scopeOut.length > 0) ||
-      (Array.isArray(context.goal.boundaries) && context.goal.boundaries.length > 0) ||
       (Array.isArray(context.goal.filesToBeCreated) && context.goal.filesToBeCreated.length > 0) ||
       (Array.isArray(context.goal.filesToBeChanged) && context.goal.filesToBeChanged.length > 0)
     );

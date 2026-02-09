@@ -232,11 +232,68 @@ describe("Goal Aggregate", () => {
     });
   });
 
-  describe("start()", () => {
-    it("should create GoalStartedEvent event when starting a to-do goal", () => {
+  describe("refine()", () => {
+    it("should create GoalRefinedEvent event when refining a to-do goal", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+
+      // Act
+      const event = goal.refine();
+
+      // Assert
+      expect(event.type).toBe(GoalEventType.REFINED);
+      expect(event.aggregateId).toBe("goal_123");
+      expect(event.version).toBe(2);
+      expect(event.payload.status).toBe(GoalStatus.REFINED);
+      expect(event.payload.refinedAt).toBeDefined();
+      expect(event.timestamp).toBeDefined();
+    });
+
+    it("should update aggregate state to refined after refine", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Implement authentication", ["Users can log in"]);
+
+      // Act
+      goal.refine();
+
+      // Assert
+      const snapshot = goal.snapshot;
+      expect(snapshot.status).toBe(GoalStatus.REFINED);
+      expect(snapshot.version).toBe(2);
+    });
+
+    it("should throw error when refining already refined goal", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine(); // First refine
+
+      // Act & Assert
+      expect(() => goal.refine()).toThrow("Goal is already refined.");
+    });
+
+    it("should throw error when refining a doing goal", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
+      goal.start();
+
+      // Act & Assert
+      expect(() => goal.refine()).toThrow(
+        "Cannot refine goal in doing status. Goal must be in to-do status."
+      );
+    });
+  });
+
+  describe("start()", () => {
+    it("should create GoalStartedEvent event when starting a refined goal", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
 
       // Act
       const event = goal.start();
@@ -244,7 +301,7 @@ describe("Goal Aggregate", () => {
       // Assert
       expect(event.type).toBe(GoalEventType.STARTED);
       expect(event.aggregateId).toBe("goal_123");
-      expect(event.version).toBe(2);
+      expect(event.version).toBe(3);
       expect(event.payload.status).toBe(GoalStatus.DOING);
       expect(event.timestamp).toBeDefined();
     });
@@ -253,6 +310,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
 
       // Act
       goal.start();
@@ -260,13 +318,14 @@ describe("Goal Aggregate", () => {
       // Assert
       const snapshot = goal.snapshot;
       expect(snapshot.status).toBe(GoalStatus.DOING);
-      expect(snapshot.version).toBe(2);
+      expect(snapshot.version).toBe(3);
     });
 
     it("should allow starting already-doing goal (idempotent)", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start(); // First start
 
       // Act - start again
@@ -277,25 +336,101 @@ describe("Goal Aggregate", () => {
       expect(event.payload.status).toBe(GoalStatus.DOING);
     });
 
+    it("should throw error when starting to-do goal (not refined)", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Implement authentication", ["Users can log in"]);
+
+      // Act & Assert
+      expect(() => goal.start()).toThrow(
+        "Cannot start goal. Goal must be refined first."
+      );
+    });
+
     it("should throw error when starting blocked goal", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
-      // Simulate blocked status (would need Goal.block() method implemented)
-      // For now, test with rehydration from events
-      // Skip this test until block() is implemented
+      goal.refine();
+      goal.start();
+      goal.block("Waiting for API credentials");
 
-      // This test will be added when Goal.block() is implemented in Task-04
+      // Act & Assert
+      expect(() => goal.start()).toThrow(
+        "Cannot start a blocked goal. Unblock it first."
+      );
     });
 
     it("should throw error when starting completed goal", () => {
-      // Arrange
-      const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
-      // Simulate completed status (would need Goal.complete() method implemented)
-      // Skip this test until complete() is implemented
+      // Arrange - rehydrate a goal that is completed
+      const history = [
+        {
+          type: GoalEventType.ADDED,
+          aggregateId: "goal_123",
+          version: 1,
+          timestamp: "2025-01-01T00:00:00Z",
+          payload: {
+            objective: "Implement authentication",
+            successCriteria: ["Users can log in"],
+            scopeIn: [],
+            scopeOut: [],
+            boundaries: [],
+            status: GoalStatus.TODO,
+          },
+        },
+        {
+          type: GoalEventType.REFINED,
+          aggregateId: "goal_123",
+          version: 2,
+          timestamp: "2025-01-01T00:30:00Z",
+          payload: {
+            status: GoalStatus.REFINED,
+            refinedAt: "2025-01-01T00:30:00Z",
+          },
+        },
+        {
+          type: GoalEventType.STARTED,
+          aggregateId: "goal_123",
+          version: 3,
+          timestamp: "2025-01-01T01:00:00Z",
+          payload: {
+            status: GoalStatus.DOING,
+          },
+        },
+        {
+          type: GoalEventType.SUBMITTED_FOR_REVIEW,
+          aggregateId: "goal_123",
+          version: 4,
+          timestamp: "2025-01-01T02:00:00Z",
+          payload: {
+            status: GoalStatus.INREVIEW,
+            submittedAt: "2025-01-01T02:00:00Z",
+          },
+        },
+        {
+          type: GoalEventType.QUALIFIED,
+          aggregateId: "goal_123",
+          version: 5,
+          timestamp: "2025-01-01T03:00:00Z",
+          payload: {
+            status: GoalStatus.QUALIFIED,
+            qualifiedAt: "2025-01-01T03:00:00Z",
+          },
+        },
+        {
+          type: GoalEventType.COMPLETED,
+          aggregateId: "goal_123",
+          version: 6,
+          timestamp: "2025-01-01T04:00:00Z",
+          payload: {
+            status: GoalStatus.COMPLETED,
+          },
+        },
+      ];
+      const goal = Goal.rehydrate("goal_123", history as any);
 
-      // This test will be added when Goal.complete() is implemented in Task-06
+      // Act & Assert
+      expect(() => goal.start()).toThrow("Cannot start a completed goal.");
     });
   });
 
@@ -489,6 +624,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act
@@ -498,7 +634,7 @@ describe("Goal Aggregate", () => {
       expect(event.type).toBe(GoalEventType.BLOCKED);
       expect(event.payload.status).toBe(GoalStatus.BLOCKED);
       expect(event.payload.note).toBe("Database server is down");
-      expect(event.version).toBe(3);
+      expect(event.version).toBe(4);
     });
 
     it("should throw error if note is not provided", () => {
@@ -556,6 +692,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.block("Database server is down");
 
@@ -566,7 +703,7 @@ describe("Goal Aggregate", () => {
       expect(event.type).toBe(GoalEventType.UNBLOCKED);
       expect(event.payload.status).toBe(GoalStatus.DOING);
       expect(event.payload.note).toBe("Server is back online");
-      expect(event.version).toBe(4);
+      expect(event.version).toBe(5);
     });
 
     it("should sanitize empty note to undefined", () => {
@@ -608,6 +745,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act & Assert
@@ -620,6 +758,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.block("Blocked");
 
@@ -630,7 +769,7 @@ describe("Goal Aggregate", () => {
       const snapshot = goal.snapshot;
       expect(snapshot.status).toBe(GoalStatus.DOING);
       expect(snapshot.note).toBe("Resolved");
-      expect(snapshot.version).toBe(4);
+      expect(snapshot.version).toBe(5);
     });
   });
 
@@ -653,9 +792,19 @@ describe("Goal Aggregate", () => {
           },
         },
         {
-          type: GoalEventType.STARTED,
+          type: GoalEventType.REFINED,
           aggregateId: "goal_123",
           version: 2,
+          timestamp: "2025-01-01T00:30:00Z",
+          payload: {
+            status: GoalStatus.REFINED,
+            refinedAt: "2025-01-01T00:30:00Z",
+          },
+        },
+        {
+          type: GoalEventType.STARTED,
+          aggregateId: "goal_123",
+          version: 3,
           timestamp: "2025-01-01T01:00:00Z",
           payload: {
             status: GoalStatus.DOING,
@@ -664,7 +813,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.SUBMITTED_FOR_REVIEW,
           aggregateId: "goal_123",
-          version: 3,
+          version: 4,
           timestamp: "2025-01-01T02:00:00Z",
           payload: {
             status: GoalStatus.INREVIEW,
@@ -674,7 +823,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.QUALIFIED,
           aggregateId: "goal_123",
-          version: 4,
+          version: 5,
           timestamp: "2025-01-01T03:00:00Z",
           payload: {
             status: GoalStatus.QUALIFIED,
@@ -690,7 +839,7 @@ describe("Goal Aggregate", () => {
       // Assert
       expect(event.type).toBe(GoalEventType.COMPLETED);
       expect(event.aggregateId).toBe("goal_123");
-      expect(event.version).toBe(5);
+      expect(event.version).toBe(6);
       expect(event.payload.status).toBe(GoalStatus.COMPLETED);
       expect(event.timestamp).toBeDefined();
     });
@@ -699,6 +848,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act & Assert
@@ -711,6 +861,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.block("Waiting for API credentials");
 
@@ -749,9 +900,19 @@ describe("Goal Aggregate", () => {
           },
         },
         {
-          type: GoalEventType.STARTED,
+          type: GoalEventType.REFINED,
           aggregateId: "goal_123",
           version: 2,
+          timestamp: "2025-01-01T00:30:00Z",
+          payload: {
+            status: GoalStatus.REFINED,
+            refinedAt: "2025-01-01T00:30:00Z",
+          },
+        },
+        {
+          type: GoalEventType.STARTED,
+          aggregateId: "goal_123",
+          version: 3,
           timestamp: "2025-01-01T01:00:00Z",
           payload: {
             status: GoalStatus.DOING,
@@ -760,7 +921,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.SUBMITTED_FOR_REVIEW,
           aggregateId: "goal_123",
-          version: 3,
+          version: 4,
           timestamp: "2025-01-01T02:00:00Z",
           payload: {
             status: GoalStatus.INREVIEW,
@@ -770,7 +931,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.QUALIFIED,
           aggregateId: "goal_123",
-          version: 4,
+          version: 5,
           timestamp: "2025-01-01T03:00:00Z",
           payload: {
             status: GoalStatus.QUALIFIED,
@@ -780,7 +941,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.COMPLETED,
           aggregateId: "goal_123",
-          version: 5,
+          version: 6,
           timestamp: "2025-01-01T04:00:00Z",
           payload: {
             status: GoalStatus.COMPLETED,
@@ -813,9 +974,19 @@ describe("Goal Aggregate", () => {
           },
         },
         {
-          type: GoalEventType.STARTED,
+          type: GoalEventType.REFINED,
           aggregateId: "goal_123",
           version: 2,
+          timestamp: "2025-01-01T00:30:00Z",
+          payload: {
+            status: GoalStatus.REFINED,
+            refinedAt: "2025-01-01T00:30:00Z",
+          },
+        },
+        {
+          type: GoalEventType.STARTED,
+          aggregateId: "goal_123",
+          version: 3,
           timestamp: "2025-01-01T01:00:00Z",
           payload: {
             status: GoalStatus.DOING,
@@ -824,7 +995,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.SUBMITTED_FOR_REVIEW,
           aggregateId: "goal_123",
-          version: 3,
+          version: 4,
           timestamp: "2025-01-01T02:00:00Z",
           payload: {
             status: GoalStatus.INREVIEW,
@@ -834,7 +1005,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.QUALIFIED,
           aggregateId: "goal_123",
-          version: 4,
+          version: 5,
           timestamp: "2025-01-01T03:00:00Z",
           payload: {
             status: GoalStatus.QUALIFIED,
@@ -850,7 +1021,7 @@ describe("Goal Aggregate", () => {
       // Assert
       const snapshot = goal.snapshot;
       expect(snapshot.status).toBe(GoalStatus.COMPLETED);
-      expect(snapshot.version).toBe(5);
+      expect(snapshot.version).toBe(6);
     });
   });
 
@@ -875,20 +1046,21 @@ describe("Goal Aggregate", () => {
       expect(snapshot.version).toBe(1);
     });
 
-    it("should rebuild aggregate with GoalStartedEvent event", () => {
+    it("should rebuild aggregate with GoalRefinedEvent and GoalStartedEvent events", () => {
       // Arrange
       const goal1 = Goal.create("goal_123");
       const addedEvent = goal1.add("Implement authentication", ["Users can log in"]);
+      const refinedEvent = goal1.refine();
       const startedEvent = goal1.start();
 
       // Act
-      const goal2 = Goal.rehydrate("goal_123", [addedEvent, startedEvent]);
+      const goal2 = Goal.rehydrate("goal_123", [addedEvent, refinedEvent, startedEvent]);
 
       // Assert
       const snapshot = goal2.snapshot;
       expect(snapshot.objective).toBe("Implement authentication");
       expect(snapshot.status).toBe(GoalStatus.DOING);
-      expect(snapshot.version).toBe(2);
+      expect(snapshot.version).toBe(3);
     });
 
     it("should rebuild aggregate with GoalUpdatedEvent event", () => {
@@ -931,6 +1103,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act
@@ -939,7 +1112,7 @@ describe("Goal Aggregate", () => {
       // Assert
       expect(event.type).toBe(GoalEventType.PAUSED);
       expect(event.aggregateId).toBe("goal_123");
-      expect(event.version).toBe(3);
+      expect(event.version).toBe(4);
       expect(event.payload.status).toBe(GoalStatus.PAUSED);
       expect(event.payload.reason).toBe("ContextCompressed");
       expect(event.payload.note).toBeUndefined();
@@ -950,6 +1123,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act
@@ -960,7 +1134,7 @@ describe("Goal Aggregate", () => {
       expect(event.payload.status).toBe(GoalStatus.PAUSED);
       expect(event.payload.reason).toBe("Other");
       expect(event.payload.note).toBe("Need to switch priorities");
-      expect(event.version).toBe(3);
+      expect(event.version).toBe(4);
     });
 
     it("should throw error if goal is not in doing status", () => {
@@ -978,6 +1152,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
 
@@ -991,6 +1166,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       const longNote = "a".repeat(501); // Max is 500
 
@@ -1002,6 +1178,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act
@@ -1017,6 +1194,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
 
@@ -1026,7 +1204,7 @@ describe("Goal Aggregate", () => {
       // Assert
       expect(event.type).toBe(GoalEventType.RESUMED);
       expect(event.aggregateId).toBe("goal_123");
-      expect(event.version).toBe(4);
+      expect(event.version).toBe(5);
       expect(event.payload.status).toBe(GoalStatus.DOING);
       expect(event.payload.note).toBeUndefined();
       expect(event.timestamp).toBeDefined();
@@ -1036,6 +1214,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
 
@@ -1046,13 +1225,14 @@ describe("Goal Aggregate", () => {
       expect(event.type).toBe(GoalEventType.RESUMED);
       expect(event.payload.status).toBe(GoalStatus.DOING);
       expect(event.payload.note).toBe("Ready to continue");
-      expect(event.version).toBe(4);
+      expect(event.version).toBe(5);
     });
 
     it("should throw error if goal is not paused", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act & Assert
@@ -1065,6 +1245,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
       const longNote = "a".repeat(501); // Max is 500
@@ -1077,6 +1258,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
 
@@ -1093,6 +1275,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act
@@ -1101,7 +1284,7 @@ describe("Goal Aggregate", () => {
       // Assert
       expect(event.type).toBe(GoalEventType.SUBMITTED_FOR_REVIEW);
       expect(event.aggregateId).toBe("goal_123");
-      expect(event.version).toBe(3);
+      expect(event.version).toBe(4);
       expect(event.payload.status).toBe(GoalStatus.INREVIEW);
       expect(event.payload.submittedAt).toBeDefined();
       expect(event.timestamp).toBeDefined();
@@ -1111,6 +1294,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.block("Waiting for API credentials");
 
@@ -1120,13 +1304,14 @@ describe("Goal Aggregate", () => {
       // Assert
       expect(event.type).toBe(GoalEventType.SUBMITTED_FOR_REVIEW);
       expect(event.payload.status).toBe(GoalStatus.INREVIEW);
-      expect(event.version).toBe(4);
+      expect(event.version).toBe(5);
     });
 
     it("should transition goal to in-review status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act
@@ -1135,7 +1320,7 @@ describe("Goal Aggregate", () => {
       // Assert
       const snapshot = goal.snapshot;
       expect(snapshot.status).toBe(GoalStatus.INREVIEW);
-      expect(snapshot.version).toBe(3);
+      expect(snapshot.version).toBe(4);
     });
 
     it("should throw error if goal is in to-do status", () => {
@@ -1153,6 +1338,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
 
@@ -1166,6 +1352,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.submitForReview();
 
@@ -1193,9 +1380,19 @@ describe("Goal Aggregate", () => {
           },
         },
         {
-          type: GoalEventType.STARTED,
+          type: GoalEventType.REFINED,
           aggregateId: "goal_123",
           version: 2,
+          timestamp: "2025-01-01T00:30:00Z",
+          payload: {
+            status: GoalStatus.REFINED,
+            refinedAt: "2025-01-01T00:30:00Z",
+          },
+        },
+        {
+          type: GoalEventType.STARTED,
+          aggregateId: "goal_123",
+          version: 3,
           timestamp: "2025-01-01T01:00:00Z",
           payload: {
             status: GoalStatus.DOING,
@@ -1204,7 +1401,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.SUBMITTED_FOR_REVIEW,
           aggregateId: "goal_123",
-          version: 3,
+          version: 4,
           timestamp: "2025-01-01T02:00:00Z",
           payload: {
             status: GoalStatus.INREVIEW,
@@ -1214,7 +1411,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.QUALIFIED,
           aggregateId: "goal_123",
-          version: 4,
+          version: 5,
           timestamp: "2025-01-01T03:00:00Z",
           payload: {
             status: GoalStatus.QUALIFIED,
@@ -1248,9 +1445,19 @@ describe("Goal Aggregate", () => {
           },
         },
         {
-          type: GoalEventType.STARTED,
+          type: GoalEventType.REFINED,
           aggregateId: "goal_123",
           version: 2,
+          timestamp: "2025-01-01T00:30:00Z",
+          payload: {
+            status: GoalStatus.REFINED,
+            refinedAt: "2025-01-01T00:30:00Z",
+          },
+        },
+        {
+          type: GoalEventType.STARTED,
+          aggregateId: "goal_123",
+          version: 3,
           timestamp: "2025-01-01T01:00:00Z",
           payload: {
             status: GoalStatus.DOING,
@@ -1259,7 +1466,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.SUBMITTED_FOR_REVIEW,
           aggregateId: "goal_123",
-          version: 3,
+          version: 4,
           timestamp: "2025-01-01T02:00:00Z",
           payload: {
             status: GoalStatus.INREVIEW,
@@ -1269,7 +1476,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.QUALIFIED,
           aggregateId: "goal_123",
-          version: 4,
+          version: 5,
           timestamp: "2025-01-01T03:00:00Z",
           payload: {
             status: GoalStatus.QUALIFIED,
@@ -1279,7 +1486,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.COMPLETED,
           aggregateId: "goal_123",
-          version: 5,
+          version: 6,
           timestamp: "2025-01-01T04:00:00Z",
           payload: {
             status: GoalStatus.COMPLETED,
@@ -1300,6 +1507,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.submitForReview();
 
@@ -1309,7 +1517,7 @@ describe("Goal Aggregate", () => {
       // Assert
       expect(event.type).toBe(GoalEventType.QUALIFIED);
       expect(event.aggregateId).toBe("goal_123");
-      expect(event.version).toBe(4);
+      expect(event.version).toBe(5);
       expect(event.payload.status).toBe(GoalStatus.QUALIFIED);
       expect(event.payload.qualifiedAt).toBeDefined();
       expect(event.timestamp).toBeDefined();
@@ -1319,6 +1527,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.submitForReview();
 
@@ -1328,7 +1537,7 @@ describe("Goal Aggregate", () => {
       // Assert
       const snapshot = goal.snapshot;
       expect(snapshot.status).toBe(GoalStatus.QUALIFIED);
-      expect(snapshot.version).toBe(4);
+      expect(snapshot.version).toBe(5);
     });
 
     it("should throw error if goal is in to-do status", () => {
@@ -1346,6 +1555,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
 
       // Act & Assert
@@ -1358,6 +1568,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.block("Waiting for API credentials");
 
@@ -1371,6 +1582,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
 
@@ -1384,6 +1596,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Implement authentication", ["Users can log in"]);
+      goal.refine();
       goal.start();
       goal.submitForReview();
       goal.qualify();
@@ -1412,9 +1625,19 @@ describe("Goal Aggregate", () => {
           },
         },
         {
-          type: GoalEventType.STARTED,
+          type: GoalEventType.REFINED,
           aggregateId: "goal_123",
           version: 2,
+          timestamp: "2025-01-01T00:30:00Z",
+          payload: {
+            status: GoalStatus.REFINED,
+            refinedAt: "2025-01-01T00:30:00Z",
+          },
+        },
+        {
+          type: GoalEventType.STARTED,
+          aggregateId: "goal_123",
+          version: 3,
           timestamp: "2025-01-01T01:00:00Z",
           payload: {
             status: GoalStatus.DOING,
@@ -1423,7 +1646,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.SUBMITTED_FOR_REVIEW,
           aggregateId: "goal_123",
-          version: 3,
+          version: 4,
           timestamp: "2025-01-01T02:00:00Z",
           payload: {
             status: GoalStatus.INREVIEW,
@@ -1433,7 +1656,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.QUALIFIED,
           aggregateId: "goal_123",
-          version: 4,
+          version: 5,
           timestamp: "2025-01-01T03:00:00Z",
           payload: {
             status: GoalStatus.QUALIFIED,
@@ -1443,7 +1666,7 @@ describe("Goal Aggregate", () => {
         {
           type: GoalEventType.COMPLETED,
           aggregateId: "goal_123",
-          version: 5,
+          version: 6,
           timestamp: "2025-01-01T04:00:00Z",
           payload: {
             status: GoalStatus.COMPLETED,

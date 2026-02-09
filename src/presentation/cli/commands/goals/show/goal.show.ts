@@ -2,7 +2,7 @@
  * CLI Command: jumbo goal show
  *
  * Displays full goal details including objective, status, success criteria,
- * scope, boundaries, and notes.
+ * scope, and notes.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
@@ -105,13 +105,6 @@ export async function goalShow(
         }
       }
 
-      if (goal.boundaries.length > 0) {
-        console.log("\nBoundaries:");
-        for (const boundary of goal.boundaries) {
-          console.log(`  - ${boundary}`);
-        }
-      }
-
       if (goal.nextGoalId) {
         console.log(`\nNext Goal:  ${goal.nextGoalId}`);
       }
@@ -136,7 +129,6 @@ export async function goalShow(
         successCriteria: goal.successCriteria,
         scopeIn: goal.scopeIn,
         scopeOut: goal.scopeOut,
-        boundaries: goal.boundaries,
         status: goal.status,
         version: goal.version,
         createdAt: goal.createdAt,

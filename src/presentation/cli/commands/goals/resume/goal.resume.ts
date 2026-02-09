@@ -103,7 +103,7 @@ export async function goalResume(options: { goalId: string; note?: string }, con
 
       // LLM Guidance
       const llmInstruction = [
-        "@LLM: Goal context loaded. Work within scope and boundaries.",
+        "@LLM: Goal context loaded. Work within scope.",
         "YOUR ROLE: Proactively run jumbo commands to capture project memories as they surface.",
         "Run 'jumbo --help' to see what can be tracked, if you haven't already.",
       ];
@@ -129,7 +129,7 @@ export async function goalResume(options: { goalId: string; note?: string }, con
 
     // LLM Guidance
     const additionalLlmInstructions = [
-      "@LLM: Goal context loaded. Work within scope and boundaries.",
+      "@LLM: Goal context loaded. Work within scope.",
     ];
     renderer.info(additionalLlmInstructions.join("\n") + "\n");
 

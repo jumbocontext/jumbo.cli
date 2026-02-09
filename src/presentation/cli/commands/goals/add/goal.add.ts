@@ -4,7 +4,7 @@
  * Defines a new goal aggregate with 'to-do' status.
  *
  * Usage:
- *   jumbo goal add --objective "..." --criteria "..." [--scope-in "..."] [--scope-out "..."] [--boundary "..."]
+ *   jumbo goal add --objective "..." --criteria "..." [--scope-in "..."] [--scope-out "..."]
  *   jumbo goal add --interactive  (guided creation with prompts)
  */
 
@@ -52,10 +52,6 @@ export const metadata: CommandMetadata = {
     {
       flags: "--scope-out <components...>",
       description: "Components/modules explicitly out of scope"
-    },
-    {
-      flags: "--boundary <boundaries...>",
-      description: "Non-negotiable constraints or boundaries"
     },
     {
       flags: "--relevant-invariants <json>",
@@ -119,7 +115,6 @@ interface InteractiveGoalInputs {
   successCriteria: string[];
   scopeIn: string[];
   scopeOut: string[];
-  boundaries: string[];
   relevantInvariants: Array<{ title: string; description: string; rationale?: string }>;
   relevantGuidelines: Array<{ title: string; description: string; rationale?: string; examples?: string[] }>;
   relevantComponents: Array<{ name: string; responsibility: string }>;
@@ -256,31 +251,24 @@ async function runInteractiveFlow(container: IApplicationContainer): Promise<Int
     minValues: 1,
   });
 
-  // Step 10: Boundaries (optional)
-  const boundariesInput = await promptService.multiTextInput({
-    message: "Boundaries (comma-separated, optional):",
-    suffix: "  Non-negotiable constraints specific to this goal\n  Example: Must not break existing API, No new dependencies",
-  });
-
-  // Step 11: Files to create (optional)
+  // Step 10: Files to create (optional)
   const filesToCreateInput = await promptService.multiTextInput({
     message: "Files to create (comma-separated, optional):",
     suffix: "  New files this goal will add\n  Example: src/auth/JwtService.ts, src/middleware/Auth.ts",
   });
 
-  // Step 12: Files to change (optional)
+  // Step 11: Files to change (optional)
   const filesToChangeInput = await promptService.multiTextInput({
     message: "Files to change (comma-separated, optional):",
     suffix: "  Existing files this goal will modify\n  Example: src/routes/api.ts, src/config/app.ts",
   });
 
-  // Transform selected entities to embedded context format
+  // Transform selected entities to context format
   return {
     objective: objective!,
     successCriteria: criteriaInput,
     scopeIn: scopeInResult.selected.map((c) => c.name),
     scopeOut: scopeOutResult.selected.map((c) => c.name),
-    boundaries: boundariesInput,
     relevantInvariants: invariantsResult.selected.map((inv) => ({
       title: inv.title,
       description: inv.description,
@@ -318,7 +306,6 @@ export async function goalAdd(
     criteria?: string[];
     scopeIn?: string[];
     scopeOut?: string[];
-    boundary?: string[];
     relevantInvariants?: string;
     relevantGuidelines?: string;
     relevantComponents?: string;
@@ -353,7 +340,6 @@ export async function goalAdd(
         successCriteria: inputs.successCriteria,
         scopeIn: inputs.scopeIn.length > 0 ? inputs.scopeIn : undefined,
         scopeOut: inputs.scopeOut.length > 0 ? inputs.scopeOut : undefined,
-        boundaries: inputs.boundaries.length > 0 ? inputs.boundaries : undefined,
         relevantInvariants: inputs.relevantInvariants.length > 0 ? inputs.relevantInvariants : undefined,
         relevantGuidelines: inputs.relevantGuidelines.length > 0 ? inputs.relevantGuidelines : undefined,
         relevantComponents: inputs.relevantComponents.length > 0 ? inputs.relevantComponents : undefined,
@@ -407,7 +393,6 @@ export async function goalAdd(
       successCriteria: options.criteria || [],
       scopeIn: options.scopeIn,
       scopeOut: options.scopeOut,
-      boundaries: options.boundary,
       relevantInvariants: parseJson(options.relevantInvariants, "relevant-invariants"),
       relevantGuidelines: parseJson(options.relevantGuidelines, "relevant-guidelines"),
       relevantComponents: parseJson(options.relevantComponents, "relevant-components"),

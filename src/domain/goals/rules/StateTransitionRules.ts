@@ -3,6 +3,36 @@ import { GoalState } from "../Goal.js";
 import { GoalStatus, GoalErrorMessages, formatErrorMessage } from "../Constants.js";
 
 /**
+ * Validates that a goal can be refined (transition to 'refined' status).
+ * A goal can only be refined if it's in 'to-do' status.
+ * Cannot refine a goal that is already refined or in any other status.
+ */
+export class CanRefineRule implements ValidationRule<GoalState> {
+  validate(state: GoalState): ValidationResult {
+    // Already refined - return specific error
+    if (state.status === GoalStatus.REFINED) {
+      return {
+        isValid: false,
+        errors: [GoalErrorMessages.ALREADY_REFINED],
+      };
+    }
+
+    // Can only refine from TODO status
+    if (state.status !== GoalStatus.TODO) {
+      return {
+        isValid: false,
+        errors: [formatErrorMessage(
+          GoalErrorMessages.CANNOT_REFINE_IN_STATUS,
+          { status: state.status }
+        )],
+      };
+    }
+
+    return { isValid: true, errors: [] };
+  }
+}
+
+/**
  * Validates that a goal can be added (defined for the first time).
  * A goal can only be added if its version is 0 (never been defined before).
  */
@@ -18,8 +48,8 @@ export class CanAddRule implements ValidationRule<GoalState> {
 
 /**
  * Validates that a goal can be started (transition to 'doing' status).
- * A goal can be started if it's in 'to-do' or 'doing' (idempotent) status.
- * Cannot start a goal that is blocked or completed.
+ * A goal can be started if it's in 'refined' or 'doing' (idempotent) status.
+ * Cannot start a goal that is blocked, completed, or not yet refined.
  */
 export class CanStartRule implements ValidationRule<GoalState> {
   validate(state: GoalState): ValidationResult {
@@ -37,6 +67,15 @@ export class CanStartRule implements ValidationRule<GoalState> {
       };
     }
 
+    // Goal must be refined before starting (or already doing for idempotency)
+    if (state.status === GoalStatus.TODO) {
+      return {
+        isValid: false,
+        errors: [GoalErrorMessages.CANNOT_START_NOT_REFINED],
+      };
+    }
+
+    // Valid statuses: REFINED (first start) or DOING (idempotent)
     return { isValid: true, errors: [] };
   }
 }

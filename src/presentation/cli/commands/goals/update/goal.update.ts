@@ -5,9 +5,9 @@
  * Only provided fields are updated; omitted fields remain unchanged.
  *
  * Usage:
- *   jumbo goal update <goalId> [--objective "..."] [--criteria "..."] [--scope-in "..."] [--scope-out "..."] [--boundary "..."]
+ *   jumbo goal update <goalId> [--objective "..."] [--criteria "..."] [--scope-in "..."] [--scope-out "..."]
  *
- * Embedded context fields (JSON format - typically used programmatically):
+ * Context fields (JSON format - typically used programmatically):
  *   --relevant-invariants <json>
  *   --relevant-guidelines <json>
  *   --relevant-dependencies <json>
@@ -51,10 +51,6 @@ export const metadata: CommandMetadata = {
     {
       flags: "--scope-out <items...>",
       description: "Updated out-of-scope items"
-    },
-    {
-      flags: "--boundary <items...>",
-      description: "Updated boundaries"
     },
     {
       flags: "--relevant-invariants <json>",
@@ -117,8 +113,7 @@ export async function goalUpdate(
     criteria?: string[];
     scopeIn?: string[];
     scopeOut?: string[];
-    boundary?: string[];
-    // Embedded context fields (JSON strings from CLI)
+    // Context fields (JSON strings from CLI)
     relevantInvariants?: string;
     relevantGuidelines?: string;
     relevantDependencies?: string;
@@ -158,8 +153,7 @@ export async function goalUpdate(
       successCriteria: options.criteria,
       scopeIn: options.scopeIn,
       scopeOut: options.scopeOut,
-      boundaries: options.boundary,
-      // Embedded context fields
+      // Context fields
       relevantInvariants: parseJson(options.relevantInvariants, "relevant-invariants"),
       relevantGuidelines: parseJson(options.relevantGuidelines, "relevant-guidelines"),
       relevantDependencies: parseJson(options.relevantDependencies, "relevant-dependencies"),

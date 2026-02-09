@@ -1,7 +1,7 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
-import { GoalEvent, GoalAddedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent } from "./EventIndex.js";
+import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent } from "./EventIndex.js";
 import { GoalEventType, GoalStatus, GoalStatusType } from "./Constants.js";
 import { GoalPausedReasonsType } from "./GoalPausedReasons.js";
 import { OBJECTIVE_RULES } from "./rules/ObjectiveRules.js";
@@ -11,6 +11,7 @@ import { UPDATE_RULES } from "./rules/UpdateRules.js";
 import { NOTE_RULES, OPTIONAL_NOTE_RULES } from "./rules/NoteRules.js";
 import {
   CanAddRule,
+  CanRefineRule,
   CanStartRule,
   CanUpdateRule,
   CanCompleteRule,
@@ -106,6 +107,13 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
         if (e.payload.nextGoalId !== undefined) {
           state.nextGoalId = e.payload.nextGoalId;
         }
+        state.version = e.version;
+        break;
+      }
+
+      case GoalEventType.REFINED: {
+        const e = event as GoalRefinedEvent;
+        state.status = e.payload.status;  // "refined"
         state.version = e.version;
         break;
       }
@@ -333,12 +341,36 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
   }
 
   /**
-   * Starts a defined goal (begins work).
-   * Transitions status from "to-do" to "doing".
+   * Refines a goal after creation.
+   * Transitions status from "to-do" to "refined".
+   * A goal must be refined before it can be started.
+   *
+   * @returns GoalRefined event
+   * @throws Error if goal is not in 'to-do' status
+   */
+  refine(): GoalRefinedEvent {
+    // State validation: can only refine from to-do status
+    ValidationRuleSet.ensure(this.state, [new CanRefineRule()]);
+
+    // Create and return event using BaseAggregate.makeEvent
+    return this.makeEvent(
+      GoalEventType.REFINED,
+      {
+        status: GoalStatus.REFINED,
+        refinedAt: new Date().toISOString(),
+      },
+      Goal.apply
+    ) as GoalRefinedEvent;
+  }
+
+  /**
+   * Starts a refined goal (begins work).
+   * Transitions status from "refined" to "doing".
+   * Goal must be refined before starting.
    *
    * @param claimInfo - Optional claim information to embed in the event
    * @returns GoalStarted event
-   * @throws Error if goal is blocked or completed
+   * @throws Error if goal is blocked, completed, or not yet refined
    */
   start(claimInfo?: {
     claimedBy: string;
@@ -346,7 +378,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     claimExpiresAt: string;
   }): GoalStartedEvent {
     // State validation using rules
-    // Note: CanStartRule allows 'doing' status (idempotent) and 'to-do' status
+    // Note: CanStartRule allows 'doing' status (idempotent) and 'refined' status
     ValidationRuleSet.ensure(this.state, [new CanStartRule()]);
 
     // Create and return event using BaseAggregate.makeEvent

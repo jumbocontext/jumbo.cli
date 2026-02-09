@@ -6,6 +6,7 @@
 // Goal event types
 export const GoalEventType = {
   ADDED: 'GoalAddedEvent',
+  REFINED: 'GoalRefinedEvent',
   STARTED: 'GoalStartedEvent',
   UPDATED: 'GoalUpdatedEvent',
   BLOCKED: 'GoalBlockedEvent',
@@ -25,6 +26,7 @@ export type GoalEventTypeValue = typeof GoalEventType[keyof typeof GoalEventType
 // Goal status enum
 export const GoalStatus = {
   TODO: 'to-do',
+  REFINED: 'refined',
   DOING: 'doing',
   BLOCKED: 'blocked',
   PAUSED: 'paused',
@@ -48,6 +50,9 @@ export const GoalErrorMessages = {
   GOAL_NOT_FOUND: 'Goal not found: {id}',
   CANNOT_START_BLOCKED: 'Cannot start a blocked goal. Unblock it first.',
   CANNOT_START_COMPLETED: 'Cannot start a completed goal.',
+  CANNOT_START_NOT_REFINED: 'Cannot start goal. Goal must be refined first.',
+  CANNOT_REFINE_IN_STATUS: 'Cannot refine goal in {status} status. Goal must be in to-do status.',
+  ALREADY_REFINED: 'Goal is already refined.',
   NOT_FOUND: 'Goal with ID {goalId} not found',
   NO_CHANGES_PROVIDED: 'At least one field must be provided for update',
   CANNOT_UPDATE_COMPLETED: 'Cannot update a completed goal',

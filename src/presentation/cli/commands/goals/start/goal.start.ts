@@ -80,7 +80,7 @@ export async function goalStart(options: { goalId: string }, container: IApplica
 
     // LLM Guidance
     const additionalLlmInstructions = [
-      "@LLM: Goal context loaded. Work within scope and boundaries.",
+      "@LLM: Goal context loaded. Work within scope.",
       "Track your progress by documenting completed sub-tasks with 'jumbo goal update-progress --goal-id " + options.goalId + " --task-description <description>'.",
     ];
     renderer.info(additionalLlmInstructions.join("\n") + "\n");

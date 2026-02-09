@@ -43,6 +43,8 @@ import { IGoalPausedProjector } from "../goals/pause/IGoalPausedProjector.js";
 import { IGoalResumedProjector } from "../goals/resume/IGoalResumedProjector.js";
 import { IGoalCompletedProjector } from "../goals/complete/IGoalCompletedProjector.js";
 import { IGoalCompleteReader } from "../goals/complete/IGoalCompleteReader.js";
+import { IGoalRefinedProjector } from "../goals/refine/IGoalRefinedProjector.js";
+import { IGoalRefineReader } from "../goals/refine/IGoalRefineReader.js";
 import { IGoalResetProjector } from "../goals/reset/IGoalResetProjector.js";
 import { IGoalResetReader } from "../goals/reset/IGoalResetReader.js";
 import { IGoalRemovedProjector } from "../goals/remove/IGoalRemovedProjector.js";
@@ -173,6 +175,8 @@ import { IGoalResumedEventWriter } from "../goals/resume/IGoalResumedEventWriter
 import { IGoalResumedEventReader } from "../goals/resume/IGoalResumedEventReader.js";
 import { IGoalCompletedEventWriter } from "../goals/complete/IGoalCompletedEventWriter.js";
 import { IGoalCompletedEventReader } from "../goals/complete/IGoalCompletedEventReader.js";
+import { IGoalRefineEventWriter } from "../goals/refine/IGoalRefineEventWriter.js";
+import { IGoalRefineEventReader } from "../goals/refine/IGoalRefineEventReader.js";
 import { IGoalResetEventWriter } from "../goals/reset/IGoalResetEventWriter.js";
 import { IGoalResetEventReader } from "../goals/reset/IGoalResetEventReader.js";
 import { IGoalRemovedEventWriter } from "../goals/remove/IGoalRemovedEventWriter.js";
@@ -268,6 +272,7 @@ export interface IApplicationContainer {
   goalPausedEventStore: IGoalPausedEventWriter & IGoalPausedEventReader;
   goalResumedEventStore: IGoalResumedEventWriter & IGoalResumedEventReader;
   goalCompletedEventStore: IGoalCompletedEventWriter & IGoalCompletedEventReader;
+  goalRefinedEventStore: IGoalRefineEventWriter & IGoalRefineEventReader;
   goalResetEventStore: IGoalResetEventWriter & IGoalResetEventReader;
   goalRemovedEventStore: IGoalRemovedEventWriter & IGoalRemovedEventReader;
   goalProgressUpdatedEventStore: IGoalProgressUpdatedEventWriter & IGoalProgressUpdatedEventReader;
@@ -290,6 +295,7 @@ export interface IApplicationContainer {
   goalPausedProjector: IGoalPausedProjector & IGoalReader;
   goalResumedProjector: IGoalResumedProjector & IGoalReader;
   goalCompletedProjector: IGoalCompletedProjector & IGoalCompleteReader;
+  goalRefinedProjector: IGoalRefinedProjector & IGoalRefineReader;
   goalResetProjector: IGoalResetProjector & IGoalResetReader;
   goalRemovedProjector: IGoalRemovedProjector & IGoalRemoveReader;
   goalProgressUpdatedProjector: IGoalProgressUpdatedProjector & IGoalProgressUpdateReader;

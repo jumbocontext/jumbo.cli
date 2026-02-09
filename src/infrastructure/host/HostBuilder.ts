@@ -43,6 +43,7 @@ import { FsGoalUnblockedEventStore } from "../goals/unblock/FsGoalUnblockedEvent
 import { FsGoalPausedEventStore } from "../goals/pause/FsGoalPausedEventStore.js";
 import { FsGoalResumedEventStore } from "../goals/resume/FsGoalResumedEventStore.js";
 import { FsGoalCompletedEventStore } from "../goals/complete/FsGoalCompletedEventStore.js";
+import { FsGoalRefinedEventStore } from "../goals/refine/FsGoalRefinedEventStore.js";
 import { FsGoalResetEventStore } from "../goals/reset/FsGoalResetEventStore.js";
 import { FsGoalRemovedEventStore } from "../goals/remove/FsGoalRemovedEventStore.js";
 import { FsGoalProgressUpdatedEventStore } from "../goals/update-progress/FsGoalProgressUpdatedEventStore.js";
@@ -106,6 +107,7 @@ import { SqliteGoalUnblockedProjector } from "../goals/unblock/SqliteGoalUnblock
 import { SqliteGoalPausedProjector } from "../goals/pause/SqliteGoalPausedProjector.js";
 import { SqliteGoalResumedProjector } from "../goals/resume/SqliteGoalResumedProjector.js";
 import { SqliteGoalCompletedProjector } from "../goals/complete/SqliteGoalCompletedProjector.js";
+import { SqliteGoalRefinedProjector } from "../goals/refine/SqliteGoalRefinedProjector.js";
 import { SqliteGoalResetProjector } from "../goals/reset/SqliteGoalResetProjector.js";
 import { SqliteGoalRemovedProjector } from "../goals/remove/SqliteGoalRemovedProjector.js";
 import { SqliteGoalProgressUpdatedProjector } from "../goals/update-progress/SqliteGoalProgressUpdatedProjector.js";
@@ -200,6 +202,7 @@ import { GoalUnblockedEventHandler } from "../../application/goals/unblock/GoalU
 import { GoalPausedEventHandler } from "../../application/goals/pause/GoalPausedEventHandler.js";
 import { GoalResumedEventHandler } from "../../application/goals/resume/GoalResumedEventHandler.js";
 import { GoalCompletedEventHandler } from "../../application/goals/complete/GoalCompletedEventHandler.js";
+import { GoalRefinedEventHandler } from "../../application/goals/refine/GoalRefinedEventHandler.js";
 import { GoalResetEventHandler } from "../../application/goals/reset/GoalResetEventHandler.js";
 import { GoalRemovedEventHandler } from "../../application/goals/remove/GoalRemovedEventHandler.js";
 import { GoalProgressUpdatedEventHandler } from "../../application/goals/update-progress/GoalProgressUpdatedEventHandler.js";
@@ -340,6 +343,7 @@ export class HostBuilder {
     const goalPausedEventStore = new FsGoalPausedEventStore(this.rootDir);
     const goalResumedEventStore = new FsGoalResumedEventStore(this.rootDir);
     const goalCompletedEventStore = new FsGoalCompletedEventStore(this.rootDir);
+    const goalRefinedEventStore = new FsGoalRefinedEventStore(this.rootDir);
     const goalResetEventStore = new FsGoalResetEventStore(this.rootDir);
     const goalRemovedEventStore = new FsGoalRemovedEventStore(this.rootDir);
     const goalProgressUpdatedEventStore = new FsGoalProgressUpdatedEventStore(this.rootDir);
@@ -416,6 +420,7 @@ export class HostBuilder {
     const goalPausedProjector = new SqliteGoalPausedProjector(this.db);
     const goalResumedProjector = new SqliteGoalResumedProjector(this.db);
     const goalCompletedProjector = new SqliteGoalCompletedProjector(this.db);
+    const goalRefinedProjector = new SqliteGoalRefinedProjector(this.db);
     const goalResetProjector = new SqliteGoalResetProjector(this.db);
     const goalRemovedProjector = new SqliteGoalRemovedProjector(this.db);
     const goalProgressUpdatedProjector = new SqliteGoalProgressUpdatedProjector(this.db);
@@ -589,6 +594,7 @@ export class HostBuilder {
     const goalPausedEventHandler = new GoalPausedEventHandler(goalPausedProjector);
     const goalResumedEventHandler = new GoalResumedEventHandler(goalResumedProjector);
     const goalCompletedEventHandler = new GoalCompletedEventHandler(goalCompletedProjector);
+    const goalRefinedEventHandler = new GoalRefinedEventHandler(goalRefinedProjector);
     const goalResetEventHandler = new GoalResetEventHandler(goalResetProjector);
     const goalRemovedEventHandler = new GoalRemovedEventHandler(goalRemovedProjector);
     const goalProgressUpdatedEventHandler = new GoalProgressUpdatedEventHandler(goalProgressUpdatedProjector);
@@ -663,6 +669,7 @@ export class HostBuilder {
     eventBus.subscribe("GoalPausedEvent", goalPausedEventHandler);
     eventBus.subscribe("GoalResumedEvent", goalResumedEventHandler);
     eventBus.subscribe("GoalCompletedEvent", goalCompletedEventHandler);
+    eventBus.subscribe("GoalRefinedEvent", goalRefinedEventHandler);
     eventBus.subscribe("GoalResetEvent", goalResetEventHandler);
     eventBus.subscribe("GoalRemovedEvent", goalRemovedEventHandler);
     eventBus.subscribe("GoalProgressUpdatedEvent", goalProgressUpdatedEventHandler);
@@ -759,6 +766,7 @@ export class HostBuilder {
       goalPausedEventStore,
       goalResumedEventStore,
       goalCompletedEventStore,
+      goalRefinedEventStore,
       goalResetEventStore,
       goalRemovedEventStore,
       goalProgressUpdatedEventStore,
@@ -780,6 +788,7 @@ export class HostBuilder {
       goalPausedProjector,
       goalResumedProjector,
       goalCompletedProjector,
+      goalRefinedProjector,
       goalResetProjector,
       goalRemovedProjector,
       goalProgressUpdatedProjector,

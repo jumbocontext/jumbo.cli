@@ -134,14 +134,6 @@ function renderReviewContext(
       renderer.info("\n" + "VERIFY: The implementation did not overlap these items.");
       renderer.info("INSTRUCTION: If any work overlapped these items, then adjust the implementation and re-run 'jumbo goal review --goal-id " + response.goalId + "' again.");
     }
-
-    if(goal.boundaries && goal.boundaries.length > 0){
-      goal.boundaries.forEach((boundary) => {
-        renderer.info(`- ${boundary}`);
-      });
-      renderer.info("\n" + "VERIFY: The implementation did not exceed the following boundaries for this goal.");
-      renderer.info("INSTRUCTION: If any boundaries were exceeded, then adjust the implementation and re-run 'jumbo goal review --goal-id " + response.goalId + "' again.");
-    }
   }
 
   // Existing architecture - must be preserved
@@ -234,7 +226,6 @@ function isScoped(response: ReviewGoalResponse): boolean {
   return (
     (Array.isArray(response.criteria.goal.scopeIn) && response.criteria.goal.scopeIn.length > 0) ||
     (Array.isArray(response.criteria.goal.scopeOut) && response.criteria.goal.scopeOut.length > 0) ||
-    (Array.isArray(response.criteria.goal.boundaries) && response.criteria.goal.boundaries.length > 0) ||
     (Array.isArray(response.criteria.goal.filesToBeCreated) && response.criteria.goal.filesToBeCreated.length > 0) ||
     (Array.isArray(response.criteria.goal.filesToBeChanged) && response.criteria.goal.filesToBeChanged.length > 0)
   );

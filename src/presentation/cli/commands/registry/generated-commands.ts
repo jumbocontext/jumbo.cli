@@ -41,6 +41,7 @@ import { goalComplete, metadata as goalCompleteMeta } from '../../commands/goals
 import { goalsList, metadata as goalsListMeta } from '../../commands/goals/list/goals.list.js';
 import { goalPause, metadata as goalPauseMeta } from '../../commands/goals/pause/goal.pause.js';
 import { goalQualify, metadata as goalQualifyMeta } from '../../commands/goals/qualify/goal.qualify.js';
+import { goalRefine, metadata as goalRefineMeta } from '../../commands/goals/refine/goal.refine.js';
 import { goalRemove, metadata as goalRemoveMeta } from '../../commands/goals/remove/goal.remove.js';
 import { goalReset, metadata as goalResetMeta } from '../../commands/goals/reset/goal.reset.js';
 import { goalResume, metadata as goalResumeMeta } from '../../commands/goals/resume/goal.resume.js';
@@ -236,6 +237,11 @@ export const commands: RegisteredCommand[] = [
     path: 'goal qualify',
     metadata: goalQualifyMeta,
     handler: goalQualify
+  },
+  {
+    path: 'goal refine',
+    metadata: goalRefineMeta,
+    handler: goalRefine
   },
   {
     path: 'goal remove',

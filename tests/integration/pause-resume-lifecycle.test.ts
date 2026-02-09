@@ -9,6 +9,8 @@ import { Host } from "../../src/infrastructure/host/Host.js";
 import { IApplicationContainer } from "../../src/application/host/IApplicationContainer.js";
 import { AddGoalCommandHandler } from "../../src/application/goals/add/AddGoalCommandHandler.js";
 import { AddGoalCommand } from "../../src/application/goals/add/AddGoalCommand.js";
+import { RefineGoalCommandHandler } from "../../src/application/goals/refine/RefineGoalCommandHandler.js";
+import { RefineGoalCommand } from "../../src/application/goals/refine/RefineGoalCommand.js";
 import { StartGoalCommandHandler } from "../../src/application/goals/start/StartGoalCommandHandler.js";
 import { StartGoalCommand } from "../../src/application/goals/start/StartGoalCommand.js";
 import { PauseGoalCommandHandler } from "../../src/application/goals/pause/PauseGoalCommandHandler.js";
@@ -56,7 +58,24 @@ describe("Pause-Resume Lifecycle Integration", () => {
     expect(view!.status).toBe(GoalStatus.TODO);
     expect(view!.version).toBe(1);
 
-    // 2. Start goal
+    // 2. Refine goal
+    const refineHandler = new RefineGoalCommandHandler(
+      container.goalRefinedEventStore,
+      container.goalRefinedEventStore,
+      container.goalRefinedProjector,
+      container.eventBus
+    );
+    const refineCommand: RefineGoalCommand = {
+      goalId,
+    };
+    await refineHandler.execute(refineCommand);
+
+    // Verify projection after refine
+    view = await container.goalRefinedProjector.findById(goalId);
+    expect(view!.status).toBe(GoalStatus.REFINED);
+    expect(view!.version).toBe(2);
+
+    // 3. Start goal
     const startHandler = new StartGoalCommandHandler(
       container.goalStartedEventStore,
       container.goalStartedEventStore,
@@ -74,9 +93,9 @@ describe("Pause-Resume Lifecycle Integration", () => {
     // Verify projection after start
     view = await container.goalStartedProjector.findById(goalId);
     expect(view!.status).toBe(GoalStatus.DOING);
-    expect(view!.version).toBe(2);
+    expect(view!.version).toBe(3);
 
-    // 3. Pause goal
+    // 4. Pause goal
     const pauseHandler = new PauseGoalCommandHandler(
       container.goalPausedEventStore,
       container.goalPausedEventStore,
@@ -94,9 +113,9 @@ describe("Pause-Resume Lifecycle Integration", () => {
     view = await container.goalPausedProjector.findById(goalId);
     expect(view!.status).toBe(GoalStatus.PAUSED);
     expect(view!.note).toBe("Testing pause functionality");
-    expect(view!.version).toBe(3);
+    expect(view!.version).toBe(4);
 
-    // 4. Resume goal
+    // 5. Resume goal
     const resumeHandler = new ResumeGoalCommandHandler(
       container.goalResumedEventStore,
       container.goalResumedEventStore,
@@ -116,31 +135,33 @@ describe("Pause-Resume Lifecycle Integration", () => {
     view = await container.goalResumedProjector.findById(goalId);
     expect(view!.status).toBe(GoalStatus.DOING);
     expect(view!.note).toBe("Testing resume functionality");
-    expect(view!.version).toBe(4);
+    expect(view!.version).toBe(5);
 
     // Note: Completion requires QUALIFIED status which needs the full qualification workflow
     // This test focuses on pause/resume lifecycle only
 
     // Verify event stream correctness
     const events = await container.eventStore.readStream(goalId);
-    expect(events).toHaveLength(4);
+    expect(events).toHaveLength(5);
     expect(events[0].type).toBe(GoalEventType.ADDED);
-    expect(events[1].type).toBe(GoalEventType.STARTED);
-    expect(events[2].type).toBe(GoalEventType.PAUSED);
-    expect(events[3].type).toBe(GoalEventType.RESUMED);
+    expect(events[1].type).toBe(GoalEventType.REFINED);
+    expect(events[2].type).toBe(GoalEventType.STARTED);
+    expect(events[3].type).toBe(GoalEventType.PAUSED);
+    expect(events[4].type).toBe(GoalEventType.RESUMED);
 
     // Verify all events persisted to file system
     const eventsDir = path.join(tmpDir, "events", goalId);
     const files = await fs.readdir(eventsDir);
-    expect(files).toHaveLength(4);
+    expect(files).toHaveLength(5);
     expect(files).toContain("000001.GoalAddedEvent.json");
-    expect(files).toContain("000002.GoalStartedEvent.json");
-    expect(files).toContain("000003.GoalPausedEvent.json");
-    expect(files).toContain("000004.GoalResumedEvent.json");
+    expect(files).toContain("000002.GoalRefinedEvent.json");
+    expect(files).toContain("000003.GoalStartedEvent.json");
+    expect(files).toContain("000004.GoalPausedEvent.json");
+    expect(files).toContain("000005.GoalResumedEvent.json");
   });
 
   it("pause event contains reason and note", async () => {
-    // Setup: create and start goal
+    // Setup: create, refine, and start goal
     const addHandler = new AddGoalCommandHandler(
       container.goalAddedEventStore,
       container.eventBus
@@ -150,6 +171,14 @@ describe("Pause-Resume Lifecycle Integration", () => {
       successCriteria: ["Works"],
     });
     const goalId = addResult.goalId;
+
+    const refineHandler = new RefineGoalCommandHandler(
+      container.goalRefinedEventStore,
+      container.goalRefinedEventStore,
+      container.goalRefinedProjector,
+      container.eventBus
+    );
+    await refineHandler.execute({ goalId });
 
     const startHandler = new StartGoalCommandHandler(
       container.goalStartedEventStore,
@@ -184,7 +213,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
   });
 
   it("can pause and resume multiple times", async () => {
-    // Setup: create and start goal
+    // Setup: create, refine, and start goal
     const addHandler = new AddGoalCommandHandler(
       container.goalAddedEventStore,
       container.eventBus
@@ -194,6 +223,14 @@ describe("Pause-Resume Lifecycle Integration", () => {
       successCriteria: ["Works"],
     });
     const goalId = addResult.goalId;
+
+    const refineHandler = new RefineGoalCommandHandler(
+      container.goalRefinedEventStore,
+      container.goalRefinedEventStore,
+      container.goalRefinedProjector,
+      container.eventBus
+    );
+    await refineHandler.execute({ goalId });
 
     const startHandler = new StartGoalCommandHandler(
       container.goalStartedEventStore,
@@ -243,7 +280,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
 
     // Verify event stream has all events
     const events = await container.eventStore.readStream(goalId);
-    expect(events).toHaveLength(6); // add, start, pause, resume, pause, resume
+    expect(events).toHaveLength(7); // add, refine, start, pause, resume, pause, resume
     const pausedEvents = events.filter((e: { type: string }) => e.type === GoalEventType.PAUSED);
     const resumedEvents = events.filter((e: { type: string }) => e.type === GoalEventType.RESUMED);
     expect(pausedEvents).toHaveLength(2);
@@ -261,6 +298,14 @@ describe("Pause-Resume Lifecycle Integration", () => {
       successCriteria: ["Consistent"],
     });
     const goalId = addResult.goalId;
+
+    const refineHandler = new RefineGoalCommandHandler(
+      container.goalRefinedEventStore,
+      container.goalRefinedEventStore,
+      container.goalRefinedProjector,
+      container.eventBus
+    );
+    await refineHandler.execute({ goalId });
 
     const startHandler = new StartGoalCommandHandler(
       container.goalStartedEventStore,
@@ -297,7 +342,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
 
     // Read event stream and reconstruct state
     const events = await container.eventStore.readStream(goalId);
-    expect(events).toHaveLength(4);
+    expect(events).toHaveLength(5);
 
     // Projection version should match latest event version
     expect(view!.version).toBe(events[events.length - 1].version);

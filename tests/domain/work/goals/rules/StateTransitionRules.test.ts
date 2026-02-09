@@ -4,6 +4,7 @@
 
 import {
   CanAddRule,
+  CanRefineRule,
   CanStartRule,
   CanUpdateRule,
   CanCompleteRule,
@@ -51,10 +52,52 @@ describe("StateTransitionRules", () => {
     });
   });
 
-  describe("CanStartRule", () => {
+  describe("CanRefineRule", () => {
     it("should pass when status is to-do", () => {
+      const rule = new CanRefineRule();
+      const state = createGoalState({ status: GoalStatus.TODO });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it("should fail when status is already refined", () => {
+      const rule = new CanRefineRule();
+      const state = createGoalState({ status: GoalStatus.REFINED });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain("Goal is already refined.");
+    });
+
+    it("should fail when status is doing", () => {
+      const rule = new CanRefineRule();
+      const state = createGoalState({ status: GoalStatus.DOING });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(false);
+      expect(result.errors[0]).toContain("Cannot refine goal in doing status");
+    });
+
+    it("should fail when status is completed", () => {
+      const rule = new CanRefineRule();
+      const state = createGoalState({ status: GoalStatus.COMPLETED });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(false);
+      expect(result.errors[0]).toContain("Cannot refine goal in completed status");
+    });
+  });
+
+  describe("CanStartRule", () => {
+    it("should fail when status is to-do (must be refined first)", () => {
       const rule = new CanStartRule();
       const state = createGoalState({ status: GoalStatus.TODO });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain("Cannot start goal. Goal must be refined first.");
+    });
+
+    it("should pass when status is refined", () => {
+      const rule = new CanStartRule();
+      const state = createGoalState({ status: GoalStatus.REFINED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(true);
       expect(result.errors).toEqual([]);
