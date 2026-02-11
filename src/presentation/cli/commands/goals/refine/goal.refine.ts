@@ -333,7 +333,11 @@ function renderGoalDetails(goal: GoalView, renderer: Renderer): void {
  * Outputs entity exploration commands and relation add syntax
  */
 function renderLlmRefinementPrompt(goalId: string, renderer: Renderer): void {
-  renderer.info("\n@LLM: Goal refinement phase - Explore entities and register relations.");
+  renderer.info("\n@LLM: CRITICAL - Goal refinement requires comprehensive relation registration.");
+  renderer.info("Relations capture essential context that will be provided when implementing this goal.");
+  renderer.info("Incomplete relations result in missing architectural constraints, patterns, and domain");
+  renderer.info("knowledge during implementation.");
+  renderer.info("\nBE THOROUGH: Most goals require 5-10+ relations across multiple entity types.");
 
   // Entity exploration commands
   renderer.info("\nExplore project entities with these commands:");
@@ -350,11 +354,20 @@ function renderLlmRefinementPrompt(goalId: string, renderer: Renderer): void {
 
   // Common relation types
   renderer.info("\nCommon relation types:");
-  renderer.info("  involves     - Goal involves this entity");
-  renderer.info("  uses         - Goal uses this entity");
-  renderer.info("  must-respect - Goal must respect this constraint");
-  renderer.info("  follows      - Goal follows this guideline");
-  renderer.info("  implements   - Goal implements this decision");
+  renderer.info("  involves     - Implementation will modify or interact with this entity");
+  renderer.info("  uses         - Implementation will use or depend on this entity");
+  renderer.info("  must-respect - Implementation must adhere to this constraint");
+  renderer.info("  follows      - Implementation must follow this practice or standard");
+  renderer.info("  implements   - Implementation applies or realizes this architectural decision");
+
+  // Guidance on what to look for
+  renderer.info("\nWhat to register:");
+  renderer.info("  - Invariants: Architectural constraints the implementation must adhere to");
+  renderer.info("  - Guidelines: Coding standards, testing requirements the implementation must follow");
+  renderer.info("  - Decisions: Architectural patterns the implementation will apply");
+  renderer.info("  - Components: Existing code this implementation will modify or depend on");
+  renderer.info("  - Dependencies: External libraries the implementation will integrate");
+  renderer.info("\nDO NOT approve refinement until comprehensive relations are registered!");
 }
 
 /**
