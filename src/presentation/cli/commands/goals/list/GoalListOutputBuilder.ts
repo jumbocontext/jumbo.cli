@@ -41,13 +41,22 @@ export class GoalListOutputBuilder {
   }
 
   /**
+   * Build output for when no goals match the filter criteria.
+   * Renders a custom message.
+   */
+  buildNoGoalsFound(message: string): TerminalOutput {
+    this.builder.reset();
+    this.builder.addPrompt(message);
+    return this.builder.build();
+  }
+
+  /**
+   * @deprecated Use buildNoGoalsFound instead
    * Build output for when there are no active goals.
    * Renders a message indicating all goals are completed.
    */
   buildNoActiveGoals(): TerminalOutput {
-    this.builder.reset();
-    this.builder.addPrompt("No active goals. All goals are completed.");
-    return this.builder.build();
+    return this.buildNoGoalsFound("No active goals. All goals are completed.");
   }
 
   /**
@@ -88,6 +97,44 @@ export class GoalListOutputBuilder {
     }
 
     this.builder.addPrompt(output);
+    return this.builder.build();
+  }
+
+  /**
+   * Build output for non-TTY (structured JSON for programmatic consumers).
+   * Renders list of goals as structured array.
+   */
+  buildStructuredOutput(activeGoals: GoalView[]): TerminalOutput {
+    this.builder.reset();
+
+    // Sort using same logic as human-readable output
+    const statusOrder: Record<string, number> = {
+      "qualified": 0,
+      "in-review": 1,
+      "paused": 2,
+      "doing": 3,
+      "blocked": 4,
+      "refined": 5,
+      "to-do": 6
+    };
+
+    const sortedGoals = [...activeGoals].sort((a: GoalView, b: GoalView) => {
+      const statusDiff = (statusOrder[a.status] ?? 99) - (statusOrder[b.status] ?? 99);
+      if (statusDiff !== 0) return statusDiff;
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+
+    this.builder.addData({
+      goals: sortedGoals.map(goal => ({
+        goalId: goal.goalId,
+        objective: goal.objective,
+        status: goal.status,
+        note: goal.note,
+        createdAt: goal.createdAt,
+        updatedAt: goal.updatedAt
+      })),
+      count: sortedGoals.length
+    });
     return this.builder.build();
   }
 
