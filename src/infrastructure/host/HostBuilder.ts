@@ -573,7 +573,9 @@ export class HostBuilder {
       goalContextReader,
       eventBus,
       goalClaimPolicy,
-      workerIdentityReader
+      workerIdentityReader,
+      goalContextQueryHandler,
+      goalContextViewMapper
     );
     const qualifyGoalController = new QualifyGoalController(
       qualifyGoalCommandHandler,

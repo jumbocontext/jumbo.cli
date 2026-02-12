@@ -8,8 +8,10 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { QualifyGoalRequest } from "../../../../../application/goals/qualify/QualifyGoalRequest.js";
-import { QualifyGoalResponse } from "../../../../../application/goals/qualify/QualifyGoalResponse.js";
+import { QualifyGoalCommandHandler } from "../../../../../application/goals/qualify/QualifyGoalCommandHandler.js";
+import { QualifyGoalCommand } from "../../../../../application/goals/qualify/QualifyGoalCommand.js";
+import { GoalQualifyOutputBuilder } from "./GoalQualifyOutputBuilder.js";
+import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
 
 /**
  * Command metadata for auto-registration
@@ -44,55 +46,31 @@ export async function goalQualify(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Get controller from container
-    const controller = container.qualifyGoalController;
+    // 1. Create command handler with mapper
+    const goalContextViewMapper = new GoalContextViewMapper();
+    const commandHandler = new QualifyGoalCommandHandler(
+      container.goalQualifiedEventStore,
+      container.goalQualifiedEventStore,
+      container.goalContextReader,
+      container.eventBus,
+      container.goalClaimPolicy,
+      container.workerIdentityReader,
+      container.goalContextQueryHandler,
+      goalContextViewMapper
+    );
 
-    // 2. Create request
-    const request: QualifyGoalRequest = {
-      goalId: options.goalId,
-    };
+    // 2. Execute command - returns enriched goal context view
+    const command: QualifyGoalCommand = { goalId: options.goalId };
+    const goalContextView = await commandHandler.execute(command);
 
-    // 3. Handle request
-    const response = await controller.handle(request);
+    // 3. Build and render output using builder pattern
+    const outputBuilder = new GoalQualifyOutputBuilder();
+    const output = outputBuilder.buildSuccess(goalContextView);
 
-    // 4. Render qualification result with next steps
-    renderQualificationResult(renderer, response);
-    renderer.divider();
+    renderer.info(output.toHumanReadable());
 
   } catch (error) {
     renderer.error("Failed to qualify goal", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-}
-
-/**
- * Render the qualification result with instructions to complete the goal
- */
-function renderQualificationResult(
-  renderer: Renderer,
-  response: QualifyGoalResponse
-) {
-  // Header
-  renderer.headline("# Goal Qualified");
-  renderer.info(`Goal ID: ${response.goalId}`);
-  renderer.info(`Objective: ${response.objective}`);
-  renderer.info(`Status: ${response.status}`);
-  renderer.divider();
-
-  // Success message
-  renderer.headline("## QA Review Passed");
-  renderer.info("The goal has been verified and qualified for completion.");
-  renderer.divider();
-
-  // Next steps
-  renderer.headline("## Next Steps");
-  renderer.info("Complete the goal:");
-  renderer.info(`  Run: jumbo goal complete --goal-id ${response.goalId}`);
-
-  if (response.nextGoalId) {
-    renderer.info("\nAfter completion, the next goal in the queue is:");
-    renderer.info(`  Goal ID: ${response.nextGoalId}`);
-  }
-
-  renderer.info("---\n");
 }

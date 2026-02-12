@@ -15,6 +15,9 @@ import { IGoalClaimStore } from "../../../../src/application/goals/claims/IGoalC
 import { IClock } from "../../../../src/application/time-and-date/IClock";
 import { IWorkerIdentityReader } from "../../../../src/application/host/workers/IWorkerIdentityReader";
 import { createWorkerId } from "../../../../src/application/host/workers/WorkerId";
+import { GoalContextQueryHandler } from "../../../../src/application/context/GoalContextQueryHandler";
+import { GoalContextViewMapper } from "../../../../src/application/context/GoalContextViewMapper";
+import { GoalContext } from "../../../../src/application/context/GoalContext";
 
 describe("QualifyGoalCommandHandler", () => {
   let eventWriter: IGoalQualifiedEventWriter;
@@ -25,6 +28,8 @@ describe("QualifyGoalCommandHandler", () => {
   let clock: IClock;
   let claimPolicy: GoalClaimPolicy;
   let workerIdentityReader: IWorkerIdentityReader;
+  let goalContextQueryHandler: GoalContextQueryHandler;
+  let goalContextViewMapper: GoalContextViewMapper;
   let handler: QualifyGoalCommandHandler;
 
   const testWorkerId = createWorkerId("test-worker-id");
@@ -71,13 +76,23 @@ describe("QualifyGoalCommandHandler", () => {
       workerId: testWorkerId,
     };
 
+    // Mock goal context query handler
+    goalContextQueryHandler = {
+      execute: jest.fn(),
+    } as any;
+
+    // Create goal context view mapper
+    goalContextViewMapper = new GoalContextViewMapper();
+
     handler = new QualifyGoalCommandHandler(
       eventWriter,
       eventReader,
       goalReader,
       eventBus,
       claimPolicy,
-      workerIdentityReader
+      workerIdentityReader,
+      goalContextQueryHandler,
+      goalContextViewMapper
     );
   });
 
@@ -94,7 +109,7 @@ describe("QualifyGoalCommandHandler", () => {
       successCriteria: ["Users can log in"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.INREVIEW,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -115,7 +130,7 @@ describe("QualifyGoalCommandHandler", () => {
           successCriteria: ["Users can log in"],
           scopeIn: [],
           scopeOut: [],
-          
+
           status: GoalStatus.TODO,
         },
       },
@@ -141,11 +156,23 @@ describe("QualifyGoalCommandHandler", () => {
     ];
     (eventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
 
+    // Mock goal context query result
+    const mockContext: GoalContext = {
+      goal: mockView,
+      components: [],
+      dependencies: [],
+      decisions: [],
+      invariants: [],
+      guidelines: [],
+      architecture: null,
+    };
+    (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
+
     // Act
     const result = await handler.execute(command);
 
     // Assert
-    expect(result.goalId).toBe("goal_123");
+    expect(result.goal.goalId).toBe("goal_123");
 
     // Verify event was appended to event store
     expect(eventWriter.append).toHaveBeenCalledTimes(1);
@@ -411,7 +438,7 @@ describe("QualifyGoalCommandHandler", () => {
       successCriteria: ["Users can log in"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.INREVIEW,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -441,7 +468,7 @@ describe("QualifyGoalCommandHandler", () => {
           successCriteria: ["Users can log in"],
           scopeIn: [],
           scopeOut: [],
-          
+
           status: GoalStatus.TODO,
         },
       },
@@ -467,11 +494,23 @@ describe("QualifyGoalCommandHandler", () => {
     ];
     (eventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
 
+    // Mock goal context query result
+    const mockContext: GoalContext = {
+      goal: mockView,
+      components: [],
+      dependencies: [],
+      decisions: [],
+      invariants: [],
+      guidelines: [],
+      architecture: null,
+    };
+    (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
+
     // Act
     const result = await handler.execute(command);
 
     // Assert
-    expect(result.goalId).toBe("goal_123");
+    expect(result.goal.goalId).toBe("goal_123");
     expect(eventWriter.append).toHaveBeenCalledTimes(1);
   });
 
@@ -488,7 +527,7 @@ describe("QualifyGoalCommandHandler", () => {
       successCriteria: ["Users can log in"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.INREVIEW,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -517,7 +556,7 @@ describe("QualifyGoalCommandHandler", () => {
           successCriteria: ["Users can log in"],
           scopeIn: [],
           scopeOut: [],
-          
+
           status: GoalStatus.TODO,
         },
       },
@@ -543,11 +582,23 @@ describe("QualifyGoalCommandHandler", () => {
     ];
     (eventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
 
+    // Mock goal context query result
+    const mockContext: GoalContext = {
+      goal: mockView,
+      components: [],
+      dependencies: [],
+      decisions: [],
+      invariants: [],
+      guidelines: [],
+      architecture: null,
+    };
+    (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
+
     // Act
     const result = await handler.execute(command);
 
     // Assert
-    expect(result.goalId).toBe("goal_123");
+    expect(result.goal.goalId).toBe("goal_123");
     expect(eventWriter.append).toHaveBeenCalledTimes(1);
   });
 
