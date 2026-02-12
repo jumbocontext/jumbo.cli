@@ -8,6 +8,10 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
+import { GoalShowOutputBuilder } from "./GoalShowOutputBuilder.js";
+import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
+import { ShowGoalCommandHandler } from "../../../../../application/goals/show/ShowGoalCommandHandler.js";
+import { ShowGoalCommand } from "../../../../../application/goals/show/ShowGoalCommand.js";
 
 /**
  * Command metadata for auto-registration
@@ -31,32 +35,6 @@ export const metadata: CommandMetadata = {
 };
 
 /**
- * Format status with visual indicator
- */
-function formatStatus(status: string): string {
-  switch (status) {
-    case "doing":
-      return "doing (in progress)";
-    case "blocked":
-      return "blocked";
-    case "to-do":
-      return "to-do (planned)";
-    case "done":
-      return "done (completed)";
-    case "refined":
-      return "refined (ready to start)";
-    case "paused":
-      return "paused (temporarily stopped)";
-    case "in-review":
-      return "in-review (awaiting QA)";
-    case "qualified":
-      return "qualified (ready for completion)";
-    default:
-      return status;
-  }
-}
-
-/**
  * Command handler
  * Called by Commander with parsed options
  */
@@ -67,88 +45,41 @@ export async function goalShow(
   const renderer = Renderer.getInstance();
 
   try {
-    // Query goal by ID
-    const goal = await container.goalContextReader.findById(options.goalId);
+    // 1. Create command handler with context dependencies
+    const goalContextViewMapper = new GoalContextViewMapper();
+    const commandHandler = new ShowGoalCommandHandler(
+      container.goalContextQueryHandler,
+      goalContextViewMapper
+    );
 
-    if (!goal) {
+    // 2. Execute command - returns goal context view
+    const command: ShowGoalCommand = { goalId: options.goalId };
+    const contextView = await commandHandler.execute(command);
+
+    // 3. Build and render output using builder pattern
+    // Preserve TTY vs pipe behavior: formatted text for humans, JSON for machines
+    const outputBuilder = new GoalShowOutputBuilder();
+    if (process.stdout.isTTY) {
+      const output = outputBuilder.build(contextView);
+      renderer.info(output.toHumanReadable());
+    } else {
+      const output = outputBuilder.buildStructuredOutput(contextView);
+      // For non-TTY (pipes/redirects), extract data and output as JSON
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === 'data');
+      if (dataSection) {
+        renderer.data(dataSection.content as Record<string, unknown>);
+      }
+    }
+
+  } catch (error) {
+    // Handle goal not found case
+    if (error instanceof Error && error.message.includes("Goal not found")) {
       renderer.error("Goal not found", `No goal exists with ID: ${options.goalId}`);
       process.exit(1);
     }
 
-    // For TTY (human): display formatted text
-    // For pipe/file (machine): output structured JSON
-    if (process.stdout.isTTY) {
-      console.log("\n=== Goal Details ===\n");
-      console.log(`Goal ID:    ${goal.goalId}`);
-      console.log(`Objective:  ${goal.objective}`);
-      console.log(`Status:     ${formatStatus(goal.status)}`);
-      console.log(`Version:    ${goal.version}`);
-      console.log(`Created:    ${goal.createdAt}`);
-      console.log(`Updated:    ${goal.updatedAt}`);
-
-      if (goal.note) {
-        console.log(`\nNote:\n  ${goal.note}`);
-      }
-
-      if (goal.successCriteria.length > 0) {
-        console.log("\nSuccess Criteria:");
-        for (const criterion of goal.successCriteria) {
-          console.log(`  - ${criterion}`);
-        }
-      }
-
-      if (goal.scopeIn.length > 0 || goal.scopeOut.length > 0) {
-        console.log("\nScope:");
-        if (goal.scopeIn.length > 0) {
-          console.log("  In:");
-          for (const item of goal.scopeIn) {
-            console.log(`    - ${item}`);
-          }
-        }
-        if (goal.scopeOut.length > 0) {
-          console.log("  Out:");
-          for (const item of goal.scopeOut) {
-            console.log(`    - ${item}`);
-          }
-        }
-      }
-
-      if (goal.nextGoalId) {
-        console.log(`\nNext Goal:  ${goal.nextGoalId}`);
-      }
-
-      if (goal.claimedBy) {
-        console.log("\nClaim:");
-        console.log(`  Claimed By:  ${goal.claimedBy}`);
-        console.log(`  Claimed At:  ${goal.claimedAt}`);
-        console.log(`  Expires At:  ${goal.claimExpiresAt}`);
-      }
-
-      console.log("\n---");
-      console.log("NOTE: This command provides goal overview only.");
-      console.log("To load full implementation context (architecture, decisions, invariants),");
-      console.log(`run: jumbo goal start --goal-id ${goal.goalId}`);
-      console.log("");
-    } else {
-      // Structured output for programmatic consumers
-      renderer.data({
-        goalId: goal.goalId,
-        objective: goal.objective,
-        successCriteria: goal.successCriteria,
-        scopeIn: goal.scopeIn,
-        scopeOut: goal.scopeOut,
-        status: goal.status,
-        version: goal.version,
-        createdAt: goal.createdAt,
-        updatedAt: goal.updatedAt,
-        note: goal.note,
-        nextGoalId: goal.nextGoalId,
-        claimedBy: goal.claimedBy,
-        claimedAt: goal.claimedAt,
-        claimExpiresAt: goal.claimExpiresAt
-      });
-    }
-  } catch (error) {
+    // Handle other errors
     renderer.error("Failed to show goal", error instanceof Error ? error : String(error));
     process.exit(1);
   }

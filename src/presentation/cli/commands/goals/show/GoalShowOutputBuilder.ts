@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { GoalView } from '../../../../../application/goals/GoalView.js';
+import { GoalContextView } from '../../../../../application/context/GoalContextView.js';
 
 /**
  * Specialized builder for goal.show command output.
@@ -46,8 +46,9 @@ export class GoalShowOutputBuilder {
    * Build output for TTY (human-readable formatted text).
    * Renders complete goal details with all fields.
    */
-  buildTtyOutput(goal: GoalView): TerminalOutput {
+  build(context: GoalContextView): TerminalOutput {
     this.builder.reset();
+    const goal = context.goal;
 
     let output = "\n=== Goal Details ===\n\n" +
                  `Goal ID:    ${goal.goalId}\n` +
@@ -95,36 +96,119 @@ export class GoalShowOutputBuilder {
                 `\n  Expires At:  ${goal.claimExpiresAt}`;
     }
 
-    output += "\n\n---\n" +
-              "NOTE: This command provides goal overview only.\n" +
-              "To load full implementation context (architecture, decisions, invariants),\n" +
-              `run: jumbo goal start --goal-id ${goal.goalId}\n`;
-
     this.builder.addPrompt(output);
+
+    // Architecture section
+    if (context.architecture) {
+      const arch = context.architecture;
+      let archOutput = `\n=== Architecture ===\n\n` +
+                       `Description: ${arch.description}\n` +
+                       `Organization: ${arch.organization}`;
+
+      if (arch.patterns && arch.patterns.length > 0) {
+        archOutput += "\n\nDesign Patterns:";
+        for (const pattern of arch.patterns) {
+          archOutput += `\n  - ${pattern}`;
+        }
+      }
+
+      if (arch.principles && arch.principles.length > 0) {
+        archOutput += "\n\nPrinciples:";
+        for (const principle of arch.principles) {
+          archOutput += `\n  - ${principle}`;
+        }
+      }
+
+      this.builder.addPrompt(archOutput);
+    }
+
+    // Components section
+    if (context.components.length > 0) {
+      let componentsOutput = "\n=== Related Components ===\n";
+      for (const component of context.components) {
+        componentsOutput += `\n- ${component.name}: ${component.description}`;
+      }
+      this.builder.addPrompt(componentsOutput);
+    }
+
+    // Dependencies section
+    if (context.dependencies.length > 0) {
+      let dependenciesOutput = "\n=== Related Dependencies ===\n";
+      for (const dependency of context.dependencies) {
+        const purpose = dependency.contract || dependency.endpoint || 'Dependency relationship';
+        dependenciesOutput += `\n- ${dependency.consumerId} → ${dependency.providerId}: ${purpose}`;
+      }
+      this.builder.addPrompt(dependenciesOutput);
+    }
+
+    // Decisions section
+    if (context.decisions.length > 0) {
+      let decisionsOutput = "\n=== Related Decisions ===\n";
+      for (const decision of context.decisions) {
+        decisionsOutput += `\n- ${decision.title}: ${decision.rationale}`;
+      }
+      this.builder.addPrompt(decisionsOutput);
+    }
+
+    // Invariants section
+    if (context.invariants.length > 0) {
+      let invariantsOutput = "\n=== Invariants ===\n";
+      for (const invariant of context.invariants) {
+        invariantsOutput += `\n- ${invariant.title}: ${invariant.description}`;
+      }
+      this.builder.addPrompt(invariantsOutput);
+    }
+
+    // Guidelines section
+    if (context.guidelines.length > 0) {
+      let guidelinesOutput = "\n=== Guidelines ===\n";
+      for (const guideline of context.guidelines) {
+        guidelinesOutput += `\n- ${guideline.category}: ${guideline.description}`;
+      }
+      this.builder.addPrompt(guidelinesOutput);
+    }
+
+    // Closing note
+    this.builder.addPrompt(
+      "\n---\n" +
+      "NOTE: To load this goal with full LLM implementation instructions,\n" +
+      `run: jumbo goal start --goal-id ${goal.goalId}\n`
+    );
+
     return this.builder.build();
   }
 
   /**
    * Build output for non-TTY (structured JSON for programmatic consumers).
-   * Renders goal data as structured object.
+   * Renders complete goal context as structured object.
    */
-  buildStructuredOutput(goal: GoalView): TerminalOutput {
+  buildStructuredOutput(context: GoalContextView): TerminalOutput {
     this.builder.reset();
+    const goal = context.goal;
+
     this.builder.addData({
-      goalId: goal.goalId,
-      objective: goal.objective,
-      successCriteria: goal.successCriteria,
-      scopeIn: goal.scopeIn,
-      scopeOut: goal.scopeOut,
-      status: goal.status,
-      version: goal.version,
-      createdAt: goal.createdAt,
-      updatedAt: goal.updatedAt,
-      note: goal.note,
-      nextGoalId: goal.nextGoalId,
-      claimedBy: goal.claimedBy,
-      claimedAt: goal.claimedAt,
-      claimExpiresAt: goal.claimExpiresAt
+      goal: {
+        goalId: goal.goalId,
+        objective: goal.objective,
+        successCriteria: goal.successCriteria,
+        scopeIn: goal.scopeIn,
+        scopeOut: goal.scopeOut,
+        status: goal.status,
+        version: goal.version,
+        createdAt: goal.createdAt,
+        updatedAt: goal.updatedAt,
+        note: goal.note,
+        nextGoalId: goal.nextGoalId,
+        claimedBy: goal.claimedBy,
+        claimedAt: goal.claimedAt,
+        claimExpiresAt: goal.claimExpiresAt
+      },
+      architecture: context.architecture,
+      components: context.components,
+      dependencies: context.dependencies,
+      decisions: context.decisions,
+      invariants: context.invariants,
+      guidelines: context.guidelines
     });
     return this.builder.build();
   }
