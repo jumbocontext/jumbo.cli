@@ -282,7 +282,8 @@ describe("goal.refine command", () => {
       );
 
       const allOutput = consoleLogSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-      expect(allOutput).toContain("@LLM: Goal refinement phase");
+      expect(allOutput).toContain("@LLM: CRITICAL - Goal refinement requires comprehensive relation registration");
+      expect(allOutput).toContain("@LLM: Goal is now refined and ready to start");
     });
 
     it("should output JSON format when configured", async () => {

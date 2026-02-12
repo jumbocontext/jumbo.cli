@@ -1,0 +1,184 @@
+import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
+import { TerminalOutput } from '../../../output/TerminalOutput.js';
+import { ReviewGoalResponse } from '../../../../../application/goals/review/ReviewGoalResponse.js';
+
+/**
+ * Specialized builder for goal.review command output.
+ * Encapsulates all output rendering for the review goal command.
+ *
+ * Pattern: Output builders contain ALL prompt and output content.
+ * Command files must not duplicate or add additional output after calling the builder.
+ */
+export class GoalReviewOutputBuilder {
+  private builder: TerminalOutputBuilder;
+
+  constructor() {
+    this.builder = new TerminalOutputBuilder();
+  }
+
+  /**
+   * Build output for successful goal review submission.
+   * Renders comprehensive QA criteria for verification.
+   */
+  buildSuccess(response: ReviewGoalResponse): TerminalOutput {
+    this.builder.reset();
+    const criteria = response.criteria;
+    const goal = criteria.goal;
+
+    // Build complete review prompt as single section
+    let output = "\n# Goal Review Instructions\n" +
+                 "You are the quality assurance specialist tasked with reviewing the goal (outlined below) implementation. The implementation MUST NOT HAVE DEVIATED from the instructions.\n" +
+                 "Your (the specialist's) skills are that of the perfect software engineer - the amalgamation of Robert C. Martin, Martin Fowler, and Eric Evans.\n" +
+                 "You expect perfect, efficient, secure, and well-documented code.\n" +
+                 "You are now in QA mode. Verify the implementation against the details below.\n" +
+                 "Report and fix any failures.\n" +
+                 "---\n\n";
+
+    // Objective and Success Criteria
+    output += `## Objective:\n'${goal.objective}'\n` +
+              "## Success Criteria:\n";
+    goal.successCriteria.forEach((c) => {
+      output += `- ${c}\n`;
+    });
+    output += "\nVERIFY: Does the implementation succeed in fulfilling the objective and these specific criteria and adhere to the instructions below?\n" +
+              `INSTRUCTION: If ANY criteria are NOT met, then report the issues, fix them, and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+
+    // Scope (if scoped)
+    if (this.isScoped(response)) {
+      output += "\n\n### Scope:";
+
+      if (goal.scopeIn && goal.scopeIn.length > 0) {
+        output += "\n#### In Scope\n";
+        goal.scopeIn.forEach((item: string) => {
+          output += `- ${item}\n`;
+        });
+        output += "\nVERIFY: The implementation stayed within the defined scope.\n" +
+                  `INSTRUCTION: If any work was done outside the defined scope, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+      }
+
+      if (goal.scopeOut && goal.scopeOut.length > 0) {
+        output += "\n#### Out of Scope\n";
+        goal.scopeOut.forEach((item: string) => {
+          output += `- ${item}\n`;
+        });
+        output += "\nVERIFY: The implementation did not overlap these items.\n" +
+                  `INSTRUCTION: If any work overlapped these items, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+      }
+    }
+
+    // Architecture
+    if (criteria.architecture) {
+      output += "\n\n### Solution Architecture:\n" +
+                `High-level Description: ${criteria.architecture.description}\n\n` +
+                `Organization Style: ${criteria.architecture.organization}\n\n` +
+                "\nVERIFY: Namespaces (directory structures) and file names introduced by you (the developer) maintain the solution's architectural organization style.\n" +
+                `INSTRUCTION: If any namespaces or file names do not maintain the solution's architectural organization style, then adjust them and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+
+      if (criteria.architecture.patterns && criteria.architecture.patterns.length > 0) {
+        output += "\n\n#### Design Patterns:\n";
+        criteria.architecture.patterns.forEach((pattern: string) => {
+          output += `- ${pattern}\n`;
+        });
+        output += "\nVERIFY: You (the developer) leveraged these architectural patterns where applicable.\n" +
+                  "If the goal does not fit a prescribed pattern, then did you register the new architecture pattern with jumbo. Run 'jumbo architecture update --help' for further instructions.\n" +
+                  "New patterns MUST not conflict with existing patterns. For example, if the solution uses a layered architecture pattern, then you MUST NOT introduce a microservices pattern.\n" +
+                  `INSTRUCTION: If any architectural patterns were not leveraged or new patterns conflict with existing ones, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+      }
+
+      if (criteria.architecture.principles && criteria.architecture.principles.length > 0) {
+        output += "\n\n#### Principles:\n";
+        criteria.architecture.principles.forEach((principle: string) => {
+          output += `- ${principle}\n`;
+        });
+        output += "\nVERIFY: Artifacts created by you (the developer) directly reflect these principles.\n" +
+                  `INSTRUCTION: If any artifacts do not reflect these principles, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+      }
+    }
+
+    // Components
+    if (criteria.components.length > 0) {
+      output += "\n\n## Relevant Components:\n";
+      criteria.components.forEach((c) => {
+        output += `- ${c.name}: ${c.description}\n`;
+      });
+      output += "\nVERIFY: These components were considered in the implementation.\n" +
+                `INSTRUCTION: If any components were not considered, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+    }
+
+    // Dependencies
+    if (criteria.dependencies.length > 0) {
+      output += "\n\n## Relevant Dependencies:\n";
+      criteria.dependencies.forEach((d) => {
+        output += `- ${d.name} (v${d.version}): ${d.purpose}\n`;
+      });
+      output += "\nVERIFY: These dependencies are considered in the implementation.\n" +
+                `INSTRUCTION: If any dependencies were not considered, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+    }
+
+    // Decisions
+    if (criteria.decisions.length > 0) {
+      output += "\n\n## Relevant Decisions:\n";
+      criteria.decisions.forEach((d) => {
+        output += `- ${d.title}: ${d.rationale}\n`;
+      });
+      output += "\nNOTE: The solution may contain artifacts that reflect previous design decisions.\n" +
+                "VERIFY:These design decisions are reflected in the implementation and ensure the trajectory of the solution is consistent.\n" +
+                `INSTRUCTION: If any design decisions are not reflected or the trajectory is inconsistent, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+    }
+
+    // Invariants
+    if (criteria.invariants.length > 0) {
+      output += "\n\n## Invariants:\n";
+      criteria.invariants.forEach((inv) => {
+        output += `- ${inv.category}:\n  - ${inv.description}\n`;
+      });
+      output += "\nVERIFY: The implementation adheres to ALL of these invariants.\n" +
+                `INSTRUCTION: If the implementation does not adhere to any of these invariants, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+    }
+
+    // Guidelines
+    if (criteria.guidelines.length > 0) {
+      output += "\n\n## Guidelines:\n";
+      criteria.guidelines.forEach((g) => {
+        output += `- ${g.category}: ${g.description}\n`;
+      });
+      output += "\nVERIFY: The implementation follows these guidelines.\n" +
+                `INSTRUCTION: If the implementation does not follow any of these guidelines, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
+    }
+
+    // Final instructions
+    output += "\n\n---\n" +
+              "## Next Steps\n" +
+              "If ALL criteria are met:\n" +
+              `  Run: jumbo goal qualify --goal-id ${response.goalId}\n\n` +
+              "If ANY criteria are NOT met:\n" +
+              `  Fix the issues and run: jumbo goal review --goal-id ${response.goalId} again\n` +
+              "---\n";
+
+    this.builder.addPrompt(output);
+    return this.builder.build();
+  }
+
+  /**
+   * Build output for goal review failure.
+   * Renders error message when goal review fails.
+   */
+  buildFailureError(error: Error | string): TerminalOutput {
+    this.builder.reset();
+    this.builder.addPrompt("✗ Failed to submit goal for review");
+    this.builder.addData({
+      message: error instanceof Error ? error.message : error
+    });
+    return this.builder.build();
+  }
+
+  /**
+   * Helper to determine if goal is scoped
+   */
+  private isScoped(response: ReviewGoalResponse): boolean {
+    return (
+      (Array.isArray(response.criteria.goal.scopeIn) && response.criteria.goal.scopeIn.length > 0) ||
+      (Array.isArray(response.criteria.goal.scopeOut) && response.criteria.goal.scopeOut.length > 0)
+    );
+  }
+}

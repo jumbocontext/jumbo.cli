@@ -72,11 +72,11 @@ describe("Goal Aggregate", () => {
     it("should throw error if objective is too long", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      const longObjective = "a".repeat(501); // Max is 500
+      const longObjective = "a".repeat(1501); // Max is 1500
 
       // Act & Assert
       expect(() => goal.add(longObjective, ["Criterion 1"])).toThrow(
-        "Objective must be less than 500 characters"
+        "Objective must be less than 1500 characters"
       );
     });
 
@@ -104,11 +104,11 @@ describe("Goal Aggregate", () => {
     it("should throw error if success criterion is too long", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      const longCriterion = "a".repeat(601); // Max is 600
+      const longCriterion = "a".repeat(1001); // Max is 1000
 
       // Act & Assert
       expect(() => goal.add("My objective", [longCriterion])).toThrow(
-        "Success criterion must be less than 600 characters"
+        "Success criterion must be less than 1000 characters"
       );
     });
 
@@ -457,11 +457,11 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Original objective", ["Criterion 1"]);
-      const longObjective = "a".repeat(501); // Max is 500
+      const longObjective = "a".repeat(1501); // Max is 1500
 
       // Act & Assert
       expect(() => goal.update(longObjective)).toThrow(
-        "Objective must be less than 500 characters"
+        "Objective must be less than 1500 characters"
       );
     });
 
@@ -492,11 +492,11 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Original objective", ["Criterion 1"]);
-      const longCriterion = "a".repeat(601); // Max is 600
+      const longCriterion = "a".repeat(1001); // Max is 1000
 
       // Act & Assert
       expect(() => goal.update(undefined, [longCriterion])).toThrow(
-        "Success criterion must be less than 600 characters"
+        "Success criterion must be less than 1000 characters"
       );
     });
 
