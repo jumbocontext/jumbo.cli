@@ -29,6 +29,14 @@ export class GoalShowOutputBuilder {
         return "to-do (planned)";
       case "done":
         return "done (completed)";
+      case "refined":
+        return "refined (ready to start)";
+      case "paused":
+        return "paused (temporarily stopped)";
+      case "in-review":
+        return "in-review (awaiting QA)";
+      case "qualified":
+        return "qualified (ready for completion)";
       default:
         return status;
     }

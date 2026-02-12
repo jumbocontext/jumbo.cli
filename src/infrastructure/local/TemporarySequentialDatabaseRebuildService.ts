@@ -56,6 +56,10 @@ import { SqliteGoalResumedProjector } from "../goals/resume/SqliteGoalResumedPro
 import { SqliteGoalCompletedProjector } from "../goals/complete/SqliteGoalCompletedProjector.js";
 import { SqliteGoalResetProjector } from "../goals/reset/SqliteGoalResetProjector.js";
 import { SqliteGoalRemovedProjector } from "../goals/remove/SqliteGoalRemovedProjector.js";
+import { SqliteGoalRefinedProjector } from "../goals/refine/SqliteGoalRefinedProjector.js";
+import { SqliteGoalProgressUpdatedProjector } from "../goals/update-progress/SqliteGoalProgressUpdatedProjector.js";
+import { SqliteGoalSubmittedForReviewProjector } from "../goals/review/SqliteGoalSubmittedForReviewProjector.js";
+import { SqliteGoalQualifiedProjector } from "../goals/qualify/SqliteGoalQualifiedProjector.js";
 import { SqliteArchitectureDefinedProjector } from "../architecture/define/SqliteArchitectureDefinedProjector.js";
 import { SqliteArchitectureUpdatedProjector } from "../architecture/update/SqliteArchitectureUpdatedProjector.js";
 import { SqliteComponentAddedProjector } from "../components/add/SqliteComponentAddedProjector.js";
@@ -103,6 +107,10 @@ import { GoalResumedEventHandler } from "../../application/goals/resume/GoalResu
 import { GoalCompletedEventHandler } from "../../application/goals/complete/GoalCompletedEventHandler.js";
 import { GoalResetEventHandler } from "../../application/goals/reset/GoalResetEventHandler.js";
 import { GoalRemovedEventHandler } from "../../application/goals/remove/GoalRemovedEventHandler.js";
+import { GoalRefinedEventHandler } from "../../application/goals/refine/GoalRefinedEventHandler.js";
+import { GoalProgressUpdatedEventHandler } from "../../application/goals/update-progress/GoalProgressUpdatedEventHandler.js";
+import { GoalSubmittedForReviewEventHandler } from "../../application/goals/review/GoalSubmittedForReviewEventHandler.js";
+import { GoalQualifiedEventHandler } from "../../application/goals/qualify/GoalQualifiedEventHandler.js";
 import { DecisionAddedEventHandler } from "../../application/decisions/add/DecisionAddedEventHandler.js";
 import { DecisionUpdatedEventHandler } from "../../application/decisions/update/DecisionUpdatedEventHandler.js";
 import { DecisionReversedEventHandler } from "../../application/decisions/reverse/DecisionReversedEventHandler.js";
@@ -195,6 +203,10 @@ export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebui
     const goalCompletedProjector = new SqliteGoalCompletedProjector(newDb);
     const goalResetProjector = new SqliteGoalResetProjector(newDb);
     const goalRemovedProjector = new SqliteGoalRemovedProjector(newDb);
+    const goalRefinedProjector = new SqliteGoalRefinedProjector(newDb);
+    const goalProgressUpdatedProjector = new SqliteGoalProgressUpdatedProjector(newDb);
+    const goalSubmittedForReviewProjector = new SqliteGoalSubmittedForReviewProjector(newDb);
+    const goalQualifiedProjector = new SqliteGoalQualifiedProjector(newDb);
     const architectureDefinedProjector = new SqliteArchitectureDefinedProjector(newDb);
     const architectureUpdatedProjector = new SqliteArchitectureUpdatedProjector(newDb);
     const componentAddedProjector = new SqliteComponentAddedProjector(newDb);
@@ -247,6 +259,10 @@ export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebui
     const goalCompletedEventHandler = new GoalCompletedEventHandler(goalCompletedProjector);
     const goalResetEventHandler = new GoalResetEventHandler(goalResetProjector);
     const goalRemovedEventHandler = new GoalRemovedEventHandler(goalRemovedProjector);
+    const goalRefinedEventHandler = new GoalRefinedEventHandler(goalRefinedProjector);
+    const goalProgressUpdatedEventHandler = new GoalProgressUpdatedEventHandler(goalProgressUpdatedProjector);
+    const goalSubmittedForReviewEventHandler = new GoalSubmittedForReviewEventHandler(goalSubmittedForReviewProjector);
+    const goalQualifiedEventHandler = new GoalQualifiedEventHandler(goalQualifiedProjector);
     const architectureDefinedEventHandler = new ArchitectureDefinedEventHandler(architectureDefinedProjector);
     const architectureUpdatedEventHandler = new ArchitectureUpdatedEventHandler(architectureUpdatedProjector);
     const componentAddedEventHandler = new ComponentAddedEventHandler(componentAddedProjector);
@@ -294,6 +310,10 @@ export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebui
     sequentialEventBus.subscribe("GoalCompletedEvent", goalCompletedEventHandler);
     sequentialEventBus.subscribe("GoalResetEvent", goalResetEventHandler);
     sequentialEventBus.subscribe("GoalRemovedEvent", goalRemovedEventHandler);
+    sequentialEventBus.subscribe("GoalRefinedEvent", goalRefinedEventHandler);
+    sequentialEventBus.subscribe("GoalProgressUpdatedEvent", goalProgressUpdatedEventHandler);
+    sequentialEventBus.subscribe("GoalSubmittedForReviewEvent", goalSubmittedForReviewEventHandler);
+    sequentialEventBus.subscribe("GoalQualifiedEvent", goalQualifiedEventHandler);
     sequentialEventBus.subscribe("ArchitectureDefinedEvent", architectureDefinedEventHandler);
     sequentialEventBus.subscribe("ArchitectureUpdatedEvent", architectureUpdatedEventHandler);
     sequentialEventBus.subscribe("ComponentAddedEvent", componentAddedEventHandler);
