@@ -129,6 +129,47 @@ export class ClaudeConfigurer implements IConfigurer {
   }
 
   /**
+   * Repair Claude Code configuration by replacing stale content
+   */
+  async repair(projectRoot: string): Promise<void> {
+    await this.repairClaudeMd(projectRoot);
+    await this.ensureClaudeSettings(projectRoot);
+  }
+
+  /**
+   * Repair CLAUDE.md by replacing the reference block with the current version
+   */
+  private async repairClaudeMd(projectRoot: string): Promise<void> {
+    const claudeMdPath = path.join(projectRoot, "CLAUDE.md");
+    const reference = AgentInstructions.getAgentFileReference();
+
+    try {
+      const exists = await fs.pathExists(claudeMdPath);
+
+      if (!exists) {
+        await fs.writeFile(claudeMdPath, reference.trim() + "\n", "utf-8");
+        return;
+      }
+
+      const content = await fs.readFile(claudeMdPath, "utf-8");
+      const replaced = AgentInstructions.replaceAgentFileReference(content);
+
+      if (replaced !== null) {
+        // Reference block found - replace with current version
+        await fs.writeFile(claudeMdPath, replaced, "utf-8");
+      } else if (!content.includes("AGENTS.md")) {
+        // No reference at all - append
+        const updatedContent = content.trimEnd() + "\n" + reference;
+        await fs.writeFile(claudeMdPath, updatedContent, "utf-8");
+      }
+    } catch (error) {
+      console.warn(
+        `Warning: Failed to repair CLAUDE.md: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  /**
    * Return what changes this configurer will make without executing.
    */
   async getPlannedFileChanges(projectRoot: string): Promise<PlannedFileChange[]> {

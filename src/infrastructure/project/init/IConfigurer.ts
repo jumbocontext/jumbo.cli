@@ -21,6 +21,15 @@ export interface IConfigurer {
   configure(projectRoot: string): Promise<void>;
 
   /**
+   * Repair this agent's configuration by replacing stale content
+   * with the current version. Optional — if not implemented,
+   * AgentFileProtocol falls back to configure().
+   *
+   * @param projectRoot Absolute path to project root directory
+   */
+  repair?(projectRoot: string): Promise<void>;
+
+  /**
    * Return what changes this configurer will make without executing.
    * Used for preview before user confirmation.
    *

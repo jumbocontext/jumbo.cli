@@ -150,4 +150,92 @@ Run \`jumbo capabilities\` to learn about Jumbo's workflow and philosophy.
   static getJumboSectionMarker(): string {
     return "## Instructions for Jumbo";
   }
+
+  /**
+   * Marker used to detect if Jumbo section already exists in copilot-instructions.md
+   */
+  static getCopilotSectionMarker(): string {
+    return "## Jumbo Context Management";
+  }
+
+  /**
+   * Replace the Jumbo section in AGENTS.md with the current version.
+   * Finds "## Instructions for Jumbo" heading and replaces everything from there
+   * to the next "## " heading (or EOF) with current getJumboSection().
+   *
+   * @returns Updated content, or null if marker not found
+   */
+  static replaceJumboSection(existingContent: string): string | null {
+    const marker = this.getJumboSectionMarker();
+    const markerIndex = existingContent.indexOf(marker);
+    if (markerIndex === -1) return null;
+
+    // Find the next ## heading after the marker (or EOF)
+    const afterMarker = existingContent.substring(markerIndex + marker.length);
+    const nextHeadingMatch = afterMarker.match(/\n## /);
+    const endIndex = nextHeadingMatch
+      ? markerIndex + marker.length + nextHeadingMatch.index!
+      : existingContent.length;
+
+    const before = existingContent.substring(0, markerIndex);
+    const after = existingContent.substring(endIndex);
+
+    return before + this.getJumboSection() + after;
+  }
+
+  /**
+   * Replace the agent file reference block in CLAUDE.md or GEMINI.md.
+   * Finds "CRITICAL STARTUP INSTRUCTION:" and replaces through the
+   * "!!!IMPORTANT!!!" line with the current getAgentFileReference().
+   *
+   * @returns Updated content, or null if marker not found
+   */
+  static replaceAgentFileReference(existingContent: string): string | null {
+    const startMarker = "CRITICAL STARTUP INSTRUCTION:";
+    const endMarker = "!!!IMPORTANT!!!";
+
+    const startIndex = existingContent.indexOf(startMarker);
+    if (startIndex === -1) return null;
+
+    const endMarkerIndex = existingContent.indexOf(endMarker, startIndex);
+    if (endMarkerIndex === -1) return null;
+
+    // Find end of the !!!IMPORTANT!!! line
+    const endOfLine = existingContent.indexOf("\n", endMarkerIndex);
+    const endIndex = endOfLine === -1 ? existingContent.length : endOfLine + 1;
+
+    // Find the start of the line containing the startMarker
+    const lineStart = existingContent.lastIndexOf("\n", startIndex);
+    const blockStart = lineStart === -1 ? 0 : lineStart;
+
+    const before = existingContent.substring(0, blockStart);
+    const after = existingContent.substring(endIndex);
+
+    return before + this.getAgentFileReference() + after;
+  }
+
+  /**
+   * Replace the Copilot section in copilot-instructions.md with the current version.
+   * Finds "## Jumbo Context Management" heading and replaces everything from there
+   * to the next "## " heading (or EOF) with current getCopilotInstructions().
+   *
+   * @returns Updated content, or null if marker not found
+   */
+  static replaceCopilotSection(existingContent: string): string | null {
+    const marker = this.getCopilotSectionMarker();
+    const markerIndex = existingContent.indexOf(marker);
+    if (markerIndex === -1) return null;
+
+    // Find the next ## heading after the marker (or EOF)
+    const afterMarker = existingContent.substring(markerIndex + marker.length);
+    const nextHeadingMatch = afterMarker.match(/\n## /);
+    const endIndex = nextHeadingMatch
+      ? markerIndex + marker.length + nextHeadingMatch.index!
+      : existingContent.length;
+
+    const before = existingContent.substring(0, markerIndex);
+    const after = existingContent.substring(endIndex);
+
+    return before + this.getCopilotInstructions() + after;
+  }
 }

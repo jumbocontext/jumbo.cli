@@ -100,4 +100,142 @@ describe("AgentInstructions Value Object", () => {
       expect(section).toContain(marker);
     });
   });
+
+  describe("replaceJumboSection()", () => {
+    it("should return null when marker is not present", () => {
+      const content = "# My AGENTS.md\n\nSome other content.";
+      expect(AgentInstructions.replaceJumboSection(content)).toBeNull();
+    });
+
+    it("should replace section with current version", () => {
+      const oldSection = "## Instructions for Jumbo\n\nOld content here.\n";
+      const content = `# Agents.md\n\n${oldSection}`;
+
+      const result = AgentInstructions.replaceJumboSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain(AgentInstructions.getJumboSection());
+      expect(result).not.toContain("Old content here.");
+    });
+
+    it("should preserve content before the section", () => {
+      const before = "# My Project\n\nCustom intro.\n\n";
+      const content = `${before}## Instructions for Jumbo\n\nOld content.\n`;
+
+      const result = AgentInstructions.replaceJumboSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result!.startsWith(before)).toBe(true);
+    });
+
+    it("should preserve content after the section when next heading exists", () => {
+      const content =
+        "# Agents.md\n\n## Instructions for Jumbo\n\nOld.\n\n## Other Section\n\nKeep this.";
+
+      const result = AgentInstructions.replaceJumboSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain("## Other Section");
+      expect(result).toContain("Keep this.");
+    });
+
+    it("should handle section at EOF", () => {
+      const content = "# Agents.md\n\n## Instructions for Jumbo\n\nOld content at EOF.";
+
+      const result = AgentInstructions.replaceJumboSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain(AgentInstructions.getJumboSection());
+    });
+  });
+
+  describe("replaceAgentFileReference()", () => {
+    it("should return null when marker is not present", () => {
+      const content = "# CLAUDE.md\n\nSome other content.";
+      expect(AgentInstructions.replaceAgentFileReference(content)).toBeNull();
+    });
+
+    it("should replace reference block with current version", () => {
+      const oldRef =
+        "\nCRITICAL STARTUP INSTRUCTION: Old instructions.\n\nOld middle.\n\n!!!IMPORTANT!!! Old.\n";
+      const content = `# CLAUDE.md\n${oldRef}`;
+
+      const result = AgentInstructions.replaceAgentFileReference(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain("CRITICAL STARTUP INSTRUCTION:");
+      expect(result).not.toContain("Old instructions.");
+    });
+
+    it("should preserve content before the reference block", () => {
+      const before = "# CLAUDE.md\n\nCustom rules.\n";
+      const ref = AgentInstructions.getAgentFileReference();
+      const content = before + ref;
+
+      const result = AgentInstructions.replaceAgentFileReference(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain("Custom rules.");
+    });
+
+    it("should preserve content after the reference block", () => {
+      const ref = AgentInstructions.getAgentFileReference();
+      const after = "\n## My Custom Section\n\nKeep this.";
+      const content = "# CLAUDE.md\n" + ref + after;
+
+      const result = AgentInstructions.replaceAgentFileReference(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain("My Custom Section");
+      expect(result).toContain("Keep this.");
+    });
+  });
+
+  describe("replaceCopilotSection()", () => {
+    it("should return null when marker is not present", () => {
+      const content = "# Copilot Instructions\n\nSome other content.";
+      expect(AgentInstructions.replaceCopilotSection(content)).toBeNull();
+    });
+
+    it("should replace section with current version", () => {
+      const oldSection = "## Jumbo Context Management\n\nOld copilot content.\n";
+      const content = `# Copilot\n\n${oldSection}`;
+
+      const result = AgentInstructions.replaceCopilotSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain(AgentInstructions.getCopilotInstructions());
+      expect(result).not.toContain("Old copilot content.");
+    });
+
+    it("should preserve content before the section", () => {
+      const before = "# Copilot Instructions\n\nCustom intro.\n\n";
+      const content = `${before}## Jumbo Context Management\n\nOld.\n`;
+
+      const result = AgentInstructions.replaceCopilotSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result!.startsWith(before)).toBe(true);
+    });
+
+    it("should preserve content after the section when next heading exists", () => {
+      const content =
+        "# Copilot\n\n## Jumbo Context Management\n\nOld.\n\n## Other Section\n\nKeep this.";
+
+      const result = AgentInstructions.replaceCopilotSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain("## Other Section");
+      expect(result).toContain("Keep this.");
+    });
+
+    it("should handle section at EOF", () => {
+      const content = "# Copilot\n\n## Jumbo Context Management\n\nOld content at EOF.";
+
+      const result = AgentInstructions.replaceCopilotSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain(AgentInstructions.getCopilotInstructions());
+    });
+  });
 });

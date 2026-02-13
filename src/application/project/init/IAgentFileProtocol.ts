@@ -48,6 +48,29 @@ export interface IAgentFileProtocol {
   ensureAgentConfigurations(projectRoot: string): Promise<void>;
 
   /**
+   * Repair AGENTS.md by replacing the Jumbo section with the current version.
+   *
+   * Behavior:
+   * - If AGENTS.md doesn't exist: Create it with full content
+   * - If AGENTS.md exists with Jumbo section: Replace section with current version
+   * - If AGENTS.md exists without Jumbo section: Append current Jumbo section
+   *
+   * @param projectRoot Absolute path to project root directory
+   */
+  repairAgentsMd(projectRoot: string): Promise<void>;
+
+  /**
+   * Repair all supported agent configurations.
+   *
+   * Orchestrates repair for all supported agents by delegating to each
+   * agent's dedicated Configurer class. Uses repair() if available,
+   * otherwise falls back to configure().
+   *
+   * @param projectRoot Absolute path to project root directory
+   */
+  repairAgentConfigurations(projectRoot: string): Promise<void>;
+
+  /**
    * Get all planned file changes without executing.
    * Use this for preview before user confirmation.
    *

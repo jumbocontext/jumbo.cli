@@ -72,6 +72,56 @@ export class CopilotConfigurer implements IConfigurer {
   }
 
   /**
+   * Repair Copilot configuration by replacing stale Jumbo section
+   */
+  async repair(projectRoot: string): Promise<void> {
+    await this.repairCopilotInstructions(projectRoot);
+  }
+
+  /**
+   * Repair copilot-instructions.md by replacing the Jumbo section with current version
+   */
+  private async repairCopilotInstructions(projectRoot: string): Promise<void> {
+    const copilotInstructionsPath = path.join(
+      projectRoot,
+      ".github",
+      "copilot-instructions.md"
+    );
+
+    try {
+      await fs.ensureDir(path.join(projectRoot, ".github"));
+
+      const exists = await fs.pathExists(copilotInstructionsPath);
+
+      if (!exists) {
+        await fs.writeFile(
+          copilotInstructionsPath,
+          AgentInstructions.getCopilotInstructions(),
+          "utf-8"
+        );
+        return;
+      }
+
+      const content = await fs.readFile(copilotInstructionsPath, "utf-8");
+      const replaced = AgentInstructions.replaceCopilotSection(content);
+
+      if (replaced !== null) {
+        // Jumbo section found - replace with current version
+        await fs.writeFile(copilotInstructionsPath, replaced, "utf-8");
+      } else {
+        // Jumbo section not found - append
+        const updatedContent =
+          content + "\n\n" + AgentInstructions.getCopilotInstructions();
+        await fs.writeFile(copilotInstructionsPath, updatedContent, "utf-8");
+      }
+    } catch (error) {
+      console.warn(
+        `Warning: Failed to repair .github/copilot-instructions.md: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  /**
    * Return what changes this configurer will make without executing.
    */
   async getPlannedFileChanges(projectRoot: string): Promise<PlannedFileChange[]> {

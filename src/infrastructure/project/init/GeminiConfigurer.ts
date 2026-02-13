@@ -126,6 +126,47 @@ export class GeminiConfigurer implements IConfigurer {
   }
 
   /**
+   * Repair Gemini CLI configuration by replacing stale content
+   */
+  async repair(projectRoot: string): Promise<void> {
+    await this.repairGeminiMd(projectRoot);
+    await this.ensureGeminiSettings(projectRoot);
+  }
+
+  /**
+   * Repair GEMINI.md by replacing the reference block with the current version
+   */
+  private async repairGeminiMd(projectRoot: string): Promise<void> {
+    const geminiMdPath = path.join(projectRoot, "GEMINI.md");
+    const reference = AgentInstructions.getAgentFileReference();
+
+    try {
+      const exists = await fs.pathExists(geminiMdPath);
+
+      if (!exists) {
+        await fs.writeFile(geminiMdPath, reference.trim() + "\n", "utf-8");
+        return;
+      }
+
+      const content = await fs.readFile(geminiMdPath, "utf-8");
+      const replaced = AgentInstructions.replaceAgentFileReference(content);
+
+      if (replaced !== null) {
+        // Reference block found - replace with current version
+        await fs.writeFile(geminiMdPath, replaced, "utf-8");
+      } else if (!content.includes("AGENTS.md")) {
+        // No reference at all - append
+        const updatedContent = content.trimEnd() + "\n" + reference;
+        await fs.writeFile(geminiMdPath, updatedContent, "utf-8");
+      }
+    } catch (error) {
+      console.warn(
+        `Warning: Failed to repair GEMINI.md: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  /**
    * Return what changes this configurer will make without executing.
    */
   async getPlannedFileChanges(projectRoot: string): Promise<PlannedFileChange[]> {

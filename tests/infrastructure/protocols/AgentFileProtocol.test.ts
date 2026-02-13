@@ -269,6 +269,140 @@ describe("AgentFileProtocol", () => {
     });
   });
 
+  describe("repair", () => {
+    describe("repairAgentsMd()", () => {
+      it("should create AGENTS.md if missing", async () => {
+        // Act
+        await protocol.repairAgentsMd(tmpDir);
+
+        // Assert
+        const agentsMdPath = path.join(tmpDir, "AGENTS.md");
+        const exists = await fs.pathExists(agentsMdPath);
+        expect(exists).toBe(true);
+
+        const content = await fs.readFile(agentsMdPath, "utf-8");
+        expect(content).toContain("## Instructions for Jumbo");
+      });
+
+      it("should replace outdated Jumbo section", async () => {
+        // Arrange - write AGENTS.md with outdated Jumbo section
+        const agentsMdPath = path.join(tmpDir, "AGENTS.md");
+        const outdatedContent =
+          "# Agents.md\n\n## Instructions for Jumbo\n\nOld outdated content.\n";
+        await fs.writeFile(agentsMdPath, outdatedContent, "utf-8");
+
+        // Act
+        await protocol.repairAgentsMd(tmpDir);
+
+        // Assert
+        const content = await fs.readFile(agentsMdPath, "utf-8");
+        expect(content).toContain(AgentInstructions.getJumboSection());
+        expect(content).not.toContain("Old outdated content.");
+      });
+
+      it("should preserve non-Jumbo content", async () => {
+        // Arrange
+        const agentsMdPath = path.join(tmpDir, "AGENTS.md");
+        const content =
+          "# Agents.md\n\n## My Custom Section\n\nKeep this.\n\n## Instructions for Jumbo\n\nOld.\n";
+        await fs.writeFile(agentsMdPath, content, "utf-8");
+
+        // Act
+        await protocol.repairAgentsMd(tmpDir);
+
+        // Assert
+        const result = await fs.readFile(agentsMdPath, "utf-8");
+        expect(result).toContain("My Custom Section");
+        expect(result).toContain("Keep this.");
+      });
+
+      it("should append Jumbo section if not present", async () => {
+        // Arrange
+        const agentsMdPath = path.join(tmpDir, "AGENTS.md");
+        await fs.writeFile(agentsMdPath, "# Agents.md\n\nCustom content only.", "utf-8");
+
+        // Act
+        await protocol.repairAgentsMd(tmpDir);
+
+        // Assert
+        const content = await fs.readFile(agentsMdPath, "utf-8");
+        expect(content).toContain("Custom content only.");
+        expect(content).toContain("## Instructions for Jumbo");
+      });
+    });
+
+    describe("repairAgentConfigurations()", () => {
+      it("should call repair on each configurer", async () => {
+        // Act
+        await protocol.repairAgentConfigurations(tmpDir);
+
+        // Assert - verify all agent files are present
+        const claudeMdPath = path.join(tmpDir, "CLAUDE.md");
+        expect(await fs.pathExists(claudeMdPath)).toBe(true);
+
+        const geminiMdPath = path.join(tmpDir, "GEMINI.md");
+        expect(await fs.pathExists(geminiMdPath)).toBe(true);
+
+        const copilotPath = path.join(tmpDir, ".github", "copilot-instructions.md");
+        expect(await fs.pathExists(copilotPath)).toBe(true);
+      });
+
+      it("should replace outdated CLAUDE.md reference block", async () => {
+        // Arrange - write CLAUDE.md with old reference
+        const claudeMdPath = path.join(tmpDir, "CLAUDE.md");
+        const oldContent =
+          "# CLAUDE.md\n\nCRITICAL STARTUP INSTRUCTION: Old instructions.\n\nOld middle.\n\n!!!IMPORTANT!!! Old.\n";
+        await fs.writeFile(claudeMdPath, oldContent, "utf-8");
+
+        // Act
+        await protocol.repairAgentConfigurations(tmpDir);
+
+        // Assert
+        const content = await fs.readFile(claudeMdPath, "utf-8");
+        expect(content).toContain(AgentInstructions.getAgentFileReference().trim());
+        expect(content).not.toContain("Old instructions.");
+      });
+
+      it("should replace outdated copilot-instructions.md section", async () => {
+        // Arrange
+        const copilotPath = path.join(tmpDir, ".github", "copilot-instructions.md");
+        await fs.ensureDir(path.join(tmpDir, ".github"));
+        const oldContent =
+          "# Copilot\n\n## Jumbo Context Management\n\nOld copilot content.\n";
+        await fs.writeFile(copilotPath, oldContent, "utf-8");
+
+        // Act
+        await protocol.repairAgentConfigurations(tmpDir);
+
+        // Assert
+        const content = await fs.readFile(copilotPath, "utf-8");
+        expect(content).toContain(AgentInstructions.getCopilotInstructions());
+        expect(content).not.toContain("Old copilot content.");
+      });
+    });
+
+    describe("repair idempotency", () => {
+      it("should be safe to run repair multiple times", async () => {
+        // Act
+        await protocol.repairAgentsMd(tmpDir);
+        await protocol.repairAgentConfigurations(tmpDir);
+        await protocol.repairAgentsMd(tmpDir);
+        await protocol.repairAgentConfigurations(tmpDir);
+
+        // Assert - single occurrences
+        const agentsMdPath = path.join(tmpDir, "AGENTS.md");
+        const agentsContent = await fs.readFile(agentsMdPath, "utf-8");
+        const agentsOccurrences = (agentsContent.match(/## Instructions for Jumbo/g) || []).length;
+        expect(agentsOccurrences).toBe(1);
+
+        const claudeMdPath = path.join(tmpDir, "CLAUDE.md");
+        const claudeContent = await fs.readFile(claudeMdPath, "utf-8");
+        const claudeOccurrences = (claudeContent.match(/CRITICAL STARTUP INSTRUCTION/g) || []).length;
+        expect(claudeOccurrences).toBe(1);
+      });
+    });
+  });
+
   describe("idempotency", () => {
     it("should be safe to run ensureAgentsMd multiple times", async () => {
       // Act
