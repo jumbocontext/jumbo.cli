@@ -9,6 +9,7 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { Renderer } from "../../../rendering/Renderer.js";
 import { UnblockGoalCommandHandler } from "../../../../../application/goals/unblock/UnblockGoalCommandHandler.js";
 import { UnblockGoalCommand } from "../../../../../application/goals/unblock/UnblockGoalCommand.js";
+import { GoalUnblockOutputBuilder } from "./GoalUnblockOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -49,6 +50,7 @@ export async function goalUnblock(
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
+  const outputBuilder = new GoalUnblockOutputBuilder();
 
   try {
     // 1. Create command handler
@@ -66,14 +68,12 @@ export async function goalUnblock(
 
     await commandHandler.execute(command);
 
-    // Success output
-    const data: Record<string, string> = { goalId: options.goalId };
-    if (options.note) {
-      data.resolution = options.note;
-    }
-    renderer.success("Goal unblocked", data);
+    // Build and render success output
+    const output = outputBuilder.buildSuccess(options.goalId, options.note);
+    renderer.info(output.toHumanReadable());
   } catch (error) {
-    renderer.error("Failed to unblock goal", error instanceof Error ? error : String(error));
+    const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
+    renderer.info(output.toHumanReadable());
     process.exit(1);
   }
   // NO CLEANUP - infrastructure manages itself!

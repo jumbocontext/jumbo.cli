@@ -10,6 +10,7 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { Renderer } from "../../../rendering/Renderer.js";
 import { ResetGoalCommandHandler } from "../../../../../application/goals/reset/ResetGoalCommandHandler.js";
 import { ResetGoalCommand } from "../../../../../application/goals/reset/ResetGoalCommand.js";
+import { GoalResetOutputBuilder } from "./GoalResetOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -38,6 +39,7 @@ export const metadata: CommandMetadata = {
  */
 export async function goalReset(options: { goalId: string }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
+  const outputBuilder = new GoalResetOutputBuilder();
 
   try {
     // 1. Create command handler
@@ -57,14 +59,16 @@ export async function goalReset(options: { goalId: string }, container: IApplica
     // 3. Fetch updated view for display
     const view = await container.goalResetProjector.findById(result.goalId);
 
-    // Success output
-    renderer.success("Goal reset to 'to-do' status", {
-      goalId: result.goalId,
-      objective: view?.objective || options.goalId,
-      status: view?.status || 'to-do'
-    });
+    // Build and render success output
+    const output = outputBuilder.buildSuccess(
+      result.goalId,
+      view?.objective || options.goalId,
+      view?.status || 'to-do'
+    );
+    renderer.info(output.toHumanReadable());
   } catch (error) {
-    renderer.error("Failed to reset goal", error instanceof Error ? error : String(error));
+    const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
+    renderer.info(output.toHumanReadable());
     process.exit(1);
   }
   // NO CLEANUP - infrastructure manages itself!

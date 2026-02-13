@@ -10,6 +10,7 @@ import { Renderer } from "../../../rendering/Renderer.js";
 import { PauseGoalCommandHandler } from "../../../../../application/goals/pause/PauseGoalCommandHandler.js";
 import { PauseGoalCommand } from "../../../../../application/goals/pause/PauseGoalCommand.js";
 import { GoalPausedReasons, GoalPausedReasonsType } from "../../../../../domain/goals/GoalPausedReasons.js";
+import { GoalPauseOutputBuilder } from "./GoalPauseOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -55,6 +56,7 @@ export async function goalPause(
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
+  const outputBuilder = new GoalPauseOutputBuilder();
 
   try {
     // 1. Validate reason
@@ -85,15 +87,17 @@ export async function goalPause(
     // 4. Fetch updated view for display
     const view = await container.goalPausedProjector.findById(result.goalId);
 
-    // Success output
-    renderer.success("Goal paused", {
-      goalId: result.goalId,
-      objective: view?.objective || "",
-      status: view?.status || "paused",
-      reason: reason,
-    });
+    // Build and render success output
+    const output = outputBuilder.buildSuccess(
+      result.goalId,
+      view?.objective || "",
+      view?.status || "paused",
+      reason
+    );
+    renderer.info(output.toHumanReadable());
   } catch (error) {
-    renderer.error("Failed to pause goal", error instanceof Error ? error : String(error));
+    const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
+    renderer.info(output.toHumanReadable());
     process.exit(1);
   }
   // NO CLEANUP - infrastructure manages itself!

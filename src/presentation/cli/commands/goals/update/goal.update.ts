@@ -13,6 +13,7 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { Renderer } from "../../../rendering/Renderer.js";
 import { UpdateGoalCommandHandler } from "../../../../../application/goals/update/UpdateGoalCommandHandler.js";
 import { UpdateGoalCommand } from "../../../../../application/goals/update/UpdateGoalCommand.js";
+import { GoalUpdateOutputBuilder } from "./GoalUpdateOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -81,6 +82,7 @@ export async function goalUpdate(
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
+  const outputBuilder = new GoalUpdateOutputBuilder();
 
   try {
     // 1. Create command handler
@@ -103,12 +105,12 @@ export async function goalUpdate(
 
     const result = await commandHandler.execute(command);
 
-    // Success output
-    renderer.success("Goal updated", {
-      goalId: result.goalId
-    });
+    // Build and render success output
+    const output = outputBuilder.buildSuccess(result.goalId);
+    renderer.info(output.toHumanReadable());
   } catch (error) {
-    renderer.error("Failed to update goal", error instanceof Error ? error : String(error));
+    const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
+    renderer.info(output.toHumanReadable());
     process.exit(1);
   }
   // NO CLEANUP - infrastructure manages itself!

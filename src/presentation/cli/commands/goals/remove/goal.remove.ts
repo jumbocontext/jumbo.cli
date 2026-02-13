@@ -9,6 +9,7 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { Renderer } from "../../../rendering/Renderer.js";
 import { RemoveGoalCommandHandler } from "../../../../../application/goals/remove/RemoveGoalCommandHandler.js";
 import { RemoveGoalCommand } from "../../../../../application/goals/remove/RemoveGoalCommand.js";
+import { GoalRemoveOutputBuilder } from "./GoalRemoveOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -37,6 +38,7 @@ export const metadata: CommandMetadata = {
  */
 export async function goalRemove(options: { goalId: string }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
+  const outputBuilder = new GoalRemoveOutputBuilder();
 
   try {
     // 1. Fetch view before removal for display
@@ -54,13 +56,12 @@ export async function goalRemove(options: { goalId: string }, container: IApplic
     const command: RemoveGoalCommand = { goalId: options.goalId };
     const result = await commandHandler.execute(command);
 
-    // Success output
-    renderer.success("Goal removed", {
-      goalId: result.goalId,
-      objective: view?.objective || options.goalId
-    });
+    // Build and render success output
+    const output = outputBuilder.buildSuccess(result.goalId, view?.objective || options.goalId);
+    renderer.info(output.toHumanReadable());
   } catch (error) {
-    renderer.error("Failed to remove goal", error instanceof Error ? error : String(error));
+    const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
+    renderer.info(output.toHumanReadable());
     process.exit(1);
   }
   // NO CLEANUP - infrastructure manages itself!

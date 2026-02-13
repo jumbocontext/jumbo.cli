@@ -9,6 +9,7 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { Renderer } from "../../../rendering/Renderer.js";
 import { BlockGoalCommandHandler } from "../../../../../application/goals/block/BlockGoalCommandHandler.js";
 import { BlockGoalCommand } from "../../../../../application/goals/block/BlockGoalCommand.js";
+import { GoalBlockOutputBuilder } from "./GoalBlockOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -43,6 +44,7 @@ export async function goalBlock(
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
+  const outputBuilder = new GoalBlockOutputBuilder();
 
   try {
     // 1. Create command handler
@@ -60,13 +62,12 @@ export async function goalBlock(
 
     await commandHandler.execute(command);
 
-    // Success output
-    renderer.success("Goal blocked", {
-      goalId: options.goalId,
-      reason: options.note
-    });
+    // Build and render success output
+    const output = outputBuilder.buildSuccess(options.goalId, options.note);
+    renderer.info(output.toHumanReadable());
   } catch (error) {
-    renderer.error("Failed to block goal", error instanceof Error ? error : String(error));
+    const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
+    renderer.info(output.toHumanReadable());
     process.exit(1);
   }
   // NO CLEANUP - infrastructure manages itself!

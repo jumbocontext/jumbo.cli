@@ -15,6 +15,7 @@ import { AddGoalCommandHandler } from "../../../../../application/goals/add/AddG
 import { AddGoalCommand } from "../../../../../application/goals/add/AddGoalCommand.js";
 import { InteractivePromptService } from "../../../prompts/index.js";
 import { ComponentView } from "../../../../../application/components/ComponentView.js";
+import { GoalAddOutputBuilder } from "./GoalAddOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -90,8 +91,6 @@ async function runInteractiveFlow(container: IApplicationContainer): Promise<Int
   const components = await container.componentContextReader.findAll();
   const activeComponents = components.filter((c: ComponentView) => c.status === 'active');
 
-  console.log("\n=== Interactive Goal Creation ===\n");
-
   // Step 1: Objective (required)
   const objective = await promptService.textInput({
     message: "Goal objective:",
@@ -153,10 +152,15 @@ export async function goalAdd(
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
+  const outputBuilder = new GoalAddOutputBuilder();
 
   try {
     // Interactive mode: run guided prompts
     if (options.interactive) {
+      // Display interactive header
+      const headerOutput = outputBuilder.buildInteractiveHeader();
+      renderer.info(headerOutput.toHumanReadable());
+
       const inputs = await runInteractiveFlow(container);
 
       // Create command handler with optional update dependencies for goal chaining
@@ -180,18 +184,16 @@ export async function goalAdd(
 
       const result = await commandHandler.execute(command);
 
-      // Success output
-      renderer.success("Goal defined", {
-        goalId: result.goalId,
-        objective: inputs.objective,
-        status: "to-do"
-      });
+      // Build and render success output
+      const output = outputBuilder.buildSuccess(result.goalId, inputs.objective);
+      renderer.info(output.toHumanReadable());
       return;
     }
 
     // Non-interactive mode: objective is required
     if (!options.objective) {
-      renderer.error("Missing required option", new Error("--objective is required (or use --interactive for guided creation)"));
+      const output = outputBuilder.buildMissingObjectiveError();
+      renderer.info(output.toHumanReadable());
       process.exit(1);
     }
 
@@ -216,14 +218,12 @@ export async function goalAdd(
 
     const result = await commandHandler.execute(command);
 
-    // Success output
-    renderer.success("Goal defined", {
-      goalId: result.goalId,
-      objective: options.objective,
-      status: "to-do"
-    });
+    // Build and render success output
+    const output = outputBuilder.buildSuccess(result.goalId, options.objective);
+    renderer.info(output.toHumanReadable());
   } catch (error) {
-    renderer.error("Failed to define goal", error instanceof Error ? error : String(error));
+    const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
+    renderer.info(output.toHumanReadable());
     process.exit(1);
   }
 }
