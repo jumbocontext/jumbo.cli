@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateDependencyCommandHandler } from "../../../../../application/dependencies/update/UpdateDependencyCommandHandler.js";
-import { UpdateDependencyCommand } from "../../../../../application/dependencies/update/UpdateDependencyCommand.js";
+import { UpdateDependencyCommandHandler } from "../../../../../application/context/dependencies/update/UpdateDependencyCommandHandler.js";
+import { UpdateDependencyCommand } from "../../../../../application/context/dependencies/update/UpdateDependencyCommand.js";
 import { DependencyStatusType } from "../../../../../domain/dependencies/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 

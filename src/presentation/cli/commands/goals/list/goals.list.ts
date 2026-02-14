@@ -12,7 +12,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { GoalView } from "../../../../../application/goals/GoalView.js";
+import { GoalView } from "../../../../../application/context/goals/GoalView.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GoalListOutputBuilder } from "./GoalListOutputBuilder.js";
 

@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddComponentCommandHandler } from "../../../../../application/components/add/AddComponentCommandHandler.js";
-import { AddComponentCommand } from "../../../../../application/components/add/AddComponentCommand.js";
+import { AddComponentCommandHandler } from "../../../../../application/context/components/add/AddComponentCommandHandler.js";
+import { AddComponentCommand } from "../../../../../application/context/components/add/AddComponentCommand.js";
 import { ComponentTypeValue } from "../../../../../domain/components/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 

@@ -9,7 +9,7 @@
 
 import { describe, it, expect, beforeEach } from "@jest/globals";
 import { SessionStartTextRenderer } from "../../../../../../src/presentation/cli/commands/sessions/start/SessionStartTextRenderer.js";
-import { SessionSummaryProjection } from "../../../../../../src/application/sessions/SessionSummaryView.js";
+import { SessionSummaryProjection } from "../../../../../../src/application/context/sessions/SessionSummaryView.js";
 
 describe("SessionStartTextRenderer", () => {
   let renderer: SessionStartTextRenderer;

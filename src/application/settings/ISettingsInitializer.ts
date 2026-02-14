@@ -1,4 +1,4 @@
-import { PlannedFileChange } from "../project/init/PlannedFileChange.js";
+import { PlannedFileChange } from "../context/project/init/PlannedFileChange.js";
 
 /**
  * Port interface for ensuring settings exist during initialization.

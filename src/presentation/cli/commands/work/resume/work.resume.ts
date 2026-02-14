@@ -9,9 +9,9 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { ResumeWorkResult } from "../../../../../application/work/resume/ResumeWorkCommandHandler.js";
+import { ResumeWorkResult } from "../../../../../application/context/work/resume/ResumeWorkCommandHandler.js";
 import { SessionStartTextRenderer } from "../../sessions/start/SessionStartTextRenderer.js";
-import { SessionContextView } from "../../../../../application/sessions/get-context/SessionContext.js";
+import { SessionContextView } from "../../../../../application/context/sessions/get-context/SessionContext.js";
 import * as fs from "fs";
 import * as path from "path";
 

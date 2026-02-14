@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddAudiencePainCommandHandler } from "../../../../../application/audience-pains/add/AddAudiencePainCommandHandler.js";
-import { AddAudiencePainCommand } from "../../../../../application/audience-pains/add/AddAudiencePainCommand.js";
+import { AddAudiencePainCommandHandler } from "../../../../../application/context/audience-pains/add/AddAudiencePainCommandHandler.js";
+import { AddAudiencePainCommand } from "../../../../../application/context/audience-pains/add/AddAudiencePainCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

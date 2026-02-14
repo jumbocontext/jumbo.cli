@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { DefineArchitectureCommandHandler } from "../../../../../application/architecture/define/DefineArchitectureCommandHandler.js";
-import { DefineArchitectureCommand } from "../../../../../application/architecture/define/DefineArchitectureCommand.js";
+import { DefineArchitectureCommandHandler } from "../../../../../application/context/architecture/define/DefineArchitectureCommandHandler.js";
+import { DefineArchitectureCommand } from "../../../../../application/context/architecture/define/DefineArchitectureCommand.js";
 import { DataStore } from "../../../../../domain/architecture/define/ArchitectureDefinedEvent.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 

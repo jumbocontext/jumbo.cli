@@ -6,9 +6,9 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListInvariantsQueryHandler } from "../../../../../application/invariants/list/ListInvariantsQueryHandler.js";
+import { ListInvariantsQueryHandler } from "../../../../../application/context/invariants/list/ListInvariantsQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { InvariantView } from "../../../../../application/invariants/InvariantView.js";
+import { InvariantView } from "../../../../../application/context/invariants/InvariantView.js";
 
 export const metadata: CommandMetadata = {
   description: "List all project invariants",

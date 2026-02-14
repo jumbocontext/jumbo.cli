@@ -6,7 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateProjectCommandHandler } from "../../../../../application/project/update/UpdateProjectCommandHandler.js";
+import { UpdateProjectCommandHandler } from "../../../../../application/context/project/update/UpdateProjectCommandHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

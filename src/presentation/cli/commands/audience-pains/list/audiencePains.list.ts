@@ -11,9 +11,9 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListAudiencePainsQueryHandler } from "../../../../../application/audience-pains/list/ListAudiencePainsQueryHandler.js";
+import { ListAudiencePainsQueryHandler } from "../../../../../application/context/audience-pains/list/ListAudiencePainsQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { AudiencePainView } from "../../../../../application/audience-pains/AudiencePainView.js";
+import { AudiencePainView } from "../../../../../application/context/audience-pains/AudiencePainView.js";
 
 /**
  * Command metadata for auto-registration

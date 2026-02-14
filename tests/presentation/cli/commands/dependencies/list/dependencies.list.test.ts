@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { dependenciesList } from "../../../../../../src/presentation/cli/commands/dependencies/list/dependencies.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IDependencyListReader } from "../../../../../../src/application/dependencies/list/IDependencyListReader.js";
-import { DependencyView } from "../../../../../../src/application/dependencies/DependencyView.js";
+import { IDependencyListReader } from "../../../../../../src/application/context/dependencies/list/IDependencyListReader.js";
+import { DependencyView } from "../../../../../../src/application/context/dependencies/DependencyView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("dependencies.list command", () => {

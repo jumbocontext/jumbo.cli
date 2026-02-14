@@ -10,17 +10,17 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { goalRefine } from "../../../../../../src/presentation/cli/commands/goals/refine/goal.refine.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { GoalView } from "../../../../../../src/application/goals/GoalView.js";
+import { GoalView } from "../../../../../../src/application/context/goals/GoalView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 import { GoalStatus, GoalEventType } from "../../../../../../src/domain/goals/Constants.js";
 import { BaseEvent } from "../../../../../../src/domain/BaseEvent.js";
 import { AppendResult } from "../../../../../../src/application/persistence/IEventStore.js";
 import { IEventHandler } from "../../../../../../src/application/messaging/IEventHandler.js";
-import { IGoalContextReader } from "../../../../../../src/application/goals/get-context/IGoalContextReader.js";
-import { IGoalRefineEventWriter } from "../../../../../../src/application/goals/refine/IGoalRefineEventWriter.js";
-import { IGoalRefineEventReader } from "../../../../../../src/application/goals/refine/IGoalRefineEventReader.js";
-import { IGoalRefinedProjector } from "../../../../../../src/application/goals/refine/IGoalRefinedProjector.js";
-import { IGoalRefineReader } from "../../../../../../src/application/goals/refine/IGoalRefineReader.js";
+import { IGoalContextReader } from "../../../../../../src/application/context/goals/get-context/IGoalContextReader.js";
+import { IGoalRefineEventWriter } from "../../../../../../src/application/context/goals/refine/IGoalRefineEventWriter.js";
+import { IGoalRefineEventReader } from "../../../../../../src/application/context/goals/refine/IGoalRefineEventReader.js";
+import { IGoalRefinedProjector } from "../../../../../../src/application/context/goals/refine/IGoalRefinedProjector.js";
+import { IGoalRefineReader } from "../../../../../../src/application/context/goals/refine/IGoalRefineReader.js";
 import { IEventBus } from "../../../../../../src/application/messaging/IEventBus.js";
 import { GoalRefinedEvent } from "../../../../../../src/domain/goals/refine/GoalRefinedEvent.js";
 

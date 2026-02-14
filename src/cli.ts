@@ -21,7 +21,7 @@ import { IApplicationContainer } from "./application/host/IApplicationContainer.
 import { classifyCommand } from "./presentation/cli/commands/CommandClassifier.js";
 import { commands } from "./presentation/cli/commands/registry/generated-commands.js";
 import { ARGV } from "./presentation/cli/Constants.js";
-import { ProjectRootResolver } from "./infrastructure/project/ProjectRootResolver.js";
+import { ProjectRootResolver } from "./infrastructure/context/project/ProjectRootResolver.js";
 
 /**
  * Determines if the invocation requires full infrastructure.

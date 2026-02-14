@@ -2,10 +2,10 @@
  * Tests for RemoveGuidelineCommandHandler
  */
 
-import { RemoveGuidelineCommandHandler } from "../../../src/application/guidelines/remove/RemoveGuidelineCommandHandler";
-import { RemoveGuidelineCommand } from "../../../src/application/guidelines/remove/RemoveGuidelineCommand";
-import { IGuidelineRemovedEventWriter } from "../../../src/application/guidelines/remove/IGuidelineRemovedEventWriter";
-import { IGuidelineRemovedEventReader } from "../../../src/application/guidelines/remove/IGuidelineRemovedEventReader";
+import { RemoveGuidelineCommandHandler } from "../../../src/application/context/guidelines/remove/RemoveGuidelineCommandHandler";
+import { RemoveGuidelineCommand } from "../../../src/application/context/guidelines/remove/RemoveGuidelineCommand";
+import { IGuidelineRemovedEventWriter } from "../../../src/application/context/guidelines/remove/IGuidelineRemovedEventWriter";
+import { IGuidelineRemovedEventReader } from "../../../src/application/context/guidelines/remove/IGuidelineRemovedEventReader";
 import { IEventBus } from "../../../src/application/messaging/IEventBus";
 import { GuidelineEvent, GuidelineRemovedEvent } from "../../../src/domain/guidelines/EventIndex";
 import { GuidelineEventType } from "../../../src/domain/guidelines/Constants";

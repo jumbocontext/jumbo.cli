@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateValuePropositionCommandHandler } from "../../../../../application/value-propositions/update/UpdateValuePropositionCommandHandler.js";
-import { UpdateValuePropositionCommand } from "../../../../../application/value-propositions/update/UpdateValuePropositionCommand.js";
+import { UpdateValuePropositionCommandHandler } from "../../../../../application/context/value-propositions/update/UpdateValuePropositionCommandHandler.js";
+import { UpdateValuePropositionCommand } from "../../../../../application/context/value-propositions/update/UpdateValuePropositionCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

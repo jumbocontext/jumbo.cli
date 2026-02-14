@@ -9,8 +9,8 @@ import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { ComponentShowOutputBuilder } from "./ComponentShowOutputBuilder.js";
-import { ShowComponentQueryHandler } from "../../../../../application/components/show/ShowComponentQueryHandler.js";
-import { ShowComponentQuery } from "../../../../../application/components/show/ShowComponentQuery.js";
+import { ShowComponentQueryHandler } from "../../../../../application/context/components/show/ShowComponentQueryHandler.js";
+import { ShowComponentQuery } from "../../../../../application/context/components/show/ShowComponentQuery.js";
 
 /**
  * Command metadata for auto-registration

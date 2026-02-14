@@ -5,14 +5,14 @@ import { RelatedDependency } from "../../application/context/RelatedDependency.j
 import { RelatedDecision } from "../../application/context/RelatedDecision.js";
 import { RelatedInvariant } from "../../application/context/RelatedInvariant.js";
 import { RelatedGuideline } from "../../application/context/RelatedGuideline.js";
-import { IGoalContextReader } from "../../application/goals/get-context/IGoalContextReader.js";
-import { IRelationReader } from "../../application/relations/IRelationReader.js";
-import { IComponentContextReader } from "../../application/goals/get-context/IComponentContextReader.js";
-import { IDependencyContextReader } from "../../application/goals/get-context/IDependencyContextReader.js";
-import { IDecisionContextReader } from "../../application/goals/get-context/IDecisionContextReader.js";
-import { IInvariantContextReader } from "../../application/goals/get-context/IInvariantContextReader.js";
-import { IGuidelineContextReader } from "../../application/goals/get-context/IGuidelineContextReader.js";
-import { IArchitectureReader } from "../../application/architecture/IArchitectureReader.js";
+import { IGoalContextReader } from "../../application/context/goals/get-context/IGoalContextReader.js";
+import { IRelationReader } from "../../application/context/relations/IRelationReader.js";
+import { IComponentContextReader } from "../../application/context/goals/get-context/IComponentContextReader.js";
+import { IDependencyContextReader } from "../../application/context/goals/get-context/IDependencyContextReader.js";
+import { IDecisionContextReader } from "../../application/context/goals/get-context/IDecisionContextReader.js";
+import { IInvariantContextReader } from "../../application/context/goals/get-context/IInvariantContextReader.js";
+import { IGuidelineContextReader } from "../../application/context/goals/get-context/IGuidelineContextReader.js";
+import { IArchitectureReader } from "../../application/context/architecture/IArchitectureReader.js";
 import { EntityType } from "../../domain/relations/Constants.js";
 
 /**

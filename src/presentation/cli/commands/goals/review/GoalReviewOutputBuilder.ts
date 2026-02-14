@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { ReviewGoalResponse } from '../../../../../application/goals/review/ReviewGoalResponse.js';
+import { ReviewGoalResponse } from '../../../../../application/context/goals/review/ReviewGoalResponse.js';
 
 /**
  * Specialized builder for goal.review command output.

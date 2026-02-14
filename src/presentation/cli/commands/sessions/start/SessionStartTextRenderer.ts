@@ -1,6 +1,6 @@
-import { SessionSummaryProjection } from "../../../../../application/sessions/SessionSummaryView.js";
-import { GoalView } from "../../../../../application/goals/GoalView.js";
-import { SessionStartContext, SessionStartProjectContext } from "../../../../../application/sessions/get-context/SessionStartContext.js";
+import { SessionSummaryProjection } from "../../../../../application/context/sessions/SessionSummaryView.js";
+import { GoalView } from "../../../../../application/context/goals/GoalView.js";
+import { SessionStartContext, SessionStartProjectContext } from "../../../../../application/context/sessions/get-context/SessionStartContext.js";
 import { YamlFormatter } from "../../../formatting/YamlFormatter.js";
 
 export interface SessionStartTextRenderResult {

@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddRelationCommandHandler } from "../../../../../application/relations/add/AddRelationCommandHandler.js";
-import { AddRelationCommand } from "../../../../../application/relations/add/AddRelationCommand.js";
+import { AddRelationCommandHandler } from "../../../../../application/context/relations/add/AddRelationCommandHandler.js";
+import { AddRelationCommand } from "../../../../../application/context/relations/add/AddRelationCommand.js";
 import { EntityTypeValue, RelationStrengthValue } from "../../../../../domain/relations/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 

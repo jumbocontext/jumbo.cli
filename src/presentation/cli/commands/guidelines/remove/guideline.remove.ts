@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveGuidelineCommandHandler } from "../../../../../application/guidelines/remove/RemoveGuidelineCommandHandler.js";
-import { RemoveGuidelineCommand } from "../../../../../application/guidelines/remove/RemoveGuidelineCommand.js";
+import { RemoveGuidelineCommandHandler } from "../../../../../application/context/guidelines/remove/RemoveGuidelineCommandHandler.js";
+import { RemoveGuidelineCommand } from "../../../../../application/context/guidelines/remove/RemoveGuidelineCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

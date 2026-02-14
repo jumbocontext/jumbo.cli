@@ -7,8 +7,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { PauseGoalCommandHandler } from "../../../../../application/goals/pause/PauseGoalCommandHandler.js";
-import { PauseGoalCommand } from "../../../../../application/goals/pause/PauseGoalCommand.js";
+import { PauseGoalCommandHandler } from "../../../../../application/context/goals/pause/PauseGoalCommandHandler.js";
+import { PauseGoalCommand } from "../../../../../application/context/goals/pause/PauseGoalCommand.js";
 import { GoalPausedReasons, GoalPausedReasonsType } from "../../../../../domain/goals/GoalPausedReasons.js";
 import { GoalPauseOutputBuilder } from "./GoalPauseOutputBuilder.js";
 

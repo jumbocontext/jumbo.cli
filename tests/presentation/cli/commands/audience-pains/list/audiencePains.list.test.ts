@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { audiencePainsList } from "../../../../../../src/presentation/cli/commands/audience-pains/list/audiencePains.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IAudiencePainContextReader } from "../../../../../../src/application/audience-pains/query/IAudiencePainContextReader.js";
-import { AudiencePainView } from "../../../../../../src/application/audience-pains/AudiencePainView.js";
+import { IAudiencePainContextReader } from "../../../../../../src/application/context/audience-pains/query/IAudiencePainContextReader.js";
+import { AudiencePainView } from "../../../../../../src/application/context/audience-pains/AudiencePainView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("audiencePains.list command", () => {

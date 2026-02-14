@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { GoalView } from '../../../../../application/goals/GoalView.js';
+import { GoalView } from '../../../../../application/context/goals/GoalView.js';
 
 /**
  * Specialized builder for goal.refine command output.

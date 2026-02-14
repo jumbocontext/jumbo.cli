@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveDependencyCommandHandler } from "../../../../../application/dependencies/remove/RemoveDependencyCommandHandler.js";
-import { RemoveDependencyCommand } from "../../../../../application/dependencies/remove/RemoveDependencyCommand.js";
+import { RemoveDependencyCommandHandler } from "../../../../../application/context/dependencies/remove/RemoveDependencyCommandHandler.js";
+import { RemoveDependencyCommand } from "../../../../../application/context/dependencies/remove/RemoveDependencyCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

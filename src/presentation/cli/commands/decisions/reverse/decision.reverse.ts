@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ReverseDecisionCommandHandler } from "../../../../../application/decisions/reverse/ReverseDecisionCommandHandler.js";
-import { ReverseDecisionCommand } from "../../../../../application/decisions/reverse/ReverseDecisionCommand.js";
+import { ReverseDecisionCommandHandler } from "../../../../../application/context/decisions/reverse/ReverseDecisionCommandHandler.js";
+import { ReverseDecisionCommand } from "../../../../../application/context/decisions/reverse/ReverseDecisionCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

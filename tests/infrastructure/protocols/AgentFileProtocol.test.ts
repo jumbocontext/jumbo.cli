@@ -4,7 +4,7 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { AgentFileProtocol } from "../../../src/infrastructure//project/init/AgentFileProtocol";
+import { AgentFileProtocol } from "../../../src/infrastructure/context/project/init/AgentFileProtocol";
 import { AgentInstructions } from "../../../src/domain/project/AgentInstructions";
 
 describe("AgentFileProtocol", () => {

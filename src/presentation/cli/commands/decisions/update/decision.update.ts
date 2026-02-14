@@ -1,7 +1,7 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateDecisionCommandHandler } from "../../../../../application/decisions/update/UpdateDecisionCommandHandler.js";
-import { UpdateDecisionCommand } from "../../../../../application/decisions/update/UpdateDecisionCommand.js";
+import { UpdateDecisionCommandHandler } from "../../../../../application/context/decisions/update/UpdateDecisionCommandHandler.js";
+import { UpdateDecisionCommand } from "../../../../../application/context/decisions/update/UpdateDecisionCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

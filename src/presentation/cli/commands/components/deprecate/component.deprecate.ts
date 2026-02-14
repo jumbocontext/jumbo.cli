@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { DeprecateComponentCommandHandler } from "../../../../../application/components/deprecate/DeprecateComponentCommandHandler.js";
-import { DeprecateComponentCommand } from "../../../../../application/components/deprecate/DeprecateComponentCommand.js";
+import { DeprecateComponentCommandHandler } from "../../../../../application/context/components/deprecate/DeprecateComponentCommandHandler.js";
+import { DeprecateComponentCommand } from "../../../../../application/context/components/deprecate/DeprecateComponentCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

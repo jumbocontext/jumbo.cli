@@ -6,9 +6,9 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListRelationsQueryHandler } from "../../../../../application/relations/list/ListRelationsQueryHandler.js";
+import { ListRelationsQueryHandler } from "../../../../../application/context/relations/list/ListRelationsQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { RelationView } from "../../../../../application/relations/RelationView.js";
+import { RelationView } from "../../../../../application/context/relations/RelationView.js";
 import { EntityTypeValue } from "../../../../../domain/relations/Constants.js";
 
 export const metadata: CommandMetadata = {

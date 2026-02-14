@@ -9,8 +9,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { ResumeGoalCommandHandler } from "../../../../../application/goals/resume/ResumeGoalCommandHandler.js";
-import { ResumeGoalCommand } from "../../../../../application/goals/resume/ResumeGoalCommand.js";
+import { ResumeGoalCommandHandler } from "../../../../../application/context/goals/resume/ResumeGoalCommandHandler.js";
+import { ResumeGoalCommand } from "../../../../../application/context/goals/resume/ResumeGoalCommand.js";
 import { GoalResumeOutputBuilder } from "./GoalResumeOutputBuilder.js";
 import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
 

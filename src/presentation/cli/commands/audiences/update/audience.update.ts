@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateAudienceCommandHandler } from "../../../../../application/audiences/update/UpdateAudienceCommandHandler.js";
-import { UpdateAudienceCommand } from "../../../../../application/audiences/update/UpdateAudienceCommand.js";
+import { UpdateAudienceCommandHandler } from "../../../../../application/context/audiences/update/UpdateAudienceCommandHandler.js";
+import { UpdateAudienceCommand } from "../../../../../application/context/audiences/update/UpdateAudienceCommand.js";
 import { AudiencePriorityType } from "../../../../../domain/audiences/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 

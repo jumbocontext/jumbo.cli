@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveAudienceCommandHandler } from "../../../../../application/audiences/remove/RemoveAudienceCommandHandler.js";
-import { RemoveAudienceCommand } from "../../../../../application/audiences/remove/RemoveAudienceCommand.js";
+import { RemoveAudienceCommandHandler } from "../../../../../application/context/audiences/remove/RemoveAudienceCommandHandler.js";
+import { RemoveAudienceCommand } from "../../../../../application/context/audiences/remove/RemoveAudienceCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

@@ -7,8 +7,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateGuidelineCommandHandler } from "../../../../../application/guidelines/update/UpdateGuidelineCommandHandler.js";
-import { UpdateGuidelineCommand } from "../../../../../application/guidelines/update/UpdateGuidelineCommand.js";
+import { UpdateGuidelineCommandHandler } from "../../../../../application/context/guidelines/update/UpdateGuidelineCommandHandler.js";
+import { UpdateGuidelineCommand } from "../../../../../application/context/guidelines/update/UpdateGuidelineCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GuidelineCategoryValue } from "../../../../../domain/guidelines/Constants.js";
 

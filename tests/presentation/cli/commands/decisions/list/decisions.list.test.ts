@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { decisionsList } from "../../../../../../src/presentation/cli/commands/decisions/list/decisions.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IDecisionListReader } from "../../../../../../src/application/decisions/list/IDecisionListReader.js";
-import { DecisionView } from "../../../../../../src/application/decisions/DecisionView.js";
+import { IDecisionListReader } from "../../../../../../src/application/context/decisions/list/IDecisionListReader.js";
+import { DecisionView } from "../../../../../../src/application/context/decisions/DecisionView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("decisions.list command", () => {

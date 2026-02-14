@@ -11,8 +11,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { UpdateGoalCommandHandler } from "../../../../../application/goals/update/UpdateGoalCommandHandler.js";
-import { UpdateGoalCommand } from "../../../../../application/goals/update/UpdateGoalCommand.js";
+import { UpdateGoalCommandHandler } from "../../../../../application/context/goals/update/UpdateGoalCommandHandler.js";
+import { UpdateGoalCommand } from "../../../../../application/context/goals/update/UpdateGoalCommand.js";
 import { GoalUpdateOutputBuilder } from "./GoalUpdateOutputBuilder.js";
 
 /**

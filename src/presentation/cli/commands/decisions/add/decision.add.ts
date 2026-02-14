@@ -7,8 +7,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddDecisionCommandHandler } from "../../../../../application/decisions/add/AddDecisionCommandHandler.js";
-import { AddDecisionCommand } from "../../../../../application/decisions/add/AddDecisionCommand.js";
+import { AddDecisionCommandHandler } from "../../../../../application/context/decisions/add/AddDecisionCommandHandler.js";
+import { AddDecisionCommand } from "../../../../../application/context/decisions/add/AddDecisionCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

@@ -11,10 +11,10 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListComponentsQueryHandler } from "../../../../../application/components/list/ListComponentsQueryHandler.js";
-import { ComponentStatusFilter } from "../../../../../application/components/list/IComponentListReader.js";
+import { ListComponentsQueryHandler } from "../../../../../application/context/components/list/ListComponentsQueryHandler.js";
+import { ComponentStatusFilter } from "../../../../../application/context/components/list/IComponentListReader.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { ComponentView } from "../../../../../application/components/ComponentView.js";
+import { ComponentView } from "../../../../../application/context/components/ComponentView.js";
 
 /**
  * Command metadata for auto-registration

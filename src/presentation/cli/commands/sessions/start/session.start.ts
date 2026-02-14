@@ -5,13 +5,13 @@
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
-import { StartSessionCommandHandler } from "../../../../../application/sessions/start/StartSessionCommandHandler.js";
-import { StartSessionCommand } from "../../../../../application/sessions/start/StartSessionCommand.js";
+import { StartSessionCommandHandler } from "../../../../../application/context/sessions/start/StartSessionCommandHandler.js";
+import { StartSessionCommand } from "../../../../../application/context/sessions/start/StartSessionCommand.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { SessionStartContextQueryHandler } from "../../../../../application/sessions/get-context/SessionStartContextQueryHandler.js";
+import { SessionStartContextQueryHandler } from "../../../../../application/context/sessions/get-context/SessionStartContextQueryHandler.js";
 import { SessionStartTextRenderer } from "./SessionStartTextRenderer.js";
-import { SessionStartContext } from "../../../../../application/sessions/get-context/SessionStartContext.js";
+import { SessionStartContext } from "../../../../../application/context/sessions/get-context/SessionStartContext.js";
 
 /**
  * Command metadata for auto-registration

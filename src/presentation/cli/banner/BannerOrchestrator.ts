@@ -6,8 +6,8 @@
  */
 
 import { IApplicationContainer } from "../../../application/host/IApplicationContainer.js";
-import { GetProjectSummaryQueryHandler } from "../../../application/project/query/GetProjectSummaryQueryHandler.js";
-import { GetWorkSummaryQueryHandler } from "../../../application/work/query/GetWorkSummaryQueryHandler.js";
+import { GetProjectSummaryQueryHandler } from "../../../application/context/project/query/GetProjectSummaryQueryHandler.js";
+import { GetWorkSummaryQueryHandler } from "../../../application/context/work/query/GetWorkSummaryQueryHandler.js";
 import {
   BannerDisplayContext,
   generateBannerContent,

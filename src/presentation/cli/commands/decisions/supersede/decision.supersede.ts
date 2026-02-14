@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { SupersedeDecisionCommandHandler } from "../../../../../application/decisions/supersede/SupersedeDecisionCommandHandler.js";
-import { SupersedeDecisionCommand } from "../../../../../application/decisions/supersede/SupersedeDecisionCommand.js";
+import { SupersedeDecisionCommandHandler } from "../../../../../application/context/decisions/supersede/SupersedeDecisionCommandHandler.js";
+import { SupersedeDecisionCommand } from "../../../../../application/context/decisions/supersede/SupersedeDecisionCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

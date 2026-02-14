@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { sessionsList } from "../../../../../../src/presentation/cli/commands/sessions/list/sessions.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { ISessionListReader } from "../../../../../../src/application/sessions/list/ISessionListReader.js";
-import { SessionView } from "../../../../../../src/application/sessions/SessionView.js";
+import { ISessionListReader } from "../../../../../../src/application/context/sessions/list/ISessionListReader.js";
+import { SessionView } from "../../../../../../src/application/context/sessions/SessionView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("sessions.list command", () => {

@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { componentsList } from "../../../../../../src/presentation/cli/commands/components/list/components.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IComponentListReader } from "../../../../../../src/application/components/list/IComponentListReader.js";
-import { ComponentView } from "../../../../../../src/application/components/ComponentView.js";
+import { IComponentListReader } from "../../../../../../src/application/context/components/list/IComponentListReader.js";
+import { ComponentView } from "../../../../../../src/application/context/components/ComponentView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("components.list command", () => {

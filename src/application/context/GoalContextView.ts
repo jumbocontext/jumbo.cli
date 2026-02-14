@@ -1,5 +1,5 @@
-import { GoalView } from "../goals/GoalView.js";
-import { ArchitectureView } from "../architecture/ArchitectureView.js";
+import { GoalView } from "../context/goals/GoalView.js";
+import { ArchitectureView } from "../context/architecture/ArchitectureView.js";
 import { RelatedComponent } from "./RelatedComponent.js";
 import { RelatedDependency } from "./RelatedDependency.js";
 import { RelatedDecision } from "./RelatedDecision.js";

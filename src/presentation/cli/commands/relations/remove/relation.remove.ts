@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveRelationCommandHandler } from "../../../../../application/relations/remove/RemoveRelationCommandHandler.js";
-import { RemoveRelationCommand } from "../../../../../application/relations/remove/RemoveRelationCommand.js";
+import { RemoveRelationCommandHandler } from "../../../../../application/context/relations/remove/RemoveRelationCommandHandler.js";
+import { RemoveRelationCommand } from "../../../../../application/context/relations/remove/RemoveRelationCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

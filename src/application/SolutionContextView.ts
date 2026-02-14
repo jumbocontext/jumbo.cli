@@ -1,8 +1,8 @@
-import { ArchitectureView } from "./architecture/ArchitectureView.js";
-import { ComponentView } from "./components/ComponentView.js";
-import { DecisionView } from "./decisions/DecisionView.js";
-import { InvariantView } from "./invariants/InvariantView.js";
-import { GuidelineView } from "./guidelines/GuidelineView.js";
+import { ArchitectureView } from "./context/architecture/ArchitectureView.js";
+import { ComponentView } from "./context/components/ComponentView.js";
+import { DecisionView } from "./context/decisions/DecisionView.js";
+import { InvariantView } from "./context/invariants/InvariantView.js";
+import { GuidelineView } from "./context/guidelines/GuidelineView.js";
 
 /**
  * SolutionContextView - Aggregated view of all solution context

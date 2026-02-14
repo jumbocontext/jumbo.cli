@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { ViewArchitectureCommandHandler } from "../../../src/application/architecture/view/ViewArchitectureCommandHandler.js";
-import { IArchitectureViewer } from "../../../src/application/architecture/view/IArchitectureViewer.js";
-import { ArchitectureView } from "../../../src/application/architecture/ArchitectureView.js";
+import { ViewArchitectureCommandHandler } from "../../../src/application/context/architecture/view/ViewArchitectureCommandHandler.js";
+import { IArchitectureViewer } from "../../../src/application/context/architecture/view/IArchitectureViewer.js";
+import { ArchitectureView } from "../../../src/application/context/architecture/ArchitectureView.js";
 
 describe("ViewArchitectureCommandHandler", () => {
   let commandHandler: ViewArchitectureCommandHandler;

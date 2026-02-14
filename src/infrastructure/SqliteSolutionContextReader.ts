@@ -8,11 +8,11 @@
 import { Database } from "better-sqlite3";
 import { ISolutionContextReader } from "../application/ISolutionContextReader.js";
 import { SolutionContextView } from "../application/SolutionContextView.js";
-import { ArchitectureView } from "../application/architecture/ArchitectureView.js";
-import { ComponentView } from "../application/components/ComponentView.js";
-import { DecisionView } from "../application/decisions/DecisionView.js";
-import { InvariantView } from "../application/invariants/InvariantView.js";
-import { GuidelineView } from "../application/guidelines/GuidelineView.js";
+import { ArchitectureView } from "../application/context/architecture/ArchitectureView.js";
+import { ComponentView } from "../application/context/components/ComponentView.js";
+import { DecisionView } from "../application/context/decisions/DecisionView.js";
+import { InvariantView } from "../application/context/invariants/InvariantView.js";
+import { GuidelineView } from "../application/context/guidelines/GuidelineView.js";
 import { ComponentTypeValue, ComponentStatusValue } from "../domain/components/Constants.js";
 import { GuidelineCategoryValue } from "../domain/guidelines/Constants.js";
 

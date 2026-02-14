@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { valuesList } from "../../../../../../src/presentation/cli/commands/value-propositions/list/values.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IValuePropositionContextReader } from "../../../../../../src/application/value-propositions/query/IValuePropositionContextReader.js";
-import { ValuePropositionView } from "../../../../../../src/application/value-propositions/ValuePropositionView.js";
+import { IValuePropositionContextReader } from "../../../../../../src/application/context/value-propositions/query/IValuePropositionContextReader.js";
+import { ValuePropositionView } from "../../../../../../src/application/context/value-propositions/ValuePropositionView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("values.list command", () => {

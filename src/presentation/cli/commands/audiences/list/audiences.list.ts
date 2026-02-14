@@ -11,9 +11,9 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListAudiencesQueryHandler } from "../../../../../application/audiences/list/ListAudiencesQueryHandler.js";
+import { ListAudiencesQueryHandler } from "../../../../../application/context/audiences/list/ListAudiencesQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { AudienceView } from "../../../../../application/audiences/AudienceView.js";
+import { AudienceView } from "../../../../../application/context/audiences/AudienceView.js";
 
 /**
  * Command metadata for auto-registration

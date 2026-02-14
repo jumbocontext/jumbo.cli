@@ -1,4 +1,4 @@
-import { DependencyView } from "../dependencies/DependencyView.js";
+import { DependencyView } from "../context/dependencies/DependencyView.js";
 
 /**
  * RelatedDependency - A dependency related to a goal, enriched with relation metadata.

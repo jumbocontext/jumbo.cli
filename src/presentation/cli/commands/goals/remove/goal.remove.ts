@@ -7,8 +7,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { RemoveGoalCommandHandler } from "../../../../../application/goals/remove/RemoveGoalCommandHandler.js";
-import { RemoveGoalCommand } from "../../../../../application/goals/remove/RemoveGoalCommand.js";
+import { RemoveGoalCommandHandler } from "../../../../../application/context/goals/remove/RemoveGoalCommandHandler.js";
+import { RemoveGoalCommand } from "../../../../../application/context/goals/remove/RemoveGoalCommand.js";
 import { GoalRemoveOutputBuilder } from "./GoalRemoveOutputBuilder.js";
 
 /**

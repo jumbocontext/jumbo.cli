@@ -7,8 +7,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { EndSessionCommandHandler } from "../../../../../application/sessions/end/EndSessionCommandHandler.js";
-import { EndSessionCommand } from "../../../../../application/sessions/end/EndSessionCommand.js";
+import { EndSessionCommandHandler } from "../../../../../application/context/sessions/end/EndSessionCommandHandler.js";
+import { EndSessionCommand } from "../../../../../application/context/sessions/end/EndSessionCommand.js";
 
 /**
  * Command metadata for auto-registration

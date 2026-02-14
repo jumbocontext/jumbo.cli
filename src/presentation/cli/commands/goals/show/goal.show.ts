@@ -10,8 +10,8 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GoalShowOutputBuilder } from "./GoalShowOutputBuilder.js";
 import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
-import { ShowGoalCommandHandler } from "../../../../../application/goals/show/ShowGoalCommandHandler.js";
-import { ShowGoalCommand } from "../../../../../application/goals/show/ShowGoalCommand.js";
+import { ShowGoalCommandHandler } from "../../../../../application/context/goals/show/ShowGoalCommandHandler.js";
+import { ShowGoalCommand } from "../../../../../application/context/goals/show/ShowGoalCommand.js";
 
 /**
  * Command metadata for auto-registration

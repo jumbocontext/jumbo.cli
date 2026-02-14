@@ -1,4 +1,4 @@
-import { GuidelineView } from "../guidelines/GuidelineView.js";
+import { GuidelineView } from "../context/guidelines/GuidelineView.js";
 
 /**
  * RelatedGuideline - A guideline related to a goal, enriched with relation metadata.

@@ -8,7 +8,7 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { ReviewGoalRequest } from "../../../../../application/goals/review/ReviewGoalRequest.js";
+import { ReviewGoalRequest } from "../../../../../application/context/goals/review/ReviewGoalRequest.js";
 import { GoalReviewOutputBuilder } from "./GoalReviewOutputBuilder.js";
 
 /**

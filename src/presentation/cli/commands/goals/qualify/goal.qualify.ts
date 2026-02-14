@@ -8,8 +8,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { QualifyGoalCommandHandler } from "../../../../../application/goals/qualify/QualifyGoalCommandHandler.js";
-import { QualifyGoalCommand } from "../../../../../application/goals/qualify/QualifyGoalCommand.js";
+import { QualifyGoalCommandHandler } from "../../../../../application/context/goals/qualify/QualifyGoalCommandHandler.js";
+import { QualifyGoalCommand } from "../../../../../application/context/goals/qualify/QualifyGoalCommand.js";
 import { GoalQualifyOutputBuilder } from "./GoalQualifyOutputBuilder.js";
 import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
 

@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { guidelinesList } from "../../../../../../src/presentation/cli/commands/guidelines/list/guidelines.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IGuidelineListReader } from "../../../../../../src/application/guidelines/list/IGuidelineListReader.js";
-import { GuidelineView } from "../../../../../../src/application/guidelines/GuidelineView.js";
+import { IGuidelineListReader } from "../../../../../../src/application/context/guidelines/list/IGuidelineListReader.js";
+import { GuidelineView } from "../../../../../../src/application/context/guidelines/GuidelineView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("guidelines.list command", () => {

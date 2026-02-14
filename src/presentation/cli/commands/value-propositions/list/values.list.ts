@@ -11,9 +11,9 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListValuePropositionsQueryHandler } from "../../../../../application/value-propositions/list/ListValuePropositionsQueryHandler.js";
+import { ListValuePropositionsQueryHandler } from "../../../../../application/context/value-propositions/list/ListValuePropositionsQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { ValuePropositionView } from "../../../../../application/value-propositions/ValuePropositionView.js";
+import { ValuePropositionView } from "../../../../../application/context/value-propositions/ValuePropositionView.js";
 
 /**
  * Command metadata for auto-registration

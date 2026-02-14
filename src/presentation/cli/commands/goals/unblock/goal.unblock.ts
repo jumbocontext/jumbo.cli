@@ -7,8 +7,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { UnblockGoalCommandHandler } from "../../../../../application/goals/unblock/UnblockGoalCommandHandler.js";
-import { UnblockGoalCommand } from "../../../../../application/goals/unblock/UnblockGoalCommand.js";
+import { UnblockGoalCommandHandler } from "../../../../../application/context/goals/unblock/UnblockGoalCommandHandler.js";
+import { UnblockGoalCommand } from "../../../../../application/context/goals/unblock/UnblockGoalCommand.js";
 import { GoalUnblockOutputBuilder } from "./GoalUnblockOutputBuilder.js";
 
 /**

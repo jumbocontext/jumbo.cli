@@ -11,10 +11,10 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { AddGoalCommandHandler } from "../../../../../application/goals/add/AddGoalCommandHandler.js";
-import { AddGoalCommand } from "../../../../../application/goals/add/AddGoalCommand.js";
+import { AddGoalCommandHandler } from "../../../../../application/context/goals/add/AddGoalCommandHandler.js";
+import { AddGoalCommand } from "../../../../../application/context/goals/add/AddGoalCommand.js";
 import { InteractivePromptService } from "../../../prompts/index.js";
-import { ComponentView } from "../../../../../application/components/ComponentView.js";
+import { ComponentView } from "../../../../../application/context/components/ComponentView.js";
 import { GoalAddOutputBuilder } from "./GoalAddOutputBuilder.js";
 
 /**

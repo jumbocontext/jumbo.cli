@@ -4,8 +4,8 @@
 
 import { describe, it, expect, beforeEach } from "@jest/globals";
 import { ComponentShowOutputBuilder } from "../../../../../../src/presentation/cli/commands/components/show/ComponentShowOutputBuilder.js";
-import { ComponentView } from "../../../../../../src/application/components/ComponentView.js";
-import { RelationView } from "../../../../../../src/application/relations/RelationView.js";
+import { ComponentView } from "../../../../../../src/application/context/components/ComponentView.js";
+import { RelationView } from "../../../../../../src/application/context/relations/RelationView.js";
 
 describe("ComponentShowOutputBuilder", () => {
   let outputBuilder: ComponentShowOutputBuilder;

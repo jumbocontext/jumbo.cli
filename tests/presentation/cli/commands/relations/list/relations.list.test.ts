@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { relationsList } from "../../../../../../src/presentation/cli/commands/relations/list/relations.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IRelationListReader } from "../../../../../../src/application/relations/list/IRelationListReader.js";
-import { RelationView } from "../../../../../../src/application/relations/RelationView.js";
+import { IRelationListReader } from "../../../../../../src/application/context/relations/list/IRelationListReader.js";
+import { RelationView } from "../../../../../../src/application/context/relations/RelationView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("relations.list command", () => {

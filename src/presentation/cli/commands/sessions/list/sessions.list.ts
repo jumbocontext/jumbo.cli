@@ -11,10 +11,10 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListSessionsQueryHandler } from "../../../../../application/sessions/list/ListSessionsQueryHandler.js";
-import { SessionStatusFilter } from "../../../../../application/sessions/list/ISessionListReader.js";
+import { ListSessionsQueryHandler } from "../../../../../application/context/sessions/list/ListSessionsQueryHandler.js";
+import { SessionStatusFilter } from "../../../../../application/context/sessions/list/ISessionListReader.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { SessionView } from "../../../../../application/sessions/SessionView.js";
+import { SessionView } from "../../../../../application/context/sessions/SessionView.js";
 
 /**
  * Command metadata for auto-registration

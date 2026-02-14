@@ -5,8 +5,8 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { invariantsList } from "../../../../../../src/presentation/cli/commands/invariants/list/invariants.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IInvariantListReader } from "../../../../../../src/application/invariants/list/IInvariantListReader.js";
-import { InvariantView } from "../../../../../../src/application/invariants/InvariantView.js";
+import { IInvariantListReader } from "../../../../../../src/application/context/invariants/list/IInvariantListReader.js";
+import { InvariantView } from "../../../../../../src/application/context/invariants/InvariantView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("invariants.list command", () => {

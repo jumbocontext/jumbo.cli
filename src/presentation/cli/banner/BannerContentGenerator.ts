@@ -7,8 +7,8 @@
  */
 
 import chalk from "chalk";
-import { ProjectSummaryView } from "../../../application/project/ProjectSummaryView.js";
-import { WorkSummaryView } from "../../../application/work/views/WorkSummaryView.js";
+import { ProjectSummaryView } from "../../../application/context/project/ProjectSummaryView.js";
+import { WorkSummaryView } from "../../../application/context/work/views/WorkSummaryView.js";
 
 /**
  * Combined context for banner display

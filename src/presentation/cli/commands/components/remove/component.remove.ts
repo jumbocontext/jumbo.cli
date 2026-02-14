@@ -7,8 +7,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveComponentCommandHandler } from "../../../../../application/components/remove/RemoveComponentCommandHandler.js";
-import { RemoveComponentCommand } from "../../../../../application/components/remove/RemoveComponentCommand.js";
+import { RemoveComponentCommandHandler } from "../../../../../application/context/components/remove/RemoveComponentCommandHandler.js";
+import { RemoveComponentCommand } from "../../../../../application/context/components/remove/RemoveComponentCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

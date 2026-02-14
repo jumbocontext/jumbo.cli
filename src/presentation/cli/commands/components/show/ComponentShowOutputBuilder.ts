@@ -1,7 +1,7 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { ComponentView } from '../../../../../application/components/ComponentView.js';
-import { RelationView } from '../../../../../application/relations/RelationView.js';
+import { ComponentView } from '../../../../../application/context/components/ComponentView.js';
+import { RelationView } from '../../../../../application/context/relations/RelationView.js';
 
 /**
  * Specialized builder for component.show command output.

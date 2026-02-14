@@ -6,9 +6,9 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListGuidelinesQueryHandler } from "../../../../../application/guidelines/list/ListGuidelinesQueryHandler.js";
+import { ListGuidelinesQueryHandler } from "../../../../../application/context/guidelines/list/ListGuidelinesQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { GuidelineView } from "../../../../../application/guidelines/GuidelineView.js";
+import { GuidelineView } from "../../../../../application/context/guidelines/GuidelineView.js";
 
 export const metadata: CommandMetadata = {
   description: "List all execution guidelines",

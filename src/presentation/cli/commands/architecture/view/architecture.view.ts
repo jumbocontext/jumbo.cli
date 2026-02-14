@@ -7,7 +7,7 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { ViewArchitectureCommandHandler } from "../../../../../application/architecture/view/ViewArchitectureCommandHandler.js";
+import { ViewArchitectureCommandHandler } from "../../../../../application/context/architecture/view/ViewArchitectureCommandHandler.js";
 
 /**
  * Command metadata for auto-registration

@@ -6,8 +6,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveInvariantCommandHandler } from "../../../../../application/invariants/remove/RemoveInvariantCommandHandler.js";
-import { RemoveInvariantCommand } from "../../../../../application/invariants/remove/RemoveInvariantCommand.js";
+import { RemoveInvariantCommandHandler } from "../../../../../application/context/invariants/remove/RemoveInvariantCommandHandler.js";
+import { RemoveInvariantCommand } from "../../../../../application/context/invariants/remove/RemoveInvariantCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**

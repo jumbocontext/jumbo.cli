@@ -7,8 +7,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { StartGoalCommandHandler } from "../../../../../application/goals/start/StartGoalCommandHandler.js";
-import { StartGoalCommand } from "../../../../../application/goals/start/StartGoalCommand.js";
+import { StartGoalCommandHandler } from "../../../../../application/context/goals/start/StartGoalCommandHandler.js";
+import { StartGoalCommand } from "../../../../../application/context/goals/start/StartGoalCommand.js";
 import { GoalStartOutputBuilder } from "./GoalStartOutputBuilder.js";
 import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
 

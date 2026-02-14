@@ -11,9 +11,9 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListDependenciesQueryHandler } from "../../../../../application/dependencies/list/ListDependenciesQueryHandler.js";
+import { ListDependenciesQueryHandler } from "../../../../../application/context/dependencies/list/ListDependenciesQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { DependencyView } from "../../../../../application/dependencies/DependencyView.js";
+import { DependencyView } from "../../../../../application/context/dependencies/DependencyView.js";
 
 /**
  * Command metadata for auto-registration

@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { ISettingsInitializer } from "../../application/settings/ISettingsInitializer.js";
-import { PlannedFileChange } from "../../application/project/init/PlannedFileChange.js";
+import { PlannedFileChange } from "../../application/context/project/init/PlannedFileChange.js";
 
 /**
  * FsSettingsInitializer - Creates settings file with defaults if it doesn't exist.

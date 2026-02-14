@@ -11,10 +11,10 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListDecisionsQueryHandler } from "../../../../../application/decisions/list/ListDecisionsQueryHandler.js";
-import { DecisionStatusFilter } from "../../../../../application/decisions/list/IDecisionListReader.js";
+import { ListDecisionsQueryHandler } from "../../../../../application/context/decisions/list/ListDecisionsQueryHandler.js";
+import { DecisionStatusFilter } from "../../../../../application/context/decisions/list/IDecisionListReader.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { DecisionView } from "../../../../../application/decisions/DecisionView.js";
+import { DecisionView } from "../../../../../application/context/decisions/DecisionView.js";
 
 /**
  * Command metadata for auto-registration
