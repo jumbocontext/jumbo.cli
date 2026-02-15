@@ -10,10 +10,14 @@ import { IGoalUpdatedProjector } from "../../../../application/context/goals/upd
 import { IGoalUpdateReader } from "../../../../application/context/goals/update/IGoalUpdateReader.js";
 import { GoalUpdatedEvent } from "../../../../domain/goals/update/GoalUpdatedEvent.js";
 import { GoalView } from "../../../../application/context/goals/GoalView.js";
+import { GoalRecord } from "../GoalRecord.js";
+import { GoalRecordMapper } from "../GoalRecordMapper.js";
 
 export class SqliteGoalUpdatedProjector
   implements IGoalUpdatedProjector, IGoalUpdateReader
 {
+  private readonly mapper = new GoalRecordMapper();
+
   constructor(private db: Database) {}
 
   async applyGoalUpdated(event: GoalUpdatedEvent): Promise<void> {
@@ -61,27 +65,7 @@ export class SqliteGoalUpdatedProjector
   async findById(goalId: string): Promise<GoalView | null> {
     const row = this.db
       .prepare("SELECT * FROM goal_views WHERE goalId = ?")
-      .get(goalId);
-    return row ? this.mapRowToView(row as any) : null;
-  }
-
-  private mapRowToView(row: any): GoalView {
-    return {
-      goalId: row.goalId,
-      objective: row.objective,
-      successCriteria: JSON.parse(row.successCriteria || "[]"),
-      scopeIn: JSON.parse(row.scopeIn || "[]"),
-      scopeOut: JSON.parse(row.scopeOut || "[]"),
-      status: row.status,
-      version: row.version,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      note: row.note || undefined,
-      progress: JSON.parse(row.progress || "[]"),
-      claimedBy: row.claimedBy || undefined,
-      claimedAt: row.claimedAt || undefined,
-      claimExpiresAt: row.claimExpiresAt || undefined,
-      nextGoalId: row.nextGoalId || undefined,
-    };
+      .get(goalId) as GoalRecord | undefined;
+    return row ? this.mapper.toView(row) : null;
   }
 }

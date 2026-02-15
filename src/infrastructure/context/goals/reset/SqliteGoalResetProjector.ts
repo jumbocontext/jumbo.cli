@@ -10,10 +10,14 @@ import { IGoalResetProjector } from "../../../../application/context/goals/reset
 import { IGoalResetReader } from "../../../../application/context/goals/reset/IGoalResetReader.js";
 import { GoalResetEvent } from "../../../../domain/goals/reset/GoalResetEvent.js";
 import { GoalView } from "../../../../application/context/goals/GoalView.js";
+import { GoalRecord } from "../GoalRecord.js";
+import { GoalRecordMapper } from "../GoalRecordMapper.js";
 
 export class SqliteGoalResetProjector
   implements IGoalResetProjector, IGoalResetReader
 {
+  private readonly mapper = new GoalRecordMapper();
+
   constructor(private db: Database) {}
 
   async applyGoalReset(event: GoalResetEvent): Promise<void> {
@@ -40,27 +44,7 @@ export class SqliteGoalResetProjector
   async findById(goalId: string): Promise<GoalView | null> {
     const row = this.db
       .prepare("SELECT * FROM goal_views WHERE goalId = ?")
-      .get(goalId);
-    return row ? this.mapRowToView(row as any) : null;
-  }
-
-  private mapRowToView(row: any): GoalView {
-    return {
-      goalId: row.goalId,
-      objective: row.objective,
-      successCriteria: JSON.parse(row.successCriteria || "[]"),
-      scopeIn: JSON.parse(row.scopeIn || "[]"),
-      scopeOut: JSON.parse(row.scopeOut || "[]"),
-      status: row.status,
-      version: row.version,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      note: row.note || undefined,
-      progress: JSON.parse(row.progress || "[]"),
-      claimedBy: row.claimedBy || undefined,
-      claimedAt: row.claimedAt || undefined,
-      claimExpiresAt: row.claimExpiresAt || undefined,
-      nextGoalId: row.nextGoalId || undefined,
-    };
+      .get(goalId) as GoalRecord | undefined;
+    return row ? this.mapper.toView(row) : null;
   }
 }
