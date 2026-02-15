@@ -5,25 +5,25 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { relationsList } from "../../../../../../src/presentation/cli/commands/relations/list/relations.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IRelationListReader } from "../../../../../../src/application/context/relations/list/IRelationListReader.js";
+import { IRelationViewReader } from "../../../../../../src/application/context/relations/get/IRelationViewReader.js";
 import { RelationView } from "../../../../../../src/application/context/relations/RelationView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("relations.list command", () => {
   let mockContainer: Partial<IApplicationContainer>;
-  let mockRelationListReader: jest.Mocked<IRelationListReader>;
+  let mockRelationViewReader: jest.Mocked<IRelationViewReader>;
   let consoleSpy: jest.SpiedFunction<typeof console.log>;
 
   beforeEach(() => {
     // Reset renderer to text mode for testing
     Renderer.configure({ format: "text", verbosity: "normal" });
 
-    mockRelationListReader = {
+    mockRelationViewReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IRelationListReader>;
+    } as jest.Mocked<IRelationViewReader>;
 
     mockContainer = {
-      relationListReader: mockRelationListReader,
+      relationViewReader: mockRelationViewReader,
     };
 
     consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
@@ -52,43 +52,43 @@ describe("relations.list command", () => {
       },
     ];
 
-    mockRelationListReader.findAll.mockResolvedValue(mockRelations);
+    mockRelationViewReader.findAll.mockResolvedValue(mockRelations);
 
     await relationsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockRelationListReader.findAll).toHaveBeenCalled();
+    expect(mockRelationViewReader.findAll).toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should filter by entity type when specified", async () => {
-    mockRelationListReader.findAll.mockResolvedValue([]);
+    mockRelationViewReader.findAll.mockResolvedValue([]);
 
     await relationsList({ entityType: "goal" }, mockContainer as IApplicationContainer);
 
-    expect(mockRelationListReader.findAll).toHaveBeenCalledWith(
+    expect(mockRelationViewReader.findAll).toHaveBeenCalledWith(
       expect.objectContaining({ entityType: "goal" })
     );
   });
 
   it("should filter by entity type and id when both specified", async () => {
-    mockRelationListReader.findAll.mockResolvedValue([]);
+    mockRelationViewReader.findAll.mockResolvedValue([]);
 
     await relationsList(
       { entityType: "component", entityId: "comp_123" },
       mockContainer as IApplicationContainer
     );
 
-    expect(mockRelationListReader.findAll).toHaveBeenCalledWith(
+    expect(mockRelationViewReader.findAll).toHaveBeenCalledWith(
       expect.objectContaining({ entityType: "component", entityId: "comp_123" })
     );
   });
 
   it("should show info message when no relations exist", async () => {
-    mockRelationListReader.findAll.mockResolvedValue([]);
+    mockRelationViewReader.findAll.mockResolvedValue([]);
 
     await relationsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockRelationListReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockRelationViewReader.findAll).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 
@@ -112,20 +112,20 @@ describe("relations.list command", () => {
       },
     ];
 
-    mockRelationListReader.findAll.mockResolvedValue(mockRelations);
+    mockRelationViewReader.findAll.mockResolvedValue(mockRelations);
 
     await relationsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockRelationListReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockRelationViewReader.findAll).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should filter by status when specified", async () => {
-    mockRelationListReader.findAll.mockResolvedValue([]);
+    mockRelationViewReader.findAll.mockResolvedValue([]);
 
     await relationsList({ status: "all" }, mockContainer as IApplicationContainer);
 
-    expect(mockRelationListReader.findAll).toHaveBeenCalledWith(
+    expect(mockRelationViewReader.findAll).toHaveBeenCalledWith(
       expect.objectContaining({ status: "all" })
     );
   });

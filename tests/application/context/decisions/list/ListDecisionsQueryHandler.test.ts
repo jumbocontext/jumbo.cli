@@ -1,22 +1,22 @@
 /**
- * Tests for ListDecisionsQueryHandler
+ * Tests for GetDecisionsQueryHandler
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { ListDecisionsQueryHandler } from "../../../../../src/application/context/decisions/list/ListDecisionsQueryHandler.js";
-import { IDecisionListReader } from "../../../../../src/application/context/decisions/list/IDecisionListReader.js";
+import { GetDecisionsQueryHandler } from "../../../../../src/application/context/decisions/get/GetDecisionsQueryHandler.js";
+import { IDecisionViewReader } from "../../../../../src/application/context/decisions/get/IDecisionViewReader.js";
 import { DecisionView } from "../../../../../src/application/context/decisions/DecisionView.js";
 
-describe("ListDecisionsQueryHandler", () => {
-  let queryHandler: ListDecisionsQueryHandler;
-  let mockReader: jest.Mocked<IDecisionListReader>;
+describe("GetDecisionsQueryHandler", () => {
+  let queryHandler: GetDecisionsQueryHandler;
+  let mockReader: jest.Mocked<IDecisionViewReader>;
 
   beforeEach(() => {
     mockReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IDecisionListReader>;
+    } as jest.Mocked<IDecisionViewReader>;
 
-    queryHandler = new ListDecisionsQueryHandler(mockReader);
+    queryHandler = new GetDecisionsQueryHandler(mockReader);
   });
 
   describe("execute", () => {

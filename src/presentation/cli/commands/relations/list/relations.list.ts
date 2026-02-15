@@ -6,7 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListRelationsQueryHandler } from "../../../../../application/context/relations/list/ListRelationsQueryHandler.js";
+import { GetRelationsQueryHandler } from "../../../../../application/context/relations/get/GetRelationsQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { RelationView } from "../../../../../application/context/relations/RelationView.js";
 import { EntityTypeValue } from "../../../../../domain/relations/Constants.js";
@@ -55,7 +55,7 @@ export async function relationsList(
   const renderer = Renderer.getInstance();
 
   try {
-    const queryHandler = new ListRelationsQueryHandler(container.relationListReader);
+    const queryHandler = new GetRelationsQueryHandler(container.relationViewReader);
     const filter = {
       entityType: options.entityType as EntityTypeValue | undefined,
       entityId: options.entityId,

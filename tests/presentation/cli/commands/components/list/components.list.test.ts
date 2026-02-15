@@ -5,25 +5,25 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { componentsList } from "../../../../../../src/presentation/cli/commands/components/list/components.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IComponentListReader } from "../../../../../../src/application/context/components/list/IComponentListReader.js";
+import { IComponentViewReader } from "../../../../../../src/application/context/components/get/IComponentViewReader.js";
 import { ComponentView } from "../../../../../../src/application/context/components/ComponentView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("components.list command", () => {
   let mockContainer: Partial<IApplicationContainer>;
-  let mockComponentListReader: jest.Mocked<IComponentListReader>;
+  let mockComponentViewReader: jest.Mocked<IComponentViewReader>;
   let consoleSpy: jest.SpiedFunction<typeof console.log>;
 
   beforeEach(() => {
     // Reset renderer to text mode for testing
     Renderer.configure({ format: "text", verbosity: "normal" });
 
-    mockComponentListReader = {
+    mockComponentViewReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IComponentListReader>;
+    } as jest.Mocked<IComponentViewReader>;
 
     mockContainer = {
-      componentListReader: mockComponentListReader,
+      componentViewReader: mockComponentViewReader,
     };
 
     consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
@@ -51,28 +51,28 @@ describe("components.list command", () => {
       },
     ];
 
-    mockComponentListReader.findAll.mockResolvedValue(mockComponents);
+    mockComponentViewReader.findAll.mockResolvedValue(mockComponents);
 
     await componentsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockComponentListReader.findAll).toHaveBeenCalledWith("all");
+    expect(mockComponentViewReader.findAll).toHaveBeenCalledWith("all");
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should filter by status when specified", async () => {
-    mockComponentListReader.findAll.mockResolvedValue([]);
+    mockComponentViewReader.findAll.mockResolvedValue([]);
 
     await componentsList({ status: "active" }, mockContainer as IApplicationContainer);
 
-    expect(mockComponentListReader.findAll).toHaveBeenCalledWith("active");
+    expect(mockComponentViewReader.findAll).toHaveBeenCalledWith("active");
   });
 
   it("should show info message when no components exist", async () => {
-    mockComponentListReader.findAll.mockResolvedValue([]);
+    mockComponentViewReader.findAll.mockResolvedValue([]);
 
     await componentsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockComponentListReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockComponentViewReader.findAll).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 
@@ -95,11 +95,11 @@ describe("components.list command", () => {
       },
     ];
 
-    mockComponentListReader.findAll.mockResolvedValue(mockComponents);
+    mockComponentViewReader.findAll.mockResolvedValue(mockComponents);
 
     await componentsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockComponentListReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockComponentViewReader.findAll).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 });

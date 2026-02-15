@@ -1,22 +1,22 @@
 /**
- * Tests for ListRelationsQueryHandler
+ * Tests for GetRelationsQueryHandler
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { ListRelationsQueryHandler } from "../../../../../src/application/context/relations/list/ListRelationsQueryHandler.js";
-import { IRelationListReader } from "../../../../../src/application/context/relations/list/IRelationListReader.js";
+import { GetRelationsQueryHandler } from "../../../../../src/application/context/relations/get/GetRelationsQueryHandler.js";
+import { IRelationViewReader } from "../../../../../src/application/context/relations/get/IRelationViewReader.js";
 import { RelationView } from "../../../../../src/application/context/relations/RelationView.js";
 
-describe("ListRelationsQueryHandler", () => {
-  let queryHandler: ListRelationsQueryHandler;
-  let mockReader: jest.Mocked<IRelationListReader>;
+describe("GetRelationsQueryHandler", () => {
+  let queryHandler: GetRelationsQueryHandler;
+  let mockReader: jest.Mocked<IRelationViewReader>;
 
   beforeEach(() => {
     mockReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IRelationListReader>;
+    } as jest.Mocked<IRelationViewReader>;
 
-    queryHandler = new ListRelationsQueryHandler(mockReader);
+    queryHandler = new GetRelationsQueryHandler(mockReader);
   });
 
   describe("execute", () => {

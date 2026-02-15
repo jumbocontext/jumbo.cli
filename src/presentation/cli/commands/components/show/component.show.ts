@@ -61,7 +61,7 @@ export async function componentShow(
     // Create query handler with dependencies
     const queryHandler = new ShowComponentQueryHandler(
       container.componentReader,
-      container.relationListReader
+      container.relationViewReader
     );
 
     // Execute query

@@ -1,22 +1,22 @@
 /**
- * Tests for ListComponentsQueryHandler
+ * Tests for GetComponentsQueryHandler
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { ListComponentsQueryHandler } from "../../../../../src/application/context/components/list/ListComponentsQueryHandler.js";
-import { IComponentListReader } from "../../../../../src/application/context/components/list/IComponentListReader.js";
+import { GetComponentsQueryHandler } from "../../../../../src/application/context/components/get/GetComponentsQueryHandler.js";
+import { IComponentViewReader } from "../../../../../src/application/context/components/get/IComponentViewReader.js";
 import { ComponentView } from "../../../../../src/application/context/components/ComponentView.js";
 
-describe("ListComponentsQueryHandler", () => {
-  let queryHandler: ListComponentsQueryHandler;
-  let mockReader: jest.Mocked<IComponentListReader>;
+describe("GetComponentsQueryHandler", () => {
+  let queryHandler: GetComponentsQueryHandler;
+  let mockReader: jest.Mocked<IComponentViewReader>;
 
   beforeEach(() => {
     mockReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IComponentListReader>;
+    } as jest.Mocked<IComponentViewReader>;
 
-    queryHandler = new ListComponentsQueryHandler(mockReader);
+    queryHandler = new GetComponentsQueryHandler(mockReader);
   });
 
   describe("execute", () => {

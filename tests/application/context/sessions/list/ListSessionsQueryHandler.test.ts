@@ -1,22 +1,22 @@
 /**
- * Tests for ListSessionsQueryHandler
+ * Tests for GetSessionsQueryHandler
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { ListSessionsQueryHandler } from "../../../../../src/application/context/sessions/list/ListSessionsQueryHandler.js";
-import { ISessionListReader } from "../../../../../src/application/context/sessions/list/ISessionListReader.js";
+import { GetSessionsQueryHandler } from "../../../../../src/application/context/sessions/get/GetSessionsQueryHandler.js";
+import { ISessionViewReader } from "../../../../../src/application/context/sessions/get/ISessionViewReader.js";
 import { SessionView } from "../../../../../src/application/context/sessions/SessionView.js";
 
-describe("ListSessionsQueryHandler", () => {
-  let queryHandler: ListSessionsQueryHandler;
-  let mockReader: jest.Mocked<ISessionListReader>;
+describe("GetSessionsQueryHandler", () => {
+  let queryHandler: GetSessionsQueryHandler;
+  let mockReader: jest.Mocked<ISessionViewReader>;
 
   beforeEach(() => {
     mockReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<ISessionListReader>;
+    } as jest.Mocked<ISessionViewReader>;
 
-    queryHandler = new ListSessionsQueryHandler(mockReader);
+    queryHandler = new GetSessionsQueryHandler(mockReader);
   });
 
   describe("execute", () => {

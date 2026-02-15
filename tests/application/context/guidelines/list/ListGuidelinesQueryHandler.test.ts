@@ -1,22 +1,22 @@
 /**
- * Tests for ListGuidelinesQueryHandler
+ * Tests for GetGuidelinesQueryHandler
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { ListGuidelinesQueryHandler } from "../../../../../src/application/context/guidelines/list/ListGuidelinesQueryHandler.js";
-import { IGuidelineListReader } from "../../../../../src/application/context/guidelines/list/IGuidelineListReader.js";
+import { GetGuidelinesQueryHandler } from "../../../../../src/application/context/guidelines/get/GetGuidelinesQueryHandler.js";
+import { IGuidelineViewReader } from "../../../../../src/application/context/guidelines/get/IGuidelineViewReader.js";
 import { GuidelineView } from "../../../../../src/application/context/guidelines/GuidelineView.js";
 
-describe("ListGuidelinesQueryHandler", () => {
-  let queryHandler: ListGuidelinesQueryHandler;
-  let mockReader: jest.Mocked<IGuidelineListReader>;
+describe("GetGuidelinesQueryHandler", () => {
+  let queryHandler: GetGuidelinesQueryHandler;
+  let mockReader: jest.Mocked<IGuidelineViewReader>;
 
   beforeEach(() => {
     mockReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IGuidelineListReader>;
+    } as jest.Mocked<IGuidelineViewReader>;
 
-    queryHandler = new ListGuidelinesQueryHandler(mockReader);
+    queryHandler = new GetGuidelinesQueryHandler(mockReader);
   });
 
   describe("execute", () => {

@@ -1,22 +1,22 @@
 /**
- * Tests for ListInvariantsQueryHandler
+ * Tests for GetInvariantsQueryHandler
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { ListInvariantsQueryHandler } from "../../../../../src/application/context/invariants/list/ListInvariantsQueryHandler.js";
-import { IInvariantListReader } from "../../../../../src/application/context/invariants/list/IInvariantListReader.js";
+import { GetInvariantsQueryHandler } from "../../../../../src/application/context/invariants/get/GetInvariantsQueryHandler.js";
+import { IInvariantViewReader } from "../../../../../src/application/context/invariants/get/IInvariantViewReader.js";
 import { InvariantView } from "../../../../../src/application/context/invariants/InvariantView.js";
 
-describe("ListInvariantsQueryHandler", () => {
-  let queryHandler: ListInvariantsQueryHandler;
-  let mockReader: jest.Mocked<IInvariantListReader>;
+describe("GetInvariantsQueryHandler", () => {
+  let queryHandler: GetInvariantsQueryHandler;
+  let mockReader: jest.Mocked<IInvariantViewReader>;
 
   beforeEach(() => {
     mockReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IInvariantListReader>;
+    } as jest.Mocked<IInvariantViewReader>;
 
-    queryHandler = new ListInvariantsQueryHandler(mockReader);
+    queryHandler = new GetInvariantsQueryHandler(mockReader);
   });
 
   describe("execute", () => {

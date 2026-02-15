@@ -11,7 +11,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListDependenciesQueryHandler } from "../../../../../application/context/dependencies/list/ListDependenciesQueryHandler.js";
+import { GetDependenciesQueryHandler } from "../../../../../application/context/dependencies/get/GetDependenciesQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { DependencyView } from "../../../../../application/context/dependencies/DependencyView.js";
 
@@ -95,8 +95,8 @@ export async function dependenciesList(
     };
 
     // Create query handler using container dependencies
-    const queryHandler = new ListDependenciesQueryHandler(
-      container.dependencyListReader
+    const queryHandler = new GetDependenciesQueryHandler(
+      container.dependencyViewReader
     );
 
     // Execute query

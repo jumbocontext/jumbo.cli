@@ -5,14 +5,14 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { ShowComponentQueryHandler } from "../../../../../src/application/context/components/show/ShowComponentQueryHandler.js";
 import { IComponentReader } from "../../../../../src/application/context/components/get/IComponentReader.js";
-import { IRelationListReader } from "../../../../../src/application/context/relations/list/IRelationListReader.js";
+import { IRelationViewReader } from "../../../../../src/application/context/relations/get/IRelationViewReader.js";
 import { ComponentView } from "../../../../../src/application/context/components/ComponentView.js";
 import { RelationView } from "../../../../../src/application/context/relations/RelationView.js";
 
 describe("ShowComponentQueryHandler", () => {
   let queryHandler: ShowComponentQueryHandler;
   let mockComponentReader: jest.Mocked<IComponentReader>;
-  let mockRelationListReader: jest.Mocked<IRelationListReader>;
+  let mockRelationViewReader: jest.Mocked<IRelationViewReader>;
 
   const mockComponent: ComponentView = {
     componentId: "comp_123",
@@ -51,27 +51,27 @@ describe("ShowComponentQueryHandler", () => {
       findByName: jest.fn(),
     } as jest.Mocked<IComponentReader>;
 
-    mockRelationListReader = {
+    mockRelationViewReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IRelationListReader>;
+    } as jest.Mocked<IRelationViewReader>;
 
     queryHandler = new ShowComponentQueryHandler(
       mockComponentReader,
-      mockRelationListReader
+      mockRelationViewReader
     );
   });
 
   describe("execute", () => {
     it("should find component by ID and return with relations", async () => {
       mockComponentReader.findById.mockResolvedValue(mockComponent);
-      mockRelationListReader.findAll.mockResolvedValue(mockRelations);
+      mockRelationViewReader.findAll.mockResolvedValue(mockRelations);
 
       const result = await queryHandler.execute({ componentId: "comp_123" });
 
       expect(result.component).toEqual(mockComponent);
       expect(result.relations).toEqual(mockRelations);
       expect(mockComponentReader.findById).toHaveBeenCalledWith("comp_123");
-      expect(mockRelationListReader.findAll).toHaveBeenCalledWith({
+      expect(mockRelationViewReader.findAll).toHaveBeenCalledWith({
         entityType: "component",
         entityId: "comp_123",
         status: "active",
@@ -80,7 +80,7 @@ describe("ShowComponentQueryHandler", () => {
 
     it("should find component by name and return with relations", async () => {
       mockComponentReader.findByName.mockResolvedValue(mockComponent);
-      mockRelationListReader.findAll.mockResolvedValue(mockRelations);
+      mockRelationViewReader.findAll.mockResolvedValue(mockRelations);
 
       const result = await queryHandler.execute({ name: "UserService" });
 
@@ -92,7 +92,7 @@ describe("ShowComponentQueryHandler", () => {
 
     it("should prefer componentId over name when both provided", async () => {
       mockComponentReader.findById.mockResolvedValue(mockComponent);
-      mockRelationListReader.findAll.mockResolvedValue([]);
+      mockRelationViewReader.findAll.mockResolvedValue([]);
 
       const result = await queryHandler.execute({
         componentId: "comp_123",
@@ -128,7 +128,7 @@ describe("ShowComponentQueryHandler", () => {
 
     it("should return empty relations when component has none", async () => {
       mockComponentReader.findById.mockResolvedValue(mockComponent);
-      mockRelationListReader.findAll.mockResolvedValue([]);
+      mockRelationViewReader.findAll.mockResolvedValue([]);
 
       const result = await queryHandler.execute({ componentId: "comp_123" });
 

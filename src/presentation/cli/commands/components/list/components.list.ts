@@ -11,8 +11,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListComponentsQueryHandler } from "../../../../../application/context/components/list/ListComponentsQueryHandler.js";
-import { ComponentStatusFilter } from "../../../../../application/context/components/list/IComponentListReader.js";
+import { GetComponentsQueryHandler } from "../../../../../application/context/components/get/GetComponentsQueryHandler.js";
+import { ComponentStatusFilter } from "../../../../../application/context/components/get/IComponentViewReader.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { ComponentView } from "../../../../../application/context/components/ComponentView.js";
 
@@ -97,8 +97,8 @@ export async function componentsList(
     }
 
     // Create query handler using container dependencies
-    const queryHandler = new ListComponentsQueryHandler(
-      container.componentListReader
+    const queryHandler = new GetComponentsQueryHandler(
+      container.componentViewReader
     );
 
     // Execute query

@@ -5,25 +5,25 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { sessionsList } from "../../../../../../src/presentation/cli/commands/sessions/list/sessions.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { ISessionListReader } from "../../../../../../src/application/context/sessions/list/ISessionListReader.js";
+import { ISessionViewReader } from "../../../../../../src/application/context/sessions/get/ISessionViewReader.js";
 import { SessionView } from "../../../../../../src/application/context/sessions/SessionView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("sessions.list command", () => {
   let mockContainer: Partial<IApplicationContainer>;
-  let mockSessionListReader: jest.Mocked<ISessionListReader>;
+  let mockSessionViewReader: jest.Mocked<ISessionViewReader>;
   let consoleSpy: jest.SpiedFunction<typeof console.log>;
 
   beforeEach(() => {
     // Reset renderer to text mode for testing
     Renderer.configure({ format: "text", verbosity: "normal" });
 
-    mockSessionListReader = {
+    mockSessionViewReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<ISessionListReader>;
+    } as jest.Mocked<ISessionViewReader>;
 
     mockContainer = {
-      sessionListReader: mockSessionListReader,
+      sessionViewReader: mockSessionViewReader,
     };
 
     consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
@@ -49,28 +49,28 @@ describe("sessions.list command", () => {
       },
     ];
 
-    mockSessionListReader.findAll.mockResolvedValue(mockSessions);
+    mockSessionViewReader.findAll.mockResolvedValue(mockSessions);
 
     await sessionsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockSessionListReader.findAll).toHaveBeenCalledWith("all");
+    expect(mockSessionViewReader.findAll).toHaveBeenCalledWith("all");
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should filter by status when specified", async () => {
-    mockSessionListReader.findAll.mockResolvedValue([]);
+    mockSessionViewReader.findAll.mockResolvedValue([]);
 
     await sessionsList({ status: "active" }, mockContainer as IApplicationContainer);
 
-    expect(mockSessionListReader.findAll).toHaveBeenCalledWith("active");
+    expect(mockSessionViewReader.findAll).toHaveBeenCalledWith("active");
   });
 
   it("should show info message when no sessions exist", async () => {
-    mockSessionListReader.findAll.mockResolvedValue([]);
+    mockSessionViewReader.findAll.mockResolvedValue([]);
 
     await sessionsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockSessionListReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockSessionViewReader.findAll).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 
@@ -91,11 +91,11 @@ describe("sessions.list command", () => {
       },
     ];
 
-    mockSessionListReader.findAll.mockResolvedValue(mockSessions);
+    mockSessionViewReader.findAll.mockResolvedValue(mockSessions);
 
     await sessionsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockSessionListReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockSessionViewReader.findAll).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 });

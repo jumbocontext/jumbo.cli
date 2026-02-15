@@ -1,22 +1,22 @@
 /**
- * Tests for ListDependenciesQueryHandler
+ * Tests for GetDependenciesQueryHandler
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { ListDependenciesQueryHandler } from "../../../../../src/application/context/dependencies/list/ListDependenciesQueryHandler.js";
-import { IDependencyListReader } from "../../../../../src/application/context/dependencies/list/IDependencyListReader.js";
+import { GetDependenciesQueryHandler } from "../../../../../src/application/context/dependencies/get/GetDependenciesQueryHandler.js";
+import { IDependencyViewReader } from "../../../../../src/application/context/dependencies/get/IDependencyViewReader.js";
 import { DependencyView } from "../../../../../src/application/context/dependencies/DependencyView.js";
 
-describe("ListDependenciesQueryHandler", () => {
-  let queryHandler: ListDependenciesQueryHandler;
-  let mockReader: jest.Mocked<IDependencyListReader>;
+describe("GetDependenciesQueryHandler", () => {
+  let queryHandler: GetDependenciesQueryHandler;
+  let mockReader: jest.Mocked<IDependencyViewReader>;
 
   beforeEach(() => {
     mockReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IDependencyListReader>;
+    } as jest.Mocked<IDependencyViewReader>;
 
-    queryHandler = new ListDependenciesQueryHandler(mockReader);
+    queryHandler = new GetDependenciesQueryHandler(mockReader);
   });
 
   describe("execute", () => {

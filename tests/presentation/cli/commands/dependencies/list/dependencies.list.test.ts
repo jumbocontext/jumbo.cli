@@ -5,24 +5,24 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { dependenciesList } from "../../../../../../src/presentation/cli/commands/dependencies/list/dependencies.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IDependencyListReader } from "../../../../../../src/application/context/dependencies/list/IDependencyListReader.js";
+import { IDependencyViewReader } from "../../../../../../src/application/context/dependencies/get/IDependencyViewReader.js";
 import { DependencyView } from "../../../../../../src/application/context/dependencies/DependencyView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("dependencies.list command", () => {
   let mockContainer: Partial<IApplicationContainer>;
-  let mockDependencyListReader: jest.Mocked<IDependencyListReader>;
+  let mockDependencyViewReader: jest.Mocked<IDependencyViewReader>;
   let consoleSpy: jest.SpiedFunction<typeof console.log>;
 
   beforeEach(() => {
     Renderer.configure({ format: "text", verbosity: "normal" });
 
-    mockDependencyListReader = {
+    mockDependencyViewReader = {
       findAll: jest.fn(),
-    } as jest.Mocked<IDependencyListReader>;
+    } as jest.Mocked<IDependencyViewReader>;
 
     mockContainer = {
-      dependencyListReader: mockDependencyListReader,
+      dependencyViewReader: mockDependencyViewReader,
     };
 
     consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
@@ -50,28 +50,28 @@ describe("dependencies.list command", () => {
       },
     ];
 
-    mockDependencyListReader.findAll.mockResolvedValue(mockDependencies);
+    mockDependencyViewReader.findAll.mockResolvedValue(mockDependencies);
 
     await dependenciesList({}, mockContainer as IApplicationContainer);
 
-    expect(mockDependencyListReader.findAll).toHaveBeenCalled();
+    expect(mockDependencyViewReader.findAll).toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should filter by consumer when specified", async () => {
-    mockDependencyListReader.findAll.mockResolvedValue([]);
+    mockDependencyViewReader.findAll.mockResolvedValue([]);
 
     await dependenciesList({ consumer: "comp_user" }, mockContainer as IApplicationContainer);
 
-    expect(mockDependencyListReader.findAll).toHaveBeenCalledWith({ consumer: "comp_user", provider: undefined });
+    expect(mockDependencyViewReader.findAll).toHaveBeenCalledWith({ consumer: "comp_user", provider: undefined });
   });
 
   it("should show info message when no dependencies exist", async () => {
-    mockDependencyListReader.findAll.mockResolvedValue([]);
+    mockDependencyViewReader.findAll.mockResolvedValue([]);
 
     await dependenciesList({}, mockContainer as IApplicationContainer);
 
-    expect(mockDependencyListReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockDependencyViewReader.findAll).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 });

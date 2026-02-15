@@ -11,8 +11,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListSessionsQueryHandler } from "../../../../../application/context/sessions/list/ListSessionsQueryHandler.js";
-import { SessionStatusFilter } from "../../../../../application/context/sessions/list/ISessionListReader.js";
+import { GetSessionsQueryHandler } from "../../../../../application/context/sessions/get/GetSessionsQueryHandler.js";
+import { SessionStatusFilter } from "../../../../../application/context/sessions/get/ISessionViewReader.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { SessionView } from "../../../../../application/context/sessions/SessionView.js";
 
@@ -99,8 +99,8 @@ export async function sessionsList(
     }
 
     // Create query handler using container dependencies
-    const queryHandler = new ListSessionsQueryHandler(
-      container.sessionListReader
+    const queryHandler = new GetSessionsQueryHandler(
+      container.sessionViewReader
     );
 
     // Execute query

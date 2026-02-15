@@ -10,7 +10,7 @@ import { ShowComponentQuery } from "./ShowComponentQuery.js";
 import { ComponentView } from "../ComponentView.js";
 import { RelationView } from "../../relations/RelationView.js";
 import { IComponentReader } from "../get/IComponentReader.js";
-import { IRelationListReader } from "../../relations/list/IRelationListReader.js";
+import { IRelationViewReader } from "../../relations/get/IRelationViewReader.js";
 
 export interface ShowComponentResult {
   readonly component: ComponentView;
@@ -20,7 +20,7 @@ export interface ShowComponentResult {
 export class ShowComponentQueryHandler {
   constructor(
     private readonly componentReader: IComponentReader,
-    private readonly relationListReader: IRelationListReader
+    private readonly relationViewReader: IRelationViewReader
   ) {}
 
   async execute(query: ShowComponentQuery): Promise<ShowComponentResult> {
@@ -35,7 +35,7 @@ export class ShowComponentQueryHandler {
       throw new Error(`Component not found: ${identifier}`);
     }
 
-    const relations = await this.relationListReader.findAll({
+    const relations = await this.relationViewReader.findAll({
       entityType: "component",
       entityId: component.componentId,
       status: "active",

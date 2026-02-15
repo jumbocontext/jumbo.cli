@@ -6,7 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListInvariantsQueryHandler } from "../../../../../application/context/invariants/list/ListInvariantsQueryHandler.js";
+import { GetInvariantsQueryHandler } from "../../../../../application/context/invariants/get/GetInvariantsQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { InvariantView } from "../../../../../application/context/invariants/InvariantView.js";
 
@@ -35,7 +35,7 @@ export async function invariantsList(
   const renderer = Renderer.getInstance();
 
   try {
-    const queryHandler = new ListInvariantsQueryHandler(container.invariantListReader);
+    const queryHandler = new GetInvariantsQueryHandler(container.invariantViewReader);
     const invariants = await queryHandler.execute();
 
     if (invariants.length === 0) {

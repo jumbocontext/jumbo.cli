@@ -99,7 +99,7 @@ import { FsRelationRemovedEventStore } from "../context/relations/remove/FsRelat
 import { SqliteSessionStartedProjector } from "../context/sessions/start/SqliteSessionStartedProjector.js";
 import { SqliteSessionEndedProjector } from "../context/sessions/end/SqliteSessionEndedProjector.js";
 import { SqliteActiveSessionReader } from "../context/sessions/end/SqliteActiveSessionReader.js";
-import { SqliteSessionListReader } from "../context/sessions/list/SqliteSessionListReader.js";
+import { SqliteSessionViewReader } from "../context/sessions/get/SqliteSessionViewReader.js";
 import { SqliteSessionSummaryProjectionStore } from "../context/sessions/get-context/SqliteSessionSummaryProjectionStore.js";
 import { SqliteSessionSummaryReader } from "../context/sessions/get-context/SqliteSessionSummaryReader.js";
 // Goal Projection Stores - decomposed by use case
@@ -127,7 +127,7 @@ import { SqliteDecisionReversedProjector } from "../context/decisions/reverse/Sq
 import { SqliteDecisionSupersededProjector } from "../context/decisions/supersede/SqliteDecisionSupersededProjector.js";
 import { SqliteDecisionContextReader } from "../context/decisions/get-context/SqliteDecisionContextReader.js";
 import { SqliteDecisionSessionReader } from "../context/decisions/get-context/SqliteDecisionSessionReader.js";
-import { SqliteDecisionListReader } from "../context/decisions/list/SqliteDecisionListReader.js";
+import { SqliteDecisionViewReader } from "../context/decisions/get/SqliteDecisionViewReader.js";
 // Architecture Projection Stores - decomposed by use case
 import { SqliteArchitectureDefinedProjector } from "../context/architecture/define/SqliteArchitectureDefinedProjector.js";
 import { SqliteArchitectureUpdatedProjector } from "../context/architecture/update/SqliteArchitectureUpdatedProjector.js";
@@ -138,30 +138,30 @@ import { SqliteComponentUpdatedProjector } from "../context/components/update/Sq
 import { SqliteComponentDeprecatedProjector } from "../context/components/deprecate/SqliteComponentDeprecatedProjector.js";
 import { SqliteComponentRemovedProjector } from "../context/components/remove/SqliteComponentRemovedProjector.js";
 import { SqliteComponentContextReader } from "../context/components/get-context/SqliteComponentContextReader.js";
-import { SqliteComponentListReader } from "../context/components/list/SqliteComponentListReader.js";
+import { SqliteComponentViewReader } from "../context/components/get/SqliteComponentViewReader.js";
 import { SqliteComponentReader } from "../context/components/get/SqliteComponentReader.js";
 // Dependency Projection Stores - decomposed by use case
 import { SqliteDependencyAddedProjector } from "../context/dependencies/add/SqliteDependencyAddedProjector.js";
 import { SqliteDependencyUpdatedProjector } from "../context/dependencies/update/SqliteDependencyUpdatedProjector.js";
 import { SqliteDependencyRemovedProjector } from "../context/dependencies/remove/SqliteDependencyRemovedProjector.js";
 import { SqliteDependencyContextReader } from "../context/dependencies/get-context/SqliteDependencyContextReader.js";
-import { SqliteDependencyListReader } from "../context/dependencies/list/SqliteDependencyListReader.js";
+import { SqliteDependencyViewReader } from "../context/dependencies/get/SqliteDependencyViewReader.js";
 // Guideline Projection Stores - decomposed by use case
 import { SqliteGuidelineAddedProjector } from "../context/guidelines/add/SqliteGuidelineAddedProjector.js";
 import { SqliteGuidelineUpdatedProjector } from "../context/guidelines/update/SqliteGuidelineUpdatedProjector.js";
 import { SqliteGuidelineRemovedProjector } from "../context/guidelines/remove/SqliteGuidelineRemovedProjector.js";
 import { SqliteGuidelineContextReader } from "../context/guidelines/get-context/SqliteGuidelineContextReader.js";
-import { SqliteGuidelineListReader } from "../context/guidelines/list/SqliteGuidelineListReader.js";
+import { SqliteGuidelineViewReader } from "../context/guidelines/get/SqliteGuidelineViewReader.js";
 // Invariant Projection Stores - decomposed by use case
 import { SqliteInvariantAddedProjector } from "../context/invariants/add/SqliteInvariantAddedProjector.js";
 import { SqliteInvariantUpdatedProjector } from "../context/invariants/update/SqliteInvariantUpdatedProjector.js";
 import { SqliteInvariantRemovedProjector } from "../context/invariants/remove/SqliteInvariantRemovedProjector.js";
 import { SqliteInvariantContextReader } from "../context/invariants/get-context/SqliteInvariantContextReader.js";
-import { SqliteInvariantListReader } from "../context/invariants/list/SqliteInvariantListReader.js";
+import { SqliteInvariantViewReader } from "../context/invariants/get/SqliteInvariantViewReader.js";
 // Relations Projection Stores - decomposed by use case
 import { SqliteRelationAddedProjector } from "../context/relations/add/SqliteRelationAddedProjector.js";
 import { SqliteRelationRemovedProjector } from "../context/relations/remove/SqliteRelationRemovedProjector.js";
-import { SqliteRelationListReader } from "../context/relations/list/SqliteRelationListReader.js";
+import { SqliteRelationViewReader } from "../context/relations/get/SqliteRelationViewReader.js";
 // AudiencePain Projection Stores - decomposed by use case
 import { SqliteAudiencePainAddedProjector } from "../context/audience-pains/add/SqliteAudiencePainAddedProjector.js";
 import { SqliteAudiencePainUpdatedProjector } from "../context/audience-pains/update/SqliteAudiencePainUpdatedProjector.js";
@@ -427,7 +427,7 @@ export class HostBuilder {
     const activeSessionReader = new SqliteActiveSessionReader(this.db);
     const sessionSummaryProjectionStore = new SqliteSessionSummaryProjectionStore(this.db);
     const sessionSummaryReader = new SqliteSessionSummaryReader(this.db);
-    const sessionListReader = new SqliteSessionListReader(this.db);
+    const sessionViewReader = new SqliteSessionViewReader(this.db);
     // Goal Projection Stores - decomposed by use case
     const goalAddedProjector = new SqliteGoalAddedProjector(this.db);
     const goalStartedProjector = new SqliteGoalStartedProjector(this.db);
@@ -458,14 +458,14 @@ export class HostBuilder {
     const componentDeprecatedProjector = new SqliteComponentDeprecatedProjector(this.db);
     const componentRemovedProjector = new SqliteComponentRemovedProjector(this.db);
     const componentContextReader = new SqliteComponentContextReader(this.db);
-    const componentListReader = new SqliteComponentListReader(this.db);
+    const componentViewReader = new SqliteComponentViewReader(this.db);
     const componentReader = new SqliteComponentReader(this.db);
     // Dependency Projection Stores - decomposed by use case
     const dependencyAddedProjector = new SqliteDependencyAddedProjector(this.db);
     const dependencyUpdatedProjector = new SqliteDependencyUpdatedProjector(this.db);
     const dependencyRemovedProjector = new SqliteDependencyRemovedProjector(this.db);
     const dependencyContextReader = new SqliteDependencyContextReader(this.db);
-    const dependencyListReader = new SqliteDependencyListReader(this.db);
+    const dependencyViewReader = new SqliteDependencyViewReader(this.db);
     // Decision Projection Stores - decomposed by use case
     const decisionAddedProjector = new SqliteDecisionAddedProjector(this.db);
     const decisionUpdatedProjector = new SqliteDecisionUpdatedProjector(this.db);
@@ -473,19 +473,19 @@ export class HostBuilder {
     const decisionSupersededProjector = new SqliteDecisionSupersededProjector(this.db);
     const decisionContextReader = new SqliteDecisionContextReader(this.db);
     const decisionSessionReader = new SqliteDecisionSessionReader(this.db);
-    const decisionListReader = new SqliteDecisionListReader(this.db);
+    const decisionViewReader = new SqliteDecisionViewReader(this.db);
     // Guideline Projection Stores - decomposed by use case
     const guidelineAddedProjector = new SqliteGuidelineAddedProjector(this.db);
     const guidelineUpdatedProjector = new SqliteGuidelineUpdatedProjector(this.db);
     const guidelineRemovedProjector = new SqliteGuidelineRemovedProjector(this.db);
     const guidelineContextReader = new SqliteGuidelineContextReader(this.db);
-    const guidelineListReader = new SqliteGuidelineListReader(this.db);
+    const guidelineViewReader = new SqliteGuidelineViewReader(this.db);
     // Invariant Projection Stores - decomposed by use case
     const invariantAddedProjector = new SqliteInvariantAddedProjector(this.db);
     const invariantUpdatedProjector = new SqliteInvariantUpdatedProjector(this.db);
     const invariantRemovedProjector = new SqliteInvariantRemovedProjector(this.db);
     const invariantContextReader = new SqliteInvariantContextReader(this.db);
-    const invariantListReader = new SqliteInvariantListReader(this.db);
+    const invariantViewReader = new SqliteInvariantViewReader(this.db);
     // Solution Context - cross-cutting reader and qualifier
     const solutionContextReader = new SqliteSolutionContextReader(this.db);
     const unprimedBrownfieldQualifier = new UnprimedBrownfieldQualifier(solutionContextReader);
@@ -514,7 +514,7 @@ export class HostBuilder {
     // Relations Category - Projection Stores - decomposed by use case
     const relationAddedProjector = new SqliteRelationAddedProjector(this.db);
     const relationRemovedProjector = new SqliteRelationRemovedProjector(this.db);
-    const relationListReader = new SqliteRelationListReader(this.db);
+    const relationViewReader = new SqliteRelationViewReader(this.db);
 
     // ============================================================
     // STEP 4: Create Application Services / Controllers
@@ -838,7 +838,7 @@ export class HostBuilder {
       activeSessionReader,
       sessionSummaryProjectionStore,
       sessionSummaryReader,
-      sessionListReader,
+      sessionViewReader,
       // Goal Projection Stores - decomposed by use case
       goalAddedProjector,
       goalStartedProjector,
@@ -902,14 +902,14 @@ export class HostBuilder {
       componentDeprecatedProjector,
       componentRemovedProjector,
       componentContextReader,
-      componentListReader,
+      componentViewReader,
       componentReader,
       // Dependency Projection Stores - decomposed by use case
       dependencyAddedProjector,
       dependencyUpdatedProjector,
       dependencyRemovedProjector,
       dependencyContextReader,
-      dependencyListReader,
+      dependencyViewReader,
       // Decision Projection Stores - decomposed by use case
       decisionAddedProjector,
       decisionUpdatedProjector,
@@ -917,19 +917,19 @@ export class HostBuilder {
       decisionSupersededProjector,
       decisionContextReader,
       decisionSessionReader,
-      decisionListReader,
+      decisionViewReader,
       // Guideline Projection Stores - decomposed by use case
       guidelineAddedProjector,
       guidelineUpdatedProjector,
       guidelineRemovedProjector,
       guidelineContextReader,
-      guidelineListReader,
+      guidelineViewReader,
       // Invariant Projection Stores - decomposed by use case
       invariantAddedProjector,
       invariantUpdatedProjector,
       invariantRemovedProjector,
       invariantContextReader,
-      invariantListReader,
+      invariantViewReader,
       // Solution Context - cross-cutting reader and qualifier
       solutionContextReader,
       unprimedBrownfieldQualifier,
@@ -978,7 +978,7 @@ export class HostBuilder {
       relationRemovedEventStore,
       relationAddedProjector,
       relationRemovedProjector,
-      relationListReader,
+      relationViewReader,
     };
   }
 }
