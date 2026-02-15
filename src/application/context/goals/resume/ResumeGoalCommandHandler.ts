@@ -10,7 +10,7 @@ import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityRead
 import { ISettingsReader } from "../../../settings/ISettingsReader.js";
 import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
 import { GoalContextViewMapper } from "../../../context/GoalContextViewMapper.js";
-import { GoalContextView } from "../../../context/GoalContextView.js";
+import { GoalContextView } from "../get-context/GoalContextView.js";
 
 /**
  * Handles resuming of a paused goal.

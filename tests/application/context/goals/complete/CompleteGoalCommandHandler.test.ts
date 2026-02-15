@@ -17,7 +17,7 @@ import { IWorkerIdentityReader } from "../../../../../src/application/host/worke
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
 import { GoalContextViewMapper } from "../../../../../src/application/context/GoalContextViewMapper";
-import { GoalContext } from "../../../../../src/application/context/GoalContext";
+import { GoalContext } from "../../../../../src/application/context/goals/get-context/GoalContext";
 
 describe("CompleteGoalCommandHandler", () => {
   let eventWriter: IGoalCompletedEventWriter;

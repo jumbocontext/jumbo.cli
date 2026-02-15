@@ -18,7 +18,7 @@ import { ISettingsReader } from "../../../../../src/application/settings/ISettin
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
 import { GoalContextViewMapper } from "../../../../../src/application/context/GoalContextViewMapper";
-import { GoalContextView } from "../../../../../src/application/context/GoalContextView";
+import { GoalContextView } from "../../../../../src/application/context/goals/get-context/GoalContextView";
 
 describe("ResumeGoalCommandHandler", () => {
   let eventWriter: IGoalResumedEventWriter;

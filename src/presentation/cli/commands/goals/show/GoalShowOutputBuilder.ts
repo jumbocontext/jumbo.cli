@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { GoalContextView } from '../../../../../application/context/GoalContextView.js';
+import { GoalContextView } from '../../../../../application/context/goals/get-context/GoalContextView.js';
 
 /**
  * Specialized builder for goal.show command output.

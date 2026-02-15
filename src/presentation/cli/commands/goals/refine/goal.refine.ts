@@ -23,7 +23,7 @@ import { DecisionView } from "../../../../../application/context/decisions/Decis
 import { EntityType, EntityTypeValue, RelationStrengthValue } from "../../../../../domain/relations/Constants.js";
 import { GoalRefineOutputBuilder } from "./GoalRefineOutputBuilder.js";
 import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
-import { GoalContextView } from "../../../../../application/context/GoalContextView.js";
+import { GoalContextView } from "../../../../../application/context/goals/get-context/GoalContextView.js";
 
 /**
  * Command metadata for auto-registration

@@ -1,4 +1,4 @@
-import { InvariantView } from "../context/invariants/InvariantView.js";
+import { InvariantView } from "../../invariants/InvariantView.js";
 
 /**
  * RelatedInvariant - An invariant related to a goal, enriched with relation metadata.

@@ -7,7 +7,7 @@ import { Goal } from "../../../../domain/goals/Goal.js";
 import { GoalErrorMessages, formatErrorMessage } from "../../../../domain/goals/Constants.js";
 import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
 import { GoalContextViewMapper } from "../../../context/GoalContextViewMapper.js";
-import { GoalContextView } from "../../../context/GoalContextView.js";
+import { GoalContextView } from "../get-context/GoalContextView.js";
 
 /**
  * Handles updating progress on a goal.

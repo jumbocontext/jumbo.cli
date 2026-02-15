@@ -1,4 +1,4 @@
-import { GoalContext } from "./GoalContext.js";
+import { GoalContext } from "./goals/get-context/GoalContext.js";
 
 /**
  * Assembles goal context by querying relations and fetching related entities.

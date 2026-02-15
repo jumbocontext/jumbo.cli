@@ -1,10 +1,10 @@
 import { IGoalContextAssembler } from "../../application/context/IGoalContextAssembler.js";
-import { GoalContext } from "../../application/context/GoalContext.js";
-import { RelatedComponent } from "../../application/context/RelatedComponent.js";
-import { RelatedDependency } from "../../application/context/RelatedDependency.js";
-import { RelatedDecision } from "../../application/context/RelatedDecision.js";
-import { RelatedInvariant } from "../../application/context/RelatedInvariant.js";
-import { RelatedGuideline } from "../../application/context/RelatedGuideline.js";
+import { GoalContext } from "../../application/context/goals/get-context/GoalContext.js";
+import { RelatedComponent } from "../../application/context/goals/get-context/RelatedComponent.js";
+import { RelatedDependency } from "../../application/context/goals/get-context/RelatedDependency.js";
+import { RelatedDecision } from "../../application/context/goals/get-context/RelatedDecision.js";
+import { RelatedInvariant } from "../../application/context/goals/get-context/RelatedInvariant.js";
+import { RelatedGuideline } from "../../application/context/goals/get-context/RelatedGuideline.js";
 import { IGoalReader } from "../../application/context/goals/start/IGoalReader.js";
 import { IRelationReader } from "../../application/context/relations/IRelationReader.js";
 import { IComponentViewReader } from "../../application/context/components/get/IComponentViewReader.js";

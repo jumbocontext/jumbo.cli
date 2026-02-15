@@ -51,7 +51,6 @@ import { IGoalResetProjector } from "../context/goals/reset/IGoalResetProjector.
 import { IGoalResetReader } from "../context/goals/reset/IGoalResetReader.js";
 import { IGoalRemovedProjector } from "../context/goals/remove/IGoalRemovedProjector.js";
 import { IGoalRemoveReader } from "../context/goals/remove/IGoalRemoveReader.js";
-import { IGoalReader } from "../context/goals/start/IGoalReader.js";
 import { IGoalContextAssembler } from "../context/IGoalContextAssembler.js";
 import { IGoalStatusReader } from "../context/goals/IGoalStatusReader.js";
 import { GoalContextQueryHandler } from "../context/GoalContextQueryHandler.js";

@@ -1,4 +1,4 @@
-import { GoalContextView } from "../../../context/GoalContextView.js";
+import { GoalContextView } from "../get-context/GoalContextView.js";
 
 /**
  * ReviewGoalResponse

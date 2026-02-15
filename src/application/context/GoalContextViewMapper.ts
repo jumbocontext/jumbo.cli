@@ -1,5 +1,5 @@
-import { GoalContext } from "./GoalContext.js";
-import { GoalContextView } from "./GoalContextView.js";
+import { GoalContext } from "./goals/get-context/GoalContext.js";
+import { GoalContextView } from "./goals/get-context/GoalContextView.js";
 
 /**
  * GoalContextViewMapper - Maps GoalContext to GoalContextView.

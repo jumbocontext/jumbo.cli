@@ -9,7 +9,7 @@ import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
 import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
 import { GoalContextViewMapper } from "../../../context/GoalContextViewMapper.js";
-import { GoalContextView } from "../../../context/GoalContextView.js";
+import { GoalContextView } from "../get-context/GoalContextView.js";
 
 /**
  * Handles completion of a goal.
