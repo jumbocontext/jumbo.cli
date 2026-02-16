@@ -1,7 +1,7 @@
 import { describe, it, expect } from "@jest/globals";
-import { SessionStartContextEnricher } from "../../../../../src/application/context/sessions/get-context/SessionStartContextEnricher.js";
-import { SessionContext } from "../../../../../src/application/context/sessions/get-context/SessionContext.js";
-import { SessionSummaryProjection } from "../../../../../src/application/context/sessions/SessionSummaryView.js";
+import { SessionStartContextEnricher } from "../../../../../src/application/context/sessions/get/SessionStartContextEnricher.js";
+import { SessionContext } from "../../../../../src/application/context/sessions/get/SessionContext.js";
+import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
 
 describe("SessionStartContextEnricher", () => {
   const enricher = new SessionStartContextEnricher();
@@ -10,32 +10,16 @@ describe("SessionStartContextEnricher", () => {
     overrides: Partial<SessionContext> = {}
   ): SessionContext {
     return {
+      sessionId: null,
+      status: null,
+      focus: null,
+      startedAt: null,
       projectContext: null,
-      latestSessionSummary: null,
-      inProgressGoals: [],
+      activeGoals: [],
+      pausedGoals: [],
       plannedGoals: [],
+      recentDecisions: [],
       hasSolutionContext: true,
-      ...overrides,
-    };
-  }
-
-  function createSessionSummary(
-    overrides: Partial<SessionSummaryProjection> = {}
-  ): SessionSummaryProjection {
-    return {
-      sessionId: "LATEST",
-      originalSessionId: "session_123",
-      focus: "Test session",
-      status: "active",
-      contextSnapshot: null,
-      completedGoals: [],
-      blockersEncountered: [],
-      decisions: [],
-      goalsStarted: [],
-      goalsPaused: [],
-      goalsResumed: [],
-      createdAt: "2025-01-01T10:00:00Z",
-      updatedAt: "2025-01-01T10:00:00Z",
       ...overrides,
     };
   }
@@ -49,17 +33,22 @@ describe("SessionStartContextEnricher", () => {
 
   it("should preserve all base context fields", () => {
     const context = createBaseContext({
+      sessionId: "session-1",
+      status: "active",
       hasSolutionContext: true,
-      inProgressGoals: [{ goalId: "g1" } as any],
-      plannedGoals: [{ goalId: "g2" } as any],
+      activeGoals: [{ goalId: "g1" } as GoalView],
+      plannedGoals: [{ goalId: "g2" } as GoalView],
     });
 
     const result = enricher.enrich(context);
 
+    expect(result.sessionId).toBe(context.sessionId);
+    expect(result.status).toBe(context.status);
     expect(result.projectContext).toBe(context.projectContext);
-    expect(result.latestSessionSummary).toBe(context.latestSessionSummary);
-    expect(result.inProgressGoals).toBe(context.inProgressGoals);
+    expect(result.activeGoals).toBe(context.activeGoals);
+    expect(result.pausedGoals).toBe(context.pausedGoals);
     expect(result.plannedGoals).toBe(context.plannedGoals);
+    expect(result.recentDecisions).toBe(context.recentDecisions);
     expect(result.hasSolutionContext).toBe(context.hasSolutionContext);
   });
 
@@ -84,33 +73,23 @@ describe("SessionStartContextEnricher", () => {
     expect(result.instructions).not.toContain("brownfield-onboarding");
   });
 
-  it("should include paused-goals-resume when previous session had paused goals", () => {
-    const summary = createSessionSummary({
-      goalsPaused: [
+  it("should include paused-goals-resume when paused goals exist", () => {
+    const context = createBaseContext({
+      pausedGoals: [
         {
           goalId: "goal_123",
           objective: "Paused task",
-          reason: "ContextCompressed",
-          pausedAt: "2025-01-01T11:00:00Z",
-        },
+          status: "paused",
+        } as GoalView,
       ],
     });
-    const context = createBaseContext({ latestSessionSummary: summary });
     const result = enricher.enrich(context);
 
     expect(result.instructions).toContain("paused-goals-resume");
   });
 
-  it("should not include paused-goals-resume when no goals were paused", () => {
-    const summary = createSessionSummary({ goalsPaused: [] });
-    const context = createBaseContext({ latestSessionSummary: summary });
-    const result = enricher.enrich(context);
-
-    expect(result.instructions).not.toContain("paused-goals-resume");
-  });
-
-  it("should not include paused-goals-resume when no previous session exists", () => {
-    const context = createBaseContext({ latestSessionSummary: null });
+  it("should not include paused-goals-resume when no goals are paused", () => {
+    const context = createBaseContext({ pausedGoals: [] });
     const result = enricher.enrich(context);
 
     expect(result.instructions).not.toContain("paused-goals-resume");

@@ -11,7 +11,7 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { Renderer } from "../../../rendering/Renderer.js";
 import { ResumeWorkResult } from "../../../../../application/context/work/resume/ResumeWorkCommandHandler.js";
 import { SessionStartTextRenderer } from "../../sessions/start/SessionStartTextRenderer.js";
-import { SessionContextView } from "../../../../../application/context/sessions/get-context/SessionContext.js";
+import { SessionContextView } from "../../../../../application/context/sessions/get/SessionContext.js";
 import * as fs from "fs";
 import * as path from "path";
 

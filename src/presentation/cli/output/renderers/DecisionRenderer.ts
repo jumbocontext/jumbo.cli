@@ -2,7 +2,7 @@ import { EntityRenderer } from './EntityRenderer';
 import { Annotation } from '../Annotation';
 
 /**
- * DecisionContextView from GoalContextView
+ * DecisionContextView from ContextualGoalView
  */
 export interface DecisionContextView {
   readonly decisionId: string;

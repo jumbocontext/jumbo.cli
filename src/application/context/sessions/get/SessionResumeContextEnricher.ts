@@ -1,5 +1,4 @@
 import { SessionContext, SessionContextView } from "./SessionContext.js";
-import { GoalStatus } from "../../../../domain/goals/Constants.js";
 
 /**
  * SessionResumeContextEnricher - Adds resume-specific LLM instructions to base context
@@ -9,7 +8,7 @@ import { GoalStatus } from "../../../../domain/goals/Constants.js";
  *
  * Instruction signals:
  * - "resume-continuation-prompt": Always included. Work was interrupted, continue from where left off
- * - "paused-goals-context": In-progress goals include paused goals, check registered progress
+ * - "paused-goals-context": Paused goals exist, check registered progress
  */
 export class SessionResumeContextEnricher {
   enrich(context: SessionContext): SessionContextView {
@@ -25,11 +24,7 @@ export class SessionResumeContextEnricher {
 
     instructions.push("resume-continuation-prompt");
 
-    const hasPausedGoals = context.inProgressGoals.some(
-      (goal) => goal.status === GoalStatus.PAUSED
-    );
-
-    if (hasPausedGoals) {
+    if (context.pausedGoals.length > 0) {
       instructions.push("paused-goals-context");
     }
 

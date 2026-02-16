@@ -31,6 +31,16 @@ export class SqliteSessionViewReader implements ISessionViewReader {
     return rows.map((row) => this.mapper.toView(this.mapRowToRecord(row as Record<string, unknown>)));
   }
 
+  async findActive(): Promise<SessionView | null> {
+    const row = this.db
+      .prepare("SELECT * FROM session_views WHERE status = 'active' ORDER BY createdAt DESC LIMIT 1")
+      .get() as Record<string, unknown> | undefined;
+
+    if (!row) return null;
+
+    return this.mapper.toView(this.mapRowToRecord(row));
+  }
+
   private mapRowToRecord(row: Record<string, unknown>): SessionRecord {
     return {
       id: row.sessionId as string,

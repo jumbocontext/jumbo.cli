@@ -2,7 +2,7 @@ import { EntityRenderer } from './EntityRenderer';
 import { Annotation } from '../Annotation';
 
 /**
- * ComponentContextView from GoalContextView
+ * ComponentContextView from ContextualGoalView
  */
 export interface ComponentContextView {
   readonly componentId: string;

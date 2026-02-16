@@ -14,6 +14,7 @@ describe("GetSessionsQueryHandler", () => {
   beforeEach(() => {
     mockReader = {
       findAll: jest.fn(),
+      findActive: jest.fn(),
     } as jest.Mocked<ISessionViewReader>;
 
     queryHandler = new GetSessionsQueryHandler(mockReader);

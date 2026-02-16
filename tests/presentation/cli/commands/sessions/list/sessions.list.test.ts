@@ -20,6 +20,7 @@ describe("sessions.list command", () => {
 
     mockSessionViewReader = {
       findAll: jest.fn(),
+      findActive: jest.fn(),
     } as jest.Mocked<ISessionViewReader>;
 
     mockContainer = {

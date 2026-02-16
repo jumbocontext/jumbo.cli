@@ -13,7 +13,7 @@ Command (presentation)
   ↓ invokes
 CommandHandler (application)
   ↓ returns
-ViewData (e.g., GoalContextView)
+ViewData (e.g., ContextualGoalView)
   ↓ consumed by
 TerminalOutputBuilder (presentation)
   ↓ produces
@@ -25,7 +25,7 @@ String (terminal) | JSON (hooks)
 ### Layer Responsibilities
 
 **Application Layer:**
-- Produces universal views (e.g., `GoalContextView`) - command-agnostic
+- Produces universal views (e.g., `ContextualGoalView`) - command-agnostic
 - No knowledge of presentation format or terminal output
 
 **Presentation Layer:**
@@ -117,7 +117,7 @@ Preserve existing effective prompts:
 
 ```typescript
 class GoalStartOutputBuilder {
-  build(context: GoalContextView): TerminalOutput {
+  build(context: ContextualGoalView): TerminalOutput {
     // Encapsulates goal.start prompt structure
   }
 }
@@ -127,7 +127,7 @@ class GoalStartOutputBuilder {
 
 ### Universal Views, Not Command-Specific
 
-Application layer returns universal `GoalContextView` (not `StartGoalContextView`).
+Application layer returns universal `ContextualGoalView` (not `StartGoalContextView`).
 
 **Rationale**: Same data, different presentations. Keeps application layer decoupled from presentation concerns.
 

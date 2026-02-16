@@ -1,20 +1,18 @@
 /**
  * SqliteGoalStatusReader - SQLite reader for goal status queries.
  *
- * Implements IGoalStatusReader for reading goals by status, and
- * IGoalReadForSessionSummary for session summary projections.
+ * Implements IGoalStatusReader for reading goals by status.
  */
 
 import { Database } from "better-sqlite3";
 import { GoalStatusType } from "../../../domain/goals/Constants.js";
 import { IGoalStatusReader } from "../../../application/context/goals/IGoalStatusReader.js";
-import { IGoalReadForSessionSummary } from "../../../application/context/sessions/get-context/IGoalReadForSessionSummary.js";
 import { GoalView } from "../../../application/context/goals/GoalView.js";
 import { GoalRecord } from "./GoalRecord.js";
 import { GoalRecordMapper } from "./GoalRecordMapper.js";
 
 export class SqliteGoalStatusReader
-  implements IGoalStatusReader, IGoalReadForSessionSummary
+  implements IGoalStatusReader
 {
   private readonly mapper = new GoalRecordMapper();
 

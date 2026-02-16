@@ -2,7 +2,7 @@ import { EntityRenderer } from './EntityRenderer';
 import { Annotation } from '../Annotation';
 
 /**
- * GuidelineContextView from GoalContextView
+ * GuidelineContextView from ContextualGoalView
  */
 export interface GuidelineContextView {
   readonly guidelineId: string;

@@ -32,8 +32,6 @@ import { ISessionStartedProjector } from "../context/sessions/start/ISessionStar
 import { ISessionEndedProjector } from "../context/sessions/end/ISessionEndedProjector.js";
 import { IActiveSessionReader } from "../context/sessions/end/IActiveSessionReader.js";
 import { ISessionViewReader } from "../context/sessions/get/ISessionViewReader.js";
-import { ISessionSummaryProjectionStore } from "../context/sessions/get-context/ISessionSummaryProjectionStore.js";
-import { ISessionSummaryReader } from "../context/sessions/get-context/ISessionSummaryReader.js";
 import { IGoalAddedProjector } from "../context/goals/add/IGoalAddedProjector.js";
 import { IGoalStartedProjector } from "../context/goals/start/IGoalStartedProjector.js";
 import { IGoalReader } from "../context/goals/start/IGoalReader.js";
@@ -54,7 +52,6 @@ import { IGoalRemoveReader } from "../context/goals/remove/IGoalRemoveReader.js"
 import { IGoalContextAssembler } from "../context/goals/get/IGoalContextAssembler.js";
 import { IGoalStatusReader } from "../context/goals/IGoalStatusReader.js";
 import { GoalContextQueryHandler } from "../context/goals/get/GoalContextQueryHandler.js";
-import { IGoalReadForSessionSummary } from "../context/sessions/get-context/IGoalReadForSessionSummary.js";
 // Goal Controllers
 import { CompleteGoalController } from "../context/goals/complete/CompleteGoalController.js";
 import { ReviewGoalController } from "../context/goals/review/ReviewGoalController.js";
@@ -75,7 +72,6 @@ import { IDecisionReversedProjector } from "../context/decisions/reverse/IDecisi
 import { IDecisionReverseReader } from "../context/decisions/reverse/IDecisionReverseReader.js";
 import { IDecisionSupersededProjector } from "../context/decisions/supersede/IDecisionSupersededProjector.js";
 import { IDecisionSupersedeReader } from "../context/decisions/supersede/IDecisionSupersedeReader.js";
-import { IDecisionSessionReader } from "../context/sessions/get-context/IDecisionSessionReader.js";
 import { IDecisionViewReader } from "../context/decisions/get/IDecisionViewReader.js";
 import { IArchitectureDefinedProjector } from "../context/architecture/define/IArchitectureDefinedProjector.js";
 import { IArchitectureDefineReader } from "../context/architecture/define/IArchitectureDefineReader.js";
@@ -288,8 +284,6 @@ export interface IApplicationContainer {
   sessionStartedProjector: ISessionStartedProjector;
   sessionEndedProjector: ISessionEndedProjector;
   activeSessionReader: IActiveSessionReader;
-  sessionSummaryProjectionStore: ISessionSummaryProjectionStore;
-  sessionSummaryReader: ISessionSummaryReader;
   sessionViewReader: ISessionViewReader;
   // Goal Projection Stores - decomposed by use case
   goalAddedProjector: IGoalAddedProjector;
@@ -307,7 +301,7 @@ export interface IApplicationContainer {
   goalContextReader: IGoalReader;
   goalContextAssembler: IGoalContextAssembler;
   goalContextQueryHandler: GoalContextQueryHandler;
-  goalStatusReader: IGoalStatusReader & IGoalReadForSessionSummary;
+  goalStatusReader: IGoalStatusReader;
   // Goal Controllers
   completeGoalController: CompleteGoalController;
   reviewGoalController: ReviewGoalController;
@@ -367,7 +361,6 @@ export interface IApplicationContainer {
   decisionUpdatedProjector: IDecisionUpdatedProjector & IDecisionUpdateReader;
   decisionReversedProjector: IDecisionReversedProjector & IDecisionReverseReader;
   decisionSupersededProjector: IDecisionSupersededProjector & IDecisionSupersedeReader;
-  decisionSessionReader: IDecisionSessionReader;
   decisionViewReader: IDecisionViewReader;
   // Guideline Projection Stores - decomposed by use case
   guidelineAddedProjector: IGuidelineAddedProjector;

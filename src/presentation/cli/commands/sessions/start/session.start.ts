@@ -9,9 +9,9 @@ import { StartSessionCommandHandler } from "../../../../../application/context/s
 import { StartSessionCommand } from "../../../../../application/context/sessions/start/StartSessionCommand.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { SessionStartContextQueryHandler } from "../../../../../application/context/sessions/get-context/SessionStartContextQueryHandler.js";
+import { SessionStartContextQueryHandler } from "../../../../../application/context/sessions/get/SessionStartContextQueryHandler.js";
 import { SessionStartTextRenderer } from "./SessionStartTextRenderer.js";
-import { SessionStartContext } from "../../../../../application/context/sessions/get-context/SessionStartContext.js";
+import { SessionStartContext } from "../../../../../application/context/sessions/get/SessionStartContext.js";
 
 /**
  * Command metadata for auto-registration
@@ -56,8 +56,9 @@ export async function sessionStart(
 
     // 1. QUERY: Get assembled context from application layer
     const getSessionStartContext = new SessionStartContextQueryHandler(
-      container.sessionSummaryProjectionStore,
+      container.sessionViewReader,
       container.goalStatusReader,
+      container.decisionViewReader,
       container.projectContextReader,
       container.audienceContextReader,
       container.audiencePainContextReader,

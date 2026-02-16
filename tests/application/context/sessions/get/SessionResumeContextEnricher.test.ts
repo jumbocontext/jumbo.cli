@@ -1,6 +1,7 @@
 import { describe, it, expect } from "@jest/globals";
-import { SessionResumeContextEnricher } from "../../../../../src/application/context/sessions/get-context/SessionResumeContextEnricher.js";
-import { SessionContext } from "../../../../../src/application/context/sessions/get-context/SessionContext.js";
+import { SessionResumeContextEnricher } from "../../../../../src/application/context/sessions/get/SessionResumeContextEnricher.js";
+import { SessionContext } from "../../../../../src/application/context/sessions/get/SessionContext.js";
+import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants.js";
 
 describe("SessionResumeContextEnricher", () => {
@@ -10,10 +11,15 @@ describe("SessionResumeContextEnricher", () => {
     overrides: Partial<SessionContext> = {}
   ): SessionContext {
     return {
+      sessionId: null,
+      status: null,
+      focus: null,
+      startedAt: null,
       projectContext: null,
-      latestSessionSummary: null,
-      inProgressGoals: [],
+      activeGoals: [],
+      pausedGoals: [],
       plannedGoals: [],
+      recentDecisions: [],
       hasSolutionContext: true,
       ...overrides,
     };
@@ -28,16 +34,18 @@ describe("SessionResumeContextEnricher", () => {
 
   it("should preserve all base context fields", () => {
     const context = createBaseContext({
+      sessionId: "session-1",
       hasSolutionContext: true,
-      inProgressGoals: [{ goalId: "g1" } as any],
-      plannedGoals: [{ goalId: "g2" } as any],
+      activeGoals: [{ goalId: "g1" } as GoalView],
+      plannedGoals: [{ goalId: "g2" } as GoalView],
     });
 
     const result = enricher.enrich(context);
 
     expect(result.projectContext).toBe(context.projectContext);
-    expect(result.latestSessionSummary).toBe(context.latestSessionSummary);
-    expect(result.inProgressGoals).toBe(context.inProgressGoals);
+    expect(result.sessionId).toBe(context.sessionId);
+    expect(result.activeGoals).toBe(context.activeGoals);
+    expect(result.pausedGoals).toBe(context.pausedGoals);
     expect(result.plannedGoals).toBe(context.plannedGoals);
     expect(result.hasSolutionContext).toBe(context.hasSolutionContext);
   });
@@ -49,14 +57,14 @@ describe("SessionResumeContextEnricher", () => {
     expect(result.instructions).toContain("resume-continuation-prompt");
   });
 
-  it("should include paused-goals-context when in-progress goals include paused goals", () => {
+  it("should include paused-goals-context when paused goals exist", () => {
     const context = createBaseContext({
-      inProgressGoals: [
+      pausedGoals: [
         {
           goalId: "goal_123",
           objective: "Paused goal",
           status: GoalStatus.PAUSED,
-        } as any,
+        } as GoalView,
       ],
     });
 
@@ -65,24 +73,8 @@ describe("SessionResumeContextEnricher", () => {
     expect(result.instructions).toContain("paused-goals-context");
   });
 
-  it("should not include paused-goals-context when no paused goals in progress", () => {
-    const context = createBaseContext({
-      inProgressGoals: [
-        {
-          goalId: "goal_123",
-          objective: "Active goal",
-          status: GoalStatus.DOING,
-        } as any,
-      ],
-    });
-
-    const result = enricher.enrich(context);
-
-    expect(result.instructions).not.toContain("paused-goals-context");
-  });
-
-  it("should not include paused-goals-context when no in-progress goals", () => {
-    const context = createBaseContext({ inProgressGoals: [] });
+  it("should not include paused-goals-context when no paused goals", () => {
+    const context = createBaseContext({ pausedGoals: [] });
     const result = enricher.enrich(context);
 
     expect(result.instructions).not.toContain("paused-goals-context");

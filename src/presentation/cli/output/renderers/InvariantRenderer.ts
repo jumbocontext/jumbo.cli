@@ -2,7 +2,7 @@ import { EntityRenderer } from './EntityRenderer';
 import { Annotation } from '../Annotation';
 
 /**
- * InvariantContextView from GoalContextView
+ * InvariantContextView from ContextualGoalView
  */
 export interface InvariantContextView {
   readonly invariantId: string;

@@ -11,7 +11,8 @@ import { IGoalReader } from "../../../../../src/application/context/goals/resume
 import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { GoalClaimPolicy } from "../../../../../src/application/context/goals/claims/GoalClaimPolicy";
 import { ISettingsReader } from "../../../../../src/application/settings/ISettingsReader";
-import { ISessionSummaryReader } from "../../../../../src/application/context/sessions/get-context/ISessionSummaryReader";
+import { ISessionViewReader } from "../../../../../src/application/context/sessions/get/ISessionViewReader";
+import { IDecisionViewReader } from "../../../../../src/application/context/decisions/get/IDecisionViewReader";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalPausedReasons } from "../../../../../src/domain/goals/GoalPausedReasons";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
@@ -29,7 +30,8 @@ describe("ResumeWorkCommandHandler", () => {
   let eventBus: IEventBus;
   let claimPolicy: GoalClaimPolicy;
   let settingsReader: ISettingsReader;
-  let sessionSummaryReader: ISessionSummaryReader;
+  let sessionViewReader: ISessionViewReader;
+  let decisionViewReader: IDecisionViewReader;
   let goalContextQueryHandler: GoalContextQueryHandler;
   let logger: ILogger;
   let handler: ResumeWorkCommandHandler;
@@ -42,7 +44,10 @@ describe("ResumeWorkCommandHandler", () => {
         if (status === GoalStatus.PAUSED) return Promise.resolve(pausedGoals);
         if (status === GoalStatus.DOING) return Promise.resolve([]);
         if (status === GoalStatus.BLOCKED) return Promise.resolve([]);
+        if (status === GoalStatus.INREVIEW) return Promise.resolve([]);
+        if (status === GoalStatus.QUALIFIED) return Promise.resolve([]);
         if (status === GoalStatus.TODO) return Promise.resolve([]);
+        if (status === GoalStatus.REFINED) return Promise.resolve([]);
         return Promise.resolve([]);
       }
     );
@@ -100,9 +105,16 @@ describe("ResumeWorkCommandHandler", () => {
       }),
     } as unknown as ISettingsReader;
 
-    // Mock session summary reader
-    sessionSummaryReader = {
-      findLatest: jest.fn().mockResolvedValue(null),
+    // Mock session view reader
+    sessionViewReader = {
+      findAll: jest.fn().mockResolvedValue([]),
+      findActive: jest.fn().mockResolvedValue(null),
+    };
+
+    // Mock decision view reader
+    decisionViewReader = {
+      findAll: jest.fn().mockResolvedValue([]),
+      findByIds: jest.fn().mockResolvedValue([]),
     };
 
     // Mock logger
@@ -142,7 +154,8 @@ describe("ResumeWorkCommandHandler", () => {
       claimPolicy,
       settingsReader,
       logger,
-      sessionSummaryReader,
+      sessionViewReader,
+      decisionViewReader,
       goalContextQueryHandler
     );
   });
@@ -155,7 +168,7 @@ describe("ResumeWorkCommandHandler", () => {
       successCriteria: ["Feature works"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.PAUSED,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -179,7 +192,7 @@ describe("ResumeWorkCommandHandler", () => {
           successCriteria: ["Feature works"],
           scopeIn: [],
           scopeOut: [],
-          
+
           status: GoalStatus.TODO,
         },
       },
@@ -227,7 +240,7 @@ describe("ResumeWorkCommandHandler", () => {
       successCriteria: ["Feature works"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.PAUSED,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -250,7 +263,7 @@ describe("ResumeWorkCommandHandler", () => {
           successCriteria: ["Feature works"],
           scopeIn: [],
           scopeOut: [],
-          
+
           status: GoalStatus.TODO,
         },
       },
@@ -298,7 +311,7 @@ describe("ResumeWorkCommandHandler", () => {
       successCriteria: ["Criterion"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.PAUSED,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -323,7 +336,7 @@ describe("ResumeWorkCommandHandler", () => {
       successCriteria: ["Criterion"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.PAUSED,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -338,7 +351,7 @@ describe("ResumeWorkCommandHandler", () => {
       successCriteria: ["Criterion"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.PAUSED,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -362,7 +375,7 @@ describe("ResumeWorkCommandHandler", () => {
           successCriteria: ["Criterion"],
           scopeIn: [],
           scopeOut: [],
-          
+
           status: GoalStatus.TODO,
         },
       },
@@ -404,7 +417,7 @@ describe("ResumeWorkCommandHandler", () => {
       successCriteria: ["Criterion"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.PAUSED,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -428,7 +441,7 @@ describe("ResumeWorkCommandHandler", () => {
           successCriteria: ["Criterion"],
           scopeIn: [],
           scopeOut: [],
-          
+
           status: GoalStatus.TODO,
         },
       },
@@ -471,7 +484,7 @@ describe("ResumeWorkCommandHandler", () => {
       successCriteria: ["Criterion"],
       scopeIn: [],
       scopeOut: [],
-      
+
       status: GoalStatus.PAUSED,
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
@@ -495,7 +508,7 @@ describe("ResumeWorkCommandHandler", () => {
           successCriteria: ["Criterion"],
           scopeIn: [],
           scopeOut: [],
-          
+
           status: GoalStatus.TODO,
         },
       },

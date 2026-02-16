@@ -4,7 +4,7 @@
  * Infrastructure implementation of database rebuild service with sequential handler execution.
  *
  * This service addresses a race condition during database rebuild where
- * cross-aggregate projection handlers (e.g., SessionSummaryProjectionHandler)
+ * cross-aggregate projection handlers
  * attempt to read from projections (e.g., goal_views) while primary handlers
  * are still writing to them.
  *
@@ -43,9 +43,6 @@ import { getNamespaceMigrations } from "../persistence/migrations.config.js";
 // Projectors
 import { SqliteSessionStartedProjector } from "../context/sessions/start/SqliteSessionStartedProjector.js";
 import { SqliteSessionEndedProjector } from "../context/sessions/end/SqliteSessionEndedProjector.js";
-import { SqliteSessionSummaryProjectionStore } from "../context/sessions/get-context/SqliteSessionSummaryProjectionStore.js";
-import { SqliteGoalStatusReader } from "../context/goals/SqliteGoalStatusReader.js";
-import { SqliteDecisionSessionReader } from "../context/decisions/get-context/SqliteDecisionSessionReader.js";
 import { SqliteGoalAddedProjector } from "../context/goals/add/SqliteGoalAddedProjector.js";
 import { SqliteGoalStartedProjector } from "../context/goals/start/SqliteGoalStartedProjector.js";
 import { SqliteGoalUpdatedProjector } from "../context/goals/update/SqliteGoalUpdatedProjector.js";
@@ -96,7 +93,6 @@ import { SqliteRelationRemovedProjector } from "../context/relations/remove/Sqli
 // Handlers
 import { SessionStartedEventHandler } from "../../application/context/sessions/start/SessionStartedEventHandler.js";
 import { SessionEndedEventHandler } from "../../application/context/sessions/end/SessionEndedEventHandler.js";
-import { SessionSummaryProjectionHandler } from "../../application/context/sessions/get-context/SessionSummaryProjectionHandler.js";
 import { GoalAddedEventHandler } from "../../application/context/goals/add/GoalAddedEventHandler.js";
 import { GoalStartedEventHandler } from "../../application/context/goals/start/GoalStartedEventHandler.js";
 import { GoalUpdatedEventHandler } from "../../application/context/goals/update/GoalUpdatedEventHandler.js";
@@ -190,9 +186,6 @@ export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebui
     // Step 5: Create all projectors
     const sessionStartedProjector = new SqliteSessionStartedProjector(newDb);
     const sessionEndedProjector = new SqliteSessionEndedProjector(newDb);
-    const sessionSummaryProjectionStore = new SqliteSessionSummaryProjectionStore(newDb);
-    const goalStatusReader = new SqliteGoalStatusReader(newDb);
-    const decisionSessionReader = new SqliteDecisionSessionReader(newDb);
     const goalAddedProjector = new SqliteGoalAddedProjector(newDb);
     const goalStartedProjector = new SqliteGoalStartedProjector(newDb);
     const goalUpdatedProjector = new SqliteGoalUpdatedProjector(newDb);
@@ -243,12 +236,6 @@ export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebui
     // Step 6: Create all handlers
     const sessionStartedEventHandler = new SessionStartedEventHandler(sessionStartedProjector);
     const sessionEndedEventHandler = new SessionEndedEventHandler(sessionEndedProjector);
-    const sessionSummaryProjectionHandler = new SessionSummaryProjectionHandler(
-      sequentialEventBus,
-      sessionSummaryProjectionStore,
-      goalStatusReader,
-      decisionSessionReader
-    );
     const goalAddedEventHandler = new GoalAddedEventHandler(goalAddedProjector);
     const goalStartedEventHandler = new GoalStartedEventHandler(goalStartedProjector);
     const goalUpdatedEventHandler = new GoalUpdatedEventHandler(goalUpdatedProjector);
@@ -299,7 +286,6 @@ export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebui
     // Step 7: Register all handlers to sequential bus
     sequentialEventBus.subscribe("SessionStartedEvent", sessionStartedEventHandler);
     sequentialEventBus.subscribe("SessionEndedEvent", sessionEndedEventHandler);
-    sessionSummaryProjectionHandler.subscribe();
     sequentialEventBus.subscribe("GoalAddedEvent", goalAddedEventHandler);
     sequentialEventBus.subscribe("GoalStartedEvent", goalStartedEventHandler);
     sequentialEventBus.subscribe("GoalUpdatedEvent", goalUpdatedEventHandler);

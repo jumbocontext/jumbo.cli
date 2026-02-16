@@ -1,6 +1,6 @@
-import { SessionSummaryProjection } from "../../../../../application/context/sessions/SessionSummaryView.js";
 import { GoalView } from "../../../../../application/context/goals/GoalView.js";
-import { SessionStartContext, SessionStartProjectContext } from "../../../../../application/context/sessions/get-context/SessionStartContext.js";
+import { DecisionView } from "../../../../../application/context/decisions/DecisionView.js";
+import { SessionStartContext, SessionStartProjectContext } from "../../../../../application/context/sessions/get/SessionStartContext.js";
 import { YamlFormatter } from "../../../formatting/YamlFormatter.js";
 
 export interface SessionStartTextRenderResult {
@@ -26,7 +26,7 @@ export interface SessionStartStructuredContext {
  * - Project name and purpose
  * - Target audiences
  * - Active audience pains
- * - Historical session context
+ * - Session context (focus, status, paused goals, recent decisions)
  * - In-progress goals
  * - Planned goals
  *
@@ -48,13 +48,10 @@ export class SessionStartTextRenderer {
     }
 
     blocks.push(
-      this.renderSessionSummary(
-        context.latestSessionSummary,
-        context.hasSolutionContext
-      )
+      this.renderSessionSummary(context)
     );
 
-    blocks.push(this.renderInProgressGoals(context.inProgressGoals));
+    blocks.push(this.renderInProgressGoals(context.activeGoals.concat(context.pausedGoals)));
     blocks.push(this.renderPlannedGoals(context.plannedGoals));
 
     return {
@@ -64,15 +61,12 @@ export class SessionStartTextRenderer {
   }
 
   buildStructuredContext(context: SessionStartContext): SessionStartStructuredContext {
-    const sessionContextResult = this.buildSessionContextData(
-      context.latestSessionSummary,
-      context.hasSolutionContext
-    );
+    const sessionContextResult = this.buildSessionContextData(context);
 
     return {
       projectContext: this.buildProjectContextData(context.projectContext),
       sessionContext: sessionContextResult.data.sessionContext as Record<string, unknown>,
-      inProgressGoals: this.buildInProgressGoalsData(context.inProgressGoals),
+      inProgressGoals: this.buildInProgressGoalsData(context.activeGoals.concat(context.pausedGoals)),
       plannedGoals: this.buildPlannedGoalsData(context.plannedGoals),
       llmInstructions: {
         sessionContext: sessionContextResult.llmInstruction ?? null,
@@ -81,11 +75,8 @@ export class SessionStartTextRenderer {
     };
   }
 
-  renderSessionSummary(
-    summary: SessionSummaryProjection | null,
-    hasSolutionContext: boolean
-  ): string {
-    const sessionContextResult = this.buildSessionContextData(summary, hasSolutionContext);
+  renderSessionSummary(context: SessionStartContext): string {
+    const sessionContextResult = this.buildSessionContextData(context);
 
     let output = this.yamlFormatter.toYaml(sessionContextResult.data);
 
@@ -209,10 +200,9 @@ export class SessionStartTextRenderer {
   }
 
   private buildSessionContextData(
-    summary: SessionSummaryProjection | null,
-    hasSolutionContext: boolean
+    context: SessionStartContext
   ): { data: Record<string, unknown>; llmInstruction?: string } {
-    if (!hasSolutionContext) {
+    if (!context.hasSolutionContext) {
       return {
         data: {
           sessionContext: {
@@ -224,7 +214,7 @@ export class SessionStartTextRenderer {
       };
     }
 
-    if (!summary) {
+    if (!context.sessionId) {
       return {
         data: {
           sessionContext: {
@@ -234,37 +224,21 @@ export class SessionStartTextRenderer {
       };
     }
 
-    const contextData: any = {
+    const contextData: Record<string, unknown> = {
       sessionContext: {
-        focus: summary.focus,
-        status: summary.status,
+        focus: context.focus ?? "Not yet defined",
+        status: context.status,
       },
     };
 
-    if (summary.completedGoals.length > 0) {
-      contextData.sessionContext.completedGoals = summary.completedGoals.map((g) => ({
-        goalId: g.goalId,
-        objective: g.objective,
-        status: g.status,
-        createdAt: g.createdAt,
-      }));
-    }
+    const sessionCtx = contextData.sessionContext as Record<string, unknown>;
 
-    if (summary.goalsStarted.length > 0) {
-      contextData.sessionContext.goalsStarted = summary.goalsStarted.map((g) => ({
-        goalId: g.goalId,
-        objective: g.objective,
-        startedAt: g.startedAt,
-      }));
-    }
-
-    if (summary.goalsPaused.length > 0) {
-      contextData.sessionContext.goalsPaused = summary.goalsPaused.map((g) => {
-        const pausedGoal: any = {
+    if (context.pausedGoals.length > 0) {
+      sessionCtx.pausedGoals = context.pausedGoals.map((g) => {
+        const pausedGoal: Record<string, unknown> = {
           goalId: g.goalId,
           objective: g.objective,
-          reason: g.reason,
-          pausedAt: g.pausedAt,
+          pausedAt: g.updatedAt,
         };
         if (g.note) {
           pausedGoal.note = g.note;
@@ -273,29 +247,8 @@ export class SessionStartTextRenderer {
       });
     }
 
-    if (summary.goalsResumed.length > 0) {
-      contextData.sessionContext.goalsResumed = summary.goalsResumed.map((g) => {
-        const resumedGoal: any = {
-          goalId: g.goalId,
-          objective: g.objective,
-          resumedAt: g.resumedAt,
-        };
-        if (g.note) {
-          resumedGoal.note = g.note;
-        }
-        return resumedGoal;
-      });
-    }
-
-    if (summary.blockersEncountered.length > 0) {
-      contextData.sessionContext.blockersEncountered = summary.blockersEncountered.map((b) => ({
-        goalId: b.goalId,
-        reason: b.reason,
-      }));
-    }
-
-    if (summary.decisions.length > 0) {
-      contextData.sessionContext.decisions = summary.decisions.map((d) => ({
+    if (context.recentDecisions.length > 0) {
+      sessionCtx.recentDecisions = context.recentDecisions.map((d) => ({
         decisionId: d.decisionId,
         title: d.title,
         rationale: d.rationale,
@@ -303,8 +256,8 @@ export class SessionStartTextRenderer {
     }
 
     const llmInstruction =
-      summary.goalsPaused.length > 0
-        ? "\n\n@LLM: Goals were paused in this session. To resume a paused goal, run:\n  jumbo goal resume --goal-id <goal-id>"
+      context.pausedGoals.length > 0
+        ? "\n\n@LLM: Goals were paused. To resume a paused goal, run:\n  jumbo goal resume --goal-id <goal-id>"
         : undefined;
 
     return { data: contextData, llmInstruction };

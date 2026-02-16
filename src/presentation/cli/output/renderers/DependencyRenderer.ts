@@ -2,7 +2,7 @@ import { EntityRenderer } from './EntityRenderer';
 import { Annotation } from '../Annotation';
 
 /**
- * DependencyContextView from GoalContextView
+ * DependencyContextView from ContextualGoalView
  */
 export interface DependencyContextView {
   readonly dependencyId: string;

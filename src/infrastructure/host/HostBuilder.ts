@@ -100,8 +100,6 @@ import { SqliteSessionStartedProjector } from "../context/sessions/start/SqliteS
 import { SqliteSessionEndedProjector } from "../context/sessions/end/SqliteSessionEndedProjector.js";
 import { SqliteActiveSessionReader } from "../context/sessions/end/SqliteActiveSessionReader.js";
 import { SqliteSessionViewReader } from "../context/sessions/get/SqliteSessionViewReader.js";
-import { SqliteSessionSummaryProjectionStore } from "../context/sessions/get-context/SqliteSessionSummaryProjectionStore.js";
-import { SqliteSessionSummaryReader } from "../context/sessions/get-context/SqliteSessionSummaryReader.js";
 // Goal Projection Stores - decomposed by use case
 import { SqliteGoalAddedProjector } from "../context/goals/add/SqliteGoalAddedProjector.js";
 import { SqliteGoalStartedProjector } from "../context/goals/start/SqliteGoalStartedProjector.js";
@@ -124,7 +122,6 @@ import { SqliteDecisionAddedProjector } from "../context/decisions/add/SqliteDec
 import { SqliteDecisionUpdatedProjector } from "../context/decisions/update/SqliteDecisionUpdatedProjector.js";
 import { SqliteDecisionReversedProjector } from "../context/decisions/reverse/SqliteDecisionReversedProjector.js";
 import { SqliteDecisionSupersededProjector } from "../context/decisions/supersede/SqliteDecisionSupersededProjector.js";
-import { SqliteDecisionSessionReader } from "../context/decisions/get-context/SqliteDecisionSessionReader.js";
 import { SqliteDecisionViewReader } from "../context/decisions/get/SqliteDecisionViewReader.js";
 // Architecture Projection Stores - decomposed by use case
 import { SqliteArchitectureDefinedProjector } from "../context/architecture/define/SqliteArchitectureDefinedProjector.js";
@@ -193,7 +190,6 @@ import { FsSettingsInitializer } from "../settings/FsSettingsInitializer.js";
 // Event Handlers (Projection Handlers)
 import { SessionStartedEventHandler } from "../../application/context/sessions/start/SessionStartedEventHandler.js";
 import { SessionEndedEventHandler } from "../../application/context/sessions/end/SessionEndedEventHandler.js";
-import { SessionSummaryProjectionHandler } from "../../application/context/sessions/get-context/SessionSummaryProjectionHandler.js";
 import { GoalAddedEventHandler } from "../../application/context/goals/add/GoalAddedEventHandler.js";
 import { GoalStartedEventHandler } from "../../application/context/goals/start/GoalStartedEventHandler.js";
 import { GoalUpdatedEventHandler } from "../../application/context/goals/update/GoalUpdatedEventHandler.js";
@@ -418,8 +414,6 @@ export class HostBuilder {
     const sessionStartedProjector = new SqliteSessionStartedProjector(this.db);
     const sessionEndedProjector = new SqliteSessionEndedProjector(this.db);
     const activeSessionReader = new SqliteActiveSessionReader(this.db);
-    const sessionSummaryProjectionStore = new SqliteSessionSummaryProjectionStore(this.db);
-    const sessionSummaryReader = new SqliteSessionSummaryReader(this.db);
     const sessionViewReader = new SqliteSessionViewReader(this.db);
     // Goal Projection Stores - decomposed by use case
     const goalAddedProjector = new SqliteGoalAddedProjector(this.db);
@@ -461,7 +455,6 @@ export class HostBuilder {
     const decisionUpdatedProjector = new SqliteDecisionUpdatedProjector(this.db);
     const decisionReversedProjector = new SqliteDecisionReversedProjector(this.db);
     const decisionSupersededProjector = new SqliteDecisionSupersededProjector(this.db);
-    const decisionSessionReader = new SqliteDecisionSessionReader(this.db);
     const decisionViewReader = new SqliteDecisionViewReader(this.db);
     // Guideline Projection Stores - decomposed by use case
     const guidelineAddedProjector = new SqliteGuidelineAddedProjector(this.db);
@@ -590,7 +583,8 @@ export class HostBuilder {
       goalClaimPolicy,
       settingsReader,
       logger,
-      sessionSummaryProjectionStore,
+      sessionViewReader,
+      decisionViewReader,
       goalContextQueryHandler,
       projectContextReader,
       audienceContextReader,
@@ -619,12 +613,6 @@ export class HostBuilder {
     // Work Category - Session Projection Handlers - using decomposed projectors
     const sessionStartedEventHandler = new SessionStartedEventHandler(sessionStartedProjector);
     const sessionEndedEventHandler = new SessionEndedEventHandler(sessionEndedProjector);
-    const sessionSummaryProjectionHandler = new SessionSummaryProjectionHandler(
-      eventBus,
-      sessionSummaryProjectionStore,
-      goalStatusReader,
-      decisionSessionReader
-    );
     const goalAddedEventHandler = new GoalAddedEventHandler(goalAddedProjector);
     const goalStartedEventHandler = new GoalStartedEventHandler(goalStartedProjector);
     const goalUpdatedEventHandler = new GoalUpdatedEventHandler(goalUpdatedProjector);
@@ -695,9 +683,6 @@ export class HostBuilder {
     // Work Category - Session events
     eventBus.subscribe("SessionStartedEvent", sessionStartedEventHandler);
     eventBus.subscribe("SessionEndedEvent", sessionEndedEventHandler);
-
-    // Work Category - Session Summary (cross-aggregate projection)
-    sessionSummaryProjectionHandler.subscribe();
 
     // Work Category - Goal events
     eventBus.subscribe("GoalAddedEvent", goalAddedEventHandler);
@@ -817,8 +802,6 @@ export class HostBuilder {
       sessionStartedProjector,
       sessionEndedProjector,
       activeSessionReader,
-      sessionSummaryProjectionStore,
-      sessionSummaryReader,
       sessionViewReader,
       // Goal Projection Stores - decomposed by use case
       goalAddedProjector,
@@ -894,7 +877,6 @@ export class HostBuilder {
       decisionUpdatedProjector,
       decisionReversedProjector,
       decisionSupersededProjector,
-      decisionSessionReader,
       decisionViewReader,
       // Guideline Projection Stores - decomposed by use case
       guidelineAddedProjector,

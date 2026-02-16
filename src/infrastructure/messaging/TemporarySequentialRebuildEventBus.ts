@@ -2,7 +2,7 @@
  * TEMPORARY WORKAROUND - DO NOT USE IN PRODUCTION
  *
  * This event bus addresses a race condition during database rebuild where
- * cross-aggregate projection handlers (e.g., SessionSummaryProjectionHandler)
+ * cross-aggregate projection handlers
  * attempt to read from projections (e.g., goal_views) while primary handlers
  * are still writing to them.
  *

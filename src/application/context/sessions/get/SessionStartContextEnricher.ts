@@ -8,7 +8,7 @@ import { SessionContext, SessionContextView } from "./SessionContext.js";
  *
  * Instruction signals:
  * - "brownfield-onboarding": Project has no Jumbo context yet, guide user through setup
- * - "paused-goals-resume": Goals were paused in a previous session, prompt for resume
+ * - "paused-goals-resume": Goals are currently paused, prompt for resume
  * - "goal-selection-prompt": Standard goal selection prompt for session start
  */
 export class SessionStartContextEnricher {
@@ -27,10 +27,7 @@ export class SessionStartContextEnricher {
       instructions.push("brownfield-onboarding");
     }
 
-    if (
-      context.latestSessionSummary?.goalsPaused &&
-      context.latestSessionSummary.goalsPaused.length > 0
-    ) {
+    if (context.pausedGoals.length > 0) {
       instructions.push("paused-goals-resume");
     }
 

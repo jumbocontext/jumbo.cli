@@ -14,4 +14,10 @@ export interface ISessionViewReader {
    * @returns Array of session views ordered by creation date (newest first)
    */
   findAll(status?: SessionStatusFilter): Promise<SessionView[]>;
+
+  /**
+   * Retrieves the most recent active session.
+   * @returns The active session view, or null if no active session exists
+   */
+  findActive(): Promise<SessionView | null>;
 }

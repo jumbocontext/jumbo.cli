@@ -1,17 +1,25 @@
-import { SessionSummaryProjection } from "../SessionSummaryView.js";
 import { GoalView } from "../../goals/GoalView.js";
 import { ProjectView } from "../../project/ProjectView.js";
 import { AudienceView } from "../../audiences/AudienceView.js";
 import { AudiencePainView } from "../../audience-pains/AudiencePainView.js";
+import { DecisionView } from "../../decisions/DecisionView.js";
 
 /**
- * SessionContext - Event-agnostic base model for session orientation context
+ * SessionContext - Query-time assembled aggregate for session orientation context
  *
- * Contains the common data needed across all session events (start, resume, etc.).
- * The application layer assembles this from multiple projection stores,
- * keeping the presentation layer free from repository orchestration concerns.
+ * Assembled at query time from multiple view readers using the multi-query pattern.
+ * No dependency on event-sourced projections — all data is current state from existing read models.
  */
 export interface SessionContext {
+  /**
+   * Session primitives from ISessionViewReader.
+   * Null when no active session exists (e.g., first-ever session start).
+   */
+  readonly sessionId: string | null;
+  readonly status: string | null;
+  readonly focus: string | null;
+  readonly startedAt: string | null;
+
   /**
    * Project context with audiences and pains.
    * Null if project hasn't been initialized.
@@ -19,20 +27,25 @@ export interface SessionContext {
   readonly projectContext: SessionProjectContext | null;
 
   /**
-   * Summary of the most recent session (historical context).
-   * Null if this is the first-ever session (brownfield project scenario).
+   * Goals currently being actively worked on (status='doing'/'blocked'/'in-review'/'qualified').
    */
-  readonly latestSessionSummary: SessionSummaryProjection | null;
+  readonly activeGoals: GoalView[];
 
   /**
-   * Goals currently being worked on (status='doing'/'paused'/'blocked').
+   * Goals that are paused (status='paused').
+   * Separated from activeGoals for enricher detection (paused-goals-resume signal).
    */
-  readonly inProgressGoals: GoalView[];
+  readonly pausedGoals: GoalView[];
 
   /**
-   * Goals available to work on next (status='to-do').
+   * Goals available to work on next (status='to-do'/'refined').
    */
   readonly plannedGoals: GoalView[];
+
+  /**
+   * Recent active decisions for context orientation.
+   */
+  readonly recentDecisions: DecisionView[];
 
   /**
    * Indicates whether the project has any solution context recorded in Jumbo.

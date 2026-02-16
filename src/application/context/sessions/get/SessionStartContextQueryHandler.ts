@@ -1,8 +1,9 @@
 import { SessionContextQueryHandler } from "./SessionContextQueryHandler.js";
 import { SessionStartContextEnricher } from "./SessionStartContextEnricher.js";
 import { SessionStartContext } from "./SessionStartContext.js";
-import { ISessionSummaryReader } from "./ISessionSummaryReader.js";
+import { ISessionViewReader } from "./ISessionViewReader.js";
 import { IGoalStatusReader } from "../../goals/IGoalStatusReader.js";
+import { IDecisionViewReader } from "../../decisions/get/IDecisionViewReader.js";
 import { IProjectContextReader } from "../../project/query/IProjectContextReader.js";
 import { IAudienceContextReader } from "../../audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../audience-pains/query/IAudiencePainContextReader.js";
@@ -19,16 +20,18 @@ export class SessionStartContextQueryHandler {
   private readonly enricher: SessionStartContextEnricher;
 
   constructor(
-    sessionSummaryReader: ISessionSummaryReader,
+    sessionViewReader: ISessionViewReader,
     goalStatusReader: IGoalStatusReader,
+    decisionViewReader: IDecisionViewReader,
     projectContextReader?: IProjectContextReader,
     audienceContextReader?: IAudienceContextReader,
     audiencePainContextReader?: IAudiencePainContextReader,
     unprimedBrownfieldQualifier?: UnprimedBrownfieldQualifier
   ) {
     this.sessionContextQueryHandler = new SessionContextQueryHandler(
-      sessionSummaryReader,
+      sessionViewReader,
       goalStatusReader,
+      decisionViewReader,
       projectContextReader,
       audienceContextReader,
       audiencePainContextReader,

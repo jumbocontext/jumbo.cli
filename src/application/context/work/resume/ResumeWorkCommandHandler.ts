@@ -11,10 +11,11 @@ import { GoalClaimPolicy } from "../../goals/claims/GoalClaimPolicy.js";
 import { ISettingsReader } from "../../../settings/ISettingsReader.js";
 import { GoalStatus } from "../../../../domain/goals/Constants.js";
 import { GoalView } from "../../goals/GoalView.js";
-import { SessionContextQueryHandler } from "../../sessions/get-context/SessionContextQueryHandler.js";
-import { SessionResumeContextEnricher } from "../../sessions/get-context/SessionResumeContextEnricher.js";
-import { SessionContextView } from "../../sessions/get-context/SessionContext.js";
-import { ISessionSummaryReader } from "../../sessions/get-context/ISessionSummaryReader.js";
+import { SessionContextQueryHandler } from "../../sessions/get/SessionContextQueryHandler.js";
+import { SessionResumeContextEnricher } from "../../sessions/get/SessionResumeContextEnricher.js";
+import { SessionContextView } from "../../sessions/get/SessionContext.js";
+import { ISessionViewReader } from "../../sessions/get/ISessionViewReader.js";
+import { IDecisionViewReader } from "../../decisions/get/IDecisionViewReader.js";
 import { IProjectContextReader } from "../../project/query/IProjectContextReader.js";
 import { IAudienceContextReader } from "../../audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../audience-pains/query/IAudiencePainContextReader.js";
@@ -51,7 +52,8 @@ export class ResumeWorkCommandHandler {
     private readonly claimPolicy: GoalClaimPolicy,
     private readonly settingsReader: ISettingsReader,
     private readonly logger: ILogger,
-    sessionSummaryReader: ISessionSummaryReader,
+    sessionViewReader: ISessionViewReader,
+    decisionViewReader: IDecisionViewReader,
     goalContextQueryHandler: GoalContextQueryHandler,
     projectContextReader?: IProjectContextReader,
     audienceContextReader?: IAudienceContextReader,
@@ -59,8 +61,9 @@ export class ResumeWorkCommandHandler {
     unprimedBrownfieldQualifier?: UnprimedBrownfieldQualifier
   ) {
     this.sessionContextQueryHandler = new SessionContextQueryHandler(
-      sessionSummaryReader,
+      sessionViewReader,
       goalStatusReader,
+      decisionViewReader,
       projectContextReader,
       audienceContextReader,
       audiencePainContextReader,
