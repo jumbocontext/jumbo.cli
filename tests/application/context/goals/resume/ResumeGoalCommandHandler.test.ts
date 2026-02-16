@@ -16,7 +16,7 @@ import { IClock } from "../../../../../src/application/time-and-date/IClock";
 import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
 import { ISettingsReader } from "../../../../../src/application/settings/ISettingsReader";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
-import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
+import { GoalContextQueryHandler } from "../../../../../src/application/context/goals/get/GoalContextQueryHandler";
 
 describe("ResumeGoalCommandHandler", () => {
   let eventWriter: IGoalResumedEventWriter;

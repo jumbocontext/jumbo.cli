@@ -8,8 +8,8 @@ import { GoalErrorMessages, formatErrorMessage } from "../../../../domain/goals/
 import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
 import { ISettingsReader } from "../../../settings/ISettingsReader.js";
-import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
-import { ContextualGoalView } from "../get-context/ContextualGoalView.js";
+import { GoalContextQueryHandler } from "../get/GoalContextQueryHandler.js";
+import { ContextualGoalView } from "../get/ContextualGoalView.js";
 
 /**
  * Handles resuming of a paused goal.

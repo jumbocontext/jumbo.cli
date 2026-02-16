@@ -19,7 +19,7 @@ import { IProjectContextReader } from "../../project/query/IProjectContextReader
 import { IAudienceContextReader } from "../../audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../audience-pains/query/IAudiencePainContextReader.js";
 import { UnprimedBrownfieldQualifier } from "../../../UnprimedBrownfieldQualifier.js";
-import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
+import { GoalContextQueryHandler } from "../../goals/get/GoalContextQueryHandler.js";
 import { ILogger } from "../../../logging/ILogger.js";
 
 /**

@@ -7,8 +7,8 @@ import { Goal } from "../../../../domain/goals/Goal.js";
 import { GoalErrorMessages, formatErrorMessage } from "../../../../domain/goals/Constants.js";
 import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
-import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
-import { ContextualGoalView } from "../get-context/ContextualGoalView.js";
+import { GoalContextQueryHandler } from "../get/GoalContextQueryHandler.js";
+import { ContextualGoalView } from "../get/ContextualGoalView.js";
 
 /**
  * Handles completion of a goal.

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "@jest/globals";
-import { GoalContextQueryHandler } from "../../../src/application/context/GoalContextQueryHandler.js";
-import { IGoalContextAssembler } from "../../../src/application/context/IGoalContextAssembler.js";
-import { ContextualGoalView } from "../../../src/application/context/goals/get-context/ContextualGoalView.js";
+import { GoalContextQueryHandler } from "../../../src/application/context/goals/get/GoalContextQueryHandler.js";
+import { IGoalContextAssembler } from "../../../src/application/context/goals/get/IGoalContextAssembler.js";
+import { ContextualGoalView } from "../../../src/application/context/goals/get/ContextualGoalView.js";
 import { GoalView } from "../../../src/application/context/goals/GoalView.js";
 
 /**

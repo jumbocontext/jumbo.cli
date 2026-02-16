@@ -15,7 +15,7 @@ import { IGoalClaimStore } from "../../../../../src/application/context/goals/cl
 import { IClock } from "../../../../../src/application/time-and-date/IClock";
 import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
-import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
+import { GoalContextQueryHandler } from "../../../../../src/application/context/goals/get/GoalContextQueryHandler";
 
 describe("CompleteGoalCommandHandler", () => {
   let eventWriter: IGoalCompletedEventWriter;

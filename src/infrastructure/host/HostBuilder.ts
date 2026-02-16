@@ -252,7 +252,7 @@ import { ValuePropositionRemovedEventHandler } from "../../application/context/v
 import { RelationAddedEventHandler } from "../../application/context/relations/add/RelationAddedEventHandler.js";
 import { RelationRemovedEventHandler } from "../../application/context/relations/remove/RelationRemovedEventHandler.js";
 // Context
-import { GoalContextQueryHandler } from "../../application/context/GoalContextQueryHandler.js";
+import { GoalContextQueryHandler } from "../../application/context/goals/get/GoalContextQueryHandler.js";
 
 // Goal Controllers
 import { CompleteGoalController } from "../../application/context/goals/complete/CompleteGoalController.js";

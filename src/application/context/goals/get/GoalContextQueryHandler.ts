@@ -1,5 +1,5 @@
 import { IGoalContextAssembler } from "./IGoalContextAssembler.js";
-import { ContextualGoalView } from "./goals/get-context/ContextualGoalView.js";
+import { ContextualGoalView } from "./ContextualGoalView.js";
 
 /**
  * GoalContextQueryHandler - Query handler for goal context retrieval

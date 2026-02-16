@@ -1,6 +1,6 @@
 import { ShowGoalCommand } from "./ShowGoalCommand.js";
-import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
-import { ContextualGoalView } from "../get-context/ContextualGoalView.js";
+import { GoalContextQueryHandler } from "../get/GoalContextQueryHandler.js";
+import { ContextualGoalView } from "../get/ContextualGoalView.js";
 
 /**
  * Handles showing goal details.

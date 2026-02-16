@@ -16,8 +16,8 @@ import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Const
 import { GoalPausedReasons } from "../../../../../src/domain/goals/GoalPausedReasons";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
-import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
-import { IGoalContextAssembler } from "../../../../../src/application/context/IGoalContextAssembler";
+import { GoalContextQueryHandler } from "../../../../../src/application/context/goals/get/GoalContextQueryHandler";
+import { IGoalContextAssembler } from "../../../../../src/application/context/goals/get/IGoalContextAssembler";
 import { ILogger } from "../../../../../src/application/logging/ILogger";
 
 describe("ResumeWorkCommandHandler", () => {

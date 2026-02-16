@@ -1,6 +1,6 @@
-import { IGoalContextAssembler } from "../../application/context/IGoalContextAssembler.js";
-import { ContextualGoalView } from "../../application/context/goals/get-context/ContextualGoalView.js";
-import { RelatedContext } from "../../application/context/goals/get-context/RelatedContext.js";
+import { IGoalContextAssembler } from "../../application/context/goals/get/IGoalContextAssembler.js";
+import { ContextualGoalView } from "../../application/context/goals/get/ContextualGoalView.js";
+import { RelatedContext } from "../../application/context/goals/get/RelatedContext.js";
 import { IGoalReader } from "../../application/context/goals/start/IGoalReader.js";
 import { IRelationReader } from "../../application/context/relations/IRelationReader.js";
 import { IComponentViewReader } from "../../application/context/components/get/IComponentViewReader.js";

@@ -22,7 +22,7 @@ import { GuidelineView } from "../../../../../application/context/guidelines/Gui
 import { DecisionView } from "../../../../../application/context/decisions/DecisionView.js";
 import { EntityType, EntityTypeValue, RelationStrengthValue } from "../../../../../domain/relations/Constants.js";
 import { GoalRefineOutputBuilder } from "./GoalRefineOutputBuilder.js";
-import { ContextualGoalView } from "../../../../../application/context/goals/get-context/ContextualGoalView.js";
+import { ContextualGoalView } from "../../../../../application/context/goals/get/ContextualGoalView.js";
 
 /**
  * Command metadata for auto-registration

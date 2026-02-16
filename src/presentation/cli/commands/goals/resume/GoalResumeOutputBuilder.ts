@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { ContextualGoalView } from '../../../../../application/context/goals/get-context/ContextualGoalView.js';
+import { ContextualGoalView } from '../../../../../application/context/goals/get/ContextualGoalView.js';
 
 /**
  * Specialized builder for goal.resume command output.

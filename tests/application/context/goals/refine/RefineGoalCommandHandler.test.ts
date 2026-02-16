@@ -10,7 +10,7 @@ import { IGoalRefineReader } from "../../../../../src/application/context/goals/
 import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
-import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
+import { GoalContextQueryHandler } from "../../../../../src/application/context/goals/get/GoalContextQueryHandler";
 
 describe("RefineGoalCommandHandler", () => {
   let eventWriter: IGoalRefineEventWriter;

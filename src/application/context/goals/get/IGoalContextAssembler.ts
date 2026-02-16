@@ -1,4 +1,4 @@
-import { ContextualGoalView } from "./goals/get-context/ContextualGoalView.js";
+import { ContextualGoalView } from "./ContextualGoalView.js";
 
 /**
  * Assembles goal context by querying relations and fetching related entities.

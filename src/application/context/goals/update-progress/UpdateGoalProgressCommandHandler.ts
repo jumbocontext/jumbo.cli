@@ -5,8 +5,8 @@ import { IGoalProgressUpdateReader } from "./IGoalProgressUpdateReader.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Goal } from "../../../../domain/goals/Goal.js";
 import { GoalErrorMessages, formatErrorMessage } from "../../../../domain/goals/Constants.js";
-import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
-import { ContextualGoalView } from "../get-context/ContextualGoalView.js";
+import { GoalContextQueryHandler } from "../get/GoalContextQueryHandler.js";
+import { ContextualGoalView } from "../get/ContextualGoalView.js";
 
 /**
  * Handles updating progress on a goal.
