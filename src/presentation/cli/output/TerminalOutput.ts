@@ -24,8 +24,12 @@ export class TerminalOutput {
         if (section.type === 'prompt') {
           return section.content as string;
         }
-        // For now, only handle prompt sections
-        // Data and group sections would need entity renderers
+        if (section.type === 'data' && section.content && typeof section.content === 'object') {
+          const data = section.content as Record<string, unknown>;
+          if (data.message) {
+            return String(data.message);
+          }
+        }
         return '';
       })
       .filter(s => s.length > 0)
