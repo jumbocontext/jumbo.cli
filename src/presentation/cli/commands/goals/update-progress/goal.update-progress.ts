@@ -10,7 +10,6 @@ import { Renderer } from "../../../rendering/Renderer.js";
 import { UpdateGoalProgressCommandHandler } from "../../../../../application/context/goals/update-progress/UpdateGoalProgressCommandHandler.js";
 import { UpdateGoalProgressCommand } from "../../../../../application/context/goals/update-progress/UpdateGoalProgressCommand.js";
 import { GoalUpdateProgressOutputBuilder } from "./GoalUpdateProgressOutputBuilder.js";
-import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
 
 /**
  * Command metadata for auto-registration
@@ -49,15 +48,13 @@ export async function goalUpdateProgress(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler with mapper
-    const goalContextViewMapper = new GoalContextViewMapper();
+    // 1. Create command handler
     const commandHandler = new UpdateGoalProgressCommandHandler(
       container.goalProgressUpdatedEventStore,
       container.goalProgressUpdatedEventStore,
       container.goalProgressUpdatedProjector,
       container.eventBus,
-      container.goalContextQueryHandler,
-      goalContextViewMapper
+      container.goalContextQueryHandler
     );
 
     // 2. Execute command - returns enriched goal context view

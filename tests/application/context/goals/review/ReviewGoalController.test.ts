@@ -38,12 +38,14 @@ describe("ReviewGoalController", () => {
 
   const createMockGoalContext = (goalView: GoalView) => ({
     goal: goalView,
-    components: [],
-    dependencies: [],
-    decisions: [],
-    invariants: [],
-    guidelines: [],
-    architecture: null,
+    context: {
+      components: [],
+      dependencies: [],
+      decisions: [],
+      invariants: [],
+      guidelines: [],
+      architecture: null,
+    },
   });
 
   beforeEach(() => {
@@ -217,12 +219,14 @@ describe("ReviewGoalController", () => {
 
       const mockContext = {
         goal: mockUpdatedView,
-        components: [{ componentId: "comp_1", name: "Test Component", description: "Desc", status: "active" }],
-        dependencies: [{ dependencyId: "dep_1", name: "A -> B", purpose: "API" }],
-        decisions: [{ decisionId: "dec_1", title: "Use TypeScript", rationale: "Type safety", status: "active" }],
-        invariants: [{ invariantId: "inv_1", title: "coding", description: "Use strict mode" }],
-        guidelines: [{ guidelineId: "guide_1", category: "testing", description: "100% coverage" }],
-        architecture: null,
+        context: {
+          components: [{ componentId: "comp_1", name: "Test Component", description: "Desc", status: "active" }],
+          dependencies: [{ dependencyId: "dep_1", name: "A -> B", purpose: "API" }],
+          decisions: [{ decisionId: "dec_1", title: "Use TypeScript", rationale: "Type safety", status: "active" }],
+          invariants: [{ invariantId: "inv_1", title: "coding", description: "Use strict mode" }],
+          guidelines: [{ guidelineId: "guide_1", category: "testing", description: "100% coverage" }],
+          architecture: null,
+        },
       };
 
       (goalReader.findById as jest.Mock)
@@ -240,9 +244,9 @@ describe("ReviewGoalController", () => {
       const response = await controller.handle({ goalId: "goal_123" });
 
       expect(response.criteria).toEqual(mockContext);
-      expect(response.criteria.components).toHaveLength(1);
-      expect(response.criteria.invariants).toHaveLength(1);
-      expect(response.criteria.guidelines).toHaveLength(1);
+      expect(response.criteria.context.components).toHaveLength(1);
+      expect(response.criteria.context.invariants).toHaveLength(1);
+      expect(response.criteria.context.guidelines).toHaveLength(1);
     });
   });
 });

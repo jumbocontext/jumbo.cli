@@ -9,7 +9,6 @@ import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GoalShowOutputBuilder } from "./GoalShowOutputBuilder.js";
-import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
 import { ShowGoalCommandHandler } from "../../../../../application/context/goals/show/ShowGoalCommandHandler.js";
 import { ShowGoalCommand } from "../../../../../application/context/goals/show/ShowGoalCommand.js";
 
@@ -46,10 +45,8 @@ export async function goalShow(
 
   try {
     // 1. Create command handler with context dependencies
-    const goalContextViewMapper = new GoalContextViewMapper();
     const commandHandler = new ShowGoalCommandHandler(
-      container.goalContextQueryHandler,
-      goalContextViewMapper
+      container.goalContextQueryHandler
     );
 
     // 2. Execute command - returns goal context view

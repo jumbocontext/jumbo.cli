@@ -311,37 +311,37 @@ describe("SqliteGoalContextAssembler", () => {
       // Assert
       expect(result).not.toBeNull();
       expect(result!.goal).toEqual(goal);
-      expect(result!.components).toHaveLength(1);
-      expect(result!.components[0]).toEqual({
+      expect(result!.context.components).toHaveLength(1);
+      expect(result!.context.components[0]).toEqual({
         entity: component,
         relationType: "default",
         relationDescription: ""
       });
-      expect(result!.dependencies).toHaveLength(1);
-      expect(result!.dependencies[0]).toEqual({
+      expect(result!.context.dependencies).toHaveLength(1);
+      expect(result!.context.dependencies[0]).toEqual({
         entity: dependency,
         relationType: "default",
         relationDescription: ""
       });
-      expect(result!.decisions).toHaveLength(1);
-      expect(result!.decisions[0]).toEqual({
+      expect(result!.context.decisions).toHaveLength(1);
+      expect(result!.context.decisions[0]).toEqual({
         entity: decision,
         relationType: "default",
         relationDescription: ""
       });
-      expect(result!.invariants).toHaveLength(1);
-      expect(result!.invariants[0]).toEqual({
+      expect(result!.context.invariants).toHaveLength(1);
+      expect(result!.context.invariants[0]).toEqual({
         entity: invariant,
         relationType: "default",
         relationDescription: ""
       });
-      expect(result!.guidelines).toHaveLength(1);
-      expect(result!.guidelines[0]).toEqual({
+      expect(result!.context.guidelines).toHaveLength(1);
+      expect(result!.context.guidelines[0]).toEqual({
         entity: guideline,
         relationType: "default",
         relationDescription: ""
       });
-      expect(result!.architecture).toEqual(architecture);
+      expect(result!.context.architecture).toEqual(architecture);
     });
 
     it("should return only related entities when explicit relations exist", async () => {
@@ -411,8 +411,8 @@ describe("SqliteGoalContextAssembler", () => {
 
       // Assert
       expect(result).not.toBeNull();
-      expect(result!.components).toHaveLength(1);
-      expect(result!.components[0]).toEqual({
+      expect(result!.context.components).toHaveLength(1);
+      expect(result!.context.components[0]).toEqual({
         entity: component1,
         relationType: "modifies",
         relationDescription: "This goal modifies UserService"
@@ -487,9 +487,9 @@ describe("SqliteGoalContextAssembler", () => {
 
       // Assert
       expect(result).not.toBeNull();
-      expect(result!.components).toHaveLength(1);
-      expect(result!.components[0].relationType).toBe("modifies");
-      expect(result!.components[0].relationDescription).toBe("Active relation");
+      expect(result!.context.components).toHaveLength(1);
+      expect(result!.context.components[0].relationType).toBe("modifies");
+      expect(result!.context.components[0].relationDescription).toBe("Active relation");
     });
   });
 });

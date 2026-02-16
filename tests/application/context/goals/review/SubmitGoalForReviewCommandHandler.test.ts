@@ -16,7 +16,6 @@ import { IClock } from "../../../../../src/application/time-and-date/IClock";
 import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
-import { GoalContextViewMapper } from "../../../../../src/application/context/GoalContextViewMapper";
 
 describe("SubmitGoalForReviewCommandHandler", () => {
   let eventWriter: IGoalSubmittedForReviewEventWriter;
@@ -28,7 +27,6 @@ describe("SubmitGoalForReviewCommandHandler", () => {
   let claimPolicy: GoalClaimPolicy;
   let workerIdentityReader: IWorkerIdentityReader;
   let goalContextQueryHandler: GoalContextQueryHandler;
-  let goalContextViewMapper: GoalContextViewMapper;
   let handler: SubmitGoalForReviewCommandHandler;
 
   const testWorkerId = createWorkerId("test-worker-id");
@@ -79,18 +77,15 @@ describe("SubmitGoalForReviewCommandHandler", () => {
     goalContextQueryHandler = {
       execute: jest.fn().mockImplementation(async (goalId: string) => ({
         goal: { goalId },
-        components: [],
-        dependencies: [],
-        decisions: [],
-        invariants: [],
-        guidelines: [],
-        architecture: null,
+        context: {
+          components: [],
+          dependencies: [],
+          decisions: [],
+          invariants: [],
+          guidelines: [],
+          architecture: null,
+        },
       })),
-    } as any;
-
-    // Mock goal context view mapper
-    goalContextViewMapper = {
-      map: jest.fn((context) => context),
     } as any;
 
     handler = new SubmitGoalForReviewCommandHandler(
@@ -100,8 +95,7 @@ describe("SubmitGoalForReviewCommandHandler", () => {
       eventBus,
       claimPolicy,
       workerIdentityReader,
-      goalContextQueryHandler,
-      goalContextViewMapper
+      goalContextQueryHandler
     );
   });
 

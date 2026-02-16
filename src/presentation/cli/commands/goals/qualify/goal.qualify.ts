@@ -11,7 +11,6 @@ import { Renderer } from "../../../rendering/Renderer.js";
 import { QualifyGoalCommandHandler } from "../../../../../application/context/goals/qualify/QualifyGoalCommandHandler.js";
 import { QualifyGoalCommand } from "../../../../../application/context/goals/qualify/QualifyGoalCommand.js";
 import { GoalQualifyOutputBuilder } from "./GoalQualifyOutputBuilder.js";
-import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
 
 /**
  * Command metadata for auto-registration
@@ -46,8 +45,7 @@ export async function goalQualify(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler with mapper
-    const goalContextViewMapper = new GoalContextViewMapper();
+    // 1. Create command handler
     const commandHandler = new QualifyGoalCommandHandler(
       container.goalQualifiedEventStore,
       container.goalQualifiedEventStore,
@@ -55,8 +53,7 @@ export async function goalQualify(
       container.eventBus,
       container.goalClaimPolicy,
       container.workerIdentityReader,
-      container.goalContextQueryHandler,
-      goalContextViewMapper
+      container.goalContextQueryHandler
     );
 
     // 2. Execute command - returns enriched goal context view

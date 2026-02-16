@@ -12,7 +12,6 @@ import { Renderer } from "../../../rendering/Renderer.js";
 import { ResumeGoalCommandHandler } from "../../../../../application/context/goals/resume/ResumeGoalCommandHandler.js";
 import { ResumeGoalCommand } from "../../../../../application/context/goals/resume/ResumeGoalCommand.js";
 import { GoalResumeOutputBuilder } from "./GoalResumeOutputBuilder.js";
-import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
 
 /**
  * Command metadata for auto-registration
@@ -53,8 +52,7 @@ export async function goalResume(options: { goalId: string; note?: string }, con
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler with mapper
-    const goalContextViewMapper = new GoalContextViewMapper();
+    // 1. Create command handler
     const commandHandler = new ResumeGoalCommandHandler(
       container.goalResumedEventStore,
       container.goalResumedEventStore,
@@ -63,8 +61,7 @@ export async function goalResume(options: { goalId: string; note?: string }, con
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler,
-      goalContextViewMapper
+      container.goalContextQueryHandler
     );
 
     // 2. Execute command - returns enriched goal context view

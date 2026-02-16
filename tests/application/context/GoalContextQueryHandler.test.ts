@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "@jest/globals";
 import { GoalContextQueryHandler } from "../../../src/application/context/GoalContextQueryHandler.js";
 import { IGoalContextAssembler } from "../../../src/application/context/IGoalContextAssembler.js";
-import { GoalContext } from "../../../src/application/context/goals/get-context/GoalContext.js";
+import { ContextualGoalView } from "../../../src/application/context/goals/get-context/ContextualGoalView.js";
 import { GoalView } from "../../../src/application/context/goals/GoalView.js";
 
 /**
@@ -14,13 +14,13 @@ import { GoalView } from "../../../src/application/context/goals/GoalView.js";
 
 // Mock implementation of IGoalContextAssembler
 class MockGoalContextAssembler implements IGoalContextAssembler {
-  private contexts: Map<string, GoalContext> = new Map();
+  private contexts: Map<string, ContextualGoalView> = new Map();
 
-  async assembleContextForGoal(goalId: string): Promise<GoalContext | null> {
+  async assembleContextForGoal(goalId: string): Promise<ContextualGoalView | null> {
     return this.contexts.get(goalId) || null;
   }
 
-  setContext(goalId: string, context: GoalContext): void {
+  setContext(goalId: string, context: ContextualGoalView): void {
     this.contexts.set(goalId, context);
   }
 
@@ -54,14 +54,16 @@ describe("GoalContextQueryHandler", () => {
         progress: [],
       };
 
-      const expectedContext: GoalContext = {
+      const expectedContext: ContextualGoalView = {
         goal,
-        invariants: [],
-        guidelines: [],
-        components: [],
-        dependencies: [],
-        decisions: [],
-        architecture: null,
+        context: {
+          invariants: [],
+          guidelines: [],
+          components: [],
+          dependencies: [],
+          decisions: [],
+          architecture: null,
+        },
       };
 
       mockAssembler.setContext("goal_123", expectedContext);

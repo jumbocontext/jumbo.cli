@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { GoalContextView } from '../../../../../application/context/goals/get-context/GoalContextView.js';
+import { ContextualGoalView } from '../../../../../application/context/goals/get-context/ContextualGoalView.js';
 
 /**
  * Specialized builder for goal.qualify command output.
@@ -20,7 +20,7 @@ export class GoalQualifyOutputBuilder {
    * Build output for successful goal qualification.
    * Renders qualification result with next steps.
    */
-  buildSuccess(context: GoalContextView): TerminalOutput {
+  buildSuccess(context: ContextualGoalView): TerminalOutput {
     this.builder.reset();
 
     const goal = context.goal;

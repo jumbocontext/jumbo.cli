@@ -6,14 +6,13 @@ import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Goal } from "../../../../domain/goals/Goal.js";
 import { GoalErrorMessages, formatErrorMessage } from "../../../../domain/goals/Constants.js";
 import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
-import { GoalContextViewMapper } from "../../../context/GoalContextViewMapper.js";
-import { GoalContextView } from "../get-context/GoalContextView.js";
+import { ContextualGoalView } from "../get-context/ContextualGoalView.js";
 
 /**
  * Handles refining a goal (marking it ready to be started).
  * Loads aggregate from event history, calls domain logic, persists event.
  * Refining does not require claims as it's a planning step before work begins.
- * Returns enriched goal context view for presentation layer.
+ * Returns ContextualGoalView for presentation layer.
  */
 export class RefineGoalCommandHandler {
   constructor(
@@ -21,11 +20,10 @@ export class RefineGoalCommandHandler {
     private readonly eventReader: IGoalRefineEventReader,
     private readonly goalReader: IGoalRefineReader,
     private readonly eventBus: IEventBus,
-    private readonly goalContextQueryHandler: GoalContextQueryHandler,
-    private readonly goalContextViewMapper: GoalContextViewMapper
+    private readonly goalContextQueryHandler: GoalContextQueryHandler
   ) {}
 
-  async execute(command: RefineGoalCommand): Promise<GoalContextView> {
+  async execute(command: RefineGoalCommand): Promise<ContextualGoalView> {
     // 1. Check goal exists (query projection for fast check)
     const view = await this.goalReader.findById(command.goalId);
     if (!view) {
@@ -47,10 +45,7 @@ export class RefineGoalCommandHandler {
     // 5. Publish event to bus (projections will update via subscriptions)
     await this.eventBus.publish(event);
 
-    // 6. Query goal context and map to presentation view
-    const context = await this.goalContextQueryHandler.execute(command.goalId);
-    const contextView = this.goalContextViewMapper.map(context);
-
-    return contextView;
+    // 6. Query goal context
+    return this.goalContextQueryHandler.execute(command.goalId);
   }
 }

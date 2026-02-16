@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { GoalContextView } from '../../../../../application/context/goals/get-context/GoalContextView.js';
+import { ContextualGoalView } from '../../../../../application/context/goals/get-context/ContextualGoalView.js';
 
 /**
  * Specialized builder for goal.start command output.
@@ -19,8 +19,9 @@ export class GoalStartOutputBuilder {
    * Build complete goal start output from context view.
    * Preserves existing prompt structure and instructions.
    */
-  build(context: GoalContextView): TerminalOutput {
-    const goal = context.goal;
+  build(contextualView: ContextualGoalView): TerminalOutput {
+    const goal = contextualView.goal;
+    const context = contextualView.context;
 
     // Opening prompt: Goal Implementation Instructions
     this.builder.addPrompt(
@@ -54,7 +55,7 @@ export class GoalStartOutputBuilder {
     }
 
     // Scope section (if scoped)
-    if (this.isScoped(context)) {
+    if (this.isScoped(contextualView)) {
       if (goal.scopeIn && goal.scopeIn.length > 0) {
         const scopeInText = goal.scopeIn.map(s => `- ${s}`).join('\n');
         this.builder.addPrompt(
@@ -173,10 +174,10 @@ export class GoalStartOutputBuilder {
     return this.builder.build();
   }
 
-  private isScoped(context: GoalContextView): boolean {
+  private isScoped(contextualView: ContextualGoalView): boolean {
     return (
-      (Array.isArray(context.goal.scopeIn) && context.goal.scopeIn.length > 0) ||
-      (Array.isArray(context.goal.scopeOut) && context.goal.scopeOut.length > 0)
+      (Array.isArray(contextualView.goal.scopeIn) && contextualView.goal.scopeIn.length > 0) ||
+      (Array.isArray(contextualView.goal.scopeOut) && contextualView.goal.scopeOut.length > 0)
     );
   }
 }

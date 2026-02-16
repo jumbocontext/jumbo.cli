@@ -10,7 +10,6 @@ import { Renderer } from "../../../rendering/Renderer.js";
 import { StartGoalCommandHandler } from "../../../../../application/context/goals/start/StartGoalCommandHandler.js";
 import { StartGoalCommand } from "../../../../../application/context/goals/start/StartGoalCommand.js";
 import { GoalStartOutputBuilder } from "./GoalStartOutputBuilder.js";
-import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
 
 /**
  * Command metadata for auto-registration
@@ -41,8 +40,7 @@ export async function goalStart(options: { goalId: string }, container: IApplica
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler with mapper
-    const goalContextViewMapper = new GoalContextViewMapper();
+    // 1. Create command handler
     const commandHandler = new StartGoalCommandHandler(
       container.goalStartedEventStore,
       container.goalStartedEventStore,
@@ -51,8 +49,7 @@ export async function goalStart(options: { goalId: string }, container: IApplica
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler,
-      goalContextViewMapper
+      container.goalContextQueryHandler
     );
 
     // 2. Execute command - returns enriched goal context view

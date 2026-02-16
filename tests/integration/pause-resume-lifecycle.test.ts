@@ -18,7 +18,6 @@ import { PauseGoalCommand } from "../../src/application/context/goals/pause/Paus
 import { ResumeGoalCommandHandler } from "../../src/application/context/goals/resume/ResumeGoalCommandHandler.js";
 import { ResumeGoalCommand } from "../../src/application/context/goals/resume/ResumeGoalCommand.js";
 import { GoalStatus, GoalEventType } from "../../src/domain/goals/Constants.js";
-import { GoalContextViewMapper } from "../../src/application/context/GoalContextViewMapper.js";
 
 describe("Pause-Resume Lifecycle Integration", () => {
   let tmpDir: string;
@@ -60,14 +59,12 @@ describe("Pause-Resume Lifecycle Integration", () => {
     expect(view!.version).toBe(1);
 
     // 2. Refine goal
-    const goalContextViewMapper = new GoalContextViewMapper();
     const refineHandler = new RefineGoalCommandHandler(
       container.goalRefinedEventStore,
       container.goalRefinedEventStore,
       container.goalRefinedProjector,
       container.eventBus,
-      container.goalContextQueryHandler,
-      goalContextViewMapper
+      container.goalContextQueryHandler
     );
     const refineCommand: RefineGoalCommand = {
       goalId,
@@ -88,8 +85,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler,
-      new GoalContextViewMapper()
+      container.goalContextQueryHandler
     );
     const startCommand: StartGoalCommand = {
       goalId,
@@ -130,8 +126,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler,
-      new GoalContextViewMapper()
+      container.goalContextQueryHandler
     );
     const resumeCommand: ResumeGoalCommand = {
       goalId,
@@ -180,14 +175,12 @@ describe("Pause-Resume Lifecycle Integration", () => {
     });
     const goalId = addResult.goalId;
 
-    const goalContextViewMapper = new GoalContextViewMapper();
     const refineHandler = new RefineGoalCommandHandler(
       container.goalRefinedEventStore,
       container.goalRefinedEventStore,
       container.goalRefinedProjector,
       container.eventBus,
-      container.goalContextQueryHandler,
-      goalContextViewMapper
+      container.goalContextQueryHandler
     );
     await refineHandler.execute({ goalId });
 
@@ -199,8 +192,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler,
-      new GoalContextViewMapper()
+      container.goalContextQueryHandler
     );
     await startHandler.execute({ goalId });
 
@@ -237,14 +229,12 @@ describe("Pause-Resume Lifecycle Integration", () => {
     });
     const goalId = addResult.goalId;
 
-    const goalContextViewMapper = new GoalContextViewMapper();
     const refineHandler = new RefineGoalCommandHandler(
       container.goalRefinedEventStore,
       container.goalRefinedEventStore,
       container.goalRefinedProjector,
       container.eventBus,
-      container.goalContextQueryHandler,
-      goalContextViewMapper
+      container.goalContextQueryHandler
     );
     await refineHandler.execute({ goalId });
 
@@ -256,8 +246,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler,
-      new GoalContextViewMapper()
+      container.goalContextQueryHandler
     );
     await startHandler.execute({ goalId });
 
@@ -276,8 +265,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler,
-      new GoalContextViewMapper()
+      container.goalContextQueryHandler
     );
 
     // First pause/resume cycle
@@ -319,14 +307,12 @@ describe("Pause-Resume Lifecycle Integration", () => {
     });
     const goalId = addResult.goalId;
 
-    const goalContextViewMapper = new GoalContextViewMapper();
     const refineHandler = new RefineGoalCommandHandler(
       container.goalRefinedEventStore,
       container.goalRefinedEventStore,
       container.goalRefinedProjector,
       container.eventBus,
-      container.goalContextQueryHandler,
-      goalContextViewMapper
+      container.goalContextQueryHandler
     );
     await refineHandler.execute({ goalId });
 
@@ -338,8 +324,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler,
-      new GoalContextViewMapper()
+      container.goalContextQueryHandler
     );
     await startHandler.execute({ goalId });
 
@@ -359,8 +344,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler,
-      new GoalContextViewMapper()
+      container.goalContextQueryHandler
     );
     await resumeHandler.execute({ goalId });
 

@@ -16,8 +16,6 @@ import { IClock } from "../../../../../src/application/time-and-date/IClock";
 import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
-import { GoalContextViewMapper } from "../../../../../src/application/context/GoalContextViewMapper";
-import { GoalContext } from "../../../../../src/application/context/goals/get-context/GoalContext";
 
 describe("QualifyGoalCommandHandler", () => {
   let eventWriter: IGoalQualifiedEventWriter;
@@ -29,7 +27,6 @@ describe("QualifyGoalCommandHandler", () => {
   let claimPolicy: GoalClaimPolicy;
   let workerIdentityReader: IWorkerIdentityReader;
   let goalContextQueryHandler: GoalContextQueryHandler;
-  let goalContextViewMapper: GoalContextViewMapper;
   let handler: QualifyGoalCommandHandler;
 
   const testWorkerId = createWorkerId("test-worker-id");
@@ -81,9 +78,6 @@ describe("QualifyGoalCommandHandler", () => {
       execute: jest.fn(),
     } as any;
 
-    // Create goal context view mapper
-    goalContextViewMapper = new GoalContextViewMapper();
-
     handler = new QualifyGoalCommandHandler(
       eventWriter,
       eventReader,
@@ -91,8 +85,7 @@ describe("QualifyGoalCommandHandler", () => {
       eventBus,
       claimPolicy,
       workerIdentityReader,
-      goalContextQueryHandler,
-      goalContextViewMapper
+      goalContextQueryHandler
     );
   });
 
@@ -157,14 +150,16 @@ describe("QualifyGoalCommandHandler", () => {
     (eventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
 
     // Mock goal context query result
-    const mockContext: GoalContext = {
+    const mockContext = {
       goal: mockView,
-      components: [],
-      dependencies: [],
-      decisions: [],
-      invariants: [],
-      guidelines: [],
-      architecture: null,
+      context: {
+        components: [],
+        dependencies: [],
+        decisions: [],
+        invariants: [],
+        guidelines: [],
+        architecture: null,
+      },
     };
     (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
 
@@ -495,14 +490,16 @@ describe("QualifyGoalCommandHandler", () => {
     (eventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
 
     // Mock goal context query result
-    const mockContext: GoalContext = {
+    const mockContext = {
       goal: mockView,
-      components: [],
-      dependencies: [],
-      decisions: [],
-      invariants: [],
-      guidelines: [],
-      architecture: null,
+      context: {
+        components: [],
+        dependencies: [],
+        decisions: [],
+        invariants: [],
+        guidelines: [],
+        architecture: null,
+      },
     };
     (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
 
@@ -583,14 +580,16 @@ describe("QualifyGoalCommandHandler", () => {
     (eventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
 
     // Mock goal context query result
-    const mockContext: GoalContext = {
+    const mockContext = {
       goal: mockView,
-      components: [],
-      dependencies: [],
-      decisions: [],
-      invariants: [],
-      guidelines: [],
-      architecture: null,
+      context: {
+        components: [],
+        dependencies: [],
+        decisions: [],
+        invariants: [],
+        guidelines: [],
+        architecture: null,
+      },
     };
     (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
 

@@ -16,8 +16,6 @@ import { IClock } from "../../../../../src/application/time-and-date/IClock";
 import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
-import { GoalContextViewMapper } from "../../../../../src/application/context/GoalContextViewMapper";
-import { GoalContext } from "../../../../../src/application/context/goals/get-context/GoalContext";
 
 describe("CompleteGoalCommandHandler", () => {
   let eventWriter: IGoalCompletedEventWriter;
@@ -29,7 +27,6 @@ describe("CompleteGoalCommandHandler", () => {
   let claimPolicy: GoalClaimPolicy;
   let workerIdentityReader: IWorkerIdentityReader;
   let goalContextQueryHandler: GoalContextQueryHandler;
-  let goalContextViewMapper: GoalContextViewMapper;
   let handler: CompleteGoalCommandHandler;
 
   const testWorkerId = createWorkerId("test-worker-id");
@@ -91,26 +88,15 @@ describe("CompleteGoalCommandHandler", () => {
           updatedAt: "2025-01-01T00:00:00Z",
           progress: [],
         },
-        components: [],
-        dependencies: [],
-        decisions: [],
-        invariants: [],
-        guidelines: [],
-        architecture: null,
+        context: {
+          components: [],
+          dependencies: [],
+          decisions: [],
+          invariants: [],
+          guidelines: [],
+          architecture: null,
+        },
       }),
-    } as any;
-
-    // Mock goal context view mapper
-    goalContextViewMapper = {
-      map: jest.fn().mockImplementation((context: GoalContext) => ({
-        goal: context.goal,
-        components: context.components,
-        dependencies: context.dependencies,
-        decisions: context.decisions,
-        invariants: context.invariants,
-        guidelines: context.guidelines,
-        architecture: context.architecture,
-      })),
     } as any;
 
     handler = new CompleteGoalCommandHandler(
@@ -120,8 +106,7 @@ describe("CompleteGoalCommandHandler", () => {
       eventBus,
       claimPolicy,
       workerIdentityReader,
-      goalContextQueryHandler,
-      goalContextViewMapper
+      goalContextQueryHandler
     );
   });
 

@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { GoalContextView } from '../../../../../application/context/goals/get-context/GoalContextView.js';
+import { ContextualGoalView } from '../../../../../application/context/goals/get-context/ContextualGoalView.js';
 
 /**
  * Specialized builder for goal.show command output.
@@ -46,9 +46,10 @@ export class GoalShowOutputBuilder {
    * Build output for TTY (human-readable formatted text).
    * Renders complete goal details with all fields.
    */
-  build(context: GoalContextView): TerminalOutput {
+  build(contextualView: ContextualGoalView): TerminalOutput {
     this.builder.reset();
-    const goal = context.goal;
+    const goal = contextualView.goal;
+    const context = contextualView.context;
 
     let output = "\n=== Goal Details ===\n\n" +
                  `Goal ID:    ${goal.goalId}\n` +
@@ -182,9 +183,10 @@ export class GoalShowOutputBuilder {
    * Build output for non-TTY (structured JSON for programmatic consumers).
    * Renders complete goal context as structured object.
    */
-  buildStructuredOutput(context: GoalContextView): TerminalOutput {
+  buildStructuredOutput(contextualView: ContextualGoalView): TerminalOutput {
     this.builder.reset();
-    const goal = context.goal;
+    const goal = contextualView.goal;
+    const context = contextualView.context;
 
     this.builder.addData({
       goal: {

@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { GoalContextView } from '../../../../../application/context/goals/get-context/GoalContextView.js';
+import { ContextualGoalView } from '../../../../../application/context/goals/get-context/ContextualGoalView.js';
 
 /**
  * Specialized builder for goal.complete command output.
@@ -21,7 +21,7 @@ export class GoalCompleteOutputBuilder {
    * Renders learning capture prompt and optional next goal information.
    */
   buildSuccess(
-    contextView: GoalContextView,
+    contextView: ContextualGoalView,
     nextGoal?: { goalId: string; objective: string; status: string }
   ): TerminalOutput {
     this.builder.reset();

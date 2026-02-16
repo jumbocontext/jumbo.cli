@@ -1,5 +1,5 @@
 import { IGoalContextAssembler } from "../../application/context/IGoalContextAssembler.js";
-import { GoalContext } from "../../application/context/goals/get-context/GoalContext.js";
+import { ContextualGoalView } from "../../application/context/goals/get-context/ContextualGoalView.js";
 import { RelatedContext } from "../../application/context/goals/get-context/RelatedContext.js";
 import { IGoalReader } from "../../application/context/goals/start/IGoalReader.js";
 import { IRelationReader } from "../../application/context/relations/IRelationReader.js";
@@ -28,7 +28,7 @@ import { EntityType } from "../../domain/relations/Constants.js";
  *    - If relations exist, fetches only related entities
  * 4. Merge entity data with relation metadata into RelatedContext<T>
  *    - Default relation metadata used when no explicit relations exist
- * 5. Return complete GoalContext
+ * 5. Return complete ContextualGoalView (goal + context)
  *
  * Performance: ~7 queries worst case (goal + relations + 6 entity types)
  * All queries are indexed. Can optimize with caching if needed.
@@ -45,7 +45,7 @@ export class SqliteGoalContextAssembler implements IGoalContextAssembler {
     private readonly architectureReader: IArchitectureReader
   ) {}
 
-  async assembleContextForGoal(goalId: string): Promise<GoalContext | null> {
+  async assembleContextForGoal(goalId: string): Promise<ContextualGoalView | null> {
     // 1. Fetch goal
     const goal = await this.goalReader.findById(goalId);
     if (!goal) return null;
@@ -122,15 +122,17 @@ export class SqliteGoalContextAssembler implements IGoalContextAssembler {
       guidelineViews, EntityType.GUIDELINE, v => v.guidelineId, relationMap, hasNoRelations
     );
 
-    // 6. Return assembled context
+    // 6. Return assembled ContextualGoalView
     return {
       goal,
-      components,
-      dependencies,
-      decisions,
-      invariants,
-      guidelines,
-      architecture: architectureView
+      context: {
+        components,
+        dependencies,
+        decisions,
+        invariants,
+        guidelines,
+        architecture: architectureView
+      }
     };
   }
 

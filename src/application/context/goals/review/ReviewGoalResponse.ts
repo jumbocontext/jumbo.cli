@@ -1,4 +1,4 @@
-import { GoalContextView } from "../get-context/GoalContextView.js";
+import { ContextualGoalView } from "../get-context/ContextualGoalView.js";
 
 /**
  * ReviewGoalResponse
@@ -10,5 +10,5 @@ export interface ReviewGoalResponse {
   readonly goalId: string;
   readonly objective: string;
   readonly status: string;
-  readonly criteria: GoalContextView;
+  readonly criteria: ContextualGoalView;
 }

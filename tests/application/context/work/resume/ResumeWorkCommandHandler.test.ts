@@ -16,7 +16,6 @@ import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Const
 import { GoalPausedReasons } from "../../../../../src/domain/goals/GoalPausedReasons";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
-import { GoalContextViewMapper } from "../../../../../src/application/context/GoalContextViewMapper";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
 import { IGoalContextAssembler } from "../../../../../src/application/context/IGoalContextAssembler";
 import { ILogger } from "../../../../../src/application/logging/ILogger";
@@ -31,7 +30,6 @@ describe("ResumeWorkCommandHandler", () => {
   let claimPolicy: GoalClaimPolicy;
   let settingsReader: ISettingsReader;
   let sessionSummaryReader: ISessionSummaryReader;
-  let goalContextViewMapper: GoalContextViewMapper;
   let goalContextQueryHandler: GoalContextQueryHandler;
   let logger: ILogger;
   let handler: ResumeWorkCommandHandler;
@@ -120,17 +118,16 @@ describe("ResumeWorkCommandHandler", () => {
     const goalContextAssembler = {
       assembleContextForGoal: jest.fn().mockResolvedValue({
         goal: { goalId: "goal_123", objective: "Test goal", status: GoalStatus.PAUSED },
-        components: [],
-        dependencies: [],
-        decisions: [],
-        invariants: [],
-        guidelines: [],
-        architecture: null,
+        context: {
+          components: [],
+          dependencies: [],
+          decisions: [],
+          invariants: [],
+          guidelines: [],
+          architecture: null,
+        },
       }),
     } as unknown as IGoalContextAssembler;
-
-    // Create goal context view mapper
-    goalContextViewMapper = new GoalContextViewMapper();
 
     // Create goal context query handler
     goalContextQueryHandler = new GoalContextQueryHandler(goalContextAssembler);
@@ -146,7 +143,6 @@ describe("ResumeWorkCommandHandler", () => {
       settingsReader,
       logger,
       sessionSummaryReader,
-      goalContextViewMapper,
       goalContextQueryHandler
     );
   });

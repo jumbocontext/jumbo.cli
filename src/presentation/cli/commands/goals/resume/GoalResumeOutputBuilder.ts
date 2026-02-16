@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { GoalContextView } from '../../../../../application/context/goals/get-context/GoalContextView.js';
+import { ContextualGoalView } from '../../../../../application/context/goals/get-context/ContextualGoalView.js';
 
 /**
  * Specialized builder for goal.resume command output.
@@ -22,8 +22,9 @@ export class GoalResumeOutputBuilder {
    * @param context - The goal context view to render
    * @param transitionedFromPaused - Whether the goal was transitioned from paused status
    */
-  build(context: GoalContextView, transitionedFromPaused: boolean = false): TerminalOutput {
-    const goal = context.goal;
+  build(contextualView: ContextualGoalView, transitionedFromPaused: boolean = false): TerminalOutput {
+    const goal = contextualView.goal;
+    const context = contextualView.context;
 
     // Opening prompt: Goal Implementation Instructions
     this.builder.addPrompt(
@@ -57,7 +58,7 @@ export class GoalResumeOutputBuilder {
     }
 
     // Scope section (if scoped)
-    if (this.isScoped(context)) {
+    if (this.isScoped(contextualView)) {
       if (goal.scopeIn && goal.scopeIn.length > 0) {
         const scopeInText = goal.scopeIn.map(s => `- ${s}`).join('\n');
         this.builder.addPrompt(
@@ -183,10 +184,10 @@ export class GoalResumeOutputBuilder {
     return this.builder.build();
   }
 
-  private isScoped(context: GoalContextView): boolean {
+  private isScoped(contextualView: ContextualGoalView): boolean {
     return (
-      (Array.isArray(context.goal.scopeIn) && context.goal.scopeIn.length > 0) ||
-      (Array.isArray(context.goal.scopeOut) && context.goal.scopeOut.length > 0)
+      (Array.isArray(contextualView.goal.scopeIn) && contextualView.goal.scopeIn.length > 0) ||
+      (Array.isArray(contextualView.goal.scopeOut) && contextualView.goal.scopeOut.length > 0)
     );
   }
 }

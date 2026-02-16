@@ -8,14 +8,13 @@ import { GoalErrorMessages, formatErrorMessage } from "../../../../domain/goals/
 import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
 import { GoalContextQueryHandler } from "../../../context/GoalContextQueryHandler.js";
-import { GoalContextViewMapper } from "../../../context/GoalContextViewMapper.js";
-import { GoalContextView } from "../get-context/GoalContextView.js";
+import { ContextualGoalView } from "../get-context/ContextualGoalView.js";
 
 /**
  * Handles submission of a goal for QA review.
  * Loads aggregate from event history, calls domain logic, persists event.
  * Validates claim ownership before allowing submission.
- * Returns enriched goal context view for presentation layer.
+ * Returns ContextualGoalView for presentation layer.
  */
 export class SubmitGoalForReviewCommandHandler {
   constructor(
@@ -25,11 +24,10 @@ export class SubmitGoalForReviewCommandHandler {
     private readonly eventBus: IEventBus,
     private readonly claimPolicy: GoalClaimPolicy,
     private readonly workerIdentityReader: IWorkerIdentityReader,
-    private readonly goalContextQueryHandler: GoalContextQueryHandler,
-    private readonly goalContextViewMapper: GoalContextViewMapper
+    private readonly goalContextQueryHandler: GoalContextQueryHandler
   ) {}
 
-  async execute(command: SubmitGoalForReviewCommand): Promise<GoalContextView> {
+  async execute(command: SubmitGoalForReviewCommand): Promise<ContextualGoalView> {
     // 1. Check goal exists (query projection for fast check)
     const view = await this.goalReader.findById(command.goalId);
     if (!view) {
@@ -62,10 +60,7 @@ export class SubmitGoalForReviewCommandHandler {
     // 6. Publish event to bus (projections will update via subscriptions)
     await this.eventBus.publish(event);
 
-    // 7. Query goal context and map to presentation view
-    const context = await this.goalContextQueryHandler.execute(command.goalId);
-    const contextView = this.goalContextViewMapper.map(context);
-
-    return contextView;
+    // 7. Query goal context
+    return this.goalContextQueryHandler.execute(command.goalId);
   }
 }

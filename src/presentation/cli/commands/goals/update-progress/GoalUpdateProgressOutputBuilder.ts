@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { GoalContextView } from '../../../../../application/context/goals/get-context/GoalContextView.js';
+import { ContextualGoalView } from '../../../../../application/context/goals/get-context/ContextualGoalView.js';
 
 /**
  * Specialized builder for goal.update-progress command output.
@@ -20,7 +20,7 @@ export class GoalUpdateProgressOutputBuilder {
    * Build output for successful progress update.
    * Renders success message and full progress list.
    */
-  build(context: GoalContextView, addedTask: string): TerminalOutput {
+  build(context: ContextualGoalView, addedTask: string): TerminalOutput {
     const goal = context.goal;
     const progress = goal.progress || [];
 

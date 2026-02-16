@@ -253,7 +253,6 @@ import { RelationAddedEventHandler } from "../../application/context/relations/a
 import { RelationRemovedEventHandler } from "../../application/context/relations/remove/RelationRemovedEventHandler.js";
 // Context
 import { GoalContextQueryHandler } from "../../application/context/GoalContextQueryHandler.js";
-import { GoalContextViewMapper } from "../../application/context/GoalContextViewMapper.js";
 
 // Goal Controllers
 import { CompleteGoalController } from "../../application/context/goals/complete/CompleteGoalController.js";
@@ -522,8 +521,6 @@ export class HostBuilder {
     const goalContextQueryHandler = new GoalContextQueryHandler(
       goalContextAssembler
     );
-    const goalContextViewMapper = new GoalContextViewMapper();
-
     // Goal Controllers
     const completeGoalCommandHandler = new CompleteGoalCommandHandler(
       goalCompletedEventStore,
@@ -532,8 +529,7 @@ export class HostBuilder {
       eventBus,
       goalClaimPolicy,
       workerIdentityReader,
-      goalContextQueryHandler,
-      goalContextViewMapper
+      goalContextQueryHandler
     );
     const completeGoalController = new CompleteGoalController(
       completeGoalCommandHandler,
@@ -549,8 +545,7 @@ export class HostBuilder {
       eventBus,
       goalClaimPolicy,
       workerIdentityReader,
-      goalContextQueryHandler,
-      goalContextViewMapper
+      goalContextQueryHandler
     );
     const reviewGoalController = new ReviewGoalController(
       submitGoalForReviewCommandHandler,
@@ -566,8 +561,7 @@ export class HostBuilder {
       eventBus,
       goalClaimPolicy,
       workerIdentityReader,
-      goalContextQueryHandler,
-      goalContextViewMapper
+      goalContextQueryHandler
     );
     const qualifyGoalController = new QualifyGoalController(
       qualifyGoalCommandHandler,
@@ -597,7 +591,6 @@ export class HostBuilder {
       settingsReader,
       logger,
       sessionSummaryProjectionStore,
-      goalContextViewMapper,
       goalContextQueryHandler,
       projectContextReader,
       audienceContextReader,

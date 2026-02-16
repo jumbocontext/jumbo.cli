@@ -11,7 +11,6 @@ import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
-import { GoalContextViewMapper } from "../../../../../src/application/context/GoalContextViewMapper";
 
 describe("RefineGoalCommandHandler", () => {
   let eventWriter: IGoalRefineEventWriter;
@@ -19,7 +18,6 @@ describe("RefineGoalCommandHandler", () => {
   let goalReader: IGoalRefineReader;
   let eventBus: IEventBus;
   let goalContextQueryHandler: GoalContextQueryHandler;
-  let goalContextViewMapper: GoalContextViewMapper;
   let handler: RefineGoalCommandHandler;
 
   beforeEach(() => {
@@ -48,18 +46,15 @@ describe("RefineGoalCommandHandler", () => {
     goalContextQueryHandler = {
       execute: jest.fn().mockImplementation(async (goalId: string) => ({
         goal: await goalReader.findById(goalId),
-        components: [],
-        dependencies: [],
-        decisions: [],
-        invariants: [],
-        guidelines: [],
-        architecture: null,
+        context: {
+          components: [],
+          dependencies: [],
+          decisions: [],
+          invariants: [],
+          guidelines: [],
+          architecture: null,
+        },
       })),
-    } as any;
-
-    // Mock goal context view mapper
-    goalContextViewMapper = {
-      map: jest.fn().mockImplementation((context) => context),
     } as any;
 
     handler = new RefineGoalCommandHandler(
@@ -67,8 +62,7 @@ describe("RefineGoalCommandHandler", () => {
       eventReader,
       goalReader,
       eventBus,
-      goalContextQueryHandler,
-      goalContextViewMapper
+      goalContextQueryHandler
     );
   });
 
@@ -119,7 +113,6 @@ describe("RefineGoalCommandHandler", () => {
     // Assert
     expect(result.goal.goalId).toBe("goal_123");
     expect(goalContextQueryHandler.execute).toHaveBeenCalledWith("goal_123");
-    expect(goalContextViewMapper.map).toHaveBeenCalled();
 
     // Verify event was appended to event store
     expect(eventWriter.append).toHaveBeenCalledTimes(1);

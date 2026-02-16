@@ -22,8 +22,8 @@ export class GoalReviewOutputBuilder {
    */
   buildSuccess(response: ReviewGoalResponse): TerminalOutput {
     this.builder.reset();
-    const criteria = response.criteria;
-    const goal = criteria.goal;
+    const goal = response.criteria.goal;
+    const context = response.criteria.context;
 
     // Build complete review prompt as single section
     let output = "\n# Goal Review Instructions\n" +
@@ -67,16 +67,16 @@ export class GoalReviewOutputBuilder {
     }
 
     // Architecture
-    if (criteria.architecture) {
+    if (context.architecture) {
       output += "\n\n### Solution Architecture:\n" +
-                `High-level Description: ${criteria.architecture.description}\n\n` +
-                `Organization Style: ${criteria.architecture.organization}\n\n` +
+                `High-level Description: ${context.architecture.description}\n\n` +
+                `Organization Style: ${context.architecture.organization}\n\n` +
                 "\nVERIFY: Namespaces (directory structures) and file names introduced by you (the developer) maintain the solution's architectural organization style.\n" +
                 `INSTRUCTION: If any namespaces or file names do not maintain the solution's architectural organization style, then adjust them and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
 
-      if (criteria.architecture.patterns && criteria.architecture.patterns.length > 0) {
+      if (context.architecture.patterns && context.architecture.patterns.length > 0) {
         output += "\n\n#### Design Patterns:\n";
-        criteria.architecture.patterns.forEach((pattern: string) => {
+        context.architecture.patterns.forEach((pattern: string) => {
           output += `- ${pattern}\n`;
         });
         output += "\nVERIFY: You (the developer) leveraged these architectural patterns where applicable.\n" +
@@ -85,9 +85,9 @@ export class GoalReviewOutputBuilder {
                   `INSTRUCTION: If any architectural patterns were not leveraged or new patterns conflict with existing ones, then adjust the implementation and re-run 'jumbo goal review --goal-id ${response.goalId}' again.`;
       }
 
-      if (criteria.architecture.principles && criteria.architecture.principles.length > 0) {
+      if (context.architecture.principles && context.architecture.principles.length > 0) {
         output += "\n\n#### Principles:\n";
-        criteria.architecture.principles.forEach((principle: string) => {
+        context.architecture.principles.forEach((principle: string) => {
           output += `- ${principle}\n`;
         });
         output += "\nVERIFY: Artifacts created by you (the developer) directly reflect these principles.\n" +
@@ -96,9 +96,9 @@ export class GoalReviewOutputBuilder {
     }
 
     // Components
-    if (criteria.components.length > 0) {
+    if (context.components.length > 0) {
       output += "\n\n## Relevant Components:\n";
-      criteria.components.forEach((c) => {
+      context.components.forEach((c) => {
         output += `- ${c.entity.name}: ${c.entity.description}\n`;
       });
       output += "\nVERIFY: These components were considered in the implementation.\n" +
@@ -106,9 +106,9 @@ export class GoalReviewOutputBuilder {
     }
 
     // Dependencies
-    if (criteria.dependencies.length > 0) {
+    if (context.dependencies.length > 0) {
       output += "\n\n## Relevant Dependencies:\n";
-      criteria.dependencies.forEach((d) => {
+      context.dependencies.forEach((d) => {
         const purpose = d.entity.contract || d.entity.endpoint || 'Dependency relationship';
         output += `- ${d.entity.consumerId} → ${d.entity.providerId}: ${purpose}\n`;
       });
@@ -117,9 +117,9 @@ export class GoalReviewOutputBuilder {
     }
 
     // Decisions
-    if (criteria.decisions.length > 0) {
+    if (context.decisions.length > 0) {
       output += "\n\n## Relevant Decisions:\n";
-      criteria.decisions.forEach((d) => {
+      context.decisions.forEach((d) => {
         output += `- ${d.entity.title}: ${d.entity.rationale}\n`;
       });
       output += "\nNOTE: The solution may contain artifacts that reflect previous design decisions.\n" +
@@ -128,9 +128,9 @@ export class GoalReviewOutputBuilder {
     }
 
     // Invariants
-    if (criteria.invariants.length > 0) {
+    if (context.invariants.length > 0) {
       output += "\n\n## Invariants:\n";
-      criteria.invariants.forEach((inv) => {
+      context.invariants.forEach((inv) => {
         output += `- ${inv.entity.title}:\n  - ${inv.entity.description}\n`;
       });
       output += "\nVERIFY: The implementation adheres to ALL of these invariants.\n" +
@@ -138,9 +138,9 @@ export class GoalReviewOutputBuilder {
     }
 
     // Guidelines
-    if (criteria.guidelines.length > 0) {
+    if (context.guidelines.length > 0) {
       output += "\n\n## Guidelines:\n";
-      criteria.guidelines.forEach((g) => {
+      context.guidelines.forEach((g) => {
         output += `- ${g.entity.category}: ${g.entity.description}\n`;
       });
       output += "\nVERIFY: The implementation follows these guidelines.\n" +
@@ -177,9 +177,10 @@ export class GoalReviewOutputBuilder {
    * Helper to determine if goal is scoped
    */
   private isScoped(response: ReviewGoalResponse): boolean {
+    const goal = response.criteria.goal;
     return (
-      (Array.isArray(response.criteria.goal.scopeIn) && response.criteria.goal.scopeIn.length > 0) ||
-      (Array.isArray(response.criteria.goal.scopeOut) && response.criteria.goal.scopeOut.length > 0)
+      (Array.isArray(goal.scopeIn) && goal.scopeIn.length > 0) ||
+      (Array.isArray(goal.scopeOut) && goal.scopeOut.length > 0)
     );
   }
 }

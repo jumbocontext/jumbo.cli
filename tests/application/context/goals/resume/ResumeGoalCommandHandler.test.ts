@@ -17,8 +17,6 @@ import { IWorkerIdentityReader } from "../../../../../src/application/host/worke
 import { ISettingsReader } from "../../../../../src/application/settings/ISettingsReader";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/GoalContextQueryHandler";
-import { GoalContextViewMapper } from "../../../../../src/application/context/GoalContextViewMapper";
-import { GoalContextView } from "../../../../../src/application/context/goals/get-context/GoalContextView";
 
 describe("ResumeGoalCommandHandler", () => {
   let eventWriter: IGoalResumedEventWriter;
@@ -31,7 +29,6 @@ describe("ResumeGoalCommandHandler", () => {
   let workerIdentityReader: IWorkerIdentityReader;
   let settingsReader: ISettingsReader;
   let goalContextQueryHandler: GoalContextQueryHandler;
-  let goalContextViewMapper: GoalContextViewMapper;
   let handler: ResumeGoalCommandHandler;
 
   const testWorkerId = createWorkerId("test-worker-id");
@@ -90,25 +87,14 @@ describe("ResumeGoalCommandHandler", () => {
     goalContextQueryHandler = {
       execute: jest.fn().mockImplementation(async (goalId: string) => ({
         goal: await goalReader.findById(goalId),
-        components: [],
-        dependencies: [],
-        decisions: [],
-        invariants: [],
-        guidelines: [],
-        architecture: null,
-      })),
-    } as any;
-
-    // Mock goal context view mapper
-    goalContextViewMapper = {
-      map: jest.fn().mockImplementation((context) => ({
-        goal: context.goal,
-        components: context.components || [],
-        dependencies: context.dependencies || [],
-        decisions: context.decisions || [],
-        invariants: context.invariants || [],
-        guidelines: context.guidelines || [],
-        architecture: context.architecture || null,
+        context: {
+          components: [],
+          dependencies: [],
+          decisions: [],
+          invariants: [],
+          guidelines: [],
+          architecture: null,
+        },
       })),
     } as any;
 
@@ -120,8 +106,7 @@ describe("ResumeGoalCommandHandler", () => {
       claimPolicy,
       workerIdentityReader,
       settingsReader,
-      goalContextQueryHandler,
-      goalContextViewMapper
+      goalContextQueryHandler
     );
   });
 

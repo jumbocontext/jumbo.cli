@@ -22,8 +22,7 @@ import { GuidelineView } from "../../../../../application/context/guidelines/Gui
 import { DecisionView } from "../../../../../application/context/decisions/DecisionView.js";
 import { EntityType, EntityTypeValue, RelationStrengthValue } from "../../../../../domain/relations/Constants.js";
 import { GoalRefineOutputBuilder } from "./GoalRefineOutputBuilder.js";
-import { GoalContextViewMapper } from "../../../../../application/context/GoalContextViewMapper.js";
-import { GoalContextView } from "../../../../../application/context/goals/get-context/GoalContextView.js";
+import { ContextualGoalView } from "../../../../../application/context/goals/get-context/ContextualGoalView.js";
 
 /**
  * Command metadata for auto-registration
@@ -306,16 +305,14 @@ async function runInteractiveRelationFlow(
 async function approveGoal(
   goalId: string,
   container: IApplicationContainer
-): Promise<GoalContextView> {
-  // Create command handler with mapper
-  const goalContextViewMapper = new GoalContextViewMapper();
+): Promise<ContextualGoalView> {
+  // Create command handler
   const refineHandler = new RefineGoalCommandHandler(
     container.goalRefinedEventStore,
     container.goalRefinedEventStore,
     container.goalRefinedProjector,
     container.eventBus,
-    container.goalContextQueryHandler,
-    goalContextViewMapper
+    container.goalContextQueryHandler
   );
 
   const refineCommand: RefineGoalCommand = { goalId };
