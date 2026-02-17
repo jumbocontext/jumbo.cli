@@ -52,6 +52,9 @@ import { IGoalRemoveReader } from "../context/goals/remove/IGoalRemoveReader.js"
 import { IGoalContextAssembler } from "../context/goals/get/IGoalContextAssembler.js";
 import { IGoalStatusReader } from "../context/goals/IGoalStatusReader.js";
 import { GoalContextQueryHandler } from "../context/goals/get/GoalContextQueryHandler.js";
+// Session Controllers
+import { SessionStartController } from "../context/sessions/start/SessionStartController.js";
+
 // Goal Controllers
 import { CompleteGoalController } from "../context/goals/complete/CompleteGoalController.js";
 import { ReviewGoalController } from "../context/goals/review/ReviewGoalController.js";
@@ -302,6 +305,9 @@ export interface IApplicationContainer {
   goalContextAssembler: IGoalContextAssembler;
   goalContextQueryHandler: GoalContextQueryHandler;
   goalStatusReader: IGoalStatusReader;
+  // Session Controllers
+  sessionStartController: SessionStartController;
+
   // Goal Controllers
   completeGoalController: CompleteGoalController;
   reviewGoalController: ReviewGoalController;

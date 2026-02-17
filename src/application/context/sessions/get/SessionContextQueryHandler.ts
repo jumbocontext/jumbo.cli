@@ -6,7 +6,6 @@ import { GoalStatus } from "../../../../domain/goals/Constants.js";
 import { IProjectContextReader } from "../../project/query/IProjectContextReader.js";
 import { IAudienceContextReader } from "../../audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../audience-pains/query/IAudiencePainContextReader.js";
-import { UnprimedBrownfieldQualifier } from "../../../../application/UnprimedBrownfieldQualifier.js";
 
 /**
  * SessionContextQueryHandler - Builds the reusable base session context
@@ -14,7 +13,7 @@ import { UnprimedBrownfieldQualifier } from "../../../../application/UnprimedBro
  * Assembles session orientation data from multiple view readers using the multi-query pattern.
  * All queries run in parallel via Promise.all for optimal performance.
  * Returns a ContextualSessionView pairing the active session with its context.
- * Used by event-specific enrichers (SessionStartContextEnricher, etc.)
+ * Used by controllers (SessionStartController) and enrichers (SessionResumeContextEnricher)
  * that compose this base view with event-specific enrichment.
  */
 export class SessionContextQueryHandler {
@@ -24,8 +23,7 @@ export class SessionContextQueryHandler {
     private readonly decisionViewReader: IDecisionViewReader,
     private readonly projectContextReader?: IProjectContextReader,
     private readonly audienceContextReader?: IAudienceContextReader,
-    private readonly audiencePainContextReader?: IAudiencePainContextReader,
-    private readonly unprimedBrownfieldQualifier?: UnprimedBrownfieldQualifier
+    private readonly audiencePainContextReader?: IAudiencePainContextReader
   ) {}
 
   /**
@@ -36,7 +34,6 @@ export class SessionContextQueryHandler {
    * 2. Goal categories (active, paused, planned)
    * 3. Recent decisions
    * 4. Project context (name, purpose, audiences, pains)
-   * 5. Solution context presence
    *
    * @returns ContextualSessionView with session and assembled context
    */
@@ -55,7 +52,6 @@ export class SessionContextQueryHandler {
       project,
       audiences,
       audiencePains,
-      isUnprimed,
     ] = await Promise.all([
       this.sessionViewReader.findActive(),
       this.goalStatusReader.findByStatus(GoalStatus.DOING),
@@ -69,7 +65,6 @@ export class SessionContextQueryHandler {
       this.projectContextReader?.getProject() ?? Promise.resolve(null),
       this.audienceContextReader?.findAllActive() ?? Promise.resolve([]),
       this.audiencePainContextReader?.findAllActive() ?? Promise.resolve([]),
-      this.unprimedBrownfieldQualifier?.isUnprimed() ?? Promise.resolve(false),
     ]);
 
     const projectContext = project
@@ -92,7 +87,6 @@ export class SessionContextQueryHandler {
         pausedGoals,
         plannedGoals,
         recentDecisions,
-        hasSolutionContext: !isUnprimed,
       },
     };
   }

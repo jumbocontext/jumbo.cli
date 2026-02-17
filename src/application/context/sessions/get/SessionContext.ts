@@ -6,7 +6,7 @@ import { ContextualProjectView } from "../../project/get/ContextualProjectView.j
  * SessionContext - Pure context container for session orientation.
  *
  * Holds only the contextual data that provides orientation for a session:
- * project context, goals by category, recent decisions, and solution context presence.
+ * project context, goals by category, and recent decisions.
  *
  * Does NOT contain the session itself. The composed return type
  * ContextualSessionView pairs a SessionView with its SessionContext.
@@ -41,9 +41,4 @@ export interface SessionContext {
    * Recent active decisions for context orientation.
    */
   readonly recentDecisions: DecisionView[];
-
-  /**
-   * Indicates whether the project has any solution context recorded in Jumbo.
-   */
-  readonly hasSolutionContext: boolean;
 }

@@ -18,7 +18,6 @@ describe("SessionResumeContextEnricher", () => {
         pausedGoals: [],
         plannedGoals: [],
         recentDecisions: [],
-        hasSolutionContext: true,
         ...overrides,
       },
     };
@@ -33,7 +32,6 @@ describe("SessionResumeContextEnricher", () => {
 
   it("should preserve session and context fields", () => {
     const view = createBaseView({
-      hasSolutionContext: true,
       activeGoals: [{ goalId: "g1" } as GoalView],
       plannedGoals: [{ goalId: "g2" } as GoalView],
     });
@@ -45,7 +43,6 @@ describe("SessionResumeContextEnricher", () => {
     expect(result.context.activeGoals).toBe(view.context.activeGoals);
     expect(result.context.pausedGoals).toBe(view.context.pausedGoals);
     expect(result.context.plannedGoals).toBe(view.context.plannedGoals);
-    expect(result.context.hasSolutionContext).toBe(view.context.hasSolutionContext);
   });
 
   it("should include resume-continuation-prompt instruction", () => {

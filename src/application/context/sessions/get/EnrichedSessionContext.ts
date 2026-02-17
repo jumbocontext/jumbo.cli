@@ -4,7 +4,7 @@ import { SessionContext } from "./SessionContext.js";
 /**
  * EnrichedSessionContext - Enriched session context with event-specific instructions and scope.
  *
- * Produced by event-specific enrichers (SessionStartContextEnricher, SessionResumeContextEnricher)
+ * Produced by controllers (SessionStartController) and enrichers (SessionResumeContextEnricher)
  * that compose a ContextualSessionView with targeted LLM instruction signals and scope identification.
  *
  * Extends the ContextualSessionView shape with:

@@ -260,6 +260,11 @@ import { QualifyGoalController } from "../../application/context/goals/qualify/Q
 import { QualifyGoalCommandHandler } from "../../application/context/goals/qualify/QualifyGoalCommandHandler.js";
 import { FsGoalQualifiedEventStore } from "../context/goals/qualify/FsGoalQualifiedEventStore.js";
 
+// Session Controllers
+import { SessionStartController } from "../../application/context/sessions/start/SessionStartController.js";
+import { SessionContextQueryHandler } from "../../application/context/sessions/get/SessionContextQueryHandler.js";
+import { StartSessionCommandHandler } from "../../application/context/sessions/start/StartSessionCommandHandler.js";
+
 // Work Command Handlers
 import { PauseWorkCommandHandler } from "../../application/context/work/pause/PauseWorkCommandHandler.js";
 import { ResumeWorkCommandHandler } from "../../application/context/work/resume/ResumeWorkCommandHandler.js";
@@ -514,6 +519,25 @@ export class HostBuilder {
     const goalContextQueryHandler = new GoalContextQueryHandler(
       goalContextAssembler
     );
+    // Session Controllers
+    const sessionContextQueryHandler = new SessionContextQueryHandler(
+      sessionViewReader,
+      goalStatusReader,
+      decisionViewReader,
+      projectContextReader,
+      audienceContextReader,
+      audiencePainContextReader
+    );
+    const startSessionCommandHandler = new StartSessionCommandHandler(
+      sessionStartedEventStore,
+      eventBus
+    );
+    const sessionStartController = new SessionStartController(
+      sessionContextQueryHandler,
+      startSessionCommandHandler,
+      unprimedBrownfieldQualifier
+    );
+
     // Goal Controllers
     const completeGoalCommandHandler = new CompleteGoalCommandHandler(
       goalCompletedEventStore,
@@ -588,8 +612,7 @@ export class HostBuilder {
       goalContextQueryHandler,
       projectContextReader,
       audienceContextReader,
-      audiencePainContextReader,
-      unprimedBrownfieldQualifier
+      audiencePainContextReader
     );
 
     // Project Initialization Protocol
@@ -820,6 +843,8 @@ export class HostBuilder {
       goalContextAssembler,
       goalContextQueryHandler,
       goalStatusReader,
+      // Session Controllers
+      sessionStartController,
       // Goal Controllers
       completeGoalController,
       reviewGoalController,

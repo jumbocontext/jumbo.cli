@@ -1,6 +1,6 @@
 /**
  * Port interface for reading audience pains in query contexts.
- * Used by SessionStartContextQueryHandler for session orientation.
+ * Used by SessionContextQueryHandler for session orientation.
  */
 
 import { AudiencePainView } from "../AudiencePainView.js";

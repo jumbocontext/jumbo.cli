@@ -5,13 +5,10 @@
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
-import { StartSessionCommandHandler } from "../../../../../application/context/sessions/start/StartSessionCommandHandler.js";
-import { StartSessionCommand } from "../../../../../application/context/sessions/start/StartSessionCommand.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { SessionStartContextQueryHandler } from "../../../../../application/context/sessions/get/SessionStartContextQueryHandler.js";
 import { SessionStartTextRenderer } from "./SessionStartTextRenderer.js";
-import { SessionStartContext } from "../../../../../application/context/sessions/get/SessionStartContext.js";
+import { EnrichedSessionContext } from "../../../../../application/context/sessions/get/EnrichedSessionContext.js";
 
 /**
  * Command metadata for auto-registration
@@ -34,11 +31,10 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  *
  * Responsibilities (presentation layer only):
- * - Call SessionStartContextQueryHandler to get assembled context data
- * - Render the data for display
- * - Execute command and render result
+ * - Call SessionStartController for orchestrated session start
+ * - Render the result for display
  *
- * Data assembly is delegated to SessionStartContextQueryHandler in the application layer.
+ * Orchestration is delegated to SessionStartController in the application layer.
  */
 export async function sessionStart(
   options: Record<string, never>,
@@ -54,22 +50,13 @@ export async function sessionStart(
       renderer.info("Loading orientation context...\n");
     }
 
-    // 1. QUERY: Get assembled context from application layer
-    const getSessionStartContext = new SessionStartContextQueryHandler(
-      container.sessionViewReader,
-      container.goalStatusReader,
-      container.decisionViewReader,
-      container.projectContextReader,
-      container.audienceContextReader,
-      container.audiencePainContextReader,
-      container.unprimedBrownfieldQualifier
-    );
-    const sessionContext = await getSessionStartContext.execute();
+    // 1. CONTROLLER: Orchestrate session start
+    const response = await container.sessionStartController.handle({});
 
-    // 2. RENDER: Display context
+    // 2. RENDER: Display context and result
     if (isTextOutput) {
       const textRenderer = new SessionStartTextRenderer();
-      const textOutput = textRenderer.render(sessionContext);
+      const textOutput = textRenderer.render(response.context);
 
       for (const block of textOutput.blocks) {
         if (block) {
@@ -79,24 +66,12 @@ export async function sessionStart(
 
       renderer.info("---\n");
       renderer.info(textOutput.llmInstruction);
-    }
 
-    // 3. COMMAND: Execute session start
-    const commandHandler = new StartSessionCommandHandler(
-      container.sessionStartedEventStore,
-      container.eventBus
-    );
-
-    const command: StartSessionCommand = {};
-    const result = await commandHandler.execute(command);
-
-    // 4. OUTPUT: Render success
-    if (isTextOutput) {
       renderer.success("Session started", {
-        sessionId: result.sessionId,
+        sessionId: response.sessionId,
       });
     } else {
-      renderer.data(buildStructuredSessionStartOutput(sessionContext, result.sessionId));
+      renderer.data(buildStructuredSessionStartOutput(response.context, response.sessionId));
     }
   } catch (error) {
     renderer.error("Failed to start session", error instanceof Error ? error : String(error));
@@ -106,7 +81,7 @@ export async function sessionStart(
 }
 
 function buildStructuredSessionStartOutput(
-  sessionContext: SessionStartContext,
+  sessionContext: EnrichedSessionContext,
   sessionId: string
 ) {
   const textRenderer = new SessionStartTextRenderer();

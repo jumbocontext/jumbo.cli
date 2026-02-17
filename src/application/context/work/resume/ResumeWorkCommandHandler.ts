@@ -19,7 +19,6 @@ import { IDecisionViewReader } from "../../decisions/get/IDecisionViewReader.js"
 import { IProjectContextReader } from "../../project/query/IProjectContextReader.js";
 import { IAudienceContextReader } from "../../audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../audience-pains/query/IAudiencePainContextReader.js";
-import { UnprimedBrownfieldQualifier } from "../../../UnprimedBrownfieldQualifier.js";
 import { GoalContextQueryHandler } from "../../goals/get/GoalContextQueryHandler.js";
 import { ILogger } from "../../../logging/ILogger.js";
 
@@ -57,8 +56,7 @@ export class ResumeWorkCommandHandler {
     goalContextQueryHandler: GoalContextQueryHandler,
     projectContextReader?: IProjectContextReader,
     audienceContextReader?: IAudienceContextReader,
-    audiencePainContextReader?: IAudiencePainContextReader,
-    unprimedBrownfieldQualifier?: UnprimedBrownfieldQualifier
+    audiencePainContextReader?: IAudiencePainContextReader
   ) {
     this.sessionContextQueryHandler = new SessionContextQueryHandler(
       sessionViewReader,
@@ -66,8 +64,7 @@ export class ResumeWorkCommandHandler {
       decisionViewReader,
       projectContextReader,
       audienceContextReader,
-      audiencePainContextReader,
-      unprimedBrownfieldQualifier
+      audiencePainContextReader
     );
     this.enricher = new SessionResumeContextEnricher();
     this.goalContextQueryHandler = goalContextQueryHandler;

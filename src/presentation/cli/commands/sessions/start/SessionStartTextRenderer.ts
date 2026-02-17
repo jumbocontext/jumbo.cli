@@ -1,6 +1,6 @@
 import { GoalView } from "../../../../../application/context/goals/GoalView.js";
 import { DecisionView } from "../../../../../application/context/decisions/DecisionView.js";
-import { SessionStartContext } from "../../../../../application/context/sessions/get/SessionStartContext.js";
+import { EnrichedSessionContext } from "../../../../../application/context/sessions/get/EnrichedSessionContext.js";
 import { ContextualProjectView } from "../../../../../application/context/project/get/ContextualProjectView.js";
 import { YamlFormatter } from "../../../formatting/YamlFormatter.js";
 
@@ -40,7 +40,7 @@ export class SessionStartTextRenderer {
     this.yamlFormatter = new YamlFormatter();
   }
 
-  render(context: SessionStartContext): SessionStartTextRenderResult {
+  render(context: EnrichedSessionContext): SessionStartTextRenderResult {
     const blocks: string[] = [];
 
     const projectContextYaml = this.renderProjectContext(context.context.projectContext);
@@ -61,7 +61,7 @@ export class SessionStartTextRenderer {
     };
   }
 
-  buildStructuredContext(context: SessionStartContext): SessionStartStructuredContext {
+  buildStructuredContext(context: EnrichedSessionContext): SessionStartStructuredContext {
     const sessionContextResult = this.buildSessionContextData(context);
 
     return {
@@ -76,7 +76,7 @@ export class SessionStartTextRenderer {
     };
   }
 
-  renderSessionSummary(context: SessionStartContext): string {
+  renderSessionSummary(context: EnrichedSessionContext): string {
     const sessionContextResult = this.buildSessionContextData(context);
 
     let output = this.yamlFormatter.toYaml(sessionContextResult.data);
@@ -201,9 +201,9 @@ export class SessionStartTextRenderer {
   }
 
   private buildSessionContextData(
-    context: SessionStartContext
+    context: EnrichedSessionContext
   ): { data: Record<string, unknown>; llmInstruction?: string } {
-    if (!context.context.hasSolutionContext) {
+    if (context.instructions.includes("brownfield-onboarding")) {
       return {
         data: {
           sessionContext: {

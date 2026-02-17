@@ -6,7 +6,6 @@ import { IDecisionViewReader } from "../../../../../src/application/context/deci
 import { IProjectContextReader } from "../../../../../src/application/context/project/query/IProjectContextReader.js";
 import { IAudienceContextReader } from "../../../../../src/application/context/audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../../../../src/application/context/audience-pains/query/IAudiencePainContextReader.js";
-import { UnprimedBrownfieldQualifier } from "../../../../../src/application/UnprimedBrownfieldQualifier.js";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants.js";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
 import { SessionView } from "../../../../../src/application/context/sessions/SessionView.js";
@@ -18,7 +17,6 @@ describe("SessionContextQueryHandler", () => {
   let projectContextReader: jest.Mocked<IProjectContextReader>;
   let audienceContextReader: jest.Mocked<IAudienceContextReader>;
   let audiencePainContextReader: jest.Mocked<IAudiencePainContextReader>;
-  let unprimedBrownfieldQualifier: jest.Mocked<UnprimedBrownfieldQualifier>;
 
   beforeEach(() => {
     sessionViewReader = {
@@ -46,10 +44,6 @@ describe("SessionContextQueryHandler", () => {
     audiencePainContextReader = {
       findAllActive: jest.fn().mockResolvedValue([]),
     } as unknown as jest.Mocked<IAudiencePainContextReader>;
-
-    unprimedBrownfieldQualifier = {
-      isUnprimed: jest.fn().mockResolvedValue(false),
-    } as unknown as jest.Mocked<UnprimedBrownfieldQualifier>;
   });
 
   function createHandler(): SessionContextQueryHandler {
@@ -59,8 +53,7 @@ describe("SessionContextQueryHandler", () => {
       decisionViewReader,
       projectContextReader,
       audienceContextReader,
-      audiencePainContextReader,
-      unprimedBrownfieldQualifier
+      audiencePainContextReader
     );
   }
 
@@ -203,24 +196,6 @@ describe("SessionContextQueryHandler", () => {
     expect(result.context.recentDecisions).toHaveLength(10);
   });
 
-  it("should set hasSolutionContext to true when project is primed", async () => {
-    unprimedBrownfieldQualifier.isUnprimed.mockResolvedValue(false);
-
-    const handler = createHandler();
-    const result = await handler.execute();
-
-    expect(result.context.hasSolutionContext).toBe(true);
-  });
-
-  it("should set hasSolutionContext to false when project is unprimed", async () => {
-    unprimedBrownfieldQualifier.isUnprimed.mockResolvedValue(true);
-
-    const handler = createHandler();
-    const result = await handler.execute();
-
-    expect(result.context.hasSolutionContext).toBe(false);
-  });
-
   it("should handle missing optional readers gracefully", async () => {
     const handler = new SessionContextQueryHandler(
       sessionViewReader,
@@ -231,6 +206,5 @@ describe("SessionContextQueryHandler", () => {
     const result = await handler.execute();
 
     expect(result.context.projectContext).toBeNull();
-    expect(result.context.hasSolutionContext).toBe(true);
   });
 });

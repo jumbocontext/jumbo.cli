@@ -37,7 +37,8 @@ describe("SessionStartTextRenderer", () => {
 
   function createContext(
     contextOverrides: Partial<SessionContext> = {},
-    session: SessionView | null = defaultSession
+    session: SessionView | null = defaultSession,
+    instructions: string[] = []
   ): EnrichedSessionContext {
     return {
       session,
@@ -47,10 +48,9 @@ describe("SessionStartTextRenderer", () => {
         pausedGoals: [],
         plannedGoals: [],
         recentDecisions: [],
-        hasSolutionContext: true,
         ...contextOverrides,
       },
-      instructions: [],
+      instructions,
       scope: "session-start",
     };
   }
@@ -174,8 +174,8 @@ describe("SessionStartTextRenderer", () => {
   });
 
   describe("brownfield project handling", () => {
-    it("should return brownfield instructions when no solution context exists", () => {
-      const context = createContext({ hasSolutionContext: false });
+    it("should return brownfield instructions when brownfield-onboarding instruction is present", () => {
+      const context = createContext({}, defaultSession, ["brownfield-onboarding"]);
 
       const result = renderer.renderSessionSummary(context);
 
