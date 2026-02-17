@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { DeprecateComponentCommandHandler } from "../../../../../application/context/components/deprecate/DeprecateComponentCommandHandler.js";
-import { DeprecateComponentCommand } from "../../../../../application/context/components/deprecate/DeprecateComponentCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -55,37 +53,22 @@ export async function componentDeprecate(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new DeprecateComponentCommandHandler(
-      container.componentDeprecatedEventStore,
-      container.eventBus,
-      container.componentDeprecatedProjector
-    );
-
-    // 2. Execute command
-    const command: DeprecateComponentCommand = {
+    const response = await container.deprecateComponentController.handle({
       componentId: options.componentId,
-      reason: options.reason
-    };
+      reason: options.reason,
+    });
 
-    await commandHandler.execute(command);
-
-    // 3. Fetch updated view for display
-    const view = await container.componentDeprecatedProjector.findById(options.componentId);
-
-    // Success output
     const data: Record<string, string | number> = {
-      componentId: options.componentId,
-      name: view?.name || 'Unknown',
-      status: view?.status || 'deprecated'
+      componentId: response.componentId,
+      name: response.name,
+      status: response.status
     };
 
-    if (options.reason) data.reason = options.reason;
+    if (response.reason) data.reason = response.reason;
 
-    renderer.success(`Component '${view?.name || options.componentId}' marked as deprecated`, data);
+    renderer.success(`Component '${response.name}' marked as deprecated`, data);
   } catch (error) {
     renderer.error("Failed to deprecate component", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

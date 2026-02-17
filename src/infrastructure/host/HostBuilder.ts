@@ -299,6 +299,12 @@ import { LocalUpdateComponentGateway } from "../../application/context/component
 import { UpdateComponentController } from "../../application/context/components/update/UpdateComponentController.js";
 import { LocalShowComponentGateway } from "../../application/context/components/show/LocalShowComponentGateway.js";
 import { ShowComponentController } from "../../application/context/components/show/ShowComponentController.js";
+import { DeprecateComponentCommandHandler } from "../../application/context/components/deprecate/DeprecateComponentCommandHandler.js";
+import { LocalDeprecateComponentGateway } from "../../application/context/components/deprecate/LocalDeprecateComponentGateway.js";
+import { DeprecateComponentController } from "../../application/context/components/deprecate/DeprecateComponentController.js";
+import { RemoveComponentCommandHandler } from "../../application/context/components/remove/RemoveComponentCommandHandler.js";
+import { LocalRemoveComponentGateway } from "../../application/context/components/remove/LocalRemoveComponentGateway.js";
+import { RemoveComponentController } from "../../application/context/components/remove/RemoveComponentController.js";
 
 // Audience Controllers
 import { AddAudienceCommandHandler } from "../../application/context/audiences/add/AddAudienceCommandHandler.js";
@@ -715,6 +721,18 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const showComponentController = new ShowComponentController(
       showComponentGateway
     );
+    const deprecateComponentCommandHandler = new DeprecateComponentCommandHandler(
+      componentDeprecatedEventStore,
+      eventBus,
+      componentDeprecatedProjector
+    );
+    const deprecateComponentGateway = new LocalDeprecateComponentGateway(
+      deprecateComponentCommandHandler,
+      componentDeprecatedProjector
+    );
+    const deprecateComponentController = new DeprecateComponentController(
+      deprecateComponentGateway
+    );
 
     // Audience Pain Controllers
     const addAudiencePainCommandHandler = new AddAudiencePainCommandHandler(
@@ -1034,6 +1052,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       getComponentsController,
       updateComponentController,
       showComponentController,
+      deprecateComponentController,
 
       // Solution Category
       // Architecture Event Stores - decomposed by use case
@@ -1042,7 +1061,6 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       // Component Event Stores - decomposed by use case
       componentAddedEventStore,
       componentUpdatedEventStore,
-      componentDeprecatedEventStore,
       componentRemovedEventStore,
       // Dependency Event Stores - decomposed by use case
       dependencyAddedEventStore,

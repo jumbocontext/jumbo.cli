@@ -9,8 +9,6 @@ import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { ComponentShowOutputBuilder } from "./ComponentShowOutputBuilder.js";
-import { ShowComponentQueryHandler } from "../../../../../application/context/components/show/ShowComponentQueryHandler.js";
-import { ShowComponentQuery } from "../../../../../application/context/components/show/ShowComponentQuery.js";
 
 /**
  * Command metadata for auto-registration
@@ -58,18 +56,10 @@ export async function componentShow(
       process.exit(1);
     }
 
-    // Create query handler with dependencies
-    const queryHandler = new ShowComponentQueryHandler(
-      container.componentReader,
-      container.relationViewReader
-    );
-
-    // Execute query
-    const query: ShowComponentQuery = {
+    const result = await container.showComponentController.handle({
       componentId: options.id,
       name: options.name,
-    };
-    const result = await queryHandler.execute(query);
+    });
 
     // Build and render output using builder pattern
     const outputBuilder = new ComponentShowOutputBuilder();

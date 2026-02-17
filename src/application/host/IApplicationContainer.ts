@@ -104,6 +104,7 @@ import { IComponentAddReader } from "../context/components/add/IComponentAddRead
 import { IComponentUpdatedProjector } from "../context/components/update/IComponentUpdatedProjector.js";
 import { IComponentUpdateReader } from "../context/components/update/IComponentUpdateReader.js";
 import { DeprecateComponentController } from "../context/components/deprecate/DeprecateComponentController.js";
+import { RemoveComponentController } from "../context/components/remove/RemoveComponentController.js";
 import { ShowComponentController } from "../context/components/show/ShowComponentController.js";
 import { IComponentRemovedProjector } from "../context/components/remove/IComponentRemovedProjector.js";
 import { IComponentRemoveReader } from "../context/components/remove/IComponentRemoveReader.js";
@@ -363,6 +364,8 @@ export interface IApplicationContainer {
   componentAddedEventStore: IComponentAddedEventWriter;
   componentUpdatedEventStore: IComponentUpdatedEventWriter;
   deprecateComponentController: DeprecateComponentController;
+  removeComponentController: RemoveComponentController;
+  showComponentController: ShowComponentController;
   componentRemovedEventStore: IComponentRemovedEventWriter;
   // Dependency Event Stores - decomposed by use case
   dependencyAddedEventStore: IDependencyAddedEventWriter;
