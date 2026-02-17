@@ -11,8 +11,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { GetSessionsQueryHandler } from "../../../../../application/context/sessions/get/GetSessionsQueryHandler.js";
 import { SessionStatusFilter } from "../../../../../application/context/sessions/get/ISessionViewReader.js";
+import { GetSessionsRequest } from "../../../../../application/context/sessions/get/GetSessionsRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { SessionView } from "../../../../../application/context/sessions/SessionView.js";
 
@@ -98,13 +98,8 @@ export async function sessionsList(
       process.exit(1);
     }
 
-    // Create query handler using container dependencies
-    const queryHandler = new GetSessionsQueryHandler(
-      container.sessionViewReader
-    );
-
-    // Execute query
-    const sessions = await queryHandler.execute(statusFilter);
+    const request: GetSessionsRequest = { status: statusFilter };
+    const { sessions } = await container.getSessionsController.handle(request);
 
     if (sessions.length === 0) {
       const filterMsg = statusFilter === "all" ? "" : ` with status '${statusFilter}'`;

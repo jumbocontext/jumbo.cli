@@ -54,6 +54,7 @@ import { IGoalStatusReader } from "../context/goals/IGoalStatusReader.js";
 import { GoalContextQueryHandler } from "../context/goals/get/GoalContextQueryHandler.js";
 // Session Controllers
 import { SessionStartController } from "../context/sessions/start/SessionStartController.js";
+import { GetSessionsController } from "../context/sessions/get/GetSessionsController.js";
 
 // Goal Controllers
 import { CompleteGoalController } from "../context/goals/complete/CompleteGoalController.js";
@@ -307,6 +308,7 @@ export interface IApplicationContainer {
   goalStatusReader: IGoalStatusReader;
   // Session Controllers
   sessionStartController: SessionStartController;
+  getSessionsController: GetSessionsController;
 
   // Goal Controllers
   completeGoalController: CompleteGoalController;

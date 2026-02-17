@@ -262,6 +262,8 @@ import { FsGoalQualifiedEventStore } from "../context/goals/qualify/FsGoalQualif
 
 // Session Controllers
 import { SessionStartController } from "../../application/context/sessions/start/SessionStartController.js";
+import { GetSessionsController } from "../../application/context/sessions/get/GetSessionsController.js";
+import { LocalGetSessionsGateway } from "../context/sessions/get/LocalGetSessionsGateway.js";
 import { SessionContextQueryHandler } from "../../application/context/sessions/get/SessionContextQueryHandler.js";
 import { StartSessionCommandHandler } from "../../application/context/sessions/start/StartSessionCommandHandler.js";
 
@@ -537,6 +539,10 @@ export class HostBuilder {
       sessionContextQueryHandler,
       startSessionCommandHandler,
       unprimedBrownfieldQualifier
+    );
+    const getSessionsGateway = new LocalGetSessionsGateway(sessionViewReader);
+    const getSessionsController = new GetSessionsController(
+      getSessionsGateway
     );
 
     // Goal Controllers
@@ -846,6 +852,7 @@ export class HostBuilder {
       goalStatusReader,
       // Session Controllers
       sessionStartController,
+      getSessionsController,
       // Goal Controllers
       completeGoalController,
       reviewGoalController,
