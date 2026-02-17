@@ -103,7 +103,7 @@ export const commands: RegisteredCommand[] = [
     metadata: audiencePainsListMeta,
     handler: audiencePainsList
   },
-{
+  {
     path: 'audiencePain update',
     metadata: audiencePainUpdateMeta,
     handler: audiencePainUpdate
