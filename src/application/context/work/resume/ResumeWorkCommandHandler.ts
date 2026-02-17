@@ -13,7 +13,7 @@ import { GoalStatus } from "../../../../domain/goals/Constants.js";
 import { GoalView } from "../../goals/GoalView.js";
 import { SessionContextQueryHandler } from "../../sessions/get/SessionContextQueryHandler.js";
 import { SessionResumeContextEnricher } from "../../sessions/get/SessionResumeContextEnricher.js";
-import { SessionContextView } from "../../sessions/get/SessionContext.js";
+import { EnrichedSessionContext } from "../../sessions/get/EnrichedSessionContext.js";
 import { ISessionViewReader } from "../../sessions/get/ISessionViewReader.js";
 import { IDecisionViewReader } from "../../decisions/get/IDecisionViewReader.js";
 import { IProjectContextReader } from "../../project/query/IProjectContextReader.js";
@@ -29,7 +29,7 @@ import { ILogger } from "../../../logging/ILogger.js";
 export interface ResumeWorkResult {
   readonly goalId: string;
   readonly objective: string;
-  readonly sessionContext: SessionContextView;
+  readonly sessionContext: EnrichedSessionContext;
 }
 
 /**

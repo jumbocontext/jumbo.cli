@@ -10,9 +10,11 @@
 
 import { describe, it, expect, beforeEach } from "@jest/globals";
 import { SessionStartTextRenderer } from "../../../../../../src/presentation/cli/commands/sessions/start/SessionStartTextRenderer.js";
-import { SessionContext, SessionContextView } from "../../../../../../src/application/context/sessions/get/SessionContext.js";
+import { EnrichedSessionContext } from "../../../../../../src/application/context/sessions/get/EnrichedSessionContext.js";
+import { SessionContext } from "../../../../../../src/application/context/sessions/get/SessionContext.js";
 import { GoalView } from "../../../../../../src/application/context/goals/GoalView.js";
 import { DecisionView } from "../../../../../../src/application/context/decisions/DecisionView.js";
+import { SessionView } from "../../../../../../src/application/context/sessions/SessionView.js";
 
 describe("SessionStartTextRenderer", () => {
   let renderer: SessionStartTextRenderer;
@@ -21,23 +23,35 @@ describe("SessionStartTextRenderer", () => {
     renderer = new SessionStartTextRenderer();
   });
 
+  const defaultSession: SessionView = {
+    sessionId: "session-1",
+    status: "active",
+    focus: "Test session",
+    contextSnapshot: null,
+    version: 1,
+    startedAt: "2025-01-01T10:00:00Z",
+    endedAt: null,
+    createdAt: "2025-01-01T10:00:00Z",
+    updatedAt: "2025-01-01T10:00:00Z",
+  };
+
   function createContext(
-    overrides: Partial<SessionContext> = {}
-  ): SessionContextView {
+    contextOverrides: Partial<SessionContext> = {},
+    session: SessionView | null = defaultSession
+  ): EnrichedSessionContext {
     return {
-      sessionId: "session-1",
-      status: "active",
-      focus: "Test session",
-      startedAt: "2025-01-01T10:00:00Z",
-      projectContext: null,
-      activeGoals: [],
-      pausedGoals: [],
-      plannedGoals: [],
-      recentDecisions: [],
-      hasSolutionContext: true,
+      session,
+      context: {
+        projectContext: null,
+        activeGoals: [],
+        pausedGoals: [],
+        plannedGoals: [],
+        recentDecisions: [],
+        hasSolutionContext: true,
+        ...contextOverrides,
+      },
       instructions: [],
       scope: "session-start",
-      ...overrides,
     };
   }
 
@@ -151,7 +165,7 @@ describe("SessionStartTextRenderer", () => {
 
   describe("session status", () => {
     it("should include session status in output", () => {
-      const context = createContext({ status: "active" });
+      const context = createContext();
 
       const result = renderer.renderSessionSummary(context);
 
@@ -173,12 +187,7 @@ describe("SessionStartTextRenderer", () => {
 
   describe("null session handling", () => {
     it("should return appropriate message when no active session exists", () => {
-      const context = createContext({
-        sessionId: null,
-        status: null,
-        focus: null,
-        startedAt: null,
-      });
+      const context = createContext({}, null);
 
       const result = renderer.renderSessionSummary(context);
 

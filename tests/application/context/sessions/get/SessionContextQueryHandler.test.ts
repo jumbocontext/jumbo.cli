@@ -64,17 +64,14 @@ describe("SessionContextQueryHandler", () => {
     );
   }
 
-  it("should return null session primitives when no active session exists", async () => {
+  it("should return null session when no active session exists", async () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.sessionId).toBeNull();
-    expect(result.status).toBeNull();
-    expect(result.focus).toBeNull();
-    expect(result.startedAt).toBeNull();
+    expect(result.session).toBeNull();
   });
 
-  it("should return session primitives from active session", async () => {
+  it("should return session from active session", async () => {
     const activeSession: SessionView = {
       sessionId: "session-1",
       status: "active",
@@ -91,17 +88,18 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.sessionId).toBe("session-1");
-    expect(result.status).toBe("active");
-    expect(result.focus).toBe("Test focus");
-    expect(result.startedAt).toBe("2025-01-01T10:00:00Z");
+    expect(result.session).toBe(activeSession);
+    expect(result.session?.sessionId).toBe("session-1");
+    expect(result.session?.status).toBe("active");
+    expect(result.session?.focus).toBe("Test focus");
+    expect(result.session?.startedAt).toBe("2025-01-01T10:00:00Z");
   });
 
   it("should return null projectContext when no project exists", async () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.projectContext).toBeNull();
+    expect(result.context.projectContext).toBeNull();
   });
 
   it("should assemble projectContext with audiences and pains", async () => {
@@ -116,7 +114,7 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.projectContext).toEqual({
+    expect(result.context.projectContext).toEqual({
       project,
       audiences,
       audiencePains: pains,
@@ -142,7 +140,7 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.activeGoals).toEqual([doingGoal, blockedGoal, inReviewGoal, qualifiedGoal]);
+    expect(result.context.activeGoals).toEqual([doingGoal, blockedGoal, inReviewGoal, qualifiedGoal]);
   });
 
   it("should return paused goals separately", async () => {
@@ -156,8 +154,8 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.pausedGoals).toEqual([pausedGoal]);
-    expect(result.activeGoals).toEqual([]);
+    expect(result.context.pausedGoals).toEqual([pausedGoal]);
+    expect(result.context.activeGoals).toEqual([]);
   });
 
   it("should combine todo and refined goals as plannedGoals", async () => {
@@ -173,7 +171,7 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.plannedGoals).toEqual([todoGoal, refinedGoal]);
+    expect(result.context.plannedGoals).toEqual([todoGoal, refinedGoal]);
   });
 
   it("should return recent active decisions", async () => {
@@ -186,8 +184,8 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.recentDecisions).toHaveLength(2);
-    expect(result.recentDecisions[0].decisionId).toBe("d1");
+    expect(result.context.recentDecisions).toHaveLength(2);
+    expect(result.context.recentDecisions[0].decisionId).toBe("d1");
     expect(decisionViewReader.findAll).toHaveBeenCalledWith("active");
   });
 
@@ -202,7 +200,7 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.recentDecisions).toHaveLength(10);
+    expect(result.context.recentDecisions).toHaveLength(10);
   });
 
   it("should set hasSolutionContext to true when project is primed", async () => {
@@ -211,7 +209,7 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.hasSolutionContext).toBe(true);
+    expect(result.context.hasSolutionContext).toBe(true);
   });
 
   it("should set hasSolutionContext to false when project is unprimed", async () => {
@@ -220,7 +218,7 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.hasSolutionContext).toBe(false);
+    expect(result.context.hasSolutionContext).toBe(false);
   });
 
   it("should handle missing optional readers gracefully", async () => {
@@ -232,7 +230,7 @@ describe("SessionContextQueryHandler", () => {
 
     const result = await handler.execute();
 
-    expect(result.projectContext).toBeNull();
-    expect(result.hasSolutionContext).toBe(true);
+    expect(result.context.projectContext).toBeNull();
+    expect(result.context.hasSolutionContext).toBe(true);
   });
 });

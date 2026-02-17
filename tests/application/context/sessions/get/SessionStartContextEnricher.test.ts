@@ -1,80 +1,76 @@
 import { describe, it, expect } from "@jest/globals";
 import { SessionStartContextEnricher } from "../../../../../src/application/context/sessions/get/SessionStartContextEnricher.js";
-import { SessionContext } from "../../../../../src/application/context/sessions/get/SessionContext.js";
+import { ContextualSessionView } from "../../../../../src/application/context/sessions/get/ContextualSessionView.js";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
 
 describe("SessionStartContextEnricher", () => {
   const enricher = new SessionStartContextEnricher();
 
-  function createBaseContext(
-    overrides: Partial<SessionContext> = {}
-  ): SessionContext {
+  function createBaseView(
+    overrides: Partial<ContextualSessionView["context"]> = {}
+  ): ContextualSessionView {
     return {
-      sessionId: null,
-      status: null,
-      focus: null,
-      startedAt: null,
-      projectContext: null,
-      activeGoals: [],
-      pausedGoals: [],
-      plannedGoals: [],
-      recentDecisions: [],
-      hasSolutionContext: true,
-      ...overrides,
+      session: null,
+      context: {
+        projectContext: null,
+        activeGoals: [],
+        pausedGoals: [],
+        plannedGoals: [],
+        recentDecisions: [],
+        hasSolutionContext: true,
+        ...overrides,
+      },
     };
   }
 
   it("should set scope to session-start", () => {
-    const context = createBaseContext();
-    const result = enricher.enrich(context);
+    const view = createBaseView();
+    const result = enricher.enrich(view);
 
     expect(result.scope).toBe("session-start");
   });
 
-  it("should preserve all base context fields", () => {
-    const context = createBaseContext({
-      sessionId: "session-1",
-      status: "active",
+  it("should preserve session and context fields", () => {
+    const view = createBaseView({
       hasSolutionContext: true,
       activeGoals: [{ goalId: "g1" } as GoalView],
       plannedGoals: [{ goalId: "g2" } as GoalView],
     });
 
-    const result = enricher.enrich(context);
+    const result = enricher.enrich(view);
 
-    expect(result.sessionId).toBe(context.sessionId);
-    expect(result.status).toBe(context.status);
-    expect(result.projectContext).toBe(context.projectContext);
-    expect(result.activeGoals).toBe(context.activeGoals);
-    expect(result.pausedGoals).toBe(context.pausedGoals);
-    expect(result.plannedGoals).toBe(context.plannedGoals);
-    expect(result.recentDecisions).toBe(context.recentDecisions);
-    expect(result.hasSolutionContext).toBe(context.hasSolutionContext);
+    expect(result.session).toBe(view.session);
+    expect(result.context.projectContext).toBe(view.context.projectContext);
+    expect(result.context.activeGoals).toBe(view.context.activeGoals);
+    expect(result.context.pausedGoals).toBe(view.context.pausedGoals);
+    expect(result.context.plannedGoals).toBe(view.context.plannedGoals);
+    expect(result.context.recentDecisions).toBe(view.context.recentDecisions);
+    expect(result.context.hasSolutionContext).toBe(view.context.hasSolutionContext);
   });
 
   it("should include goal-selection-prompt instruction", () => {
-    const context = createBaseContext();
-    const result = enricher.enrich(context);
+    const view = createBaseView();
+    const result = enricher.enrich(view);
 
     expect(result.instructions).toContain("goal-selection-prompt");
   });
 
   it("should include brownfield-onboarding when no solution context exists", () => {
-    const context = createBaseContext({ hasSolutionContext: false });
-    const result = enricher.enrich(context);
+    const view = createBaseView({ hasSolutionContext: false });
+    const result = enricher.enrich(view);
 
     expect(result.instructions).toContain("brownfield-onboarding");
   });
 
   it("should not include brownfield-onboarding when solution context exists", () => {
-    const context = createBaseContext({ hasSolutionContext: true });
-    const result = enricher.enrich(context);
+    const view = createBaseView({ hasSolutionContext: true });
+    const result = enricher.enrich(view);
 
     expect(result.instructions).not.toContain("brownfield-onboarding");
   });
 
   it("should include paused-goals-resume when paused goals exist", () => {
-    const context = createBaseContext({
+    const view = createBaseView({
       pausedGoals: [
         {
           goalId: "goal_123",
@@ -83,14 +79,14 @@ describe("SessionStartContextEnricher", () => {
         } as GoalView,
       ],
     });
-    const result = enricher.enrich(context);
+    const result = enricher.enrich(view);
 
     expect(result.instructions).toContain("paused-goals-resume");
   });
 
   it("should not include paused-goals-resume when no goals are paused", () => {
-    const context = createBaseContext({ pausedGoals: [] });
-    const result = enricher.enrich(context);
+    const view = createBaseView({ pausedGoals: [] });
+    const result = enricher.enrich(view);
 
     expect(result.instructions).not.toContain("paused-goals-resume");
   });

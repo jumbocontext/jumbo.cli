@@ -46,7 +46,7 @@ export class SessionStartContextQueryHandler {
    * @returns SessionStartContext with base data and start-specific enrichment
    */
   async execute(): Promise<SessionStartContext> {
-    const baseContext = await this.sessionContextQueryHandler.execute();
-    return this.enricher.enrich(baseContext);
+    const baseView = await this.sessionContextQueryHandler.execute();
+    return this.enricher.enrich(baseView);
   }
 }

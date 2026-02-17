@@ -1,9 +1,10 @@
-import { SessionContext, SessionContextView } from "./SessionContext.js";
+import { ContextualSessionView } from "./ContextualSessionView.js";
+import { EnrichedSessionContext } from "./EnrichedSessionContext.js";
 
 /**
  * SessionResumeContextEnricher - Adds resume-specific LLM instructions to base context
  *
- * Enriches the event-agnostic SessionContext with work resume orientation
+ * Enriches the event-agnostic ContextualSessionView with work resume orientation
  * instruction signals that guide the presentation layer's LLM instruction rendering.
  *
  * Instruction signals:
@@ -11,20 +12,20 @@ import { SessionContext, SessionContextView } from "./SessionContext.js";
  * - "paused-goals-context": Paused goals exist, check registered progress
  */
 export class SessionResumeContextEnricher {
-  enrich(context: SessionContext): SessionContextView {
+  enrich(view: ContextualSessionView): EnrichedSessionContext {
     return {
-      ...context,
-      instructions: this.buildResumeInstructions(context),
+      ...view,
+      instructions: this.buildResumeInstructions(view),
       scope: "work-resume",
     };
   }
 
-  private buildResumeInstructions(context: SessionContext): string[] {
+  private buildResumeInstructions(view: ContextualSessionView): string[] {
     const instructions: string[] = [];
 
     instructions.push("resume-continuation-prompt");
 
-    if (context.pausedGoals.length > 0) {
+    if (view.context.pausedGoals.length > 0) {
       instructions.push("paused-goals-context");
     }
 

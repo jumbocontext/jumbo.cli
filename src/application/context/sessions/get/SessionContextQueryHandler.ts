@@ -1,7 +1,7 @@
 import { ISessionViewReader } from "./ISessionViewReader.js";
 import { IGoalStatusReader } from "../../goals/IGoalStatusReader.js";
 import { IDecisionViewReader } from "../../decisions/get/IDecisionViewReader.js";
-import { SessionContext } from "./SessionContext.js";
+import { ContextualSessionView } from "./ContextualSessionView.js";
 import { GoalStatus } from "../../../../domain/goals/Constants.js";
 import { IProjectContextReader } from "../../project/query/IProjectContextReader.js";
 import { IAudienceContextReader } from "../../audiences/query/IAudienceContextReader.js";
@@ -13,8 +13,9 @@ import { UnprimedBrownfieldQualifier } from "../../../../application/UnprimedBro
  *
  * Assembles session orientation data from multiple view readers using the multi-query pattern.
  * All queries run in parallel via Promise.all for optimal performance.
- * Used by event-specific query handlers (SessionStartContextQueryHandler, etc.)
- * that compose this base context with event-specific enrichment.
+ * Returns a ContextualSessionView pairing the active session with its context.
+ * Used by event-specific enrichers (SessionStartContextEnricher, etc.)
+ * that compose this base view with event-specific enrichment.
  */
 export class SessionContextQueryHandler {
   constructor(
@@ -31,15 +32,15 @@ export class SessionContextQueryHandler {
    * Execute query to assemble base session context
    *
    * Assembles from multiple view readers in parallel:
-   * 1. Session primitives (sessionId, status, focus, startedAt)
+   * 1. Active session (SessionView or null)
    * 2. Goal categories (active, paused, planned)
    * 3. Recent decisions
    * 4. Project context (name, purpose, audiences, pains)
    * 5. Solution context presence
    *
-   * @returns SessionContext with all assembled data
+   * @returns ContextualSessionView with session and assembled context
    */
-  async execute(): Promise<SessionContext> {
+  async execute(): Promise<ContextualSessionView> {
     // Query all view readers in parallel for efficiency
     const [
       activeSession,
@@ -84,16 +85,15 @@ export class SessionContextQueryHandler {
       .slice(0, 10);
 
     return {
-      sessionId: activeSession?.sessionId ?? null,
-      status: activeSession?.status ?? null,
-      focus: activeSession?.focus ?? null,
-      startedAt: activeSession?.startedAt ?? null,
-      projectContext,
-      activeGoals,
-      pausedGoals,
-      plannedGoals,
-      recentDecisions,
-      hasSolutionContext: !isUnprimed,
+      session: activeSession ?? null,
+      context: {
+        projectContext,
+        activeGoals,
+        pausedGoals,
+        plannedGoals,
+        recentDecisions,
+        hasSolutionContext: !isUnprimed,
+      },
     };
   }
 }

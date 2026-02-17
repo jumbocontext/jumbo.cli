@@ -1,9 +1,10 @@
-import { SessionContext, SessionContextView } from "./SessionContext.js";
+import { ContextualSessionView } from "./ContextualSessionView.js";
+import { EnrichedSessionContext } from "./EnrichedSessionContext.js";
 
 /**
  * SessionStartContextEnricher - Adds start-specific LLM instructions to base context
  *
- * Enriches the event-agnostic SessionContext with session start orientation
+ * Enriches the event-agnostic ContextualSessionView with session start orientation
  * instruction signals that guide the presentation layer's LLM instruction rendering.
  *
  * Instruction signals:
@@ -12,22 +13,22 @@ import { SessionContext, SessionContextView } from "./SessionContext.js";
  * - "goal-selection-prompt": Standard goal selection prompt for session start
  */
 export class SessionStartContextEnricher {
-  enrich(context: SessionContext): SessionContextView {
+  enrich(view: ContextualSessionView): EnrichedSessionContext {
     return {
-      ...context,
-      instructions: this.buildStartInstructions(context),
+      ...view,
+      instructions: this.buildStartInstructions(view),
       scope: "session-start",
     };
   }
 
-  private buildStartInstructions(context: SessionContext): string[] {
+  private buildStartInstructions(view: ContextualSessionView): string[] {
     const instructions: string[] = [];
 
-    if (!context.hasSolutionContext) {
+    if (!view.context.hasSolutionContext) {
       instructions.push("brownfield-onboarding");
     }
 
-    if (context.pausedGoals.length > 0) {
+    if (view.context.pausedGoals.length > 0) {
       instructions.push("paused-goals-resume");
     }
 

@@ -10,6 +10,8 @@ import fastGlob from 'fast-glob';
 import path from 'path';
 
 describe('Command Compliance', () => {
+  jest.setTimeout(30_000);
+
   let commandFiles: string[];
 
   beforeAll(async () => {

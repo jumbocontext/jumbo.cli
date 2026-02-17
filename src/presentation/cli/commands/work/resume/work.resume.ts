@@ -11,7 +11,7 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { Renderer } from "../../../rendering/Renderer.js";
 import { ResumeWorkResult } from "../../../../../application/context/work/resume/ResumeWorkCommandHandler.js";
 import { SessionStartTextRenderer } from "../../sessions/start/SessionStartTextRenderer.js";
-import { SessionContextView } from "../../../../../application/context/sessions/get/SessionContext.js";
+import { EnrichedSessionContext } from "../../../../../application/context/sessions/get/EnrichedSessionContext.js";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -162,7 +162,7 @@ export async function workResume(
  * Maps resume instruction signals to LLM-facing text.
  * Presentation layer owns copy; application layer owns instruction signals.
  */
-function renderResumeInstruction(sessionContext: SessionContextView): string {
+function renderResumeInstruction(sessionContext: EnrichedSessionContext): string {
   const lines: string[] = [];
 
   if (sessionContext.instructions.includes("resume-continuation-prompt")) {

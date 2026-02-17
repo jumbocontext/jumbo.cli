@@ -1,14 +1,9 @@
-import { SessionContextView, SessionProjectContext } from "./SessionContext.js";
+import { EnrichedSessionContext } from "./EnrichedSessionContext.js";
 
 /**
  * SessionStartContext - Enriched session context for session start events
  *
- * Type alias for SessionContextView. Session start enrichment is provided
- * through the instructions and scope fields of SessionContextView.
+ * Type alias for EnrichedSessionContext. Session start enrichment is provided
+ * through the instructions and scope fields of EnrichedSessionContext.
  */
-export type SessionStartContext = SessionContextView;
-
-/**
- * SessionStartProjectContext - Backward-compatible alias for SessionProjectContext
- */
-export type SessionStartProjectContext = SessionProjectContext;
+export type SessionStartContext = EnrichedSessionContext;

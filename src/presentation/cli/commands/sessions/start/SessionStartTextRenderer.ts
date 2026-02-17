@@ -1,6 +1,7 @@
 import { GoalView } from "../../../../../application/context/goals/GoalView.js";
 import { DecisionView } from "../../../../../application/context/decisions/DecisionView.js";
-import { SessionStartContext, SessionStartProjectContext } from "../../../../../application/context/sessions/get/SessionStartContext.js";
+import { SessionStartContext } from "../../../../../application/context/sessions/get/SessionStartContext.js";
+import { ContextualProjectView } from "../../../../../application/context/project/get/ContextualProjectView.js";
 import { YamlFormatter } from "../../../formatting/YamlFormatter.js";
 
 export interface SessionStartTextRenderResult {
@@ -42,7 +43,7 @@ export class SessionStartTextRenderer {
   render(context: SessionStartContext): SessionStartTextRenderResult {
     const blocks: string[] = [];
 
-    const projectContextYaml = this.renderProjectContext(context.projectContext);
+    const projectContextYaml = this.renderProjectContext(context.context.projectContext);
     if (projectContextYaml) {
       blocks.push(projectContextYaml);
     }
@@ -51,8 +52,8 @@ export class SessionStartTextRenderer {
       this.renderSessionSummary(context)
     );
 
-    blocks.push(this.renderInProgressGoals(context.activeGoals.concat(context.pausedGoals)));
-    blocks.push(this.renderPlannedGoals(context.plannedGoals));
+    blocks.push(this.renderInProgressGoals(context.context.activeGoals.concat(context.context.pausedGoals)));
+    blocks.push(this.renderPlannedGoals(context.context.plannedGoals));
 
     return {
       blocks,
@@ -64,10 +65,10 @@ export class SessionStartTextRenderer {
     const sessionContextResult = this.buildSessionContextData(context);
 
     return {
-      projectContext: this.buildProjectContextData(context.projectContext),
+      projectContext: this.buildProjectContextData(context.context.projectContext),
       sessionContext: sessionContextResult.data.sessionContext as Record<string, unknown>,
-      inProgressGoals: this.buildInProgressGoalsData(context.activeGoals.concat(context.pausedGoals)),
-      plannedGoals: this.buildPlannedGoalsData(context.plannedGoals),
+      inProgressGoals: this.buildInProgressGoalsData(context.context.activeGoals.concat(context.context.pausedGoals)),
+      plannedGoals: this.buildPlannedGoalsData(context.context.plannedGoals),
       llmInstructions: {
         sessionContext: sessionContextResult.llmInstruction ?? null,
         goalStart: this.renderGoalStartInstruction(),
@@ -88,7 +89,7 @@ export class SessionStartTextRenderer {
   }
 
   private renderProjectContext(
-    projectContext: SessionStartProjectContext | null
+    projectContext: ContextualProjectView | null
   ): string {
     const contextData = this.buildProjectContextData(projectContext);
 
@@ -130,7 +131,7 @@ export class SessionStartTextRenderer {
    * to help transfer existing project context into Jumbo.
    */
   private buildProjectContextData(
-    projectContext: SessionStartProjectContext | null
+    projectContext: ContextualProjectView | null
   ): Record<string, unknown> | null {
     if (!projectContext) {
       return null;
@@ -202,7 +203,7 @@ export class SessionStartTextRenderer {
   private buildSessionContextData(
     context: SessionStartContext
   ): { data: Record<string, unknown>; llmInstruction?: string } {
-    if (!context.hasSolutionContext) {
+    if (!context.context.hasSolutionContext) {
       return {
         data: {
           sessionContext: {
@@ -214,7 +215,7 @@ export class SessionStartTextRenderer {
       };
     }
 
-    if (!context.sessionId) {
+    if (!context.session) {
       return {
         data: {
           sessionContext: {
@@ -226,15 +227,15 @@ export class SessionStartTextRenderer {
 
     const contextData: Record<string, unknown> = {
       sessionContext: {
-        focus: context.focus ?? "Not yet defined",
-        status: context.status,
+        focus: context.session.focus ?? "Not yet defined",
+        status: context.session.status,
       },
     };
 
     const sessionCtx = contextData.sessionContext as Record<string, unknown>;
 
-    if (context.pausedGoals.length > 0) {
-      sessionCtx.pausedGoals = context.pausedGoals.map((g) => {
+    if (context.context.pausedGoals.length > 0) {
+      sessionCtx.pausedGoals = context.context.pausedGoals.map((g) => {
         const pausedGoal: Record<string, unknown> = {
           goalId: g.goalId,
           objective: g.objective,
@@ -247,8 +248,8 @@ export class SessionStartTextRenderer {
       });
     }
 
-    if (context.recentDecisions.length > 0) {
-      sessionCtx.recentDecisions = context.recentDecisions.map((d) => ({
+    if (context.context.recentDecisions.length > 0) {
+      sessionCtx.recentDecisions = context.context.recentDecisions.map((d) => ({
         decisionId: d.decisionId,
         title: d.title,
         rationale: d.rationale,
@@ -256,7 +257,7 @@ export class SessionStartTextRenderer {
     }
 
     const llmInstruction =
-      context.pausedGoals.length > 0
+      context.context.pausedGoals.length > 0
         ? "\n\n@LLM: Goals were paused. To resume a paused goal, run:\n  jumbo goal resume --goal-id <goal-id>"
         : undefined;
 

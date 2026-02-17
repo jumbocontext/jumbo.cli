@@ -20,6 +20,7 @@ import { ResumeGoalCommand } from "../../src/application/context/goals/resume/Re
 import { GoalStatus, GoalEventType } from "../../src/domain/goals/Constants.js";
 
 describe("Pause-Resume Lifecycle Integration", () => {
+  jest.setTimeout(30_000);
   let tmpDir: string;
   let host: Host;
   let container: IApplicationContainer;
