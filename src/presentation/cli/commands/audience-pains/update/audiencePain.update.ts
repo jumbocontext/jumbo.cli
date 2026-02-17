@@ -6,8 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateAudiencePainCommandHandler } from "../../../../../application/context/audience-pains/update/UpdateAudiencePainCommandHandler.js";
-import { UpdateAudiencePainCommand } from "../../../../../application/context/audience-pains/update/UpdateAudiencePainCommand.js";
+import { UpdateAudiencePainRequest } from "../../../../../application/context/audience-pains/update/UpdateAudiencePainRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -49,7 +48,7 @@ export const metadata: CommandMetadata = {
       description: "Update both title and description",
     },
   ],
-  related: ["audience pain add", "audience-pain resolve", "audience add"],
+  related: ["audience pain add", "audience add"],
 };
 
 /**
@@ -72,28 +71,17 @@ export async function audiencePainUpdate(options: {
   }
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new UpdateAudiencePainCommandHandler(
-      container.audiencePainUpdatedEventStore,
-      container.eventBus,
-      container.audiencePainUpdatedProjector
-    );
-
-    // 2. Execute command
-    const command: UpdateAudiencePainCommand = {
+    const request: UpdateAudiencePainRequest = {
       painId: options.painId,
       title: options.title,
       description: options.description,
     };
 
-    const result = await commandHandler.execute(command);
-
-    // 3. Fetch updated view for display
-    const view = await container.audiencePainUpdatedProjector.findById(result.painId);
+    const { painId, view } = await container.updateAudiencePainController.handle(request);
 
     // Success output
     const data: Record<string, string> = {
-      painId: result.painId,
+      painId,
     };
 
     if (view) {

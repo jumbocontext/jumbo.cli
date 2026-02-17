@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddComponentCommandHandler } from "../../../../../application/context/components/add/AddComponentCommandHandler.js";
-import { AddComponentCommand } from "../../../../../application/context/components/add/AddComponentCommand.js";
 import { ComponentTypeValue } from "../../../../../domain/components/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
@@ -69,44 +67,29 @@ export async function componentAdd(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new AddComponentCommandHandler(
-      container.componentAddedEventStore,
-      container.eventBus,
-      container.componentAddedProjector
-    );
-
-    // 2. Execute command
-    const command: AddComponentCommand = {
+    const response = await container.addComponentController.handle({
       name: options.name,
       type: options.type,
       description: options.description,
       responsibility: options.responsibility,
       path: options.path,
+    });
+
+    const data: Record<string, string> = {
+      componentId: response.componentId,
+      name: response.name,
+      type: response.type,
+      path: response.path,
+      status: response.status,
     };
 
-    const result = await commandHandler.execute(command);
-
-    // 3. Fetch updated view for display
-    const view = await container.componentUpdatedProjector.findById(result.componentId);
-
-    // Success output
-    const data: Record<string, string | number> = {
-      componentId: result.componentId,
-      name: options.name,
-      type: view?.type || options.type,
-      path: view?.path || options.path,
-      status: view?.status || 'active'
-    };
-
-    if (view && view.version > 1) {
-      renderer.success(`Component '${options.name}' updated`, data);
+    if (response.isUpdate) {
+      renderer.success(`Component '${response.name}' updated`, data);
     } else {
-      renderer.success(`Component '${options.name}' added`, data);
+      renderer.success(`Component '${response.name}' added`, data);
     }
   } catch (error) {
     renderer.error("Failed to add component", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

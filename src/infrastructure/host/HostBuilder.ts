@@ -86,7 +86,6 @@ import { FsAudienceRemovedEventStore } from "../context/audiences/remove/FsAudie
 // AudiencePain Event Stores - decomposed by use case
 import { FsAudiencePainAddedEventStore } from "../context/audience-pains/add/FsAudiencePainAddedEventStore.js";
 import { FsAudiencePainUpdatedEventStore } from "../context/audience-pains/update/FsAudiencePainUpdatedEventStore.js";
-import { FsAudiencePainResolvedEventStore } from "../context/audience-pains/resolve/FsAudiencePainResolvedEventStore.js";
 // ValueProposition Event Stores - decomposed by use case
 import { FsValuePropositionAddedEventStore } from "../context/value-propositions/add/FsValuePropositionAddedEventStore.js";
 import { FsValuePropositionUpdatedEventStore } from "../context/value-propositions/update/FsValuePropositionUpdatedEventStore.js";
@@ -156,7 +155,6 @@ import { SqliteRelationViewReader } from "../context/relations/get/SqliteRelatio
 // AudiencePain Projection Stores - decomposed by use case
 import { SqliteAudiencePainAddedProjector } from "../context/audience-pains/add/SqliteAudiencePainAddedProjector.js";
 import { SqliteAudiencePainUpdatedProjector } from "../context/audience-pains/update/SqliteAudiencePainUpdatedProjector.js";
-import { SqliteAudiencePainResolvedProjector } from "../context/audience-pains/resolve/SqliteAudiencePainResolvedProjector.js";
 // Audience Projection Stores - decomposed by use case
 import { SqliteAudienceAddedProjector } from "../context/audiences/add/SqliteAudienceAddedProjector.js";
 import { SqliteAudienceUpdatedProjector } from "../context/audiences/update/SqliteAudienceUpdatedProjector.js";
@@ -235,11 +233,18 @@ import { ProjectUpdatedEventHandler } from "../../application/context/project/up
 // AudiencePain Event Handlers - decomposed by use case
 import { AudiencePainAddedEventHandler } from "../../application/context/audience-pains/add/AudiencePainAddedEventHandler.js";
 import { AudiencePainUpdatedEventHandler } from "../../application/context/audience-pains/update/AudiencePainUpdatedEventHandler.js";
-import { AudiencePainResolvedEventHandler } from "../../application/context/audience-pains/resolve/AudiencePainResolvedEventHandler.js";
+import { UpdateAudiencePainCommandHandler } from "../../application/context/audience-pains/update/UpdateAudiencePainCommandHandler.js";
+import { LocalUpdateAudiencePainGateway } from "../../application/context/audience-pains/update/LocalUpdateAudiencePainGateway.js";
+import { UpdateAudiencePainController } from "../../application/context/audience-pains/update/UpdateAudiencePainController.js";
+import { LocalGetAudiencePainsGateway } from "../../application/context/audience-pains/list/LocalGetAudiencePainsGateway.js";
+import { GetAudiencePainsController } from "../../application/context/audience-pains/list/GetAudiencePainsController.js";
 // Audience Event Handlers - decomposed by use case
 import { AudienceAddedEventHandler } from "../../application/context/audiences/add/AudienceAddedEventHandler.js";
 import { AudienceUpdatedEventHandler } from "../../application/context/audiences/update/AudienceUpdatedEventHandler.js";
 import { AudienceRemovedEventHandler } from "../../application/context/audiences/remove/AudienceRemovedEventHandler.js";
+import { UpdateAudienceCommandHandler } from "../../application/context/audiences/update/UpdateAudienceCommandHandler.js";
+import { LocalUpdateAudienceGateway } from "../../application/context/audiences/update/LocalUpdateAudienceGateway.js";
+import { UpdateAudienceController } from "../../application/context/audiences/update/UpdateAudienceController.js";
 // ValueProposition Event Handlers - decomposed by use case
 import { ValuePropositionAddedEventHandler } from "../../application/context/value-propositions/add/ValuePropositionAddedEventHandler.js";
 import { ValuePropositionUpdatedEventHandler } from "../../application/context/value-propositions/update/ValuePropositionUpdatedEventHandler.js";
@@ -273,12 +278,37 @@ import { ResumeWorkController } from "../../application/context/work/resume/Resu
 import { ResumeGoalCommandHandler } from "../../application/context/goals/resume/ResumeGoalCommandHandler.js";
 
 // Architecture Controllers
+import { AddAudiencePainCommandHandler } from "../../application/context/audience-pains/add/AddAudiencePainCommandHandler.js";
+import { LocalAddAudiencePainGateway } from "../../application/context/audience-pains/add/LocalAddAudiencePainGateway.js";
+import { AddAudiencePainController } from "../../application/context/audience-pains/add/AddAudiencePainController.js";
 import { DefineArchitectureController } from "../../application/context/architecture/define/DefineArchitectureController.js";
 import { LocalDefineArchitectureGateway } from "../../application/context/architecture/define/LocalDefineArchitectureGateway.js";
 import { UpdateArchitectureController } from "../../application/context/architecture/update/UpdateArchitectureController.js";
 import { LocalUpdateArchitectureGateway } from "../../application/context/architecture/update/LocalUpdateArchitectureGateway.js";
 import { GetArchitectureController } from "../../application/context/architecture/get/GetArchitectureController.js";
 import { LocalGetArchitectureGateway } from "../../application/context/architecture/get/LocalGetArchitectureGateway.js";
+
+// Component Controllers
+import { AddComponentCommandHandler } from "../../application/context/components/add/AddComponentCommandHandler.js";
+import { LocalAddComponentGateway } from "../../application/context/components/add/LocalAddComponentGateway.js";
+import { AddComponentController } from "../../application/context/components/add/AddComponentController.js";
+import { LocalGetComponentsGateway } from "../../application/context/components/list/LocalGetComponentsGateway.js";
+import { GetComponentsController } from "../../application/context/components/list/GetComponentsController.js";
+import { UpdateComponentCommandHandler } from "../../application/context/components/update/UpdateComponentCommandHandler.js";
+import { LocalUpdateComponentGateway } from "../../application/context/components/update/LocalUpdateComponentGateway.js";
+import { UpdateComponentController } from "../../application/context/components/update/UpdateComponentController.js";
+import { LocalShowComponentGateway } from "../../application/context/components/show/LocalShowComponentGateway.js";
+import { ShowComponentController } from "../../application/context/components/show/ShowComponentController.js";
+
+// Audience Controllers
+import { AddAudienceCommandHandler } from "../../application/context/audiences/add/AddAudienceCommandHandler.js";
+import { LocalAddAudienceGateway } from "../../application/context/audiences/add/LocalAddAudienceGateway.js";
+import { AddAudienceController } from "../../application/context/audiences/add/AddAudienceController.js";
+import { ListAudiencesController } from "../../application/context/audiences/list/ListAudiencesController.js";
+import { LocalListAudiencesGateway } from "../../application/context/audiences/list/LocalListAudiencesGateway.js";
+import { RemoveAudienceCommandHandler } from "../../application/context/audiences/remove/RemoveAudienceCommandHandler.js";
+import { LocalRemoveAudienceGateway } from "../../application/context/audiences/remove/LocalRemoveAudienceGateway.js";
+import { RemoveAudienceController } from "../../application/context/audiences/remove/RemoveAudienceController.js";
 
 // Solution Context
 import { UnprimedBrownfieldQualifier } from "../../application/UnprimedBrownfieldQualifier.js";
@@ -412,8 +442,7 @@ export class HostBuilder {
     // AudiencePain Event Stores - decomposed by use case
     const audiencePainAddedEventStore = new FsAudiencePainAddedEventStore(this.rootDir);
     const audiencePainUpdatedEventStore = new FsAudiencePainUpdatedEventStore(this.rootDir);
-    const audiencePainResolvedEventStore = new FsAudiencePainResolvedEventStore(this.rootDir);
-    // ValueProposition Event Stores - decomposed by use case
+// ValueProposition Event Stores - decomposed by use case
     const valuePropositionAddedEventStore = new FsValuePropositionAddedEventStore(this.rootDir);
     const valuePropositionUpdatedEventStore = new FsValuePropositionUpdatedEventStore(this.rootDir);
     const valuePropositionRemovedEventStore = new FsValuePropositionRemovedEventStore(this.rootDir);
@@ -498,8 +527,7 @@ export class HostBuilder {
     // AudiencePain Projection Stores - decomposed by use case
     const audiencePainAddedProjector = new SqliteAudiencePainAddedProjector(this.db);
     const audiencePainUpdatedProjector = new SqliteAudiencePainUpdatedProjector(this.db);
-    const audiencePainResolvedProjector = new SqliteAudiencePainResolvedProjector(this.db);
-    const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
+const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     // ValueProposition Projection Stores - decomposed by use case
     const valuePropositionAddedProjector = new SqliteValuePropositionAddedProjector(this.db);
     const valuePropositionUpdatedProjector = new SqliteValuePropositionUpdatedProjector(this.db);
@@ -653,6 +681,101 @@ export class HostBuilder {
       getArchitectureGateway
     );
 
+    // Component Controllers
+    const addComponentCommandHandler = new AddComponentCommandHandler(
+      componentAddedEventStore,
+      eventBus,
+      componentAddedProjector
+    );
+    const addComponentGateway = new LocalAddComponentGateway(
+      addComponentCommandHandler,
+      componentUpdatedProjector
+    );
+    const addComponentController = new AddComponentController(
+      addComponentGateway
+    );
+    const getComponentsGateway = new LocalGetComponentsGateway(componentViewReader);
+    const getComponentsController = new GetComponentsController(getComponentsGateway);
+    const updateComponentCommandHandler = new UpdateComponentCommandHandler(
+      componentUpdatedEventStore,
+      eventBus,
+      componentUpdatedProjector
+    );
+    const updateComponentGateway = new LocalUpdateComponentGateway(
+      updateComponentCommandHandler,
+      componentUpdatedProjector
+    );
+    const updateComponentController = new UpdateComponentController(
+      updateComponentGateway
+    );
+    const showComponentGateway = new LocalShowComponentGateway(
+      componentReader,
+      relationViewReader
+    );
+    const showComponentController = new ShowComponentController(
+      showComponentGateway
+    );
+
+    // Audience Pain Controllers
+    const addAudiencePainCommandHandler = new AddAudiencePainCommandHandler(
+      audiencePainAddedEventStore,
+      eventBus
+    );
+    const addAudiencePainGateway = new LocalAddAudiencePainGateway(
+      addAudiencePainCommandHandler,
+      audiencePainUpdatedProjector
+    );
+    const addAudiencePainController = new AddAudiencePainController(
+      addAudiencePainGateway
+    );
+    const updateAudiencePainCommandHandler = new UpdateAudiencePainCommandHandler(
+      audiencePainUpdatedEventStore,
+      eventBus,
+      audiencePainUpdatedProjector
+    );
+    const updateAudiencePainGateway = new LocalUpdateAudiencePainGateway(
+      updateAudiencePainCommandHandler,
+      audiencePainUpdatedProjector
+    );
+    const updateAudiencePainController = new UpdateAudiencePainController(
+      updateAudiencePainGateway
+    );
+    const getAudiencePainsGateway = new LocalGetAudiencePainsGateway(audiencePainContextReader);
+    const getAudiencePainsController = new GetAudiencePainsController(getAudiencePainsGateway);
+
+    // Audience Controllers
+    const addAudienceCommandHandler = new AddAudienceCommandHandler(
+      audienceAddedEventStore,
+      eventBus
+    );
+    const addAudienceGateway = new LocalAddAudienceGateway(addAudienceCommandHandler);
+    const addAudienceController = new AddAudienceController(addAudienceGateway);
+    const listAudiencesGateway = new LocalListAudiencesGateway(audienceContextReader);
+    const listAudiencesController = new ListAudiencesController(listAudiencesGateway);
+    const removeAudienceCommandHandler = new RemoveAudienceCommandHandler(
+      audienceRemovedEventStore,
+      eventBus,
+      audienceRemovedProjector
+    );
+    const removeAudienceGateway = new LocalRemoveAudienceGateway(
+      removeAudienceCommandHandler,
+      audienceRemovedProjector
+    );
+    const removeAudienceController = new RemoveAudienceController(
+      removeAudienceGateway
+    );
+    const updateAudienceCommandHandler = new UpdateAudienceCommandHandler(
+      audienceUpdatedEventStore,
+      eventBus
+    );
+    const updateAudienceGateway = new LocalUpdateAudienceGateway(
+      updateAudienceCommandHandler,
+      audienceUpdatedProjector
+    );
+    const updateAudienceController = new UpdateAudienceController(
+      updateAudienceGateway
+    );
+
     // Project Initialization Protocol
     const initializeProjectCommandHandler = new InitializeProjectCommandHandler(
       projectInitializedEventStore,
@@ -723,8 +846,7 @@ export class HostBuilder {
     // AudiencePain Event Handlers - decomposed by use case
     const audiencePainAddedEventHandler = new AudiencePainAddedEventHandler(audiencePainAddedProjector);
     const audiencePainUpdatedEventHandler = new AudiencePainUpdatedEventHandler(audiencePainUpdatedProjector);
-    const audiencePainResolvedEventHandler = new AudiencePainResolvedEventHandler(audiencePainResolvedProjector);
-    // Audience Event Handlers - decomposed by use case
+// Audience Event Handlers - decomposed by use case
     const audienceAddedEventHandler = new AudienceAddedEventHandler(audienceAddedProjector);
     const audienceUpdatedEventHandler = new AudienceUpdatedEventHandler(audienceUpdatedProjector);
     const audienceRemovedEventHandler = new AudienceRemovedEventHandler(audienceRemovedProjector);
@@ -799,7 +921,7 @@ export class HostBuilder {
     // Project Knowledge Category - Audience Pain events - decomposed by use case
     eventBus.subscribe("AudiencePainAddedEvent", audiencePainAddedEventHandler);
     eventBus.subscribe("AudiencePainUpdatedEvent", audiencePainUpdatedEventHandler);
-    eventBus.subscribe("AudiencePainResolvedEvent", audiencePainResolvedEventHandler);
+
 
     // Project Knowledge Category - Audience events - decomposed by use case
     eventBus.subscribe("AudienceAddedEvent", audienceAddedEventHandler);
@@ -893,10 +1015,25 @@ export class HostBuilder {
       pauseWorkCommandHandler,
       resumeWorkController,
 
+      // Audience Pain Controllers
+      addAudiencePainController,
+
+      // Audience Controllers
+      addAudienceController,
+      listAudiencesController,
+      removeAudienceController,
+      updateAudienceController,
+
       // Architecture Controllers
       defineArchitectureController,
       updateArchitectureController,
       getArchitectureController,
+
+      // Component Controllers
+      addComponentController,
+      getComponentsController,
+      updateComponentController,
+      showComponentController,
 
       // Solution Category
       // Architecture Event Stores - decomposed by use case
@@ -974,8 +1111,7 @@ export class HostBuilder {
       // AudiencePain Event Stores - decomposed by use case
       audiencePainAddedEventStore,
       audiencePainUpdatedEventStore,
-      audiencePainResolvedEventStore,
-      // ValueProposition Event Stores - decomposed by use case
+// ValueProposition Event Stores - decomposed by use case
       valuePropositionAddedEventStore,
       valuePropositionUpdatedEventStore,
       valuePropositionRemovedEventStore,
@@ -991,7 +1127,8 @@ export class HostBuilder {
       // AudiencePain Projection Stores - decomposed by use case
       audiencePainAddedProjector,
       audiencePainUpdatedProjector,
-      audiencePainResolvedProjector,
+      updateAudiencePainController,
+      getAudiencePainsController,
       audiencePainContextReader,
       // ValueProposition Projection Stores - decomposed by use case
       valuePropositionAddedProjector,

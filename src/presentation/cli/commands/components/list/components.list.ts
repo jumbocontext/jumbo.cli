@@ -11,8 +11,8 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { GetComponentsQueryHandler } from "../../../../../application/context/components/get/GetComponentsQueryHandler.js";
 import { ComponentStatusFilter } from "../../../../../application/context/components/get/IComponentViewReader.js";
+import { GetComponentsRequest } from "../../../../../application/context/components/list/GetComponentsRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { ComponentView } from "../../../../../application/context/components/ComponentView.js";
 
@@ -96,13 +96,9 @@ export async function componentsList(
       process.exit(1);
     }
 
-    // Create query handler using container dependencies
-    const queryHandler = new GetComponentsQueryHandler(
-      container.componentViewReader
-    );
-
-    // Execute query
-    const components = await queryHandler.execute(statusFilter);
+    // Execute query via controller
+    const request: GetComponentsRequest = { status: statusFilter };
+    const { components } = await container.getComponentsController.handle(request);
 
     if (components.length === 0) {
       const filterMsg = statusFilter === "all" ? "" : ` with status '${statusFilter}'`;

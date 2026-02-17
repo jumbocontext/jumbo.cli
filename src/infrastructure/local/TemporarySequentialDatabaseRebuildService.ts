@@ -80,7 +80,6 @@ import { SqliteProjectInitializedProjector } from "../context/project/init/Sqlit
 import { SqliteProjectUpdatedProjector } from "../context/project/update/SqliteProjectUpdatedProjector.js";
 import { SqliteAudiencePainAddedProjector } from "../context/audience-pains/add/SqliteAudiencePainAddedProjector.js";
 import { SqliteAudiencePainUpdatedProjector } from "../context/audience-pains/update/SqliteAudiencePainUpdatedProjector.js";
-import { SqliteAudiencePainResolvedProjector } from "../context/audience-pains/resolve/SqliteAudiencePainResolvedProjector.js";
 import { SqliteAudienceAddedProjector } from "../context/audiences/add/SqliteAudienceAddedProjector.js";
 import { SqliteAudienceUpdatedProjector } from "../context/audiences/update/SqliteAudienceUpdatedProjector.js";
 import { SqliteAudienceRemovedProjector } from "../context/audiences/remove/SqliteAudienceRemovedProjector.js";
@@ -130,7 +129,6 @@ import { ProjectInitializedEventHandler } from "../../application/context/projec
 import { ProjectUpdatedEventHandler } from "../../application/context/project/update/ProjectUpdatedEventHandler.js";
 import { AudiencePainAddedEventHandler } from "../../application/context/audience-pains/add/AudiencePainAddedEventHandler.js";
 import { AudiencePainUpdatedEventHandler } from "../../application/context/audience-pains/update/AudiencePainUpdatedEventHandler.js";
-import { AudiencePainResolvedEventHandler } from "../../application/context/audience-pains/resolve/AudiencePainResolvedEventHandler.js";
 import { AudienceAddedEventHandler } from "../../application/context/audiences/add/AudienceAddedEventHandler.js";
 import { AudienceUpdatedEventHandler } from "../../application/context/audiences/update/AudienceUpdatedEventHandler.js";
 import { AudienceRemovedEventHandler } from "../../application/context/audiences/remove/AudienceRemovedEventHandler.js";
@@ -223,8 +221,7 @@ export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebui
     const projectUpdatedProjector = new SqliteProjectUpdatedProjector(newDb);
     const audiencePainAddedProjector = new SqliteAudiencePainAddedProjector(newDb);
     const audiencePainUpdatedProjector = new SqliteAudiencePainUpdatedProjector(newDb);
-    const audiencePainResolvedProjector = new SqliteAudiencePainResolvedProjector(newDb);
-    const audienceAddedProjector = new SqliteAudienceAddedProjector(newDb);
+const audienceAddedProjector = new SqliteAudienceAddedProjector(newDb);
     const audienceUpdatedProjector = new SqliteAudienceUpdatedProjector(newDb);
     const audienceRemovedProjector = new SqliteAudienceRemovedProjector(newDb);
     const valuePropositionAddedProjector = new SqliteValuePropositionAddedProjector(newDb);
@@ -273,8 +270,7 @@ export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebui
     const projectUpdatedEventHandler = new ProjectUpdatedEventHandler(projectUpdatedProjector);
     const audiencePainAddedEventHandler = new AudiencePainAddedEventHandler(audiencePainAddedProjector);
     const audiencePainUpdatedEventHandler = new AudiencePainUpdatedEventHandler(audiencePainUpdatedProjector);
-    const audiencePainResolvedEventHandler = new AudiencePainResolvedEventHandler(audiencePainResolvedProjector);
-    const audienceAddedEventHandler = new AudienceAddedEventHandler(audienceAddedProjector);
+const audienceAddedEventHandler = new AudienceAddedEventHandler(audienceAddedProjector);
     const audienceUpdatedEventHandler = new AudienceUpdatedEventHandler(audienceUpdatedProjector);
     const audienceRemovedEventHandler = new AudienceRemovedEventHandler(audienceRemovedProjector);
     const valuePropositionAddedEventHandler = new ValuePropositionAddedEventHandler(valuePropositionAddedProjector);
@@ -323,8 +319,7 @@ export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebui
     sequentialEventBus.subscribe("ProjectUpdatedEvent", projectUpdatedEventHandler);
     sequentialEventBus.subscribe("AudiencePainAddedEvent", audiencePainAddedEventHandler);
     sequentialEventBus.subscribe("AudiencePainUpdatedEvent", audiencePainUpdatedEventHandler);
-    sequentialEventBus.subscribe("AudiencePainResolvedEvent", audiencePainResolvedEventHandler);
-    sequentialEventBus.subscribe("AudienceAddedEvent", audienceAddedEventHandler);
+sequentialEventBus.subscribe("AudienceAddedEvent", audienceAddedEventHandler);
     sequentialEventBus.subscribe("AudienceUpdatedEvent", audienceUpdatedEventHandler);
     sequentialEventBus.subscribe("AudienceRemovedEvent", audienceRemovedEventHandler);
     sequentialEventBus.subscribe("ValuePropositionAddedEvent", valuePropositionAddedEventHandler);

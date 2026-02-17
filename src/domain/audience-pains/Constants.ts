@@ -2,7 +2,6 @@
 export const AudiencePainEventType = {
   ADDED: 'AudiencePainAddedEvent',
   UPDATED: 'AudiencePainUpdatedEvent',
-  RESOLVED: 'AudiencePainResolvedEvent'
 } as const;
 
 export type AudiencePainEventTypeValue = typeof AudiencePainEventType[keyof typeof AudiencePainEventType];
@@ -15,7 +14,6 @@ export const AudiencePainErrorMessages = {
   DESCRIPTION_TOO_LONG: 'Pain description must be less than {max} characters',
   NOT_FOUND: 'Audience pain not found',
   NO_CHANGES: 'No changes provided for update',
-  ALREADY_RESOLVED: 'Audience pain is already resolved'
 } as const;
 
 // Numeric limits
@@ -27,7 +25,6 @@ export const AudiencePainLimits = {
 // Status enum
 export const AudiencePainStatus = {
   ACTIVE: 'active',
-  RESOLVED: 'resolved'
 } as const;
 
 export type AudiencePainStatusType = typeof AudiencePainStatus[keyof typeof AudiencePainStatus];

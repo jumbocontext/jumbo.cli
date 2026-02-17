@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddAudienceCommandHandler } from "../../../../../application/context/audiences/add/AddAudienceCommandHandler.js";
-import { AddAudienceCommand } from "../../../../../application/context/audiences/add/AddAudienceCommand.js";
 import { AudiencePriorityType } from "../../../../../domain/audiences/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
@@ -58,33 +56,23 @@ export async function audienceAdd(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new AddAudienceCommandHandler(
-      container.audienceAddedEventStore,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: AddAudienceCommand = {
+    const response = await container.addAudienceController.handle({
       name: options.name,
       description: options.description,
       priority: options.priority,
-    };
-
-    const result = await commandHandler.execute(command);
+    });
 
     // Success output
     const data: Record<string, string> = {
-      audienceId: result.audienceId,
-      name: options.name,
-      priority: options.priority,
-      description: options.description,
+      audienceId: response.audienceId,
+      name: response.name,
+      priority: response.priority,
+      description: response.description,
     };
 
-    renderer.success(`Audience '${options.name}' added successfully.`, data);
+    renderer.success(`Audience '${response.name}' added successfully.`, data);
   } catch (error) {
     renderer.error("Failed to add audience", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

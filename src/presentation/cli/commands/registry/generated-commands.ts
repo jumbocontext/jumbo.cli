@@ -14,7 +14,6 @@ import { architectureUpdate, metadata as architectureUpdateMeta } from '../../co
 import { architectureView, metadata as architectureViewMeta } from '../../commands/architecture/view/architecture.view.js';
 import { audiencePainAdd, metadata as audiencePainAddMeta } from '../../commands/audience-pains/add/audiencePain.add.js';
 import { audiencePainsList, metadata as audiencePainsListMeta } from '../../commands/audience-pains/list/audiencePains.list.js';
-import { audiencePainResolve, metadata as audiencePainResolveMeta } from '../../commands/audience-pains/resolve/audiencePain.resolve.js';
 import { audiencePainUpdate, metadata as audiencePainUpdateMeta } from '../../commands/audience-pains/update/audiencePain.update.js';
 import { audienceAdd, metadata as audienceAddMeta } from '../../commands/audiences/add/audience.add.js';
 import { audiencesList, metadata as audiencesListMeta } from '../../commands/audiences/list/audiences.list.js';
@@ -104,12 +103,7 @@ export const commands: RegisteredCommand[] = [
     metadata: audiencePainsListMeta,
     handler: audiencePainsList
   },
-  {
-    path: 'audiencePain resolve',
-    metadata: audiencePainResolveMeta,
-    handler: audiencePainResolve
-  },
-  {
+{
     path: 'audiencePain update',
     metadata: audiencePainUpdateMeta,
     handler: audiencePainUpdate

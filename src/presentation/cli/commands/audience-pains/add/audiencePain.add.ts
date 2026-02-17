@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddAudiencePainCommandHandler } from "../../../../../application/context/audience-pains/add/AddAudiencePainCommandHandler.js";
-import { AddAudiencePainCommand } from "../../../../../application/context/audience-pains/add/AddAudiencePainCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -38,7 +36,7 @@ export const metadata: CommandMetadata = {
       description: "Add a pain point about efficiency",
     },
   ],
-  related: ["audience pain update", "audience-pain resolve", "audience add"],
+  related: ["audience pain update", "audience add"],
 };
 
 /**
@@ -52,38 +50,24 @@ export async function audiencePainAdd(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new AddAudiencePainCommandHandler(
-      container.audiencePainAddedEventStore,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: AddAudiencePainCommand = {
+    const response = await container.addAudiencePainController.handle({
       title: options.title,
       description: options.description,
-    };
+    });
 
-    const result = await commandHandler.execute(command);
-
-    // 3. Fetch view for display
-    const view = await container.audiencePainUpdatedProjector.findById(result.painId);
-
-    // Success output
     const data: Record<string, string> = {
-      painId: result.painId,
-      title: options.title,
-      description: options.description,
+      painId: response.painId,
+      title: response.title,
+      description: response.description,
     };
 
-    if (view) {
-      data.version = view.version.toString();
+    if (response.version !== null) {
+      data.version = response.version.toString();
     }
 
-    renderer.success(`Audience pain '${options.title}' captured successfully.`, data);
+    renderer.success(`Audience pain '${response.title}' captured successfully.`, data);
   } catch (error) {
     renderer.error("Failed to add audience pain", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

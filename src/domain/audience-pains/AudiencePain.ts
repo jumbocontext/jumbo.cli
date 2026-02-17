@@ -1,7 +1,7 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
-import { UUID, ISO8601 } from "../BaseEvent.js";
+import { UUID } from "../BaseEvent.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
-import { AudiencePainEvent, AudiencePainAddedEvent, AudiencePainUpdatedEvent, AudiencePainResolvedEvent } from "./EventIndex.js";
+import { AudiencePainEvent, AudiencePainAddedEvent, AudiencePainUpdatedEvent } from "./EventIndex.js";
 import { AudiencePainEventType, AudiencePainErrorMessages, AudiencePainStatus, AudiencePainStatusType } from "./Constants.js";
 import { TITLE_RULES } from "./rules/TitleRules.js";
 import { DESCRIPTION_RULES } from "./rules/DescriptionRules.js";
@@ -11,7 +11,6 @@ export interface AudiencePainState extends AggregateState {
   title: string;
   description: string;
   status: AudiencePainStatusType;
-  resolvedAt: ISO8601 | null;
   version: number;
 }
 
@@ -31,7 +30,6 @@ export class AudiencePain extends BaseAggregate<AudiencePainState, AudiencePainE
         state.title = e.payload.title;
         state.description = e.payload.description;
         state.status = AudiencePainStatus.ACTIVE;
-        state.resolvedAt = null;
         state.version = e.version;
         break;
       }
@@ -46,12 +44,6 @@ export class AudiencePain extends BaseAggregate<AudiencePainState, AudiencePainE
         state.version = e.version;
         break;
       }
-      case AudiencePainEventType.RESOLVED: {
-        state.status = AudiencePainStatus.RESOLVED;
-        state.resolvedAt = event.timestamp;
-        state.version = event.version;
-        break;
-      }
     }
   }
 
@@ -61,7 +53,6 @@ export class AudiencePain extends BaseAggregate<AudiencePainState, AudiencePainE
       title: "",
       description: "",
       status: AudiencePainStatus.ACTIVE,
-      resolvedAt: null,
       version: 0,
     };
     return new AudiencePain(state);
@@ -77,7 +68,6 @@ export class AudiencePain extends BaseAggregate<AudiencePainState, AudiencePainE
       title: "",
       description: "",
       status: AudiencePainStatus.ACTIVE,
-      resolvedAt: null,
       version: 0,
     };
 
@@ -129,21 +119,4 @@ export class AudiencePain extends BaseAggregate<AudiencePainState, AudiencePainE
     );
   }
 
-  /**
-   * Mark pain as resolved.
-   * Indicates that the problem has been addressed.
-   */
-  resolve(resolutionNotes?: string): AudiencePainResolvedEvent {
-    // State validation - can't resolve already resolved pain
-    if (this.state.status === AudiencePainStatus.RESOLVED) {
-      throw new Error(AudiencePainErrorMessages.ALREADY_RESOLVED);
-    }
-
-    // Use BaseAggregate.makeEvent
-    return this.makeEvent<AudiencePainResolvedEvent>(
-      AudiencePainEventType.RESOLVED,
-      { resolutionNotes },
-      AudiencePain.apply
-    );
-  }
 }

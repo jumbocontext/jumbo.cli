@@ -65,6 +65,15 @@ import { QualifyGoalController } from "../context/goals/qualify/QualifyGoalContr
 import { IGoalQualifiedEventWriter } from "../context/goals/qualify/IGoalQualifiedEventWriter.js";
 import { IGoalQualifiedEventReader } from "../context/goals/qualify/IGoalQualifiedEventReader.js";
 
+// Audience Pain Controllers
+import { AddAudiencePainController } from "../context/audience-pains/add/AddAudiencePainController.js";
+
+// Audience Controllers
+import { AddAudienceController } from "../context/audiences/add/AddAudienceController.js";
+import { ListAudiencesController } from "../context/audiences/list/ListAudiencesController.js";
+import { RemoveAudienceController } from "../context/audiences/remove/RemoveAudienceController.js";
+import { UpdateAudienceController } from "../context/audiences/update/UpdateAudienceController.js";
+
 // Architecture Controllers
 import { DefineArchitectureController } from "../context/architecture/define/DefineArchitectureController.js";
 import { UpdateArchitectureController } from "../context/architecture/update/UpdateArchitectureController.js";
@@ -87,12 +96,15 @@ import { IArchitectureUpdatedProjector } from "../context/architecture/update/IA
 import { IArchitectureUpdateReader } from "../context/architecture/update/IArchitectureUpdateReader.js";
 import { IArchitectureReader } from "../context/architecture/IArchitectureReader.js";
 import { GetArchitectureController } from "../context/architecture/get/GetArchitectureController.js";
+import { AddComponentController } from "../context/components/add/AddComponentController.js";
+import { GetComponentsController } from "../context/components/list/GetComponentsController.js";
+import { UpdateComponentController } from "../context/components/update/UpdateComponentController.js";
 import { IComponentAddedProjector } from "../context/components/add/IComponentAddedProjector.js";
 import { IComponentAddReader } from "../context/components/add/IComponentAddReader.js";
 import { IComponentUpdatedProjector } from "../context/components/update/IComponentUpdatedProjector.js";
 import { IComponentUpdateReader } from "../context/components/update/IComponentUpdateReader.js";
-import { IComponentDeprecatedProjector } from "../context/components/deprecate/IComponentDeprecatedProjector.js";
-import { IComponentDeprecateReader } from "../context/components/deprecate/IComponentDeprecateReader.js";
+import { DeprecateComponentController } from "../context/components/deprecate/DeprecateComponentController.js";
+import { ShowComponentController } from "../context/components/show/ShowComponentController.js";
 import { IComponentRemovedProjector } from "../context/components/remove/IComponentRemovedProjector.js";
 import { IComponentRemoveReader } from "../context/components/remove/IComponentRemoveReader.js";
 import { IComponentViewReader } from "../context/components/get/IComponentViewReader.js";
@@ -127,11 +139,13 @@ import { IRelationViewReader } from "../context/relations/get/IRelationViewReade
 // Audience Pain Projection Store ports - decomposed by use case
 import { IAudiencePainAddedProjector } from "../context/audience-pains/add/IAudiencePainAddedProjector.js";
 import { IAudiencePainUpdatedProjector } from "../context/audience-pains/update/IAudiencePainUpdatedProjector.js";
-import { IAudiencePainResolvedProjector } from "../context/audience-pains/resolve/IAudiencePainResolvedProjector.js";
 import { IAudiencePainUpdateReader } from "../context/audience-pains/update/IAudiencePainUpdateReader.js";
+import { UpdateAudiencePainController } from "../context/audience-pains/update/UpdateAudiencePainController.js";
+import { GetAudiencePainsController } from "../context/audience-pains/list/GetAudiencePainsController.js";
 // Audience Projection Store ports - decomposed by use case
 import { IAudienceAddedProjector } from "../context/audiences/add/IAudienceAddedProjector.js";
 import { IAudienceUpdatedProjector } from "../context/audiences/update/IAudienceUpdatedProjector.js";
+import { IAudienceUpdateReader } from "../context/audiences/update/IAudienceUpdateReader.js";
 import { IAudienceRemovedProjector } from "../context/audiences/remove/IAudienceRemovedProjector.js";
 import { IAudienceRemoveReader } from "../context/audiences/remove/IAudienceRemoveReader.js";
 // Value Proposition Projection Store ports - decomposed by use case
@@ -201,7 +215,7 @@ import { IArchitectureUpdatedEventWriter } from "../context/architecture/update/
 import { IArchitectureUpdatedEventReader } from "../context/architecture/update/IArchitectureUpdatedEventReader.js";
 import { IComponentAddedEventWriter } from "../context/components/add/IComponentAddedEventWriter.js";
 import { IComponentUpdatedEventWriter } from "../context/components/update/IComponentUpdatedEventWriter.js";
-import { IComponentDeprecatedEventWriter } from "../context/components/deprecate/IComponentDeprecatedEventWriter.js";
+import { IComponentDeprecatedProjector } from "../context/components/deprecate/IComponentDeprecatedProjector.js";
 import { IComponentRemovedEventWriter } from "../context/components/remove/IComponentRemovedEventWriter.js";
 import { IDependencyAddedEventWriter } from "../context/dependencies/add/IDependencyAddedEventWriter.js";
 import { IDependencyUpdatedEventWriter } from "../context/dependencies/update/IDependencyUpdatedEventWriter.js";
@@ -223,7 +237,6 @@ import { IAudienceUpdatedEventWriter } from "../context/audiences/update/IAudien
 import { IAudienceRemovedEventWriter } from "../context/audiences/remove/IAudienceRemovedEventWriter.js";
 import { IAudiencePainAddedEventWriter } from "../context/audience-pains/add/IAudiencePainAddedEventWriter.js";
 import { IAudiencePainUpdatedEventWriter } from "../context/audience-pains/update/IAudiencePainUpdatedEventWriter.js";
-import { IAudiencePainResolvedEventWriter } from "../context/audience-pains/resolve/IAudiencePainResolvedEventWriter.js";
 import { IValuePropositionAddedEventWriter } from "../context/value-propositions/add/IValuePropositionAddedEventWriter.js";
 import { IValuePropositionUpdatedEventWriter } from "../context/value-propositions/update/IValuePropositionUpdatedEventWriter.js";
 import { IValuePropositionRemovedEventWriter } from "../context/value-propositions/remove/IValuePropositionRemovedEventWriter.js";
@@ -323,10 +336,24 @@ export interface IApplicationContainer {
   pauseWorkCommandHandler: PauseWorkCommandHandler;
   resumeWorkController: ResumeWorkController;
 
+  // Audience Pain Controllers
+  addAudiencePainController: AddAudiencePainController;
+
+  // Audience Controllers
+  addAudienceController: AddAudienceController;
+  listAudiencesController: ListAudiencesController;
+  removeAudienceController: RemoveAudienceController;
+  updateAudienceController: UpdateAudienceController;
+
   // Architecture Controllers
   defineArchitectureController: DefineArchitectureController;
   updateArchitectureController: UpdateArchitectureController;
   getArchitectureController: GetArchitectureController;
+
+  // Component Controllers
+  addComponentController: AddComponentController;
+  getComponentsController: GetComponentsController;
+  updateComponentController: UpdateComponentController;
 
   // Solution Category - Event Stores
   // Architecture Event Stores - decomposed by use case
@@ -335,7 +362,7 @@ export interface IApplicationContainer {
   // Component Event Stores - decomposed by use case
   componentAddedEventStore: IComponentAddedEventWriter;
   componentUpdatedEventStore: IComponentUpdatedEventWriter;
-  componentDeprecatedEventStore: IComponentDeprecatedEventWriter;
+  deprecateComponentController: DeprecateComponentController;
   componentRemovedEventStore: IComponentRemovedEventWriter;
   // Dependency Event Stores - decomposed by use case
   dependencyAddedEventStore: IDependencyAddedEventWriter;
@@ -363,7 +390,7 @@ export interface IApplicationContainer {
   // Component Projection Stores - decomposed by use case
   componentAddedProjector: IComponentAddedProjector & IComponentAddReader;
   componentUpdatedProjector: IComponentUpdatedProjector & IComponentUpdateReader;
-  componentDeprecatedProjector: IComponentDeprecatedProjector & IComponentDeprecateReader;
+  componentDeprecatedProjector: IComponentDeprecatedProjector;
   componentRemovedProjector: IComponentRemovedProjector & IComponentRemoveReader;
   componentViewReader: IComponentViewReader;
   componentReader: IComponentReader;
@@ -406,8 +433,7 @@ export interface IApplicationContainer {
   // AudiencePain Event Stores - decomposed by use case
   audiencePainAddedEventStore: IAudiencePainAddedEventWriter;
   audiencePainUpdatedEventStore: IAudiencePainUpdatedEventWriter;
-  audiencePainResolvedEventStore: IAudiencePainResolvedEventWriter;
-  // ValueProposition Event Stores - decomposed by use case
+// ValueProposition Event Stores - decomposed by use case
   valuePropositionAddedEventStore: IValuePropositionAddedEventWriter;
   valuePropositionUpdatedEventStore: IValuePropositionUpdatedEventWriter;
   valuePropositionRemovedEventStore: IValuePropositionRemovedEventWriter;
@@ -419,13 +445,14 @@ export interface IApplicationContainer {
   projectContextReader: IProjectContextReader;
   // Audience Projection Stores - decomposed by use case
   audienceAddedProjector: IAudienceAddedProjector;
-  audienceUpdatedProjector: IAudienceUpdatedProjector;
+  audienceUpdatedProjector: IAudienceUpdatedProjector & IAudienceUpdateReader;
   audienceRemovedProjector: IAudienceRemovedProjector & IAudienceRemoveReader;
   audienceContextReader: IAudienceContextReader;
   // AudiencePain Projection Stores - decomposed by use case
   audiencePainAddedProjector: IAudiencePainAddedProjector;
   audiencePainUpdatedProjector: IAudiencePainUpdatedProjector & IAudiencePainUpdateReader;
-  audiencePainResolvedProjector: IAudiencePainResolvedProjector;
+  updateAudiencePainController: UpdateAudiencePainController;
+  getAudiencePainsController: GetAudiencePainsController;
   audiencePainContextReader: IAudiencePainContextReader;
   // ValueProposition Projection Stores - decomposed by use case
   valuePropositionAddedProjector: IValuePropositionAddedProjector;

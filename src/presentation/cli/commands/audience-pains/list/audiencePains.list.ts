@@ -11,7 +11,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListAudiencePainsQueryHandler } from "../../../../../application/context/audience-pains/list/ListAudiencePainsQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { AudiencePainView } from "../../../../../application/context/audience-pains/AudiencePainView.js";
 
@@ -35,7 +34,7 @@ export const metadata: CommandMetadata = {
       description: "List all pain points as YAML",
     },
   ],
-  related: ["audiencePain add", "audiencePain update", "audiencePain resolve"],
+  related: ["audiencePain add", "audiencePain update"],
 };
 
 /**
@@ -66,13 +65,7 @@ export async function audiencePainsList(
   const renderer = Renderer.getInstance();
 
   try {
-    // Create query handler using container dependencies
-    const queryHandler = new ListAudiencePainsQueryHandler(
-      container.audiencePainContextReader
-    );
-
-    // Execute query
-    const pains = await queryHandler.execute();
+    const { pains } = await container.getAudiencePainsController.handle({});
 
     if (pains.length === 0) {
       renderer.info("No active pain points. Use 'jumbo audiencePain add' to add one.");

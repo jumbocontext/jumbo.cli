@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveAudienceCommandHandler } from "../../../../../application/context/audiences/remove/RemoveAudienceCommandHandler.js";
-import { RemoveAudienceCommand } from "../../../../../application/context/audiences/remove/RemoveAudienceCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -53,42 +51,23 @@ export async function audienceRemove(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Get audience name before removal (for confirmation message)
-    const view = await container.audienceRemovedProjector.findById(options.audienceId);
-    if (!view) {
-      renderer.error(`Audience '${options.audienceId}' not found.`);
-      process.exit(1);
-    }
-
-    // 2. Create command handler using container dependencies
-    const commandHandler = new RemoveAudienceCommandHandler(
-      container.audienceRemovedEventStore,
-      container.eventBus,
-      container.audienceRemovedProjector
-    );
-
-    // 3. Execute command
-    const command: RemoveAudienceCommand = {
+    const response = await container.removeAudienceController.handle({
       audienceId: options.audienceId,
       reason: options.reason,
-    };
+    });
 
-    await commandHandler.execute(command);
-
-    // Success output
     const data: Record<string, string> = {
-      audienceId: options.audienceId,
-      name: view.name,
+      audienceId: response.audienceId,
+      name: response.name,
     };
 
     if (options.reason) {
       data.reason = options.reason;
     }
 
-    renderer.success(`Audience '${view.name}' removed successfully.`, data);
+    renderer.success(`Audience '${response.name}' removed successfully.`, data);
   } catch (error) {
     renderer.error("Failed to remove audience", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

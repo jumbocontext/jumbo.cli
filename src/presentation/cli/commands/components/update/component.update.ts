@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateComponentCommandHandler } from "../../../../../application/context/components/update/UpdateComponentCommandHandler.js";
-import { UpdateComponentCommand } from "../../../../../application/context/components/update/UpdateComponentCommand.js";
 import { ComponentTypeValue } from "../../../../../domain/components/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
@@ -77,30 +75,18 @@ export async function componentUpdate(
   }
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new UpdateComponentCommandHandler(
-      container.componentUpdatedEventStore,
-      container.eventBus,
-      container.componentUpdatedProjector
-    );
-
-    // 2. Execute command
-    const command: UpdateComponentCommand = {
+    const response = await container.updateComponentController.handle({
       componentId: options.componentId,
       description: options.description,
       responsibility: options.responsibility,
       path: options.path,
       type: options.type,
-    };
-    const result = await commandHandler.execute(command);
-
-    // 3. Fetch updated view for display
-    const updated = await container.componentUpdatedProjector.findById(result.componentId);
+    });
 
     // Success output
     const data: Record<string, string | number> = {
-      componentId: result.componentId,
-      name: updated?.name || options.componentId
+      componentId: response.componentId,
+      name: response.view?.name || options.componentId
     };
 
     if (options.description) data.description = options.description;
@@ -108,10 +94,9 @@ export async function componentUpdate(
     if (options.path) data.path = options.path;
     if (options.type) data.type = options.type;
 
-    renderer.success(`Component '${updated?.name || options.componentId}' updated`, data);
+    renderer.success(`Component '${response.view?.name || options.componentId}' updated`, data);
   } catch (error) {
     renderer.error("Failed to update component", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateAudienceCommandHandler } from "../../../../../application/context/audiences/update/UpdateAudienceCommandHandler.js";
-import { UpdateAudienceCommand } from "../../../../../application/context/audiences/update/UpdateAudienceCommand.js";
 import { AudiencePriorityType } from "../../../../../domain/audiences/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
@@ -65,25 +63,16 @@ export async function audienceUpdate(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new UpdateAudienceCommandHandler(
-      container.audienceUpdatedEventStore,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: UpdateAudienceCommand = {
+    const response = await container.updateAudienceController.handle({
       audienceId: options.audienceId,
       name: options.name,
       description: options.description,
       priority: options.priority,
-    };
-
-    const result = await commandHandler.execute(command);
+    });
 
     // Success output
     const data: Record<string, string> = {
-      audienceId: result.audienceId,
+      audienceId: response.audienceId,
     };
 
     if (options.name) data.name = options.name;
@@ -98,5 +87,4 @@ export async function audienceUpdate(options: {
     renderer.error("Failed to update audience", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

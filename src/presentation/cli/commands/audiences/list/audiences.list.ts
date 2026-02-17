@@ -11,7 +11,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListAudiencesQueryHandler } from "../../../../../application/context/audiences/list/ListAudiencesQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { AudienceView } from "../../../../../application/context/audiences/AudienceView.js";
 
@@ -66,13 +65,7 @@ export async function audiencesList(
   const renderer = Renderer.getInstance();
 
   try {
-    // Create query handler using container dependencies
-    const queryHandler = new ListAudiencesQueryHandler(
-      container.audienceContextReader
-    );
-
-    // Execute query
-    const audiences = await queryHandler.execute();
+    const { audiences } = await container.listAudiencesController.handle({});
 
     if (audiences.length === 0) {
       renderer.info("No audiences defined yet. Use 'jumbo audience add' to add one.");
