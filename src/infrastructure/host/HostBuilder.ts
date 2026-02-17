@@ -275,6 +275,8 @@ import { ResumeGoalCommandHandler } from "../../application/context/goals/resume
 // Architecture Controllers
 import { DefineArchitectureController } from "../../application/context/architecture/define/DefineArchitectureController.js";
 import { LocalDefineArchitectureGateway } from "../../application/context/architecture/define/LocalDefineArchitectureGateway.js";
+import { GetArchitectureController } from "../../application/context/architecture/get/GetArchitectureController.js";
+import { LocalGetArchitectureGateway } from "../../application/context/architecture/get/LocalGetArchitectureGateway.js";
 
 // Solution Context
 import { UnprimedBrownfieldQualifier } from "../../application/UnprimedBrownfieldQualifier.js";
@@ -449,7 +451,6 @@ export class HostBuilder {
     const architectureDefinedProjector = new SqliteArchitectureDefinedProjector(this.db);
     const architectureUpdatedProjector = new SqliteArchitectureUpdatedProjector(this.db);
     const architectureReader = new SqliteArchitectureReader(this.db);
-    const architectureViewer = architectureReader;
     // Component Projection Stores - decomposed by use case
     const componentAddedProjector = new SqliteComponentAddedProjector(this.db);
     const componentUpdatedProjector = new SqliteComponentUpdatedProjector(this.db);
@@ -634,6 +635,12 @@ export class HostBuilder {
     );
     const defineArchitectureController = new DefineArchitectureController(
       defineArchitectureGateway
+    );
+    const getArchitectureGateway = new LocalGetArchitectureGateway(
+      architectureReader
+    );
+    const getArchitectureController = new GetArchitectureController(
+      getArchitectureGateway
     );
 
     // Project Initialization Protocol
@@ -878,6 +885,7 @@ export class HostBuilder {
 
       // Architecture Controllers
       defineArchitectureController,
+      getArchitectureController,
 
       // Solution Category
       // Architecture Event Stores - decomposed by use case
@@ -909,7 +917,6 @@ export class HostBuilder {
       architectureDefinedProjector,
       architectureUpdatedProjector,
       architectureReader,
-      architectureViewer,
       // Component Projection Stores - decomposed by use case
       componentAddedProjector,
       componentUpdatedProjector,

@@ -85,7 +85,7 @@ import { IArchitectureDefineReader } from "../context/architecture/define/IArchi
 import { IArchitectureUpdatedProjector } from "../context/architecture/update/IArchitectureUpdatedProjector.js";
 import { IArchitectureUpdateReader } from "../context/architecture/update/IArchitectureUpdateReader.js";
 import { IArchitectureReader } from "../context/architecture/IArchitectureReader.js";
-import { IArchitectureViewer } from "../context/architecture/view/IArchitectureViewer.js";
+import { GetArchitectureController } from "../context/architecture/get/GetArchitectureController.js";
 import { IComponentAddedProjector } from "../context/components/add/IComponentAddedProjector.js";
 import { IComponentAddReader } from "../context/components/add/IComponentAddReader.js";
 import { IComponentUpdatedProjector } from "../context/components/update/IComponentUpdatedProjector.js";
@@ -324,6 +324,7 @@ export interface IApplicationContainer {
 
   // Architecture Controllers
   defineArchitectureController: DefineArchitectureController;
+  getArchitectureController: GetArchitectureController;
 
   // Solution Category - Event Stores
   // Architecture Event Stores - decomposed by use case
@@ -357,7 +358,6 @@ export interface IApplicationContainer {
   architectureDefinedProjector: IArchitectureDefinedProjector & IArchitectureDefineReader;
   architectureUpdatedProjector: IArchitectureUpdatedProjector & IArchitectureUpdateReader;
   architectureReader: IArchitectureReader;
-  architectureViewer: IArchitectureViewer;
   // Component Projection Stores - decomposed by use case
   componentAddedProjector: IComponentAddedProjector & IComponentAddReader;
   componentUpdatedProjector: IComponentUpdatedProjector & IComponentUpdateReader;

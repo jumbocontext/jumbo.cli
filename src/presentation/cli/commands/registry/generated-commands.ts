@@ -10,7 +10,6 @@
 import { RegisteredCommand } from './CommandMetadata.js';
 
 import { architectureDefine, metadata as architectureDefineMeta } from '../../commands/architecture/define/architecture.define.js';
-import { architectureShow, metadata as architectureShowMeta } from '../../commands/architecture/show/architecture.show.js';
 import { architectureUpdate, metadata as architectureUpdateMeta } from '../../commands/architecture/update/architecture.update.js';
 import { architectureView, metadata as architectureViewMeta } from '../../commands/architecture/view/architecture.view.js';
 import { audiencePainAdd, metadata as audiencePainAddMeta } from '../../commands/audience-pains/add/audiencePain.add.js';
@@ -84,11 +83,6 @@ export const commands: RegisteredCommand[] = [
     path: 'architecture define',
     metadata: architectureDefineMeta,
     handler: architectureDefine
-  },
-  {
-    path: 'architecture show',
-    metadata: architectureShowMeta,
-    handler: architectureShow
   },
   {
     path: 'architecture update',

@@ -158,7 +158,7 @@ export class GoalRefineOutputBuilder {
       "  jumbo decisions list     - Architectural decisions\n" +
       "  jumbo components list    - System components\n" +
       "  jumbo dependencies list  - External dependencies\n" +
-      "  jumbo architecture show  - Architecture overview"
+      "  jumbo architecture view  - Architecture overview"
     );
 
     // Relation add syntax

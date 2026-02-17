@@ -7,7 +7,6 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { ViewArchitectureCommandHandler } from "../../../../../application/context/architecture/view/ViewArchitectureCommandHandler.js";
 
 /**
  * Command metadata for auto-registration
@@ -35,11 +34,7 @@ export async function architectureView(
   const renderer = Renderer.getInstance();
 
   try {
-    const commandHandler = new ViewArchitectureCommandHandler(
-      container.architectureViewer
-    );
-
-    const architecture = await commandHandler.execute();
+    const { architecture } = await container.getArchitectureController.handle({});
 
     if (!architecture) {
       renderer.info("No architecture defined. Use 'jumbo architecture define' to create one.");
@@ -80,5 +75,4 @@ export async function architectureView(
     renderer.error("Failed to view architecture", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }
