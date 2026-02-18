@@ -6,8 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddDependencyCommandHandler } from "../../../../../application/context/dependencies/add/AddDependencyCommandHandler.js";
-import { AddDependencyCommand } from "../../../../../application/context/dependencies/add/AddDependencyCommand.js";
+import { AddDependencyRequest } from "../../../../../application/context/dependencies/add/AddDependencyRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -65,26 +64,18 @@ export async function dependencyAdd(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new AddDependencyCommandHandler(
-      container.dependencyAddedEventStore,
-      container.eventBus,
-      container.dependencyAddedProjector
-    );
-
-    // 2. Execute command
-    const command: AddDependencyCommand = {
+    const request: AddDependencyRequest = {
       consumerId: options.consumerId,
       providerId: options.providerId,
       endpoint: options.endpoint,
-      contract: options.contract
+      contract: options.contract,
     };
 
-    const result = await commandHandler.execute(command);
+    const response = await container.addDependencyController.handle(request);
 
-    // 3. Success output
+    // Success output
     const data: Record<string, string | number> = {
-      dependencyId: result.dependencyId,
+      dependencyId: response.dependencyId,
       consumer: options.consumerId,
       provider: options.providerId,
     };

@@ -79,6 +79,12 @@ import { FsComponentAddedEventStore } from "../context/components/add/FsComponen
 import { FsComponentUpdatedEventStore } from "../context/components/update/FsComponentUpdatedEventStore.js";
 import { FsComponentDeprecatedEventStore } from "../context/components/deprecate/FsComponentDeprecatedEventStore.js";
 import { FsComponentRemovedEventStore } from "../context/components/remove/FsComponentRemovedEventStore.js";
+// Dependency Controllers
+import { AddDependencyCommandHandler } from "../../application/context/dependencies/add/AddDependencyCommandHandler.js";
+import { LocalAddDependencyGateway } from "../../application/context/dependencies/add/LocalAddDependencyGateway.js";
+import { AddDependencyController } from "../../application/context/dependencies/add/AddDependencyController.js";
+import { LocalGetDependenciesGateway } from "../../application/context/dependencies/get/LocalGetDependenciesGateway.js";
+import { GetDependenciesController } from "../../application/context/dependencies/get/GetDependenciesController.js";
 // Dependency Event Stores - decomposed by use case
 import { FsDependencyAddedEventStore } from "../context/dependencies/add/FsDependencyAddedEventStore.js";
 import { FsDependencyUpdatedEventStore } from "../context/dependencies/update/FsDependencyUpdatedEventStore.js";
@@ -812,6 +818,25 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       removeComponentGateway
     );
 
+    // Dependency Controllers
+    const addDependencyCommandHandler = new AddDependencyCommandHandler(
+      dependencyAddedEventStore,
+      eventBus,
+      dependencyAddedProjector
+    );
+    const addDependencyGateway = new LocalAddDependencyGateway(
+      addDependencyCommandHandler
+    );
+    const addDependencyController = new AddDependencyController(
+      addDependencyGateway
+    );
+    const getDependenciesGateway = new LocalGetDependenciesGateway(
+      dependencyViewReader
+    );
+    const getDependenciesController = new GetDependenciesController(
+      getDependenciesGateway
+    );
+
     // Audience Pain Controllers
     const addAudiencePainCommandHandler = new AddAudiencePainCommandHandler(
       audiencePainAddedEventStore,
@@ -1139,6 +1164,10 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       showComponentController,
       deprecateComponentController,
       removeComponentController,
+
+      // Dependency Controllers
+      addDependencyController,
+      getDependenciesController,
 
       // Solution Category
       // Architecture Event Stores - decomposed by use case
