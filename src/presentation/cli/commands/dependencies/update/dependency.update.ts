@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateDependencyCommandHandler } from "../../../../../application/context/dependencies/update/UpdateDependencyCommandHandler.js";
-import { UpdateDependencyCommand } from "../../../../../application/context/dependencies/update/UpdateDependencyCommand.js";
 import { DependencyStatusType } from "../../../../../domain/dependencies/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
@@ -70,38 +68,22 @@ export async function dependencyUpdate(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new UpdateDependencyCommandHandler(
-      container.dependencyUpdatedEventStore,
-      container.dependencyUpdatedEventStore,
-      container.dependencyUpdatedProjector,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: UpdateDependencyCommand = {
-      id: options.dependencyId,
+    const response = await container.updateDependencyController.handle({
+      dependencyId: options.dependencyId,
       endpoint: options.endpoint,
       contract: options.contract,
-      status: options.status
-    };
-
-    const result = await commandHandler.execute(command);
-
-    // 3. Fetch updated view for display
-    const view = await container.dependencyUpdatedProjector.findById(result.dependencyId);
+      status: options.status,
+    });
 
     // Success output
     const data: Record<string, string | number> = {
-      dependencyId: result.dependencyId,
+      dependencyId: response.dependencyId,
     };
-    if (view) {
-      data.consumer = view.consumerId;
-      data.provider = view.providerId;
-      if (view.endpoint) data.endpoint = view.endpoint;
-      if (view.contract) data.contract = view.contract;
-      data.status = view.status;
-    }
+    if (response.consumerId) data.consumer = response.consumerId;
+    if (response.providerId) data.provider = response.providerId;
+    if (response.endpoint) data.endpoint = response.endpoint;
+    if (response.contract) data.contract = response.contract;
+    if (response.status) data.status = response.status;
 
     renderer.success(`Dependency updated`, data);
   } catch (error) {

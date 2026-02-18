@@ -117,6 +117,8 @@ import { IComponentViewReader } from "../context/components/get/IComponentViewRe
 import { IComponentReader } from "../context/components/get/IComponentReader.js";
 import { AddDependencyController } from "../context/dependencies/add/AddDependencyController.js";
 import { GetDependenciesController } from "../context/dependencies/get/GetDependenciesController.js";
+import { UpdateDependencyController } from "../context/dependencies/update/UpdateDependencyController.js";
+import { RemoveDependencyController } from "../context/dependencies/remove/RemoveDependencyController.js";
 import { IDependencyAddedProjector } from "../context/dependencies/add/IDependencyAddedProjector.js";
 import { IDependencyAddReader } from "../context/dependencies/add/IDependencyAddReader.js";
 import { IDependencyUpdatedProjector } from "../context/dependencies/update/IDependencyUpdatedProjector.js";
@@ -373,6 +375,8 @@ export interface IApplicationContainer {
   // Dependency Controllers
   addDependencyController: AddDependencyController;
   getDependenciesController: GetDependenciesController;
+  updateDependencyController: UpdateDependencyController;
+  removeDependencyController: RemoveDependencyController;
 
   // Solution Category - Event Stores
   // Architecture Event Stores - decomposed by use case

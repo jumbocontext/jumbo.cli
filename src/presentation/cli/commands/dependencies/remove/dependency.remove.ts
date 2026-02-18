@@ -6,8 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveDependencyCommandHandler } from "../../../../../application/context/dependencies/remove/RemoveDependencyCommandHandler.js";
-import { RemoveDependencyCommand } from "../../../../../application/context/dependencies/remove/RemoveDependencyCommand.js";
+import { RemoveDependencyRequest } from "../../../../../application/context/dependencies/remove/RemoveDependencyRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -55,35 +54,23 @@ export async function dependencyRemove(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new RemoveDependencyCommandHandler(
-      container.dependencyRemovedEventStore,
-      container.dependencyRemovedEventStore,
-      container.dependencyRemovedProjector,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: RemoveDependencyCommand = {
+    const request: RemoveDependencyRequest = {
       dependencyId: options.dependencyId,
-      reason: options.reason
+      reason: options.reason,
     };
 
-    const result = await commandHandler.execute(command);
-
-    // 3. Fetch updated view for display
-    const view = await container.dependencyRemovedProjector.findById(result.dependencyId);
+    const response = await container.removeDependencyController.handle(request);
 
     // Success output
     const data: Record<string, string | number> = {
-      dependencyId: result.dependencyId,
-      consumer: view?.consumerId || 'unknown',
-      provider: view?.providerId || 'unknown',
-      status: view?.status || 'removed',
+      dependencyId: response.dependencyId,
+      consumer: response.consumer,
+      provider: response.provider,
+      status: response.status,
     };
-    if (options.reason) data.reason = options.reason;
+    if (response.reason) data.reason = response.reason;
 
-    renderer.success(`Dependency '${view?.consumerId} → ${view?.providerId}' removed`, data);
+    renderer.success(`Dependency '${response.consumer} → ${response.provider}' removed`, data);
   } catch (error) {
     renderer.error("Failed to remove dependency", error instanceof Error ? error : String(error));
     process.exit(1);
