@@ -7,8 +7,6 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { BlockGoalCommandHandler } from "../../../../../application/context/goals/block/BlockGoalCommandHandler.js";
-import { BlockGoalCommand } from "../../../../../application/context/goals/block/BlockGoalCommand.js";
 import { GoalBlockOutputBuilder } from "./GoalBlockOutputBuilder.js";
 
 /**
@@ -47,23 +45,13 @@ export async function goalBlock(
   const outputBuilder = new GoalBlockOutputBuilder();
 
   try {
-    // 1. Create command handler
-    const commandHandler = new BlockGoalCommandHandler(
-      container.goalBlockedEventStore,
-      container.goalBlockedEventStore,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: BlockGoalCommand = {
+    const { goalId, note } = await container.blockGoalController.handle({
       goalId: options.goalId,
-      note: options.note
-    };
-
-    await commandHandler.execute(command);
+      note: options.note,
+    });
 
     // Build and render success output
-    const output = outputBuilder.buildSuccess(options.goalId, options.note);
+    const output = outputBuilder.buildSuccess(goalId, note);
     renderer.info(output.toHumanReadable());
   } catch (error) {
     const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));

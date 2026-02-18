@@ -11,8 +11,7 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { AddGoalCommandHandler } from "../../../../../application/context/goals/add/AddGoalCommandHandler.js";
-import { AddGoalCommand } from "../../../../../application/context/goals/add/AddGoalCommand.js";
+import { AddGoalRequest } from "../../../../../application/context/goals/add/AddGoalRequest.js";
 import { InteractivePromptService } from "../../../prompts/index.js";
 import { ComponentView } from "../../../../../application/context/components/ComponentView.js";
 import { GoalAddOutputBuilder } from "./GoalAddOutputBuilder.js";
@@ -163,17 +162,7 @@ export async function goalAdd(
 
       const inputs = await runInteractiveFlow(container);
 
-      // Create command handler with optional update dependencies for goal chaining
-      const commandHandler = new AddGoalCommandHandler(
-        container.goalAddedEventStore,
-        container.eventBus,
-        options.previousGoal ? container.goalUpdatedEventStore : undefined,
-        options.previousGoal ? container.goalUpdatedEventStore : undefined,
-        options.previousGoal ? container.goalUpdatedProjector : undefined
-      );
-
-      // Execute command with collected inputs
-      const command: AddGoalCommand = {
+      const request: AddGoalRequest = {
         objective: inputs.objective,
         successCriteria: inputs.successCriteria,
         scopeIn: inputs.scopeIn.length > 0 ? inputs.scopeIn : undefined,
@@ -182,10 +171,10 @@ export async function goalAdd(
         previousGoalId: options.previousGoal,
       };
 
-      const result = await commandHandler.execute(command);
+      const response = await container.addGoalController.handle(request);
 
       // Build and render success output
-      const output = outputBuilder.buildSuccess(result.goalId, inputs.objective);
+      const output = outputBuilder.buildSuccess(response.goalId, inputs.objective);
       renderer.info(output.toHumanReadable());
       return;
     }
@@ -197,17 +186,7 @@ export async function goalAdd(
       process.exit(1);
     }
 
-    // Create command handler with optional update dependencies for goal chaining
-    const commandHandler = new AddGoalCommandHandler(
-      container.goalAddedEventStore,
-      container.eventBus,
-      options.previousGoal ? container.goalUpdatedEventStore : undefined,
-      options.previousGoal ? container.goalUpdatedEventStore : undefined,
-      options.previousGoal ? container.goalUpdatedProjector : undefined
-    );
-
-    // Execute command (handler generates goalId)
-    const command: AddGoalCommand = {
+    const request: AddGoalRequest = {
       objective: options.objective,
       successCriteria: options.criteria || [],
       scopeIn: options.scopeIn,
@@ -216,10 +195,10 @@ export async function goalAdd(
       previousGoalId: options.previousGoal,
     };
 
-    const result = await commandHandler.execute(command);
+    const response = await container.addGoalController.handle(request);
 
     // Build and render success output
-    const output = outputBuilder.buildSuccess(result.goalId, options.objective);
+    const output = outputBuilder.buildSuccess(response.goalId, options.objective);
     renderer.info(output.toHumanReadable());
   } catch (error) {
     const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));

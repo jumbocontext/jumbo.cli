@@ -57,11 +57,13 @@ import { SessionStartController } from "../context/sessions/start/SessionStartCo
 import { GetSessionsController } from "../context/sessions/get/GetSessionsController.js";
 
 // Goal Controllers
+import { AddGoalController } from "../context/goals/add/AddGoalController.js";
 import { CompleteGoalController } from "../context/goals/complete/CompleteGoalController.js";
 import { ReviewGoalController } from "../context/goals/review/ReviewGoalController.js";
 import { IGoalSubmittedForReviewEventWriter } from "../context/goals/review/IGoalSubmittedForReviewEventWriter.js";
 import { IGoalSubmittedForReviewEventReader } from "../context/goals/review/IGoalSubmittedForReviewEventReader.js";
 import { QualifyGoalController } from "../context/goals/qualify/QualifyGoalController.js";
+import { BlockGoalController } from "../context/goals/block/BlockGoalController.js";
 import { IGoalQualifiedEventWriter } from "../context/goals/qualify/IGoalQualifiedEventWriter.js";
 import { IGoalQualifiedEventReader } from "../context/goals/qualify/IGoalQualifiedEventReader.js";
 
@@ -338,9 +340,11 @@ export interface IApplicationContainer {
   getSessionsController: GetSessionsController;
 
   // Goal Controllers
+  addGoalController: AddGoalController;
   completeGoalController: CompleteGoalController;
   reviewGoalController: ReviewGoalController;
   qualifyGoalController: QualifyGoalController;
+  blockGoalController: BlockGoalController;
 
   // Decision Controllers
   addDecisionController: AddDecisionController;
