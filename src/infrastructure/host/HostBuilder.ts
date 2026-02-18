@@ -366,6 +366,9 @@ import { LocalShowGoalGateway } from "../context/goals/get/LocalShowGoalGateway.
 import { SessionStartController } from "../../application/context/sessions/start/SessionStartController.js";
 import { GetSessionsController } from "../../application/context/sessions/get/GetSessionsController.js";
 import { LocalGetSessionsGateway } from "../context/sessions/get/LocalGetSessionsGateway.js";
+// Worker Controllers
+import { ViewWorkerController } from "../../application/context/host/workers/view/ViewWorkerController.js";
+import { LocalViewWorkerGateway } from "../../application/context/host/workers/view/LocalViewWorkerGateway.js";
 import { SessionContextQueryHandler } from "../../application/context/sessions/get/SessionContextQueryHandler.js";
 import { StartSessionCommandHandler } from "../../application/context/sessions/start/StartSessionCommandHandler.js";
 
@@ -722,6 +725,13 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const getSessionsController = new GetSessionsController(
       getSessionsGateway
     );
+
+    // Worker Controllers
+    const viewWorkerGateway = new LocalViewWorkerGateway(
+      workerIdentityReader,
+      settingsReader
+    );
+    const viewWorkerController = new ViewWorkerController(viewWorkerGateway);
 
     // Goal Controllers
     const addGoalCommandHandler = new AddGoalCommandHandler(
@@ -1450,6 +1460,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       // Session Controllers
       sessionStartController,
       getSessionsController,
+      // Worker Controllers
+      viewWorkerController,
       // Goal Controllers
       addGoalController,
       startGoalController,

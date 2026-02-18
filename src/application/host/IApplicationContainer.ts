@@ -56,6 +56,7 @@ import { GoalContextQueryHandler } from "../context/goals/get/GoalContextQueryHa
 // Session Controllers
 import { SessionStartController } from "../context/sessions/start/SessionStartController.js";
 import { GetSessionsController } from "../context/sessions/get/GetSessionsController.js";
+import { ViewWorkerController } from "../context/host/workers/view/ViewWorkerController.js";
 
 // Goal Controllers
 import { AddGoalController } from "../context/goals/add/AddGoalController.js";
@@ -355,6 +356,9 @@ export interface IApplicationContainer {
   // Session Controllers
   sessionStartController: SessionStartController;
   getSessionsController: GetSessionsController;
+
+  // Worker Controllers
+  viewWorkerController: ViewWorkerController;
 
   // Goal Controllers
   addGoalController: AddGoalController;

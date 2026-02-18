@@ -34,9 +34,7 @@ export async function workerView(
   const renderer = Renderer.getInstance();
 
   try {
-    const workerId = container.workerIdentityReader.workerId;
-    const settings = await container.settingsReader.read();
-    const claimDurationMinutes = settings.claims.claimDurationMinutes;
+    const { workerId, claimDurationMinutes } = await container.viewWorkerController.handle({});
 
     // For TTY (human): display formatted text
     // For pipe/file (machine): output structured JSON
