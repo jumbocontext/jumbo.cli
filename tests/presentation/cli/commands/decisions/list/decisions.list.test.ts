@@ -5,26 +5,25 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { decisionsList } from "../../../../../../src/presentation/cli/commands/decisions/list/decisions.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IDecisionViewReader } from "../../../../../../src/application/context/decisions/get/IDecisionViewReader.js";
+import { GetDecisionsController } from "../../../../../../src/application/context/decisions/get/GetDecisionsController.js";
 import { DecisionView } from "../../../../../../src/application/context/decisions/DecisionView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("decisions.list command", () => {
   let mockContainer: Partial<IApplicationContainer>;
-  let mockDecisionViewReader: jest.Mocked<IDecisionViewReader>;
+  let mockController: jest.Mocked<Pick<GetDecisionsController, "handle">>;
   let consoleSpy: jest.SpiedFunction<typeof console.log>;
 
   beforeEach(() => {
     // Reset renderer to text mode for testing
     Renderer.configure({ format: "text", verbosity: "normal" });
 
-    mockDecisionViewReader = {
-      findAll: jest.fn(),
-      findByIds: jest.fn(),
-    } as jest.Mocked<IDecisionViewReader>;
+    mockController = {
+      handle: jest.fn(),
+    } as jest.Mocked<Pick<GetDecisionsController, "handle">>;
 
     mockContainer = {
-      decisionViewReader: mockDecisionViewReader,
+      getDecisionsController: mockController as unknown as GetDecisionsController,
     };
 
     consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
@@ -54,28 +53,28 @@ describe("decisions.list command", () => {
       },
     ];
 
-    mockDecisionViewReader.findAll.mockResolvedValue(mockDecisions);
+    mockController.handle.mockResolvedValue({ decisions: mockDecisions });
 
     await decisionsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockDecisionViewReader.findAll).toHaveBeenCalledWith("all");
+    expect(mockController.handle).toHaveBeenCalledWith({ status: "all" });
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should filter by status when specified", async () => {
-    mockDecisionViewReader.findAll.mockResolvedValue([]);
+    mockController.handle.mockResolvedValue({ decisions: [] });
 
     await decisionsList({ status: "active" }, mockContainer as IApplicationContainer);
 
-    expect(mockDecisionViewReader.findAll).toHaveBeenCalledWith("active");
+    expect(mockController.handle).toHaveBeenCalledWith({ status: "active" });
   });
 
   it("should show info message when no decisions exist", async () => {
-    mockDecisionViewReader.findAll.mockResolvedValue([]);
+    mockController.handle.mockResolvedValue({ decisions: [] });
 
     await decisionsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockDecisionViewReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockController.handle).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 
@@ -100,11 +99,11 @@ describe("decisions.list command", () => {
       },
     ];
 
-    mockDecisionViewReader.findAll.mockResolvedValue(mockDecisions);
+    mockController.handle.mockResolvedValue({ decisions: mockDecisions });
 
     await decisionsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockDecisionViewReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockController.handle).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 });

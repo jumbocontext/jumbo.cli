@@ -11,7 +11,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { GetDecisionsQueryHandler } from "../../../../../application/context/decisions/get/GetDecisionsQueryHandler.js";
 import { DecisionStatusFilter } from "../../../../../application/context/decisions/get/IDecisionViewReader.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { DecisionView } from "../../../../../application/context/decisions/DecisionView.js";
@@ -101,13 +100,8 @@ export async function decisionsList(
       process.exit(1);
     }
 
-    // Create query handler using container dependencies
-    const queryHandler = new GetDecisionsQueryHandler(
-      container.decisionViewReader
-    );
-
-    // Execute query
-    const decisions = await queryHandler.execute(statusFilter);
+    // Delegate to controller
+    const { decisions } = await container.getDecisionsController.handle({ status: statusFilter });
 
     if (decisions.length === 0) {
       const filterMsg = statusFilter === "all" ? "" : ` with status '${statusFilter}'`;
