@@ -84,6 +84,7 @@ import { ResumeWorkController } from "../context/work/resume/ResumeWorkControlle
 
 import { AddDecisionController } from "../context/decisions/add/AddDecisionController.js";
 import { GetDecisionsController } from "../context/decisions/get/GetDecisionsController.js";
+import { ReverseDecisionController } from "../context/decisions/reverse/ReverseDecisionController.js";
 import { IDecisionAddedProjector } from "../context/decisions/add/IDecisionAddedProjector.js";
 import { IDecisionUpdatedProjector } from "../context/decisions/update/IDecisionUpdatedProjector.js";
 import { IDecisionUpdateReader } from "../context/decisions/update/IDecisionUpdateReader.js";
@@ -338,6 +339,7 @@ export interface IApplicationContainer {
   // Decision Controllers
   addDecisionController: AddDecisionController;
   getDecisionsController: GetDecisionsController;
+  reverseDecisionController: ReverseDecisionController;
 
   // Work Command Handlers
   pauseWorkCommandHandler: PauseWorkCommandHandler;

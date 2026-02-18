@@ -57,6 +57,9 @@ import { LocalAddDecisionGateway } from "../../application/context/decisions/add
 import { AddDecisionController } from "../../application/context/decisions/add/AddDecisionController.js";
 import { LocalGetDecisionsGateway } from "../../application/context/decisions/get/LocalGetDecisionsGateway.js";
 import { GetDecisionsController } from "../../application/context/decisions/get/GetDecisionsController.js";
+import { ReverseDecisionCommandHandler } from "../../application/context/decisions/reverse/ReverseDecisionCommandHandler.js";
+import { LocalReverseDecisionGateway } from "../../application/context/decisions/reverse/LocalReverseDecisionGateway.js";
+import { ReverseDecisionController } from "../../application/context/decisions/reverse/ReverseDecisionController.js";
 // Decision Event Stores - decomposed by use case
 import { FsDecisionAddedEventStore } from "../context/decisions/add/FsDecisionAddedEventStore.js";
 import { FsDecisionUpdatedEventStore } from "../context/decisions/update/FsDecisionUpdatedEventStore.js";
@@ -710,6 +713,17 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const getDecisionsController = new GetDecisionsController(
       getDecisionsGateway
     );
+    const reverseDecisionCommandHandler = new ReverseDecisionCommandHandler(
+      decisionReversedEventStore,
+      decisionReversedProjector,
+      eventBus
+    );
+    const reverseDecisionGateway = new LocalReverseDecisionGateway(
+      reverseDecisionCommandHandler
+    );
+    const reverseDecisionController = new ReverseDecisionController(
+      reverseDecisionGateway
+    );
 
     // Component Controllers
     const addComponentCommandHandler = new AddComponentCommandHandler(
@@ -1068,6 +1082,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       // Decision Controllers
       addDecisionController,
       getDecisionsController,
+      reverseDecisionController,
 
       // Work Command Handlers
       pauseWorkCommandHandler,

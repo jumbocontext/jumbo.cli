@@ -6,8 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ReverseDecisionCommandHandler } from "../../../../../application/context/decisions/reverse/ReverseDecisionCommandHandler.js";
-import { ReverseDecisionCommand } from "../../../../../application/context/decisions/reverse/ReverseDecisionCommand.js";
+import { ReverseDecisionRequest } from "../../../../../application/context/decisions/reverse/ReverseDecisionRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -49,23 +48,15 @@ export async function decisionReverse(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new ReverseDecisionCommandHandler(
-      container.decisionReversedEventStore,
-      container.decisionReversedProjector,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: ReverseDecisionCommand = {
+    const request: ReverseDecisionRequest = {
       decisionId: options.decisionId,
-      reason: options.reason
+      reason: options.reason,
     };
 
-    const result = await commandHandler.execute(command);
+    const response = await container.reverseDecisionController.handle(request);
 
     // Success output
-    renderer.success(`Decision '${result.decisionId}' reversed`);
+    renderer.success(`Decision '${response.decisionId}' reversed`);
     renderer.info(`Reason: ${options.reason}`);
   } catch (error) {
     renderer.error("Failed to reverse decision", error instanceof Error ? error : String(error));
