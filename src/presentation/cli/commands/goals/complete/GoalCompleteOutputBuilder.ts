@@ -1,6 +1,6 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { ContextualGoalView } from '../../../../../application/context/goals/get/ContextualGoalView.js';
+import { CompleteGoalResponse } from '../../../../../application/context/goals/complete/CompleteGoalResponse.js';
 
 /**
  * Specialized builder for goal.complete command output.
@@ -20,10 +20,7 @@ export class GoalCompleteOutputBuilder {
    * Build output for successful goal completion.
    * Renders learning capture prompt, entity review, and optional next goal information.
    */
-  buildSuccess(
-    contextView: ContextualGoalView,
-    nextGoal?: { goalId: string; objective: string; status: string }
-  ): TerminalOutput {
+  buildSuccess(response: CompleteGoalResponse): TerminalOutput {
     this.builder.reset();
 
     // Section 1: Capture new learnings
@@ -79,16 +76,16 @@ export class GoalCompleteOutputBuilder {
     );
 
     // Next goal in chain (if exists)
-    if (nextGoal) {
+    if (response.nextGoal) {
       this.builder.addPrompt("## Next goal in chain:");
       this.builder.addData({
-        goalId: nextGoal.goalId,
-        objective: nextGoal.objective,
-        status: nextGoal.status,
+        goalId: response.nextGoal.goalId,
+        objective: response.nextGoal.objective,
+        status: response.nextGoal.status,
       });
       this.builder.addPrompt(
         "Start the next goal immediately. Run:\n" +
-        `  jumbo goal start --goal-id ${nextGoal.goalId}`
+        `  jumbo goal start --goal-id ${response.nextGoal.goalId}`
       );
     }
 

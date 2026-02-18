@@ -8,8 +8,6 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { CompleteGoalCommandHandler } from "../../../../../application/context/goals/complete/CompleteGoalCommandHandler.js";
-import { CompleteGoalCommand } from "../../../../../application/context/goals/complete/CompleteGoalCommand.js";
 import { GoalCompleteOutputBuilder } from "./GoalCompleteOutputBuilder.js";
 
 /**
@@ -45,37 +43,14 @@ export async function goalComplete(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler
-    const commandHandler = new CompleteGoalCommandHandler(
-      container.goalCompletedEventStore,
-      container.goalCompletedEventStore,
-      container.goalCompletedProjector,
-      container.eventBus,
-      container.goalClaimPolicy,
-      container.workerIdentityReader,
-      container.goalContextQueryHandler
-    );
+    // 1. Execute via controller
+    const response = await container.completeGoalController.handle({
+      goalId: options.goalId,
+    });
 
-    // 2. Execute command - returns enriched goal context view
-    const command: CompleteGoalCommand = { goalId: options.goalId };
-    const goalContextView = await commandHandler.execute(command);
-
-    // 3. Check for next goal in chain (maintains local business logic)
-    let nextGoal;
-    if (goalContextView.goal.nextGoalId) {
-      const nextGoalView = await container.goalCompletedProjector.findById(goalContextView.goal.nextGoalId);
-      if (nextGoalView) {
-        nextGoal = {
-          goalId: nextGoalView.goalId,
-          objective: nextGoalView.objective,
-          status: nextGoalView.status,
-        };
-      }
-    }
-
-    // 4. Build and render output using builder pattern
+    // 2. Build and render output using builder pattern
     const outputBuilder = new GoalCompleteOutputBuilder();
-    const output = outputBuilder.buildSuccess(goalContextView, nextGoal);
+    const output = outputBuilder.buildSuccess(response);
 
     renderer.info(output.toHumanReadable());
 

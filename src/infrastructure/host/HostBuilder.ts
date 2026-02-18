@@ -288,6 +288,7 @@ import { LocalAddGoalGateway } from "../../application/context/goals/add/LocalAd
 import { AddGoalController } from "../../application/context/goals/add/AddGoalController.js";
 import { CompleteGoalController } from "../../application/context/goals/complete/CompleteGoalController.js";
 import { CompleteGoalCommandHandler } from "../../application/context/goals/complete/CompleteGoalCommandHandler.js";
+import { LocalCompleteGoalGateway } from "../../application/context/goals/complete/LocalCompleteGoalGateway.js";
 import { ReviewGoalController } from "../../application/context/goals/review/ReviewGoalController.js";
 import { SubmitGoalForReviewCommandHandler } from "../../application/context/goals/review/SubmitGoalForReviewCommandHandler.js";
 import { FsGoalSubmittedForReviewEventStore } from "../context/goals/review/FsGoalSubmittedForReviewEventStore.js";
@@ -641,11 +642,14 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       workerIdentityReader,
       goalContextQueryHandler
     );
-    const completeGoalController = new CompleteGoalController(
+    const completeGoalGateway = new LocalCompleteGoalGateway(
       completeGoalCommandHandler,
       goalCompletedProjector,
       goalClaimPolicy,
       workerIdentityReader
+    );
+    const completeGoalController = new CompleteGoalController(
+      completeGoalGateway
     );
     // ReviewGoalController dependencies
     const submitGoalForReviewCommandHandler = new SubmitGoalForReviewCommandHandler(
