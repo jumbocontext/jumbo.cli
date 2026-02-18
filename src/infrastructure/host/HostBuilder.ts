@@ -60,6 +60,9 @@ import { GetDecisionsController } from "../../application/context/decisions/get/
 import { ReverseDecisionCommandHandler } from "../../application/context/decisions/reverse/ReverseDecisionCommandHandler.js";
 import { LocalReverseDecisionGateway } from "../../application/context/decisions/reverse/LocalReverseDecisionGateway.js";
 import { ReverseDecisionController } from "../../application/context/decisions/reverse/ReverseDecisionController.js";
+import { SupersedeDecisionCommandHandler } from "../../application/context/decisions/supersede/SupersedeDecisionCommandHandler.js";
+import { LocalSupersedeDecisionGateway } from "../../application/context/decisions/supersede/LocalSupersedeDecisionGateway.js";
+import { SupersedeDecisionController } from "../../application/context/decisions/supersede/SupersedeDecisionController.js";
 // Decision Event Stores - decomposed by use case
 import { FsDecisionAddedEventStore } from "../context/decisions/add/FsDecisionAddedEventStore.js";
 import { FsDecisionUpdatedEventStore } from "../context/decisions/update/FsDecisionUpdatedEventStore.js";
@@ -724,6 +727,17 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const reverseDecisionController = new ReverseDecisionController(
       reverseDecisionGateway
     );
+    const supersedeDecisionCommandHandler = new SupersedeDecisionCommandHandler(
+      decisionSupersededEventStore,
+      decisionSupersededProjector,
+      eventBus
+    );
+    const supersedeDecisionGateway = new LocalSupersedeDecisionGateway(
+      supersedeDecisionCommandHandler
+    );
+    const supersedeDecisionController = new SupersedeDecisionController(
+      supersedeDecisionGateway
+    );
 
     // Component Controllers
     const addComponentCommandHandler = new AddComponentCommandHandler(
@@ -1083,6 +1097,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       addDecisionController,
       getDecisionsController,
       reverseDecisionController,
+      supersedeDecisionController,
 
       // Work Command Handlers
       pauseWorkCommandHandler,

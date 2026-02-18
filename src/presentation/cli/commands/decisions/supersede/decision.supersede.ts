@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { SupersedeDecisionCommandHandler } from "../../../../../application/context/decisions/supersede/SupersedeDecisionCommandHandler.js";
-import { SupersedeDecisionCommand } from "../../../../../application/context/decisions/supersede/SupersedeDecisionCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -49,26 +47,14 @@ export async function decisionSupersede(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new SupersedeDecisionCommandHandler(
-      container.decisionSupersededEventStore,
-      container.decisionSupersededProjector,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: SupersedeDecisionCommand = {
+    const response = await container.supersedeDecisionController.handle({
       decisionId: options.decisionId,
-      supersededBy: options.supersededBy
-    };
+      supersededBy: options.supersededBy,
+    });
 
-    const result = await commandHandler.execute(command);
-
-    // Success output
-    renderer.success(`Decision '${result.decisionId}' superseded by '${options.supersededBy}'`);
+    renderer.success(`Decision '${response.decisionId}' superseded by '${options.supersededBy}'`);
   } catch (error) {
     renderer.error("Failed to supersede decision", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }
