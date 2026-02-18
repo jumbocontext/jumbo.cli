@@ -5,26 +5,25 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { guidelinesList } from "../../../../../../src/presentation/cli/commands/guidelines/list/guidelines.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IGuidelineViewReader } from "../../../../../../src/application/context/guidelines/get/IGuidelineViewReader.js";
+import { GetGuidelinesController } from "../../../../../../src/application/context/guidelines/get/GetGuidelinesController.js";
 import { GuidelineView } from "../../../../../../src/application/context/guidelines/GuidelineView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("guidelines.list command", () => {
   let mockContainer: Partial<IApplicationContainer>;
-  let mockGuidelineViewReader: jest.Mocked<IGuidelineViewReader>;
+  let mockController: jest.Mocked<Pick<GetGuidelinesController, "handle">>;
   let consoleSpy: jest.SpiedFunction<typeof console.log>;
 
   beforeEach(() => {
     // Reset renderer to text mode for testing
     Renderer.configure({ format: "text", verbosity: "normal" });
 
-    mockGuidelineViewReader = {
-      findAll: jest.fn(),
-      findByIds: jest.fn(),
-    } as jest.Mocked<IGuidelineViewReader>;
+    mockController = {
+      handle: jest.fn(),
+    };
 
     mockContainer = {
-      guidelineViewReader: mockGuidelineViewReader,
+      getGuidelinesController: mockController as unknown as GetGuidelinesController,
     };
 
     consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
@@ -54,28 +53,28 @@ describe("guidelines.list command", () => {
       },
     ];
 
-    mockGuidelineViewReader.findAll.mockResolvedValue(mockGuidelines);
+    mockController.handle.mockResolvedValue({ guidelines: mockGuidelines });
 
     await guidelinesList({}, mockContainer as IApplicationContainer);
 
-    expect(mockGuidelineViewReader.findAll).toHaveBeenCalledWith(undefined);
+    expect(mockController.handle).toHaveBeenCalledWith({ category: undefined });
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should filter by category when specified", async () => {
-    mockGuidelineViewReader.findAll.mockResolvedValue([]);
+    mockController.handle.mockResolvedValue({ guidelines: [] });
 
     await guidelinesList({ category: "testing" }, mockContainer as IApplicationContainer);
 
-    expect(mockGuidelineViewReader.findAll).toHaveBeenCalledWith("testing");
+    expect(mockController.handle).toHaveBeenCalledWith({ category: "testing" });
   });
 
   it("should show info message when no guidelines exist", async () => {
-    mockGuidelineViewReader.findAll.mockResolvedValue([]);
+    mockController.handle.mockResolvedValue({ guidelines: [] });
 
     await guidelinesList({}, mockContainer as IApplicationContainer);
 
-    expect(mockGuidelineViewReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockController.handle).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 
@@ -100,27 +99,27 @@ describe("guidelines.list command", () => {
       },
     ];
 
-    mockGuidelineViewReader.findAll.mockResolvedValue(mockGuidelines);
+    mockController.handle.mockResolvedValue({ guidelines: mockGuidelines });
 
     await guidelinesList({}, mockContainer as IApplicationContainer);
 
-    expect(mockGuidelineViewReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockController.handle).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should filter by codingStyle category", async () => {
-    mockGuidelineViewReader.findAll.mockResolvedValue([]);
+    mockController.handle.mockResolvedValue({ guidelines: [] });
 
     await guidelinesList({ category: "codingStyle" }, mockContainer as IApplicationContainer);
 
-    expect(mockGuidelineViewReader.findAll).toHaveBeenCalledWith("codingStyle");
+    expect(mockController.handle).toHaveBeenCalledWith({ category: "codingStyle" });
   });
 
   it("should filter by security category", async () => {
-    mockGuidelineViewReader.findAll.mockResolvedValue([]);
+    mockController.handle.mockResolvedValue({ guidelines: [] });
 
     await guidelinesList({ category: "security" }, mockContainer as IApplicationContainer);
 
-    expect(mockGuidelineViewReader.findAll).toHaveBeenCalledWith("security");
+    expect(mockController.handle).toHaveBeenCalledWith({ category: "security" });
   });
 });

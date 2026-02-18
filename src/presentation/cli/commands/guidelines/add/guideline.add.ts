@@ -6,8 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddGuidelineCommandHandler } from "../../../../../application/context/guidelines/add/AddGuidelineCommandHandler.js";
-import { AddGuidelineCommand } from "../../../../../application/context/guidelines/add/AddGuidelineCommand.js";
+import { AddGuidelineRequest } from "../../../../../application/context/guidelines/add/AddGuidelineRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GuidelineCategoryValue } from "../../../../../domain/guidelines/Constants.js";
 
@@ -73,14 +72,7 @@ export async function guidelineAdd(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new AddGuidelineCommandHandler(
-      container.guidelineAddedEventStore,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: AddGuidelineCommand = {
+    const request: AddGuidelineRequest = {
       category: options.category,
       title: options.title,
       description: options.description,
@@ -89,11 +81,10 @@ export async function guidelineAdd(options: {
       examples: options.example
     };
 
-    const result = await commandHandler.execute(command);
+    const { guidelineId } = await container.addGuidelineController.handle(request);
 
-    // 3. Success output
     const data: Record<string, string | number> = {
-      guidelineId: result.guidelineId,
+      guidelineId,
       category: options.category,
       title: options.title,
       enforcement: options.enforcement,
@@ -107,7 +98,6 @@ export async function guidelineAdd(options: {
     renderer.error("Failed to add guideline", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }
 
 function categoryLabel(category: string): string {

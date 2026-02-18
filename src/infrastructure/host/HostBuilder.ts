@@ -95,6 +95,15 @@ import { RemoveDependencyController } from "../../application/context/dependenci
 import { FsDependencyAddedEventStore } from "../context/dependencies/add/FsDependencyAddedEventStore.js";
 import { FsDependencyUpdatedEventStore } from "../context/dependencies/update/FsDependencyUpdatedEventStore.js";
 import { FsDependencyRemovedEventStore } from "../context/dependencies/remove/FsDependencyRemovedEventStore.js";
+// Guideline Controllers
+import { AddGuidelineCommandHandler } from "../../application/context/guidelines/add/AddGuidelineCommandHandler.js";
+import { LocalAddGuidelineGateway } from "../../application/context/guidelines/add/LocalAddGuidelineGateway.js";
+import { AddGuidelineController } from "../../application/context/guidelines/add/AddGuidelineController.js";
+import { LocalUpdateGuidelineGateway } from "../../application/context/guidelines/update/LocalUpdateGuidelineGateway.js";
+import { UpdateGuidelineController } from "../../application/context/guidelines/update/UpdateGuidelineController.js";
+import { RemoveGuidelineCommandHandler } from "../../application/context/guidelines/remove/RemoveGuidelineCommandHandler.js";
+import { LocalRemoveGuidelineGateway } from "../../application/context/guidelines/remove/LocalRemoveGuidelineGateway.js";
+import { RemoveGuidelineController } from "../../application/context/guidelines/remove/RemoveGuidelineController.js";
 // Guideline Event Stores - decomposed by use case
 import { FsGuidelineAddedEventStore } from "../context/guidelines/add/FsGuidelineAddedEventStore.js";
 import { FsGuidelineUpdatedEventStore } from "../context/guidelines/update/FsGuidelineUpdatedEventStore.js";
@@ -170,6 +179,8 @@ import { SqliteGuidelineAddedProjector } from "../context/guidelines/add/SqliteG
 import { SqliteGuidelineUpdatedProjector } from "../context/guidelines/update/SqliteGuidelineUpdatedProjector.js";
 import { SqliteGuidelineRemovedProjector } from "../context/guidelines/remove/SqliteGuidelineRemovedProjector.js";
 import { SqliteGuidelineViewReader } from "../context/guidelines/get/SqliteGuidelineViewReader.js";
+import { LocalGetGuidelinesGateway } from "../../application/context/guidelines/get/LocalGetGuidelinesGateway.js";
+import { GetGuidelinesController } from "../../application/context/guidelines/get/GetGuidelinesController.js";
 // Invariant Projection Stores - decomposed by use case
 import { SqliteInvariantAddedProjector } from "../context/invariants/add/SqliteInvariantAddedProjector.js";
 import { SqliteInvariantUpdatedProjector } from "../context/invariants/update/SqliteInvariantUpdatedProjector.js";
@@ -599,6 +610,44 @@ export class HostBuilder {
     const guidelineUpdatedProjector = new SqliteGuidelineUpdatedProjector(this.db);
     const guidelineRemovedProjector = new SqliteGuidelineRemovedProjector(this.db);
     const guidelineViewReader = new SqliteGuidelineViewReader(this.db);
+    const getGuidelinesGateway = new LocalGetGuidelinesGateway(guidelineViewReader);
+    const getGuidelinesController = new GetGuidelinesController(getGuidelinesGateway);
+    const addGuidelineCommandHandler = new AddGuidelineCommandHandler(
+      guidelineAddedEventStore,
+      eventBus
+    );
+    const addGuidelineGateway = new LocalAddGuidelineGateway(
+      addGuidelineCommandHandler
+    );
+    const addGuidelineController = new AddGuidelineController(
+      addGuidelineGateway
+    );
+
+    // UpdateGuideline Controller
+    const updateGuidelineGateway = new LocalUpdateGuidelineGateway(
+      guidelineUpdatedEventStore,
+      guidelineUpdatedEventStore,
+      guidelineUpdatedProjector,
+      eventBus
+    );
+    const updateGuidelineController = new UpdateGuidelineController(
+      updateGuidelineGateway
+    );
+
+    // RemoveGuideline Controller
+    const removeGuidelineCommandHandler = new RemoveGuidelineCommandHandler(
+      guidelineRemovedEventStore,
+      guidelineRemovedEventStore,
+      eventBus
+    );
+    const removeGuidelineGateway = new LocalRemoveGuidelineGateway(
+      removeGuidelineCommandHandler,
+      guidelineRemovedProjector
+    );
+    const removeGuidelineController = new RemoveGuidelineController(
+      removeGuidelineGateway
+    );
+
     // Invariant Projection Stores - decomposed by use case
     const invariantAddedProjector = new SqliteInvariantAddedProjector(this.db);
     const invariantUpdatedProjector = new SqliteInvariantUpdatedProjector(this.db);
@@ -1510,6 +1559,11 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       guidelineUpdatedProjector,
       guidelineRemovedProjector,
       guidelineViewReader,
+      // Guideline Controllers
+      addGuidelineController,
+      updateGuidelineController,
+      removeGuidelineController,
+      getGuidelinesController,
       // Invariant Projection Stores - decomposed by use case
       invariantAddedProjector,
       invariantUpdatedProjector,

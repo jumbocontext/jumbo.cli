@@ -7,8 +7,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateGuidelineCommandHandler } from "../../../../../application/context/guidelines/update/UpdateGuidelineCommandHandler.js";
-import { UpdateGuidelineCommand } from "../../../../../application/context/guidelines/update/UpdateGuidelineCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GuidelineCategoryValue } from "../../../../../domain/guidelines/Constants.js";
 
@@ -82,16 +80,7 @@ export async function guidelineUpdate(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new UpdateGuidelineCommandHandler(
-      container.guidelineUpdatedEventStore,
-      container.guidelineUpdatedEventStore,
-      container.guidelineUpdatedProjector,
-      container.eventBus
-    );
-
-    // 2. Execute command - only include defined fields
-    const command: UpdateGuidelineCommand = {
+    const response = await container.updateGuidelineController.handle({
       id: options.guidelineId,
       ...(options.category !== undefined && { category: options.category }),
       ...(options.title !== undefined && { title: options.title }),
@@ -103,33 +92,17 @@ export async function guidelineUpdate(options: {
         enforcement: options.enforcement,
       }),
       ...(options.example !== undefined && { examples: options.example }),
-    };
-
-    const result = await commandHandler.execute(command);
-
-    // 3. Fetch updated view for display
-    const view = await container.guidelineUpdatedProjector.findById(result.guidelineId);
-
-    // Show which fields were updated
-    const updated: string[] = [];
-    if (options.category) updated.push("category");
-    if (options.title) updated.push("title");
-    if (options.description) updated.push("description");
-    if (options.rationale) updated.push("rationale");
-    if (options.enforcement) updated.push("enforcement");
-    if (options.example) updated.push("examples");
+    });
 
     // Success output
     const data: Record<string, string | number> = {
-      guidelineId: result.guidelineId,
-      updatedFields: updated.join(", "),
+      guidelineId: response.guidelineId,
+      updatedFields: response.updatedFields.join(", "),
     };
 
-    if (view) {
-      data.category = view.category;
-      data.title = view.title;
-      data.version = view.version;
-    }
+    if (response.category !== undefined) data.category = response.category;
+    if (response.title !== undefined) data.title = response.title;
+    if (response.version !== undefined) data.version = response.version;
 
     renderer.success(
       `Guideline '${options.guidelineId}' updated successfully`,

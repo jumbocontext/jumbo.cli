@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveGuidelineCommandHandler } from "../../../../../application/context/guidelines/remove/RemoveGuidelineCommandHandler.js";
-import { RemoveGuidelineCommand } from "../../../../../application/context/guidelines/remove/RemoveGuidelineCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -53,33 +51,21 @@ export async function guidelineRemove(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new RemoveGuidelineCommandHandler(
-      container.guidelineRemovedEventStore,
-      container.guidelineRemovedEventStore,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: RemoveGuidelineCommand = {
+    const response = await container.removeGuidelineController.handle({
       guidelineId: options.guidelineId,
       reason: options.reason,
-    };
-    const result = await commandHandler.execute(command);
-
-    // 3. Fetch updated view for display
-    const guideline = await container.guidelineRemovedProjector.findById(result.guidelineId, true);
+    });
 
     // Success output
     const data: Record<string, string | number> = {
-      guidelineId: options.guidelineId,
+      guidelineId: response.guidelineId,
     };
     if (options.reason) {
       data.reason = options.reason;
     }
 
     renderer.success(
-      `Guideline '${guideline?.title || options.guidelineId}' removed successfully`,
+      `Guideline '${response.title}' removed successfully`,
       data
     );
   } catch (error) {

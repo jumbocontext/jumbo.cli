@@ -146,6 +146,7 @@ import { IGuidelineUpdateReader } from "../context/guidelines/update/IGuidelineU
 import { IGuidelineRemovedProjector } from "../context/guidelines/remove/IGuidelineRemovedProjector.js";
 import { IGuidelineRemoveReader } from "../context/guidelines/remove/IGuidelineRemoveReader.js";
 import { IGuidelineViewReader } from "../context/guidelines/get/IGuidelineViewReader.js";
+import { GetGuidelinesController } from "../context/guidelines/get/GetGuidelinesController.js";
 import { IInvariantAddedProjector } from "../context/invariants/add/IInvariantAddedProjector.js";
 import { IInvariantAddReader } from "../context/invariants/add/IInvariantAddReader.js";
 import { IInvariantUpdatedProjector } from "../context/invariants/update/IInvariantUpdatedProjector.js";
@@ -266,6 +267,9 @@ import { IValuePropositionUpdatedEventWriter } from "../context/value-propositio
 import { IValuePropositionRemovedEventWriter } from "../context/value-propositions/remove/IValuePropositionRemovedEventWriter.js";
 // Relations Event Store ports - decomposed by use case
 import { AddRelationController } from "../context/relations/add/AddRelationController.js";
+import { AddGuidelineController } from "../context/guidelines/add/AddGuidelineController.js";
+import { UpdateGuidelineController } from "../context/guidelines/update/UpdateGuidelineController.js";
+import { RemoveGuidelineController } from "../context/guidelines/remove/RemoveGuidelineController.js";
 import { IRelationAddedEventWriter } from "../context/relations/add/IRelationAddedEventWriter.js";
 import { IRelationRemovedEventWriter } from "../context/relations/remove/IRelationRemovedEventWriter.js";
 import { IRelationRemovedEventReader } from "../context/relations/remove/IRelationRemovedEventReader.js";
@@ -463,6 +467,11 @@ export interface IApplicationContainer {
   guidelineUpdatedProjector: IGuidelineUpdatedProjector & IGuidelineUpdateReader;
   guidelineRemovedProjector: IGuidelineRemovedProjector & IGuidelineRemoveReader;
   guidelineViewReader: IGuidelineViewReader;
+  // Guideline Controllers
+  addGuidelineController: AddGuidelineController;
+  updateGuidelineController: UpdateGuidelineController;
+  removeGuidelineController: RemoveGuidelineController;
+  getGuidelinesController: GetGuidelinesController;
   // Invariant Projection Stores - decomposed by use case
   invariantAddedProjector: IInvariantAddedProjector & IInvariantAddReader;
   invariantUpdatedProjector: IInvariantUpdatedProjector & IInvariantUpdateReader;

@@ -6,7 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { GetGuidelinesQueryHandler } from "../../../../../application/context/guidelines/get/GetGuidelinesQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GuidelineView } from "../../../../../application/context/guidelines/GuidelineView.js";
 
@@ -41,8 +40,9 @@ export async function guidelinesList(
   const renderer = Renderer.getInstance();
 
   try {
-    const queryHandler = new GetGuidelinesQueryHandler(container.guidelineViewReader);
-    const guidelines = await queryHandler.execute(options.category);
+    const { guidelines } = await container.getGuidelinesController.handle({
+      category: options.category,
+    });
 
     if (guidelines.length === 0) {
       const filterMsg = options.category ? ` in category '${options.category}'` : "";
