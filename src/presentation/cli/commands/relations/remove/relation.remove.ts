@@ -6,8 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveRelationCommandHandler } from "../../../../../application/context/relations/remove/RemoveRelationCommandHandler.js";
-import { RemoveRelationCommand } from "../../../../../application/context/relations/remove/RemoveRelationCommand.js";
+import { RemoveRelationRequest } from "../../../../../application/context/relations/remove/RemoveRelationRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -52,36 +51,26 @@ export async function relationRemove(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Fetch relation details before removal for display
-    const relation = await container.relationRemovedProjector.findById(options.relationId);
-
-    // 2. Create command handler using container dependencies
-    const commandHandler = new RemoveRelationCommandHandler(
-      container.relationRemovedEventStore,
-      container.relationRemovedEventStore,
-      container.eventBus,
-      container.relationRemovedProjector
-    );
-
-    // 3. Execute command
-    const command: RemoveRelationCommand = {
+    const request: RemoveRelationRequest = {
       relationId: options.relationId,
-      reason: options.reason
+      reason: options.reason,
     };
 
-    await commandHandler.execute(command);
+    const response = await container.removeRelationController.handle(request);
 
-    // Success output
     const data: Record<string, string> = {
-      relationId: options.relationId,
+      relationId: response.relationId,
     };
 
-    if (relation) {
-      data.from = `${relation.fromEntityType}:${relation.fromEntityId}`;
-      data.relationType = relation.relationType;
-      data.to = `${relation.toEntityType}:${relation.toEntityId}`;
+    if (response.from) {
+      data.from = response.from;
     }
-
+    if (response.relationType) {
+      data.relationType = response.relationType;
+    }
+    if (response.to) {
+      data.to = response.to;
+    }
     if (options.reason) {
       data.reason = options.reason;
     }
@@ -91,5 +80,4 @@ export async function relationRemove(options: {
     renderer.error("Failed to remove relation", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

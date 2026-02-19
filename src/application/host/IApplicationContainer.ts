@@ -275,6 +275,8 @@ import { IValuePropositionUpdatedEventWriter } from "../context/value-propositio
 import { IValuePropositionRemovedEventWriter } from "../context/value-propositions/remove/IValuePropositionRemovedEventWriter.js";
 // Relations Event Store ports - decomposed by use case
 import { AddRelationController } from "../context/relations/add/AddRelationController.js";
+import { RemoveRelationController } from "../context/relations/remove/RemoveRelationController.js";
+import { GetRelationsController } from "../context/relations/get/GetRelationsController.js";
 import { AddGuidelineController } from "../context/guidelines/add/AddGuidelineController.js";
 import { UpdateGuidelineController } from "../context/guidelines/update/UpdateGuidelineController.js";
 import { RemoveGuidelineController } from "../context/guidelines/remove/RemoveGuidelineController.js";
@@ -543,6 +545,8 @@ export interface IApplicationContainer {
 
   // Relations Category - Controllers
   addRelationController: AddRelationController;
+  removeRelationController: RemoveRelationController;
+  getRelationsController: GetRelationsController;
 
   // Relations Category - Event Stores - decomposed by use case
   relationAddedEventStore: IRelationAddedEventWriter;

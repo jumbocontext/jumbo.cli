@@ -6,10 +6,10 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { GetRelationsQueryHandler } from "../../../../../application/context/relations/get/GetRelationsQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { RelationView } from "../../../../../application/context/relations/RelationView.js";
 import { EntityTypeValue } from "../../../../../domain/relations/Constants.js";
+import { GetRelationsRequest } from "../../../../../application/context/relations/get/GetRelationsRequest.js";
 
 export const metadata: CommandMetadata = {
   description: "List all knowledge graph relations",
@@ -55,13 +55,12 @@ export async function relationsList(
   const renderer = Renderer.getInstance();
 
   try {
-    const queryHandler = new GetRelationsQueryHandler(container.relationViewReader);
-    const filter = {
+    const request: GetRelationsRequest = {
       entityType: options.entityType as EntityTypeValue | undefined,
       entityId: options.entityId,
       status: (options.status as "active" | "removed" | "all") ?? "active",
     };
-    const relations = await queryHandler.execute(filter);
+    const { relations } = await container.getRelationsController.handle(request);
 
     if (relations.length === 0) {
       const filterMsg = options.entityType ? ` involving ${options.entityType}` : "";

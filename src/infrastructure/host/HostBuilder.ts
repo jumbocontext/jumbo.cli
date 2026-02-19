@@ -314,6 +314,11 @@ import { AddRelationCommandHandler } from "../../application/context/relations/a
 import { LocalAddRelationGateway } from "../../application/context/relations/add/LocalAddRelationGateway.js";
 import { AddRelationController } from "../../application/context/relations/add/AddRelationController.js";
 import { RelationRemovedEventHandler } from "../../application/context/relations/remove/RelationRemovedEventHandler.js";
+import { RemoveRelationCommandHandler } from "../../application/context/relations/remove/RemoveRelationCommandHandler.js";
+import { LocalRemoveRelationGateway } from "../../application/context/relations/remove/LocalRemoveRelationGateway.js";
+import { RemoveRelationController } from "../../application/context/relations/remove/RemoveRelationController.js";
+import { GetRelationsController } from "../../application/context/relations/get/GetRelationsController.js";
+import { LocalGetRelationsGateway } from "../context/relations/get/LocalGetRelationsGateway.js";
 // Context
 import { GoalContextQueryHandler } from "../../application/context/goals/get/GoalContextQueryHandler.js";
 
@@ -1343,6 +1348,29 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       addRelationGateway
     );
 
+    // RemoveRelation Controller
+    const removeRelationCommandHandler = new RemoveRelationCommandHandler(
+      relationRemovedEventStore,
+      relationRemovedEventStore,
+      eventBus,
+      relationRemovedProjector
+    );
+    const removeRelationGateway = new LocalRemoveRelationGateway(
+      removeRelationCommandHandler,
+      relationRemovedProjector
+    );
+    const removeRelationController = new RemoveRelationController(
+      removeRelationGateway
+    );
+
+    // GetRelations Controller
+    const getRelationsGateway = new LocalGetRelationsGateway(
+      relationViewReader
+    );
+    const getRelationsController = new GetRelationsController(
+      getRelationsGateway
+    );
+
     // ============================================================
     // STEP 5: Create Projection Handlers (Event Subscribers)
     // ============================================================
@@ -1733,6 +1761,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
 
       // Relations Category - Controllers
       addRelationController,
+      removeRelationController,
+      getRelationsController,
       // Relations Category - decomposed by use case
       relationAddedEventStore,
       relationRemovedEventStore,

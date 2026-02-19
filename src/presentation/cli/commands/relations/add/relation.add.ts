@@ -6,8 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddRelationCommandHandler } from "../../../../../application/context/relations/add/AddRelationCommandHandler.js";
-import { AddRelationCommand } from "../../../../../application/context/relations/add/AddRelationCommand.js";
+import { AddRelationRequest } from "../../../../../application/context/relations/add/AddRelationRequest.js";
 import { EntityTypeValue, RelationStrengthValue } from "../../../../../domain/relations/Constants.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
@@ -78,15 +77,7 @@ export async function relationAdd(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new AddRelationCommandHandler(
-      container.relationAddedEventStore,
-      container.eventBus,
-      container.relationAddedProjector
-    );
-
-    // 2. Execute command
-    const command: AddRelationCommand = {
+    const request: AddRelationRequest = {
       fromEntityType: options.fromType as EntityTypeValue,
       fromEntityId: options.fromId,
       toEntityType: options.toType as EntityTypeValue,
@@ -96,14 +87,10 @@ export async function relationAdd(options: {
       strength: options.strength as RelationStrengthValue | undefined
     };
 
-    const result = await commandHandler.execute(command);
+    const { relationId } = await container.addRelationController.handle(request);
 
-    // 3. Fetch updated view for display
-    const view = await container.relationRemovedProjector.findById(result.relationId);
-
-    // Success output
     const data: Record<string, string> = {
-      relationId: result.relationId,
+      relationId,
       from: `${options.fromType}:${options.fromId}`,
       relationType: options.relationType,
       to: `${options.toType}:${options.toId}`,
@@ -117,5 +104,4 @@ export async function relationAdd(options: {
     renderer.error("Failed to add relation", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }
