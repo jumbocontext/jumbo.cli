@@ -130,6 +130,9 @@ import { FsInvariantRemovedEventStore } from "../context/invariants/remove/FsInv
 // Project Event Stores - decomposed by use case
 import { FsProjectInitializedEventStore } from "../context/project/init/FsProjectInitializedEventStore.js";
 import { FsProjectUpdatedEventStore } from "../context/project/update/FsProjectUpdatedEventStore.js";
+import { UpdateProjectCommandHandler } from "../../application/context/project/update/UpdateProjectCommandHandler.js";
+import { LocalUpdateProjectGateway } from "../../application/context/project/update/LocalUpdateProjectGateway.js";
+import { UpdateProjectController } from "../../application/context/project/update/UpdateProjectController.js";
 // Audience Event Stores - decomposed by use case
 import { FsAudienceAddedEventStore } from "../context/audiences/add/FsAudienceAddedEventStore.js";
 import { FsAudienceUpdatedEventStore } from "../context/audiences/update/FsAudienceUpdatedEventStore.js";
@@ -773,6 +776,20 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const goalContextQueryHandler = new GoalContextQueryHandler(
       goalContextAssembler
     );
+    // Project Controllers
+    const updateProjectCommandHandler = new UpdateProjectCommandHandler(
+      projectUpdatedEventStore,
+      eventBus,
+      projectUpdatedProjector
+    );
+    const updateProjectGateway = new LocalUpdateProjectGateway(
+      updateProjectCommandHandler,
+      projectUpdatedProjector
+    );
+    const updateProjectController = new UpdateProjectController(
+      updateProjectGateway
+    );
+
     // Session Controllers
     const sessionContextQueryHandler = new SessionContextQueryHandler(
       sessionViewReader,
@@ -1682,6 +1699,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       // Project Projection Stores - decomposed by use case
       projectInitializedProjector,
       projectUpdatedProjector,
+      updateProjectController,
       projectContextReader,
       // Audience Projection Stores - decomposed by use case
       audienceAddedProjector,

@@ -6,7 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateProjectCommandHandler } from "../../../../../application/context/project/update/UpdateProjectCommandHandler.js";
+import { UpdateProjectRequest } from "../../../../../application/context/project/update/UpdateProjectRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -40,39 +40,27 @@ export async function projectUpdate(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new UpdateProjectCommandHandler(
-      container.projectUpdatedEventStore,
-      container.eventBus,
-      container.projectUpdatedProjector
-    );
-
-    // 2. Build command (convert CLI options)
-    const command: any = {};
-    if (options.purpose !== undefined) command.purpose = options.purpose;
-
     // Check if any fields provided
-    if (Object.keys(command).length === 0) {
+    if (options.purpose === undefined) {
       renderer.error("No fields provided. Specify --purpose");
       process.exit(1);
     }
 
-    // 3. Execute command
-    const result = await commandHandler.execute(command);
+    const request: UpdateProjectRequest = {
+      purpose: options.purpose,
+    };
 
-    // 4. Fetch updated view for display
-    const view = await container.projectUpdatedProjector.getProject();
+    const response = await container.updateProjectController.handle(request);
 
-    // Success output
-    if (!result.updated) {
+    if (!response.updated) {
       renderer.info("No changes detected (values already match)");
     } else {
       const data: Record<string, string> = {
-        updated: result.changedFields.join(", "),
-        name: view?.name || "N/A",
+        updated: response.changedFields.join(", "),
+        name: response.name,
       };
-      if (view?.purpose) {
-        data.purpose = view.purpose;
+      if (response.purpose) {
+        data.purpose = response.purpose;
       }
 
       renderer.success("Project updated successfully", data);

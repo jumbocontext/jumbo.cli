@@ -194,6 +194,7 @@ import { IProjectInitializedEventWriter } from "../context/project/init/IProject
 import { IProjectUpdatedEventWriter } from "../context/project/update/IProjectUpdatedEventWriter.js";
 import { IAgentFileProtocol } from "../context/project/init/IAgentFileProtocol.js";
 import { IInitializationProtocol } from "../context/project/init/IInitializationProtocol.js";
+import { UpdateProjectController } from "../context/project/update/UpdateProjectController.js";
 import { IAudienceContextReader } from "../context/audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../context/audience-pains/query/IAudiencePainContextReader.js";
 import { IValuePropositionContextReader } from "../context/value-propositions/query/IValuePropositionContextReader.js";
@@ -519,6 +520,7 @@ export interface IApplicationContainer {
   // Project Projection Stores - decomposed by use case
   projectInitializedProjector: IProjectInitializedProjector & IProjectInitReader;
   projectUpdatedProjector: IProjectUpdatedProjector & IProjectUpdateReader;
+  updateProjectController: UpdateProjectController;
   projectContextReader: IProjectContextReader;
   // Audience Projection Stores - decomposed by use case
   audienceAddedProjector: IAudienceAddedProjector;
