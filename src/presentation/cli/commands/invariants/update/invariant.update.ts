@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateInvariantCommandHandler } from "../../../../../application/context/invariants/update/UpdateInvariantCommandHandler.js";
-import { UpdateInvariantCommand } from "../../../../../application/context/invariants/update/UpdateInvariantCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -67,37 +65,27 @@ export async function invariantUpdate(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new UpdateInvariantCommandHandler(
-      container.invariantUpdatedEventStore,
-      container.invariantUpdatedEventStore,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: UpdateInvariantCommand = {
+    const response = await container.updateInvariantController.handle({
       invariantId: options.invariantId,
-      title: options.title,
-      description: options.description,
-      rationale: options.rationale,
-      enforcement: options.enforcement,
-    };
-
-    await commandHandler.execute(command);
-
-    // 3. Fetch updated view for display
-    const view = await container.invariantUpdatedProjector.findById(options.invariantId);
+      ...(options.title !== undefined && { title: options.title }),
+      ...(options.description !== undefined && { description: options.description }),
+      ...(options.rationale !== undefined && { rationale: options.rationale }),
+      ...(options.enforcement !== undefined && { enforcement: options.enforcement }),
+    });
 
     // Success output
-    const data: Record<string, string> = {
-      invariantId: options.invariantId,
+    const data: Record<string, string | number> = {
+      invariantId: response.invariantId,
+      updatedFields: response.updatedFields.join(", "),
     };
-    if (options.title) data.title = options.title;
-    if (options.description) data.description = options.description;
-    if (options.rationale) data.rationale = options.rationale;
-    if (options.enforcement) data.enforcement = options.enforcement;
 
-    renderer.success(`Invariant '${view?.title || options.invariantId}' updated`, data);
+    if (response.title !== undefined) data.title = response.title;
+    if (response.version !== undefined) data.version = response.version;
+
+    renderer.success(
+      `Invariant '${response.title || options.invariantId}' updated`,
+      data
+    );
   } catch (error) {
     renderer.error("Failed to update invariant", error instanceof Error ? error : String(error));
     process.exit(1);

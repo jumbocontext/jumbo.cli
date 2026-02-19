@@ -16,6 +16,14 @@ export class SqliteInvariantViewReader implements IInvariantViewReader {
 
   constructor(private db: Database) {}
 
+  async findById(id: string): Promise<InvariantView | null> {
+    const row = this.db
+      .prepare("SELECT * FROM invariant_views WHERE invariantId = ?")
+      .get(id) as Record<string, unknown> | undefined;
+    if (!row) return null;
+    return this.mapper.toView(this.mapRowToRecord(row));
+  }
+
   async findAll(): Promise<InvariantView[]> {
     const rows = this.db
       .prepare("SELECT * FROM invariant_views ORDER BY createdAt ASC")

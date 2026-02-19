@@ -155,6 +155,10 @@ import { IInvariantUpdateReader } from "../context/invariants/update/IInvariantU
 import { IInvariantRemovedProjector } from "../context/invariants/remove/IInvariantRemovedProjector.js";
 import { IInvariantRemoveReader } from "../context/invariants/remove/IInvariantRemoveReader.js";
 import { IInvariantViewReader } from "../context/invariants/get/IInvariantViewReader.js";
+import { AddInvariantController } from "../context/invariants/add/AddInvariantController.js";
+import { RemoveInvariantController } from "../context/invariants/remove/RemoveInvariantController.js";
+import { GetInvariantsController } from "../context/invariants/get/GetInvariantsController.js";
+import { UpdateInvariantController } from "../context/invariants/update/UpdateInvariantController.js";
 // Relations Projection Store ports - decomposed by use case
 import { IRelationAddedProjector } from "../context/relations/add/IRelationAddedProjector.js";
 import { IRelationAddedReader } from "../context/relations/add/IRelationAddedReader.js";
@@ -481,6 +485,11 @@ export interface IApplicationContainer {
   invariantUpdatedProjector: IInvariantUpdatedProjector & IInvariantUpdateReader;
   invariantRemovedProjector: IInvariantRemovedProjector & IInvariantRemoveReader;
   invariantViewReader: IInvariantViewReader;
+  // Invariant Controllers
+  addInvariantController: AddInvariantController;
+  updateInvariantController: UpdateInvariantController;
+  removeInvariantController: RemoveInvariantController;
+  getInvariantsController: GetInvariantsController;
   // Solution Context - cross-cutting reader and qualifier
   solutionContextReader: ISolutionContextReader;
   unprimedBrownfieldQualifier: UnprimedBrownfieldQualifier;

@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddInvariantCommandHandler } from "../../../../../application/context/invariants/add/AddInvariantCommandHandler.js";
-import { AddInvariantCommand } from "../../../../../application/context/invariants/add/AddInvariantCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -62,26 +60,15 @@ export async function invariantAdd(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new AddInvariantCommandHandler(
-      container.invariantAddedEventStore,
-      container.invariantAddedProjector,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: AddInvariantCommand = {
+    const { invariantId } = await container.addInvariantController.handle({
       title: options.title,
       description: options.description,
       enforcement: options.enforcement,
-      rationale: options.rationale
-    };
+      rationale: options.rationale,
+    });
 
-    const result = await commandHandler.execute(command);
-
-    // 3. Success output
     const data: Record<string, string> = {
-      invariantId: result.invariantId,
+      invariantId,
       title: options.title,
       enforcement: options.enforcement,
     };
@@ -94,5 +81,4 @@ export async function invariantAdd(options: {
     renderer.error("Failed to add invariant", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

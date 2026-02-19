@@ -5,26 +5,25 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { invariantsList } from "../../../../../../src/presentation/cli/commands/invariants/list/invariants.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IInvariantViewReader } from "../../../../../../src/application/context/invariants/get/IInvariantViewReader.js";
+import { GetInvariantsController } from "../../../../../../src/application/context/invariants/get/GetInvariantsController.js";
 import { InvariantView } from "../../../../../../src/application/context/invariants/InvariantView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("invariants.list command", () => {
   let mockContainer: Partial<IApplicationContainer>;
-  let mockInvariantViewReader: jest.Mocked<IInvariantViewReader>;
+  let mockController: jest.Mocked<Pick<GetInvariantsController, "getAllInvariants">>;
   let consoleSpy: jest.SpiedFunction<typeof console.log>;
 
   beforeEach(() => {
     // Reset renderer to text mode for testing
     Renderer.configure({ format: "text", verbosity: "normal" });
 
-    mockInvariantViewReader = {
-      findAll: jest.fn(),
-      findByIds: jest.fn(),
-    } as jest.Mocked<IInvariantViewReader>;
+    mockController = {
+      getAllInvariants: jest.fn(),
+    };
 
     mockContainer = {
-      invariantViewReader: mockInvariantViewReader,
+      getInvariantsController: mockController as unknown as GetInvariantsController,
     };
 
     consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
@@ -49,20 +48,20 @@ describe("invariants.list command", () => {
       },
     ];
 
-    mockInvariantViewReader.findAll.mockResolvedValue(mockInvariants);
+    mockController.getAllInvariants.mockResolvedValue({ invariants: mockInvariants });
 
     await invariantsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockInvariantViewReader.findAll).toHaveBeenCalled();
+    expect(mockController.getAllInvariants).toHaveBeenCalledWith({});
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should show info message when no invariants exist", async () => {
-    mockInvariantViewReader.findAll.mockResolvedValue([]);
+    mockController.getAllInvariants.mockResolvedValue({ invariants: [] });
 
     await invariantsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockInvariantViewReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockController.getAllInvariants).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 
@@ -82,11 +81,11 @@ describe("invariants.list command", () => {
       },
     ];
 
-    mockInvariantViewReader.findAll.mockResolvedValue(mockInvariants);
+    mockController.getAllInvariants.mockResolvedValue({ invariants: mockInvariants });
 
     await invariantsList({}, mockContainer as IApplicationContainer);
 
-    expect(mockInvariantViewReader.findAll).toHaveBeenCalledTimes(1);
+    expect(mockController.getAllInvariants).toHaveBeenCalledTimes(1);
     expect(consoleSpy).toHaveBeenCalled();
   });
 });

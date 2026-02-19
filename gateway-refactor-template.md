@@ -37,7 +37,7 @@ After refactoring, the following files must exist. Replace `{UseCaseName}` with 
 
 | File | Category | Description |
 |---|---|---|
-| `Local{UseCaseName}Gateway.ts` | **Local gateway** | `implements I{UseCaseName}Gateway`. Constructor injects the readers/handlers it needs (e.g., `ISessionViewReader`, `*CommandHandler`). Performs in-process execution by orchestrating domain types and application port interfaces. Lives in the **application layer** because it has no infrastructure dependencies — only ports and domain types. |
+| `Local{UseCaseName}Gateway.ts` | **Local gateway** | `implements I{UseCaseName}Gateway`. Constructor injects the `*CommandHandler` (for write-side orchestration) and any readers needed for response building (e.g., `I*ViewReader`). **The gateway delegates command execution to the existing CommandHandler, then fetches updated views and assembles the typed response DTO.** The CommandHandler is kept as-is — it owns the write-side orchestration (load → rehydrate → domain logic → persist → publish). The gateway owns the request/response adaptation layer on top. Lives in the **application layer** because it has no infrastructure dependencies — only ports and domain types. |
 
 #### Infrastructure layer — `src/infrastructure/context/{domain}/{action}/` (future)
 

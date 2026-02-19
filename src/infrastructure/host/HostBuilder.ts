@@ -104,6 +104,18 @@ import { UpdateGuidelineController } from "../../application/context/guidelines/
 import { RemoveGuidelineCommandHandler } from "../../application/context/guidelines/remove/RemoveGuidelineCommandHandler.js";
 import { LocalRemoveGuidelineGateway } from "../../application/context/guidelines/remove/LocalRemoveGuidelineGateway.js";
 import { RemoveGuidelineController } from "../../application/context/guidelines/remove/RemoveGuidelineController.js";
+// Invariant Controllers
+import { AddInvariantCommandHandler } from "../../application/context/invariants/add/AddInvariantCommandHandler.js";
+import { LocalAddInvariantGateway } from "../../application/context/invariants/add/LocalAddInvariantGateway.js";
+import { AddInvariantController } from "../../application/context/invariants/add/AddInvariantController.js";
+import { RemoveInvariantCommandHandler } from "../../application/context/invariants/remove/RemoveInvariantCommandHandler.js";
+import { LocalRemoveInvariantGateway } from "../../application/context/invariants/remove/LocalRemoveInvariantGateway.js";
+import { RemoveInvariantController } from "../../application/context/invariants/remove/RemoveInvariantController.js";
+import { LocalGetInvariantsGateway } from "../../application/context/invariants/get/LocalGetInvariantsGateway.js";
+import { GetInvariantsController } from "../../application/context/invariants/get/GetInvariantsController.js";
+import { UpdateInvariantCommandHandler } from "../../application/context/invariants/update/UpdateInvariantCommandHandler.js";
+import { LocalUpdateInvariantGateway } from "../../application/context/invariants/update/LocalUpdateInvariantGateway.js";
+import { UpdateInvariantController } from "../../application/context/invariants/update/UpdateInvariantController.js";
 // Guideline Event Stores - decomposed by use case
 import { FsGuidelineAddedEventStore } from "../context/guidelines/add/FsGuidelineAddedEventStore.js";
 import { FsGuidelineUpdatedEventStore } from "../context/guidelines/update/FsGuidelineUpdatedEventStore.js";
@@ -656,6 +668,53 @@ export class HostBuilder {
     const invariantUpdatedProjector = new SqliteInvariantUpdatedProjector(this.db);
     const invariantRemovedProjector = new SqliteInvariantRemovedProjector(this.db);
     const invariantViewReader = new SqliteInvariantViewReader(this.db);
+
+    // AddInvariant Controller
+    const addInvariantCommandHandler = new AddInvariantCommandHandler(
+      invariantAddedEventStore,
+      invariantAddedProjector,
+      eventBus
+    );
+    const addInvariantGateway = new LocalAddInvariantGateway(
+      addInvariantCommandHandler
+    );
+    const addInvariantController = new AddInvariantController(
+      addInvariantGateway
+    );
+
+    // UpdateInvariant Controller
+    const updateInvariantCommandHandler = new UpdateInvariantCommandHandler(
+      invariantUpdatedEventStore,
+      invariantUpdatedEventStore,
+      eventBus
+    );
+    const updateInvariantGateway = new LocalUpdateInvariantGateway(
+      updateInvariantCommandHandler,
+      invariantUpdatedProjector
+    );
+    const updateInvariantController = new UpdateInvariantController(
+      updateInvariantGateway
+    );
+
+    // RemoveInvariant Controller
+    const removeInvariantCommandHandler = new RemoveInvariantCommandHandler(
+      invariantRemovedEventStore,
+      invariantRemovedEventStore,
+      invariantRemovedProjector,
+      eventBus
+    );
+    const removeInvariantGateway = new LocalRemoveInvariantGateway(
+      removeInvariantCommandHandler,
+      invariantRemovedProjector
+    );
+    const removeInvariantController = new RemoveInvariantController(
+      removeInvariantGateway
+    );
+
+    // GetInvariants Controller
+    const getInvariantsGateway = new LocalGetInvariantsGateway(invariantViewReader);
+    const getInvariantsController = new GetInvariantsController(getInvariantsGateway);
+
     // Solution Context - cross-cutting reader and qualifier
     const solutionContextReader = new SqliteSolutionContextReader(this.db);
     const unprimedBrownfieldQualifier = new UnprimedBrownfieldQualifier(solutionContextReader);
@@ -1581,6 +1640,11 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       invariantUpdatedProjector,
       invariantRemovedProjector,
       invariantViewReader,
+      // Invariant Controllers
+      addInvariantController,
+      updateInvariantController,
+      removeInvariantController,
+      getInvariantsController,
       // Solution Context - cross-cutting reader and qualifier
       solutionContextReader,
       unprimedBrownfieldQualifier,
