@@ -1,21 +1,14 @@
-import { describe, it, expect, beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { SessionStartController } from "../../../../../src/application/context/sessions/start/SessionStartController.js";
-import { SessionContextQueryHandler } from "../../../../../src/application/context/sessions/get/SessionContextQueryHandler.js";
-import { StartSessionCommandHandler } from "../../../../../src/application/context/sessions/start/StartSessionCommandHandler.js";
-import { UnprimedBrownfieldQualifier } from "../../../../../src/application/UnprimedBrownfieldQualifier.js";
-import { ContextualSessionView } from "../../../../../src/application/context/sessions/get/ContextualSessionView.js";
-import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
+import { IStartSessionGateway } from "../../../../../src/application/context/sessions/start/IStartSessionGateway.js";
+import { SessionStartResponse } from "../../../../../src/application/context/sessions/start/SessionStartResponse.js";
 
 describe("SessionStartController", () => {
-  let sessionContextQueryHandler: jest.Mocked<SessionContextQueryHandler>;
-  let startSessionCommandHandler: jest.Mocked<StartSessionCommandHandler>;
-  let unprimedBrownfieldQualifier: jest.Mocked<UnprimedBrownfieldQualifier>;
   let controller: SessionStartController;
+  let mockGateway: jest.Mocked<IStartSessionGateway>;
 
-  function createBaseContextView(
-    overrides: Partial<ContextualSessionView> = {}
-  ): ContextualSessionView {
-    return {
+  const mockResponse: SessionStartResponse = {
+    context: {
       session: null,
       context: {
         projectContext: null,
@@ -24,164 +17,34 @@ describe("SessionStartController", () => {
         plannedGoals: [],
         recentDecisions: [],
       },
-      ...overrides,
-    };
-  }
+      instructions: ["goal-selection-prompt"],
+      scope: "session-start",
+    },
+    sessionId: "session_test-123",
+  };
 
   beforeEach(() => {
-    sessionContextQueryHandler = {
-      execute: jest.fn().mockResolvedValue(createBaseContextView()),
-    } as unknown as jest.Mocked<SessionContextQueryHandler>;
+    mockGateway = {
+      startSession: jest.fn(),
+    } as jest.Mocked<IStartSessionGateway>;
 
-    startSessionCommandHandler = {
-      execute: jest.fn().mockResolvedValue({ sessionId: "session_test-123" }),
-    } as unknown as jest.Mocked<StartSessionCommandHandler>;
-
-    unprimedBrownfieldQualifier = {
-      isUnprimed: jest.fn().mockResolvedValue(false),
-    } as unknown as jest.Mocked<UnprimedBrownfieldQualifier>;
-
-    controller = new SessionStartController(
-      sessionContextQueryHandler,
-      startSessionCommandHandler,
-      unprimedBrownfieldQualifier
-    );
+    controller = new SessionStartController(mockGateway);
   });
 
-  it("should return enriched context with session ID", async () => {
-    const result = await controller.handle({});
+  it("should delegate to gateway and return response", async () => {
+    mockGateway.startSession.mockResolvedValue(mockResponse);
 
-    expect(result.sessionId).toBe("session_test-123");
-    expect(result.context.scope).toBe("session-start");
-    expect(result.context.session).toBeNull();
+    const response = await controller.handle({});
+
+    expect(response).toBe(mockResponse);
+    expect(mockGateway.startSession).toHaveBeenCalledWith({});
   });
 
-  it("should call sessionContextQueryHandler to assemble base context", async () => {
+  it("should pass request through to gateway", async () => {
+    mockGateway.startSession.mockResolvedValue(mockResponse);
+
     await controller.handle({});
 
-    expect(sessionContextQueryHandler.execute).toHaveBeenCalledTimes(1);
-  });
-
-  it("should call startSessionCommandHandler to create session", async () => {
-    await controller.handle({});
-
-    expect(startSessionCommandHandler.execute).toHaveBeenCalledTimes(1);
-    expect(startSessionCommandHandler.execute).toHaveBeenCalledWith({});
-  });
-
-  it("should check brownfield status via qualifier", async () => {
-    await controller.handle({});
-
-    expect(unprimedBrownfieldQualifier.isUnprimed).toHaveBeenCalledTimes(1);
-  });
-
-  describe("instruction building", () => {
-    it("should always include goal-selection-prompt instruction", async () => {
-      const result = await controller.handle({});
-
-      expect(result.context.instructions).toContain("goal-selection-prompt");
-    });
-
-    it("should include brownfield-onboarding when project is unprimed", async () => {
-      unprimedBrownfieldQualifier.isUnprimed.mockResolvedValue(true);
-
-      const result = await controller.handle({});
-
-      expect(result.context.instructions).toContain("brownfield-onboarding");
-    });
-
-    it("should not include brownfield-onboarding when project is primed", async () => {
-      unprimedBrownfieldQualifier.isUnprimed.mockResolvedValue(false);
-
-      const result = await controller.handle({});
-
-      expect(result.context.instructions).not.toContain("brownfield-onboarding");
-    });
-
-    it("should include paused-goals-resume when paused goals exist", async () => {
-      const contextView = createBaseContextView({
-        context: {
-          projectContext: null,
-          activeGoals: [],
-          pausedGoals: [{ goalId: "g1", objective: "Paused task", status: "paused" } as GoalView],
-          plannedGoals: [],
-          recentDecisions: [],
-        },
-      });
-      sessionContextQueryHandler.execute.mockResolvedValue(contextView);
-
-      const result = await controller.handle({});
-
-      expect(result.context.instructions).toContain("paused-goals-resume");
-    });
-
-    it("should not include paused-goals-resume when no paused goals", async () => {
-      const result = await controller.handle({});
-
-      expect(result.context.instructions).not.toContain("paused-goals-resume");
-    });
-
-    it("should include all instructions when brownfield with paused goals", async () => {
-      unprimedBrownfieldQualifier.isUnprimed.mockResolvedValue(true);
-      const contextView = createBaseContextView({
-        context: {
-          projectContext: null,
-          activeGoals: [],
-          pausedGoals: [{ goalId: "g1", objective: "Paused", status: "paused" } as GoalView],
-          plannedGoals: [],
-          recentDecisions: [],
-        },
-      });
-      sessionContextQueryHandler.execute.mockResolvedValue(contextView);
-
-      const result = await controller.handle({});
-
-      expect(result.context.instructions).toEqual([
-        "brownfield-onboarding",
-        "paused-goals-resume",
-        "goal-selection-prompt",
-      ]);
-    });
-  });
-
-  describe("context passthrough", () => {
-    it("should pass through session from base context", async () => {
-      const session = {
-        sessionId: "session-prev",
-        status: "active" as const,
-        focus: "Previous focus",
-        contextSnapshot: null,
-        version: 1,
-        startedAt: "2025-01-01T10:00:00Z",
-        endedAt: null,
-        createdAt: "2025-01-01T10:00:00Z",
-        updatedAt: "2025-01-01T10:00:00Z",
-      };
-      sessionContextQueryHandler.execute.mockResolvedValue(
-        createBaseContextView({ session })
-      );
-
-      const result = await controller.handle({});
-
-      expect(result.context.session).toBe(session);
-    });
-
-    it("should pass through context data from base context", async () => {
-      const activeGoals = [{ goalId: "g1", objective: "Active", status: "doing" } as GoalView];
-      const contextView = createBaseContextView({
-        context: {
-          projectContext: null,
-          activeGoals,
-          pausedGoals: [],
-          plannedGoals: [],
-          recentDecisions: [],
-        },
-      });
-      sessionContextQueryHandler.execute.mockResolvedValue(contextView);
-
-      const result = await controller.handle({});
-
-      expect(result.context.context.activeGoals).toBe(activeGoals);
-    });
+    expect(mockGateway.startSession).toHaveBeenCalledTimes(1);
   });
 });

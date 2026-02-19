@@ -7,8 +7,6 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { EndSessionCommandHandler } from "../../../../../application/context/sessions/end/EndSessionCommandHandler.js";
-import { EndSessionCommand } from "../../../../../application/context/sessions/end/EndSessionCommand.js";
 
 /**
  * Command metadata for auto-registration
@@ -57,29 +55,17 @@ export async function sessionEnd(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler
-    const commandHandler = new EndSessionCommandHandler(
-      container.sessionEndedEventStore,
-      container.sessionEndedEventStore,
-      container.activeSessionReader,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: EndSessionCommand = {
+    const response = await container.endSessionController.handle({
       focus: options.focus,
       summary: options.summary,
-    };
+    });
 
-    const result = await commandHandler.execute(command);
-
-    // Success output
     const data: Record<string, string> = {
-      sessionId: result.sessionId,
-      focus: options.focus,
+      sessionId: response.sessionId,
+      focus: response.focus,
     };
-    if (options.summary) {
-      data.summary = options.summary;
+    if (response.summary) {
+      data.summary = response.summary;
     }
 
     renderer.success("Session ended", data);

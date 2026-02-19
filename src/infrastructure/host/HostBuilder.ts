@@ -390,6 +390,10 @@ import { LocalShowGoalGateway } from "../context/goals/get/LocalShowGoalGateway.
 
 // Session Controllers
 import { SessionStartController } from "../../application/context/sessions/start/SessionStartController.js";
+import { LocalStartSessionGateway } from "../../application/context/sessions/start/LocalStartSessionGateway.js";
+import { EndSessionController } from "../../application/context/sessions/end/EndSessionController.js";
+import { LocalEndSessionGateway } from "../../application/context/sessions/end/LocalEndSessionGateway.js";
+import { EndSessionCommandHandler } from "../../application/context/sessions/end/EndSessionCommandHandler.js";
 import { GetSessionsController } from "../../application/context/sessions/get/GetSessionsController.js";
 import { LocalGetSessionsGateway } from "../context/sessions/get/LocalGetSessionsGateway.js";
 // Worker Controllers
@@ -811,15 +815,26 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       sessionStartedEventStore,
       eventBus
     );
-    const sessionStartController = new SessionStartController(
+    const startSessionGateway = new LocalStartSessionGateway(
       sessionContextQueryHandler,
       startSessionCommandHandler,
       unprimedBrownfieldQualifier
+    );
+    const sessionStartController = new SessionStartController(
+      startSessionGateway
     );
     const getSessionsGateway = new LocalGetSessionsGateway(sessionViewReader);
     const getSessionsController = new GetSessionsController(
       getSessionsGateway
     );
+    const endSessionCommandHandler = new EndSessionCommandHandler(
+      sessionEndedEventStore,
+      sessionEndedEventStore,
+      activeSessionReader,
+      eventBus
+    );
+    const endSessionGateway = new LocalEndSessionGateway(endSessionCommandHandler);
+    const endSessionController = new EndSessionController(endSessionGateway);
 
     // Worker Controllers
     const viewWorkerGateway = new LocalViewWorkerGateway(
@@ -1587,6 +1602,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       goalStatusReader,
       // Session Controllers
       sessionStartController,
+      endSessionController,
       getSessionsController,
       // Worker Controllers
       viewWorkerController,
