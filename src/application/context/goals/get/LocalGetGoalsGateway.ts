@@ -1,7 +1,7 @@
-import { IGetGoalsGateway } from "../../../../application/context/goals/get/IGetGoalsGateway.js";
-import { GetGoalsRequest } from "../../../../application/context/goals/get/GetGoalsRequest.js";
-import { GetGoalsResponse } from "../../../../application/context/goals/get/GetGoalsResponse.js";
-import { IGoalStatusReader } from "../../../../application/context/goals/IGoalStatusReader.js";
+import { IGetGoalsGateway } from "./IGetGoalsGateway.js";
+import { GetGoalsRequest } from "./GetGoalsRequest.js";
+import { GetGoalsResponse } from "./GetGoalsResponse.js";
+import { IGoalStatusReader } from "../IGoalStatusReader.js";
 import { GoalStatus, GoalStatusType } from "../../../../domain/goals/Constants.js";
 
 const VALID_STATUSES: readonly string[] = Object.values(GoalStatus);

@@ -1,7 +1,7 @@
-import { IGetRelationsGateway } from "../../../../application/context/relations/get/IGetRelationsGateway.js";
-import { GetRelationsRequest } from "../../../../application/context/relations/get/GetRelationsRequest.js";
-import { GetRelationsResponse } from "../../../../application/context/relations/get/GetRelationsResponse.js";
-import { IRelationViewReader } from "../../../../application/context/relations/get/IRelationViewReader.js";
+import { IGetRelationsGateway } from "./IGetRelationsGateway.js";
+import { GetRelationsRequest } from "./GetRelationsRequest.js";
+import { GetRelationsResponse } from "./GetRelationsResponse.js";
+import { IRelationViewReader } from "./IRelationViewReader.js";
 
 export class LocalGetRelationsGateway implements IGetRelationsGateway {
   constructor(

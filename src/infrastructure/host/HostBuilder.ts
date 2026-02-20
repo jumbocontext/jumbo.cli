@@ -329,7 +329,7 @@ import { RemoveRelationCommandHandler } from "../../application/context/relation
 import { LocalRemoveRelationGateway } from "../../application/context/relations/remove/LocalRemoveRelationGateway.js";
 import { RemoveRelationController } from "../../application/context/relations/remove/RemoveRelationController.js";
 import { GetRelationsController } from "../../application/context/relations/get/GetRelationsController.js";
-import { LocalGetRelationsGateway } from "../context/relations/get/LocalGetRelationsGateway.js";
+import { LocalGetRelationsGateway } from "../../application/context/relations/get/LocalGetRelationsGateway.js";
 // Context
 import { GoalContextQueryHandler } from "../../application/context/goals/get/GoalContextQueryHandler.js";
 
@@ -394,10 +394,10 @@ import { PauseGoalController } from "../../application/context/goals/pause/Pause
 
 // GetGoals Controller-Gateway
 import { GetGoalsController } from "../../application/context/goals/get/GetGoalsController.js";
-import { LocalGetGoalsGateway } from "../context/goals/get/LocalGetGoalsGateway.js";
+import { LocalGetGoalsGateway } from "../../application/context/goals/get/LocalGetGoalsGateway.js";
 // ShowGoal Controller-Gateway
 import { ShowGoalController } from "../../application/context/goals/get/ShowGoalController.js";
-import { LocalShowGoalGateway } from "../context/goals/get/LocalShowGoalGateway.js";
+import { LocalShowGoalGateway } from "../../application/context/goals/get/LocalShowGoalGateway.js";
 
 // Session Controllers
 import { SessionStartController } from "../../application/context/sessions/start/SessionStartController.js";
@@ -406,7 +406,7 @@ import { EndSessionController } from "../../application/context/sessions/end/End
 import { LocalEndSessionGateway } from "../../application/context/sessions/end/LocalEndSessionGateway.js";
 import { EndSessionCommandHandler } from "../../application/context/sessions/end/EndSessionCommandHandler.js";
 import { GetSessionsController } from "../../application/context/sessions/get/GetSessionsController.js";
-import { LocalGetSessionsGateway } from "../context/sessions/get/LocalGetSessionsGateway.js";
+import { LocalGetSessionsGateway } from "../../application/context/sessions/get/LocalGetSessionsGateway.js";
 // Worker Controllers
 import { ViewWorkerController } from "../../application/context/host/workers/view/ViewWorkerController.js";
 import { LocalViewWorkerGateway } from "../../application/context/host/workers/view/LocalViewWorkerGateway.js";
