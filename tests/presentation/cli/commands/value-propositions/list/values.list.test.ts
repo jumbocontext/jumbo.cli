@@ -5,25 +5,25 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { valuesList } from "../../../../../../src/presentation/cli/commands/value-propositions/list/values.list.js";
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
-import { IValuePropositionContextReader } from "../../../../../../src/application/context/value-propositions/query/IValuePropositionContextReader.js";
+import { GetValuePropositionsController } from "../../../../../../src/application/context/value-propositions/get/GetValuePropositionsController.js";
 import { ValuePropositionView } from "../../../../../../src/application/context/value-propositions/ValuePropositionView.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("values.list command", () => {
   let mockContainer: Partial<IApplicationContainer>;
-  let mockValuePropositionContextReader: jest.Mocked<IValuePropositionContextReader>;
+  let mockController: jest.Mocked<Pick<GetValuePropositionsController, "handle">>;
   let consoleSpy: jest.SpiedFunction<typeof console.log>;
 
   beforeEach(() => {
     // Reset renderer to text mode for testing
     Renderer.configure({ format: "text", verbosity: "normal" });
 
-    mockValuePropositionContextReader = {
-      findAllActive: jest.fn(),
-    } as jest.Mocked<IValuePropositionContextReader>;
+    mockController = {
+      handle: jest.fn(),
+    };
 
     mockContainer = {
-      valuePropositionContextReader: mockValuePropositionContextReader,
+      getValuePropositionsController: mockController as unknown as GetValuePropositionsController,
     };
 
     consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
@@ -48,20 +48,20 @@ describe("values.list command", () => {
       },
     ];
 
-    mockValuePropositionContextReader.findAllActive.mockResolvedValue(mockValues);
+    mockController.handle.mockResolvedValue({ values: mockValues });
 
     await valuesList({} as Record<string, never>, mockContainer as IApplicationContainer);
 
-    expect(mockValuePropositionContextReader.findAllActive).toHaveBeenCalledTimes(1);
+    expect(mockController.handle).toHaveBeenCalledWith({});
     expect(consoleSpy).toHaveBeenCalled();
   });
 
   it("should show info message when no values exist", async () => {
-    mockValuePropositionContextReader.findAllActive.mockResolvedValue([]);
+    mockController.handle.mockResolvedValue({ values: [] });
 
     await valuesList({} as Record<string, never>, mockContainer as IApplicationContainer);
 
-    expect(mockValuePropositionContextReader.findAllActive).toHaveBeenCalledTimes(1);
+    expect(mockController.handle).toHaveBeenCalledWith({});
     expect(consoleSpy).toHaveBeenCalled();
   });
 
@@ -81,11 +81,11 @@ describe("values.list command", () => {
       },
     ];
 
-    mockValuePropositionContextReader.findAllActive.mockResolvedValue(mockValues);
+    mockController.handle.mockResolvedValue({ values: mockValues });
 
     await valuesList({} as Record<string, never>, mockContainer as IApplicationContainer);
 
-    expect(mockValuePropositionContextReader.findAllActive).toHaveBeenCalledTimes(1);
+    expect(mockController.handle).toHaveBeenCalledWith({});
     expect(consoleSpy).toHaveBeenCalled();
   });
 });

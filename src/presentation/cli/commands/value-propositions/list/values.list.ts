@@ -11,7 +11,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { ListValuePropositionsQueryHandler } from "../../../../../application/context/value-propositions/list/ListValuePropositionsQueryHandler.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { ValuePropositionView } from "../../../../../application/context/value-propositions/ValuePropositionView.js";
 
@@ -63,13 +62,7 @@ export async function valuesList(
   const renderer = Renderer.getInstance();
 
   try {
-    // Create query handler using container dependencies
-    const queryHandler = new ListValuePropositionsQueryHandler(
-      container.valuePropositionContextReader
-    );
-
-    // Execute query
-    const values = await queryHandler.execute();
+    const { values } = await container.getValuePropositionsController.handle({});
 
     if (values.length === 0) {
       renderer.info("No value propositions defined yet. Use 'jumbo value add' to add one.");

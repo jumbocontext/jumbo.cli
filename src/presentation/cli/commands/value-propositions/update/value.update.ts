@@ -6,8 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateValuePropositionCommandHandler } from "../../../../../application/context/value-propositions/update/UpdateValuePropositionCommandHandler.js";
-import { UpdateValuePropositionCommand } from "../../../../../application/context/value-propositions/update/UpdateValuePropositionCommand.js";
+import { UpdateValuePropositionRequest } from "../../../../../application/context/value-propositions/update/UpdateValuePropositionRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -86,15 +85,7 @@ export async function valueUpdate(options: {
   }
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new UpdateValuePropositionCommandHandler(
-      container.valuePropositionUpdatedEventStore,
-      container.eventBus,
-      container.valuePropositionUpdatedProjector
-    );
-
-    // 2. Build command
-    const command: UpdateValuePropositionCommand = {
+    const request: UpdateValuePropositionRequest = {
       id: options.id,
       title: options.title,
       description: options.description,
@@ -104,20 +95,17 @@ export async function valueUpdate(options: {
         : options.measurableOutcome,
     };
 
-    // 3. Execute command
-    const result = await commandHandler.execute(command);
+    const response = await container.updateValuePropositionController.handle(request);
 
-    // 4. Get updated view for display
-    const updatedView = await container.valuePropositionUpdatedProjector.findById(result.valuePropositionId);
-
-    // Success output
     const data: Record<string, string> = {
-      valuePropositionId: result.valuePropositionId,
+      valuePropositionId: response.valuePropositionId,
     };
 
-    if (updatedView) {
-      data.title = updatedView.title;
-      data.version = updatedView.version.toString();
+    if (response.title) {
+      data.title = response.title;
+    }
+    if (response.version !== undefined) {
+      data.version = response.version.toString();
     }
 
     renderer.success("Value proposition updated successfully", data);

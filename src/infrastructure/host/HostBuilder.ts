@@ -308,6 +308,17 @@ import { UpdateAudienceController } from "../../application/context/audiences/up
 import { ValuePropositionAddedEventHandler } from "../../application/context/value-propositions/add/ValuePropositionAddedEventHandler.js";
 import { ValuePropositionUpdatedEventHandler } from "../../application/context/value-propositions/update/ValuePropositionUpdatedEventHandler.js";
 import { ValuePropositionRemovedEventHandler } from "../../application/context/value-propositions/remove/ValuePropositionRemovedEventHandler.js";
+import { AddValuePropositionCommandHandler } from "../../application/context/value-propositions/add/AddValuePropositionCommandHandler.js";
+import { LocalAddValuePropositionGateway } from "../../application/context/value-propositions/add/LocalAddValuePropositionGateway.js";
+import { AddValuePropositionController } from "../../application/context/value-propositions/add/AddValuePropositionController.js";
+import { RemoveValuePropositionCommandHandler } from "../../application/context/value-propositions/remove/RemoveValuePropositionCommandHandler.js";
+import { LocalRemoveValuePropositionGateway } from "../../application/context/value-propositions/remove/LocalRemoveValuePropositionGateway.js";
+import { RemoveValuePropositionController } from "../../application/context/value-propositions/remove/RemoveValuePropositionController.js";
+import { LocalGetValuePropositionsGateway } from "../../application/context/value-propositions/get/LocalGetValuePropositionsGateway.js";
+import { GetValuePropositionsController } from "../../application/context/value-propositions/get/GetValuePropositionsController.js";
+import { UpdateValuePropositionCommandHandler } from "../../application/context/value-propositions/update/UpdateValuePropositionCommandHandler.js";
+import { LocalUpdateValuePropositionGateway } from "../../application/context/value-propositions/update/LocalUpdateValuePropositionGateway.js";
+import { UpdateValuePropositionController } from "../../application/context/value-propositions/update/UpdateValuePropositionController.js";
 // Relations Event Handlers - decomposed by use case
 import { RelationAddedEventHandler } from "../../application/context/relations/add/RelationAddedEventHandler.js";
 import { AddRelationCommandHandler } from "../../application/context/relations/add/AddRelationCommandHandler.js";
@@ -1446,6 +1457,48 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const audienceAddedEventHandler = new AudienceAddedEventHandler(audienceAddedProjector);
     const audienceUpdatedEventHandler = new AudienceUpdatedEventHandler(audienceUpdatedProjector);
     const audienceRemovedEventHandler = new AudienceRemovedEventHandler(audienceRemovedProjector);
+    // ValueProposition Controllers
+    const addValuePropositionCommandHandler = new AddValuePropositionCommandHandler(
+      valuePropositionAddedEventStore,
+      eventBus
+    );
+    const addValuePropositionGateway = new LocalAddValuePropositionGateway(
+      addValuePropositionCommandHandler,
+      valuePropositionUpdatedProjector
+    );
+    const addValuePropositionController = new AddValuePropositionController(
+      addValuePropositionGateway
+    );
+    const removeValuePropositionCommandHandler = new RemoveValuePropositionCommandHandler(
+      valuePropositionRemovedEventStore,
+      eventBus,
+      valuePropositionRemovedProjector
+    );
+    const removeValuePropositionGateway = new LocalRemoveValuePropositionGateway(
+      removeValuePropositionCommandHandler,
+      valuePropositionRemovedProjector
+    );
+    const removeValuePropositionController = new RemoveValuePropositionController(
+      removeValuePropositionGateway
+    );
+    const getValuePropositionsGateway = new LocalGetValuePropositionsGateway(
+      valuePropositionContextReader
+    );
+    const getValuePropositionsController = new GetValuePropositionsController(
+      getValuePropositionsGateway
+    );
+    const updateValuePropositionCommandHandler = new UpdateValuePropositionCommandHandler(
+      valuePropositionUpdatedEventStore,
+      eventBus,
+      valuePropositionUpdatedProjector
+    );
+    const updateValuePropositionGateway = new LocalUpdateValuePropositionGateway(
+      updateValuePropositionCommandHandler,
+      valuePropositionUpdatedProjector
+    );
+    const updateValuePropositionController = new UpdateValuePropositionController(
+      updateValuePropositionGateway
+    );
     // ValueProposition Event Handlers - decomposed by use case
     const valuePropositionAddedEventHandler = new ValuePropositionAddedEventHandler(valuePropositionAddedProjector);
     const valuePropositionUpdatedEventHandler = new ValuePropositionUpdatedEventHandler(valuePropositionUpdatedProjector);
@@ -1774,6 +1827,10 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       valuePropositionUpdatedProjector,
       valuePropositionRemovedProjector,
       valuePropositionContextReader,
+      addValuePropositionController,
+      getValuePropositionsController,
+      removeValuePropositionController,
+      updateValuePropositionController,
 
       // Relations Category - Controllers
       addRelationController,

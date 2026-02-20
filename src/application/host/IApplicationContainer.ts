@@ -186,6 +186,8 @@ import { IValuePropositionUpdatedProjector } from "../context/value-propositions
 import { IValuePropositionRemovedProjector } from "../context/value-propositions/remove/IValuePropositionRemovedProjector.js";
 import { IValuePropositionUpdateReader } from "../context/value-propositions/update/IValuePropositionUpdateReader.js";
 import { IValuePropositionRemoveReader } from "../context/value-propositions/remove/IValuePropositionRemoveReader.js";
+import { RemoveValuePropositionController } from "../context/value-propositions/remove/RemoveValuePropositionController.js";
+import { UpdateValuePropositionController } from "../context/value-propositions/update/UpdateValuePropositionController.js";
 import { IProjectInitializedProjector } from "../context/project/init/IProjectInitializedProjector.js";
 import { IProjectUpdatedProjector } from "../context/project/update/IProjectUpdatedProjector.js";
 import { IProjectInitReader } from "../context/project/init/IProjectInitReader.js";
@@ -272,6 +274,8 @@ import { IAudienceRemovedEventWriter } from "../context/audiences/remove/IAudien
 import { IAudiencePainAddedEventWriter } from "../context/audience-pains/add/IAudiencePainAddedEventWriter.js";
 import { IAudiencePainUpdatedEventWriter } from "../context/audience-pains/update/IAudiencePainUpdatedEventWriter.js";
 import { IValuePropositionAddedEventWriter } from "../context/value-propositions/add/IValuePropositionAddedEventWriter.js";
+import { AddValuePropositionController } from "../context/value-propositions/add/AddValuePropositionController.js";
+import { GetValuePropositionsController } from "../context/value-propositions/get/GetValuePropositionsController.js";
 import { IValuePropositionUpdatedEventWriter } from "../context/value-propositions/update/IValuePropositionUpdatedEventWriter.js";
 import { IValuePropositionRemovedEventWriter } from "../context/value-propositions/remove/IValuePropositionRemovedEventWriter.js";
 // Relations Event Store ports - decomposed by use case
@@ -544,6 +548,10 @@ export interface IApplicationContainer {
   valuePropositionUpdatedProjector: IValuePropositionUpdatedProjector & IValuePropositionUpdateReader;
   valuePropositionRemovedProjector: IValuePropositionRemovedProjector & IValuePropositionRemoveReader;
   valuePropositionContextReader: IValuePropositionContextReader;
+  addValuePropositionController: AddValuePropositionController;
+  getValuePropositionsController: GetValuePropositionsController;
+  removeValuePropositionController: RemoveValuePropositionController;
+  updateValuePropositionController: UpdateValuePropositionController;
 
   // Relations Category - Controllers
   addRelationController: AddRelationController;

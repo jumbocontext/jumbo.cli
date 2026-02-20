@@ -6,8 +6,7 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { AddValuePropositionCommandHandler } from "../../../../../application/context/value-propositions/add/AddValuePropositionCommandHandler.js";
-import { AddValuePropositionCommand } from "../../../../../application/context/value-propositions/add/AddValuePropositionCommand.js";
+import { AddValuePropositionRequest } from "../../../../../application/context/value-propositions/add/AddValuePropositionRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -64,31 +63,21 @@ export async function valueAdd(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new AddValuePropositionCommandHandler(
-      container.valuePropositionAddedEventStore,
-      container.eventBus
-    );
-
-    // 2. Execute command
-    const command: AddValuePropositionCommand = {
+    const request: AddValuePropositionRequest = {
       title: options.title,
       description: options.description,
       benefit: options.benefit,
       measurableOutcome: options.measurableOutcome,
     };
-    const result = await commandHandler.execute(command);
 
-    // 3. Fetch updated view for display
-    const view = await container.valuePropositionUpdatedProjector.findById(result.valuePropositionId);
+    const response = await container.addValuePropositionController.handle(request);
 
-    // Success output
     const data: Record<string, string> = {
-      valuePropositionId: result.valuePropositionId,
-      title: view?.title || options.title,
+      valuePropositionId: response.valuePropositionId,
+      title: response.title,
     };
-    if (options.measurableOutcome) {
-      data.measurableOutcome = options.measurableOutcome;
+    if (response.measurableOutcome) {
+      data.measurableOutcome = response.measurableOutcome;
     }
 
     renderer.success("Value proposition added successfully", data);
@@ -96,5 +85,4 @@ export async function valueAdd(options: {
     renderer.error("Failed to add value proposition", error instanceof Error ? error : String(error));
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

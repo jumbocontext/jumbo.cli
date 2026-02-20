@@ -6,8 +6,6 @@
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { RemoveValuePropositionCommandHandler } from "../../../../../application/context/value-propositions/remove/RemoveValuePropositionCommandHandler.js";
-import { RemoveValuePropositionCommand } from "../../../../../application/context/value-propositions/remove/RemoveValuePropositionCommand.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 
 /**
@@ -41,23 +39,14 @@ export async function valueRemove(options: {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Create command handler using container dependencies
-    const commandHandler = new RemoveValuePropositionCommandHandler(
-      container.valuePropositionRemovedEventStore,
-      container.eventBus,
-      container.valuePropositionRemovedProjector
-    );
-
-    // 2. Execute command
-    const command: RemoveValuePropositionCommand = {
+    const response = await container.removeValuePropositionController.handle({
       valuePropositionId: options.valuePropositionId,
-    };
-    const result = await commandHandler.execute(command);
+    });
 
     // Success output
     renderer.success("Value proposition removed successfully", {
-      valuePropositionId: result.valuePropositionId,
-      title: result.title,
+      valuePropositionId: response.valuePropositionId,
+      title: response.title,
     });
   } catch (error) {
     renderer.error("Failed to remove value proposition", error instanceof Error ? error : String(error));
