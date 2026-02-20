@@ -415,7 +415,10 @@ import { StartSessionCommandHandler } from "../../application/context/sessions/s
 
 // Work Command Handlers
 import { PauseWorkCommandHandler } from "../../application/context/work/pause/PauseWorkCommandHandler.js";
+import { LocalPauseWorkGateway } from "../../application/context/work/pause/LocalPauseWorkGateway.js";
+import { PauseWorkController } from "../../application/context/work/pause/PauseWorkController.js";
 import { ResumeWorkController } from "../../application/context/work/resume/ResumeWorkController.js";
+import { LocalResumeWorkGateway } from "../../application/context/work/resume/LocalResumeWorkGateway.js";
 import { ResumeGoalCommandHandler } from "../../application/context/goals/resume/ResumeGoalCommandHandler.js";
 import { LocalResumeGoalGateway } from "../../application/context/goals/resume/LocalResumeGoalGateway.js";
 import { ResumeGoalController } from "../../application/context/goals/resume/ResumeGoalController.js";
@@ -1065,7 +1068,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const showGoalGateway = new LocalShowGoalGateway(goalContextQueryHandler);
     const showGoalController = new ShowGoalController(showGoalGateway);
 
-    // Work Command Handlers
+    // Work Controllers
     const pauseWorkCommandHandler = new PauseWorkCommandHandler(
       workerIdentityReader,
       goalStatusReader,
@@ -1075,6 +1078,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       eventBus,
       logger
     );
+    const pauseWorkGateway = new LocalPauseWorkGateway(pauseWorkCommandHandler);
+    const pauseWorkController = new PauseWorkController(pauseWorkGateway);
     const resumeGoalCommandHandler = new ResumeGoalCommandHandler(
       goalResumedEventStore,
       goalResumedEventStore,
@@ -1091,12 +1096,15 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const resumeGoalController = new ResumeGoalController(
       resumeGoalGateway
     );
-    const resumeWorkController = new ResumeWorkController(
+    const resumeWorkGateway = new LocalResumeWorkGateway(
       workerIdentityReader,
       goalStatusReader,
       resumeGoalCommandHandler,
       sessionContextQueryHandler,
       logger
+    );
+    const resumeWorkController = new ResumeWorkController(
+      resumeWorkGateway
     );
 
     // Architecture Controllers
@@ -1684,8 +1692,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       supersedeDecisionController,
       updateDecisionController,
 
-      // Work Command Handlers
-      pauseWorkCommandHandler,
+      // Work Controllers
+      pauseWorkController,
       resumeWorkController,
 
       // Audience Pain Controllers

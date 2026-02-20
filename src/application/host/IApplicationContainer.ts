@@ -95,8 +95,8 @@ import { UpdateAudienceController } from "../context/audiences/update/UpdateAudi
 import { DefineArchitectureController } from "../context/architecture/define/DefineArchitectureController.js";
 import { UpdateArchitectureController } from "../context/architecture/update/UpdateArchitectureController.js";
 
-// Work Command Handlers
-import { PauseWorkCommandHandler } from "../context/work/pause/PauseWorkCommandHandler.js";
+// Work Controllers
+import { PauseWorkController } from "../context/work/pause/PauseWorkController.js";
 import { ResumeWorkController } from "../context/work/resume/ResumeWorkController.js";
 
 import { AddDecisionController } from "../context/decisions/add/AddDecisionController.js";
@@ -401,8 +401,8 @@ export interface IApplicationContainer {
   supersedeDecisionController: SupersedeDecisionController;
   updateDecisionController: UpdateDecisionController;
 
-  // Work Command Handlers
-  pauseWorkCommandHandler: PauseWorkCommandHandler;
+  // Work Controllers
+  pauseWorkController: PauseWorkController;
   resumeWorkController: ResumeWorkController;
 
   // Audience Pain Controllers

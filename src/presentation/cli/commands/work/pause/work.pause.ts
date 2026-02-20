@@ -39,11 +39,11 @@ export async function workPause(
   try {
     container.logger.debug("[work.pause] Starting workPause command");
 
-    container.logger.debug("[work.pause] About to execute command handler");
-    // Execute command
-    const result = await container.pauseWorkCommandHandler.execute({});
+    container.logger.debug("[work.pause] About to execute controller");
+    // Execute via controller
+    const result = await container.pauseWorkController.handle({});
 
-    container.logger.info("[work.pause] Successfully executed PauseWorkCommandHandler");
+    container.logger.info("[work.pause] Successfully executed PauseWorkController");
 
     // Success output
     renderer.success("Work paused", {

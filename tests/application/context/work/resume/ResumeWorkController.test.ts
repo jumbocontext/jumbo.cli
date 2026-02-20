@@ -3,209 +3,50 @@
  */
 
 import { ResumeWorkController } from "../../../../../src/application/context/work/resume/ResumeWorkController";
-import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
-import { IGoalStatusReader } from "../../../../../src/application/context/goals/IGoalStatusReader";
-import { ResumeGoalCommandHandler } from "../../../../../src/application/context/goals/resume/ResumeGoalCommandHandler";
-import { SessionContextQueryHandler } from "../../../../../src/application/context/sessions/get/SessionContextQueryHandler";
-import { GoalStatus } from "../../../../../src/domain/goals/Constants";
-import { GoalView } from "../../../../../src/application/context/goals/GoalView";
-import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
-import { ILogger } from "../../../../../src/application/logging/ILogger";
-import { ContextualSessionView } from "../../../../../src/application/context/sessions/get/ContextualSessionView";
+import { IResumeWorkGateway } from "../../../../../src/application/context/work/resume/IResumeWorkGateway";
+import { ResumeWorkResponse } from "../../../../../src/application/context/work/resume/ResumeWorkResponse";
 
 describe("ResumeWorkController", () => {
-  let workerIdentityReader: IWorkerIdentityReader;
-  let goalStatusReader: IGoalStatusReader;
-  let resumeGoalCommandHandler: jest.Mocked<Pick<ResumeGoalCommandHandler, "execute">>;
-  let sessionContextQueryHandler: jest.Mocked<Pick<SessionContextQueryHandler, "execute">>;
-  let logger: ILogger;
+  let gateway: jest.Mocked<IResumeWorkGateway>;
   let controller: ResumeWorkController;
 
-  const workerId = createWorkerId("worker_123");
-
-  const baseContextualSessionView: ContextualSessionView = {
-    session: null,
+  const mockResponse: ResumeWorkResponse = {
+    goalId: "goal_123",
+    objective: "Implement feature",
     context: {
-      projectContext: null,
-      activeGoals: [],
-      pausedGoals: [],
-      plannedGoals: [],
-      recentDecisions: [],
+      session: null,
+      context: {
+        projectContext: null,
+        activeGoals: [],
+        pausedGoals: [],
+        plannedGoals: [],
+        recentDecisions: [],
+      },
+      instructions: ["resume-continuation-prompt"],
+      scope: "work-resume",
     },
   };
 
-  function createPausedGoal(overrides: Partial<GoalView> = {}): GoalView {
-    return {
-      goalId: "goal_123",
-      objective: "Implement feature",
-      successCriteria: ["Feature works"],
-      scopeIn: [],
-      scopeOut: [],
-      status: GoalStatus.PAUSED,
-      version: 3,
-      createdAt: "2025-01-01T00:00:00Z",
-      updatedAt: "2025-01-01T00:00:00Z",
-      claimedBy: workerId,
-      progress: [],
-      ...overrides,
-    };
-  }
-
   beforeEach(() => {
-    workerIdentityReader = { workerId };
-
-    goalStatusReader = {
-      findByStatus: jest.fn().mockResolvedValue([]),
-      findAll: jest.fn().mockResolvedValue([]),
+    gateway = {
+      resumeWork: jest.fn().mockResolvedValue(mockResponse),
     };
 
-    resumeGoalCommandHandler = {
-      execute: jest.fn().mockResolvedValue({
-        goal: { goalId: "goal_123", objective: "Implement feature", status: GoalStatus.DOING },
-        context: {
-          components: [],
-          dependencies: [],
-          decisions: [],
-          invariants: [],
-          guidelines: [],
-          architecture: null,
-        },
-      }),
-    };
-
-    sessionContextQueryHandler = {
-      execute: jest.fn().mockResolvedValue(baseContextualSessionView),
-    };
-
-    logger = {
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-      flush: jest.fn(),
-    } as unknown as ILogger;
-
-    controller = new ResumeWorkController(
-      workerIdentityReader,
-      goalStatusReader,
-      resumeGoalCommandHandler as unknown as ResumeGoalCommandHandler,
-      sessionContextQueryHandler as unknown as SessionContextQueryHandler,
-      logger
-    );
+    controller = new ResumeWorkController(gateway);
   });
 
-  it("should resume the paused goal claimed by current worker", async () => {
-    const pausedGoal = createPausedGoal();
-    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([pausedGoal]);
+  it("should delegate to gateway", async () => {
+    const request = {};
 
-    const result = await controller.handle({});
+    const result = await controller.handle(request);
 
-    expect(result.goalId).toBe("goal_123");
-    expect(result.objective).toBe("Implement feature");
-    expect(goalStatusReader.findByStatus).toHaveBeenCalledWith(GoalStatus.PAUSED);
-    expect(resumeGoalCommandHandler.execute).toHaveBeenCalledWith({ goalId: "goal_123" });
+    expect(gateway.resumeWork).toHaveBeenCalledWith(request);
+    expect(result).toBe(mockResponse);
   });
 
-  it("should return enriched context with work-resume scope", async () => {
-    const pausedGoal = createPausedGoal();
-    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([pausedGoal]);
+  it("should propagate gateway errors", async () => {
+    gateway.resumeWork.mockRejectedValue(new Error("Gateway failure"));
 
-    const result = await controller.handle({});
-
-    expect(result.context).toBeDefined();
-    expect(result.context.scope).toBe("work-resume");
-    expect(result.context.instructions).toContain("resume-continuation-prompt");
-  });
-
-  it("should include paused-goals-context instruction when paused goals exist in session context", async () => {
-    const pausedGoal = createPausedGoal();
-    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([pausedGoal]);
-
-    const contextWithPausedGoals: ContextualSessionView = {
-      ...baseContextualSessionView,
-      context: {
-        ...baseContextualSessionView.context,
-        pausedGoals: [pausedGoal],
-      },
-    };
-    (sessionContextQueryHandler.execute as jest.Mock).mockResolvedValue(contextWithPausedGoals);
-
-    const result = await controller.handle({});
-
-    expect(result.context.instructions).toContain("paused-goals-context");
-  });
-
-  it("should not include paused-goals-context when no paused goals in session context", async () => {
-    const pausedGoal = createPausedGoal();
-    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([pausedGoal]);
-
-    const result = await controller.handle({});
-
-    expect(result.context.instructions).not.toContain("paused-goals-context");
-  });
-
-  it("should throw error when no paused goal found for worker", async () => {
-    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([]);
-
-    await expect(controller.handle({})).rejects.toThrow(
-      "No paused goal found for current worker"
-    );
-  });
-
-  it("should throw error when paused goals exist but none claimed by current worker", async () => {
-    const otherWorkerGoal = createPausedGoal({
-      goalId: "goal_456",
-      objective: "Other worker's goal",
-      claimedBy: "other_worker_id",
-    });
-
-    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([otherWorkerGoal]);
-
-    await expect(controller.handle({})).rejects.toThrow(
-      "No paused goal found for current worker"
-    );
-  });
-
-  it("should select correct goal when multiple paused goals exist", async () => {
-    const otherWorkerGoal = createPausedGoal({
-      goalId: "goal_other",
-      objective: "Other worker's goal",
-      claimedBy: "other_worker_id",
-    });
-
-    const myGoal = createPausedGoal({
-      goalId: "goal_mine",
-      objective: "My paused goal",
-    });
-
-    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([otherWorkerGoal, myGoal]);
-
-    const result = await controller.handle({});
-
-    expect(result.goalId).toBe("goal_mine");
-    expect(result.objective).toBe("My paused goal");
-    expect(resumeGoalCommandHandler.execute).toHaveBeenCalledWith({ goalId: "goal_mine" });
-  });
-
-  it("should propagate errors from ResumeGoalCommandHandler", async () => {
-    const pausedGoal = createPausedGoal();
-    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([pausedGoal]);
-    (resumeGoalCommandHandler.execute as jest.Mock).mockRejectedValue(
-      new Error("Event store failure")
-    );
-
-    await expect(controller.handle({})).rejects.toThrow("Event store failure");
-  });
-
-  it("should log error details when no paused goal found", async () => {
-    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([]);
-
-    await expect(controller.handle({})).rejects.toThrow();
-
-    expect(logger.error).toHaveBeenCalledWith(
-      "[ResumeWorkController] No paused goal found for worker",
-      undefined,
-      expect.objectContaining({ workerId, pausedGoalsCount: 0 })
-    );
+    await expect(controller.handle({})).rejects.toThrow("Gateway failure");
   });
 });
