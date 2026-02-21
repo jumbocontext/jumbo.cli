@@ -13,6 +13,7 @@ export class GoalRecordMapper {
   toView(record: GoalRecord): GoalView {
     return {
       goalId: record.id,
+      title: record.title,
       objective: record.objective,
       successCriteria: JSON.parse(record.successCriteria || "[]"),
       scopeIn: JSON.parse(record.scopeIn || "[]"),

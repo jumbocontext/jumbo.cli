@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { LocalGetSessionsGateway } from "../../../../../src/infrastructure/context/sessions/get/LocalGetSessionsGateway.js";
+import { LocalGetSessionsGateway } from "../../../../../src/application/context/sessions/get/LocalGetSessionsGateway.js";
 import { ISessionViewReader } from "../../../../../src/application/context/sessions/get/ISessionViewReader.js";
 import { SessionView } from "../../../../../src/application/context/sessions/SessionView.js";
 

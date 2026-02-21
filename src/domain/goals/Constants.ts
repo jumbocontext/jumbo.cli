@@ -42,6 +42,8 @@ export const GoalErrorMessages = {
   ALREADY_DEFINED: 'Goal has already been defined',
   OBJECTIVE_REQUIRED: 'Goal objective must be provided',
   OBJECTIVE_TOO_LONG: 'Objective must be less than {max} characters',
+  TITLE_REQUIRED: 'Goal title must be provided',
+  TITLE_TOO_LONG: 'Title must be less than {max} characters',
   SUCCESS_CRITERIA_REQUIRED: 'At least one success criterion must be provided',
   SUCCESS_CRITERION_TOO_LONG: 'Success criterion must be less than {max} characters',
   TOO_MANY_CRITERIA: 'Cannot have more than {max} success criteria',
@@ -78,6 +80,7 @@ export const GoalErrorMessages = {
 
 // Numeric limits
 export const GoalLimits = {
+  TITLE_MAX_LENGTH: 60,
   OBJECTIVE_MAX_LENGTH: 1500,
   SUCCESS_CRITERION_MAX_LENGTH: 1000,
   MAX_SUCCESS_CRITERIA: 50,

@@ -5,6 +5,7 @@ import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpda
 import { GoalEventType, GoalStatus, GoalStatusType } from "./Constants.js";
 import { GoalPausedReasonsType } from "./GoalPausedReasons.js";
 import { OBJECTIVE_RULES } from "./rules/ObjectiveRules.js";
+import { TITLE_RULES } from "./rules/TitleRules.js";
 import { SUCCESS_CRITERIA_RULES } from "./rules/SuccessCriteriaRules.js";
 import { SCOPE_RULES } from "./rules/ScopeRules.js";
 import { UPDATE_RULES } from "./rules/UpdateRules.js";
@@ -27,6 +28,7 @@ import { CanQualifyRule } from "./rules/CanQualifyRule.js";
 // Domain state: business properties + aggregate metadata
 export interface GoalState extends AggregateState {
   id: UUID;
+  title: string;
   objective: string;
   successCriteria: string[];
   scopeIn: string[];
@@ -51,6 +53,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     switch (event.type) {
       case GoalEventType.ADDED: {
         const e = event as GoalAddedEvent;
+        state.title = e.payload.title;
         state.objective = e.payload.objective;
         state.successCriteria = e.payload.successCriteria;
         state.scopeIn = e.payload.scopeIn;
@@ -80,6 +83,9 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
       case GoalEventType.UPDATED: {
         const e = event as GoalUpdatedEvent;
         // Only update provided fields (partial update pattern)
+        if (e.payload.title !== undefined) {
+          state.title = e.payload.title;
+        }
         if (e.payload.objective !== undefined) {
           state.objective = e.payload.objective;
         }
@@ -180,6 +186,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
   static create(id: UUID): Goal {
     const state: GoalState = {
       id,
+      title: "",
       objective: "",
       successCriteria: [],
       scopeIn: [],
@@ -198,6 +205,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
   static rehydrate(id: UUID, history: GoalEvent[]): Goal {
     const state: GoalState = {
       id,
+      title: "",
       objective: "",
       successCriteria: [],
       scopeIn: [],
@@ -215,6 +223,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
   }
 
   add(
+    title: string,
     objective: string,
     successCriteria: string[],
     scopeIn?: string[],
@@ -225,6 +234,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     ValidationRuleSet.ensure(this.state, [new CanAddRule()]);
 
     // Input validation using rules
+    ValidationRuleSet.ensure(title, TITLE_RULES);
     ValidationRuleSet.ensure(objective, OBJECTIVE_RULES);
     ValidationRuleSet.ensure(successCriteria, SUCCESS_CRITERIA_RULES);
     if (scopeIn) ValidationRuleSet.ensure(scopeIn, SCOPE_RULES);
@@ -234,6 +244,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     return this.makeEvent(
       GoalEventType.ADDED,
       {
+        title,
         objective,
         successCriteria,
         scopeIn: scopeIn || [],
@@ -307,6 +318,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
    * @throws Error if goal is completed or no changes provided
    */
   update(
+    title?: string,
     objective?: string,
     successCriteria?: string[],
     scopeIn?: string[],
@@ -323,13 +335,13 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     // Skip UPDATE_RULES if only nextGoalId is being updated
     if (!hasNextGoalIdUpdate) {
       ValidationRuleSet.ensure(
-        { objective, successCriteria, scopeIn, scopeOut },
+        { title, objective, successCriteria, scopeIn, scopeOut },
         UPDATE_RULES
       );
-    } else if (objective || successCriteria || scopeIn || scopeOut) {
+    } else if (title || objective || successCriteria || scopeIn || scopeOut) {
       // If both standard fields and nextGoalId provided, validate standard fields
       ValidationRuleSet.ensure(
-        { objective, successCriteria, scopeIn, scopeOut },
+        { title, objective, successCriteria, scopeIn, scopeOut },
         UPDATE_RULES
       );
     }
@@ -338,6 +350,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     return this.makeEvent(
       GoalEventType.UPDATED,
       {
+        title,
         objective,
         successCriteria,
         scopeIn,

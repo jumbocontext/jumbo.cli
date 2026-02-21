@@ -20,6 +20,7 @@ describe("LocalAddGoalGateway", () => {
     mockCommandHandler.execute.mockResolvedValue({ goalId });
 
     const response = await gateway.addGoal({
+      title: "Auth feature",
       objective: "Implement authentication",
       successCriteria: ["Users can log in"],
       scopeIn: ["AuthController"],
@@ -30,6 +31,7 @@ describe("LocalAddGoalGateway", () => {
 
     expect(response.goalId).toBe(goalId);
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({
+      title: "Auth feature",
       objective: "Implement authentication",
       successCriteria: ["Users can log in"],
       scopeIn: ["AuthController"],
@@ -45,12 +47,14 @@ describe("LocalAddGoalGateway", () => {
     mockCommandHandler.execute.mockResolvedValue({ goalId });
 
     const response = await gateway.addGoal({
+      title: "Bug fix",
       objective: "Fix bug #123",
       successCriteria: ["Bug is resolved"],
     });
 
     expect(response.goalId).toBe(goalId);
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({
+      title: "Bug fix",
       objective: "Fix bug #123",
       successCriteria: ["Bug is resolved"],
       scopeIn: undefined,

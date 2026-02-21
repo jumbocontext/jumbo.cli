@@ -15,15 +15,16 @@ export class SqliteGoalAddedProjector implements IGoalAddedProjector {
   async applyGoalAdded(event: GoalAddedEvent): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO goal_views (
-        goalId, objective, successCriteria, scopeIn, scopeOut,
+        goalId, title, objective, successCriteria, scopeIn, scopeOut,
         status, version, createdAt, updatedAt,
         claimedBy, claimedAt, claimExpiresAt,
         nextGoalId, progress
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
       event.aggregateId,
+      event.payload.title,
       event.payload.objective,
       JSON.stringify(event.payload.successCriteria),
       JSON.stringify(event.payload.scopeIn),

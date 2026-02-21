@@ -23,6 +23,7 @@ describe("UpdateGoalController", () => {
   it("should delegate to gateway and return response", async () => {
     const request: UpdateGoalRequest = {
       goalId: "goal_123",
+      title: "Updated title",
       objective: "Updated objective",
       successCriteria: ["criterion1", "criterion2"],
       scopeIn: ["component A"],

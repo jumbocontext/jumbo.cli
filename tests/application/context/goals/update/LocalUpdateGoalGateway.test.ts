@@ -25,6 +25,7 @@ describe("LocalUpdateGoalGateway", () => {
 
     const result = await gateway.updateGoal({
       goalId: "goal_123",
+      title: "Updated title",
       objective: "Updated objective",
       successCriteria: ["criterion1"],
       scopeIn: ["component A"],
@@ -34,6 +35,7 @@ describe("LocalUpdateGoalGateway", () => {
 
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({
       goalId: "goal_123",
+      title: "Updated title",
       objective: "Updated objective",
       successCriteria: ["criterion1"],
       scopeIn: ["component A"],
@@ -53,6 +55,7 @@ describe("LocalUpdateGoalGateway", () => {
 
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({
       goalId: "goal_123",
+      title: undefined,
       objective: "Only objective",
       successCriteria: undefined,
       scopeIn: undefined,

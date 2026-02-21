@@ -34,6 +34,7 @@ describe("AddGoalCommandHandler", () => {
   it("should generate goalId and publish GoalAddedEvent event", async () => {
     // Arrange - command contains only user-provided data, no goalId
     const command: AddGoalCommand = {
+      title: "Implement auth",
       objective: "Implement authentication",
       successCriteria: ["Users can log in"],
       scopeIn: ["AuthController"],
@@ -66,6 +67,7 @@ describe("AddGoalCommandHandler", () => {
   it("should handle minimal command with only required fields", async () => {
     // Arrange
     const command: AddGoalCommand = {
+      title: "Fix bug #123",
       objective: "Fix bug #123",
       successCriteria: ["Bug is resolved"],
     };
@@ -84,6 +86,7 @@ describe("AddGoalCommandHandler", () => {
   it("should propagate validation errors from domain", async () => {
     // Arrange: Empty objective should fail domain validation
     const command: AddGoalCommand = {
+      title: "Validation test",
       objective: "",
       successCriteria: ["Criterion 1"],
     };
@@ -97,6 +100,7 @@ describe("AddGoalCommandHandler", () => {
   it("should propagate errors if event store fails", async () => {
     // Arrange
     const command: AddGoalCommand = {
+      title: "Test goal",
       objective: "Test goal",
       successCriteria: ["Criterion 1"],
     };

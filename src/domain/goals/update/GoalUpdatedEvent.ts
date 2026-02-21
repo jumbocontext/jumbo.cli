@@ -8,6 +8,7 @@ import { GoalEventType } from "../Constants.js";
 export interface GoalUpdatedEvent extends BaseEvent {
   readonly type: typeof GoalEventType.UPDATED;
   readonly payload: {
+    readonly title?: string;
     readonly objective?: string;
     readonly successCriteria?: string[];
     readonly scopeIn?: string[];

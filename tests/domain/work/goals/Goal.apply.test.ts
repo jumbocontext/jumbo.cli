@@ -10,6 +10,7 @@ import { GoalEventType, GoalStatus } from "../../../../src/domain/goals/Constant
 function createEmptyGoalState(id: string): GoalState {
   return {
     id,
+    title: "",
     objective: "",
     successCriteria: [],
     scopeIn: [],
@@ -26,6 +27,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "",
         objective: "",
         successCriteria: [],
         scopeIn: [],
@@ -41,6 +43,7 @@ describe("Goal", () => {
         version: 1,
         timestamp: new Date().toISOString(),
         payload: {
+          title: "Auth feature",
           objective: "Implement authentication",
           successCriteria: ["Users can log in"],
           scopeIn: ["AuthController"],
@@ -65,6 +68,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: ["AuthController"],
@@ -99,6 +103,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: ["AuthController"],
@@ -135,6 +140,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: ["AuthController"],
@@ -188,6 +194,7 @@ describe("Goal", () => {
         version: 1,
         timestamp: new Date().toISOString(),
         payload: {
+          title: "Auth feature",
           objective: "Implement authentication",
           successCriteria: ["Users can log in", "Tokens are validated"],
           scopeIn: ["AuthController"],
@@ -215,6 +222,7 @@ describe("Goal", () => {
         version: 1,
         timestamp: new Date().toISOString(),
         payload: {
+          title: "Auth feature",
           objective: "Implement authentication",
           successCriteria: ["Users can log in"],
           scopeIn: ["AuthController"],
@@ -249,6 +257,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: ["AuthController"],
@@ -286,6 +295,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: [],
@@ -322,6 +332,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: ["AuthController"],
@@ -358,6 +369,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: [],
@@ -393,6 +405,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: ["AuthController"],
@@ -429,6 +442,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: [],
@@ -466,6 +480,7 @@ describe("Goal", () => {
       // Arrange
       const state = {
         id: "goal_123",
+        title: "Auth feature",
         objective: "Implement authentication",
         successCriteria: ["Users can log in"],
         scopeIn: ["AuthController"],
@@ -508,6 +523,7 @@ describe("Goal", () => {
         version: 1,
         timestamp: new Date().toISOString(),
         payload: {
+          title: "Auth feature",
           objective: "Implement authentication",
           successCriteria: ["Users can log in"],
           scopeIn: ["AuthController"],

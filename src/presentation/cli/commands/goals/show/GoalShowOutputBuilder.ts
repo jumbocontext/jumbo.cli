@@ -54,6 +54,7 @@ export class GoalShowOutputBuilder {
 
     let output = Colors.gradientA("\n=== Goal Details ===\n") + "\n" +
                  Colors.gradientB("Goal ID:    ") + Colors.gradientC(goal.goalId) + "\n" +
+                 Colors.gradientB("Title:      ") + Colors.gradientC(goal.title) + "\n" +
                  Colors.gradientB("Objective:  ") + Colors.gradientC(goal.objective) + "\n" +
                  Colors.gradientB("Status:     ") + Colors.gradientC(this.formatStatus(goal.status)) + "\n" +
                  Colors.gradientB("Version:    ") + Colors.gradientC(String(goal.version)) + "\n" +
@@ -192,6 +193,7 @@ export class GoalShowOutputBuilder {
     this.builder.addData({
       goal: {
         goalId: goal.goalId,
+        title: goal.title,
         objective: goal.objective,
         successCriteria: goal.successCriteria,
         scopeIn: goal.scopeIn,

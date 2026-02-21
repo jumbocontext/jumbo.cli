@@ -12,7 +12,7 @@ describe("Goal Aggregate", () => {
       const goal = Goal.create("goal_123");
 
       // Act
-      const event = goal.add("Implement authentication", ["Users can log in"]);
+      const event = goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Assert
       expect(event.type).toBe(GoalEventType.ADDED);
@@ -32,6 +32,7 @@ describe("Goal Aggregate", () => {
 
       // Act
       const event = goal.add(
+        "JWT authentication",
         "Implement JWT authentication",
         ["Token generation on login", "Middleware validates tokens"],
         ["UserController", "AuthMiddleware"],
@@ -51,10 +52,10 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is already defined", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("First goal", ["Criterion 1"]);
+      goal.add("First goal", "First goal", ["Criterion 1"]);
 
       // Act & Assert
-      expect(() => goal.add("Second goal", ["Criterion 2"])).toThrow(
+      expect(() => goal.add("Second goal", "Second goal", ["Criterion 2"])).toThrow(
         "Goal has already been defined"
       );
     });
@@ -64,7 +65,7 @@ describe("Goal Aggregate", () => {
       const goal = Goal.create("goal_123");
 
       // Act & Assert
-      expect(() => goal.add("", ["Criterion 1"])).toThrow(
+      expect(() => goal.add("Test goal", "", ["Criterion 1"])).toThrow(
         "Goal objective must be provided"
       );
     });
@@ -75,7 +76,7 @@ describe("Goal Aggregate", () => {
       const longObjective = "a".repeat(1501); // Max is 1500
 
       // Act & Assert
-      expect(() => goal.add(longObjective, ["Criterion 1"])).toThrow(
+      expect(() => goal.add("Test goal", longObjective, ["Criterion 1"])).toThrow(
         "Objective must be less than 1500 characters"
       );
     });
@@ -85,7 +86,7 @@ describe("Goal Aggregate", () => {
       const goal = Goal.create("goal_123");
 
       // Act & Assert
-      expect(() => goal.add("My objective", [])).toThrow(
+      expect(() => goal.add("Test goal", "My objective", [])).toThrow(
         "At least one success criterion must be provided"
       );
     });
@@ -96,7 +97,7 @@ describe("Goal Aggregate", () => {
       const tooManyCriteria = Array.from({ length: 51 }, (_, i) => `Criterion ${i}`);
 
       // Act & Assert
-      expect(() => goal.add("My objective", tooManyCriteria)).toThrow(
+      expect(() => goal.add("Test goal", "My objective", tooManyCriteria)).toThrow(
         "Cannot have more than 50 success criteria"
       );
     });
@@ -107,7 +108,7 @@ describe("Goal Aggregate", () => {
       const longCriterion = "a".repeat(1001); // Max is 1000
 
       // Act & Assert
-      expect(() => goal.add("My objective", [longCriterion])).toThrow(
+      expect(() => goal.add("Test goal", "My objective", [longCriterion])).toThrow(
         "Success criterion must be less than 1000 characters"
       );
     });
@@ -119,7 +120,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() =>
-        goal.add("My objective", ["Criterion 1"], tooManyItems)
+        goal.add("Test goal", "My objective", ["Criterion 1"], tooManyItems)
       ).toThrow("Cannot have more than 20 scope items");
     });
 
@@ -130,7 +131,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() =>
-        goal.add("My objective", ["Criterion 1"], [longItem])
+        goal.add("Test goal", "My objective", ["Criterion 1"], [longItem])
       ).toThrow("Scope item must be less than 200 characters");
     });
 
@@ -140,6 +141,7 @@ describe("Goal Aggregate", () => {
 
       // Act
       goal.add(
+        "Auth feature",
         "Implement authentication",
         ["Users can log in", "Tokens are validated"],
         ["AuthController"],
@@ -162,7 +164,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalRefinedEvent event when refining a to-do goal", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act
       const event = goal.refine();
@@ -179,7 +181,7 @@ describe("Goal Aggregate", () => {
     it("should update aggregate state to refined after refine", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act
       goal.refine();
@@ -193,7 +195,7 @@ describe("Goal Aggregate", () => {
     it("should throw error when refining already refined goal", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine(); // First refine
 
       // Act & Assert
@@ -203,7 +205,7 @@ describe("Goal Aggregate", () => {
     it("should throw error when refining a doing goal", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -218,7 +220,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalStartedEvent event when starting a refined goal", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
 
       // Act
@@ -235,7 +237,7 @@ describe("Goal Aggregate", () => {
     it("should update aggregate state to doing after start", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
 
       // Act
@@ -250,7 +252,7 @@ describe("Goal Aggregate", () => {
     it("should allow starting already-doing goal (idempotent)", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start(); // First start
 
@@ -265,7 +267,7 @@ describe("Goal Aggregate", () => {
     it("should throw error when starting to-do goal (not refined)", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act & Assert
       expect(() => goal.start()).toThrow(
@@ -276,7 +278,7 @@ describe("Goal Aggregate", () => {
     it("should throw error when starting blocked goal", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.block("Waiting for API credentials");
@@ -296,11 +298,12 @@ describe("Goal Aggregate", () => {
           version: 1,
           timestamp: "2025-01-01T00:00:00Z",
           payload: {
+            title: "Auth feature",
             objective: "Implement authentication",
             successCriteria: ["Users can log in"],
             scopeIn: [],
             scopeOut: [],
-            
+
             status: GoalStatus.TODO,
           },
         },
@@ -364,10 +367,10 @@ describe("Goal Aggregate", () => {
     it("should create GoalUpdatedEvent event with objective only", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original objective", ["Criterion 1"]);
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
 
       // Act
-      const event = goal.update("Updated objective");
+      const event = goal.update(undefined, "Updated objective");
 
       // Assert
       expect(event.type).toBe(GoalEventType.UPDATED);
@@ -383,10 +386,10 @@ describe("Goal Aggregate", () => {
     it("should create GoalUpdatedEvent event with success criteria only", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Old criterion"]);
+      goal.add("Auth feature", "Implement authentication", ["Old criterion"]);
 
       // Act
-      const event = goal.update(undefined, ["New criterion 1", "New criterion 2"]);
+      const event = goal.update(undefined, undefined, ["New criterion 1", "New criterion 2"]);
 
       // Assert
       expect(event.type).toBe(GoalEventType.UPDATED);
@@ -397,10 +400,11 @@ describe("Goal Aggregate", () => {
     it("should create GoalUpdatedEvent event with all fields", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original", ["Criterion 1"]);
+      goal.add("Original goal", "Original", ["Criterion 1"]);
 
       // Act
       const event = goal.update(
+        undefined,
         "Updated objective",
         ["Updated criterion"],
         ["In scope"],
@@ -417,10 +421,10 @@ describe("Goal Aggregate", () => {
     it("should update aggregate state with partial fields", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original objective", ["Original criterion"], ["Original scope in"]);
+      goal.add("Original goal", "Original objective", ["Original criterion"], ["Original scope in"]);
 
       // Act - only update objective
-      goal.update("Updated objective");
+      goal.update(undefined, "Updated objective");
 
       // Assert
       const snapshot = goal.snapshot;
@@ -433,7 +437,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if no fields provided", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Criterion 1"]);
+      goal.add("Auth feature", "Implement authentication", ["Criterion 1"]);
 
       // Act & Assert
       expect(() => goal.update()).toThrow("At least one field must be provided for update");
@@ -447,20 +451,20 @@ describe("Goal Aggregate", () => {
     it("should throw error if objective is empty", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original objective", ["Criterion 1"]);
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
 
       // Act & Assert
-      expect(() => goal.update("")).toThrow("Goal objective must be provided");
+      expect(() => goal.update(undefined, "")).toThrow("Goal objective must be provided");
     });
 
     it("should throw error if objective is too long", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original objective", ["Criterion 1"]);
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
       const longObjective = "a".repeat(1501); // Max is 1500
 
       // Act & Assert
-      expect(() => goal.update(longObjective)).toThrow(
+      expect(() => goal.update(undefined, longObjective)).toThrow(
         "Objective must be less than 1500 characters"
       );
     });
@@ -468,10 +472,10 @@ describe("Goal Aggregate", () => {
     it("should throw error if success criteria is empty array", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original objective", ["Criterion 1"]);
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
 
       // Act & Assert
-      expect(() => goal.update(undefined, [])).toThrow(
+      expect(() => goal.update(undefined, undefined, [])).toThrow(
         "At least one success criterion must be provided"
       );
     });
@@ -479,11 +483,11 @@ describe("Goal Aggregate", () => {
     it("should throw error if too many success criteria", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original objective", ["Criterion 1"]);
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
       const tooManyCriteria = Array.from({ length: 51 }, (_, i) => `Criterion ${i}`);
 
       // Act & Assert
-      expect(() => goal.update(undefined, tooManyCriteria)).toThrow(
+      expect(() => goal.update(undefined, undefined, tooManyCriteria)).toThrow(
         "Cannot have more than 50 success criteria"
       );
     });
@@ -491,11 +495,11 @@ describe("Goal Aggregate", () => {
     it("should throw error if success criterion is too long", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original objective", ["Criterion 1"]);
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
       const longCriterion = "a".repeat(1001); // Max is 1000
 
       // Act & Assert
-      expect(() => goal.update(undefined, [longCriterion])).toThrow(
+      expect(() => goal.update(undefined, undefined, [longCriterion])).toThrow(
         "Success criterion must be less than 1000 characters"
       );
     });
@@ -503,11 +507,11 @@ describe("Goal Aggregate", () => {
     it("should throw error if too many scope items", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original objective", ["Criterion 1"]);
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
       const tooManyItems = Array.from({ length: 21 }, (_, i) => `Item ${i}`);
 
       // Act & Assert
-      expect(() => goal.update(undefined, undefined, tooManyItems)).toThrow(
+      expect(() => goal.update(undefined, undefined, undefined, tooManyItems)).toThrow(
         "Cannot have more than 20 scope items"
       );
     });
@@ -515,11 +519,11 @@ describe("Goal Aggregate", () => {
     it("should throw error if scope item is too long", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Original objective", ["Criterion 1"]);
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
       const longItem = "a".repeat(201); // Max is 200
 
       // Act & Assert
-      expect(() => goal.update(undefined, undefined, [longItem])).toThrow(
+      expect(() => goal.update(undefined, undefined, undefined, [longItem])).toThrow(
         "Scope item must be less than 200 characters"
       );
     });
@@ -529,7 +533,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalBlockedEvent event from to-do status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act
       const event = goal.block("Waiting for API credentials");
@@ -546,7 +550,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalBlockedEvent event from doing status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -563,7 +567,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if note is not provided", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act & Assert
       expect(() => goal.block("")).toThrow("Note is required when blocking a goal");
@@ -572,7 +576,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if note is too long", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       const longNote = "a".repeat(501); // Max is 500
 
       // Act & Assert
@@ -582,7 +586,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is already blocked", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.block("First blocker");
 
       // Act & Assert
@@ -596,7 +600,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalUnblockedEvent event without note", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.block("Waiting for API credentials");
 
       // Act
@@ -614,7 +618,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalUnblockedEvent event with resolution note", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.block("Database server is down");
@@ -632,7 +636,7 @@ describe("Goal Aggregate", () => {
     it("should sanitize empty note to undefined", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.block("Blocked");
 
       // Act
@@ -645,7 +649,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if note is too long", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.block("Blocked");
       const longNote = "a".repeat(501); // Max is 500
 
@@ -656,7 +660,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is not blocked (to-do status)", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act & Assert
       expect(() => goal.unblock()).toThrow(
@@ -667,7 +671,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is not blocked (doing status)", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -680,7 +684,7 @@ describe("Goal Aggregate", () => {
     it("should transition goal back to doing status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.block("Blocked");
@@ -706,11 +710,12 @@ describe("Goal Aggregate", () => {
           version: 1,
           timestamp: "2025-01-01T00:00:00Z",
           payload: {
+            title: "Auth feature",
             objective: "Implement authentication",
             successCriteria: ["Users can log in"],
             scopeIn: [],
             scopeOut: [],
-            
+
             status: GoalStatus.TODO,
           },
         },
@@ -770,7 +775,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is in doing status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -783,7 +788,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is in blocked status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.block("Waiting for API credentials");
@@ -797,7 +802,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is not started (to-do status)", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act & Assert
       expect(() => goal.complete()).toThrow(
@@ -814,11 +819,12 @@ describe("Goal Aggregate", () => {
           version: 1,
           timestamp: "2025-01-01T00:00:00Z",
           payload: {
+            title: "Auth feature",
             objective: "Implement authentication",
             successCriteria: ["Users can log in"],
             scopeIn: [],
             scopeOut: [],
-            
+
             status: GoalStatus.TODO,
           },
         },
@@ -888,11 +894,12 @@ describe("Goal Aggregate", () => {
           version: 1,
           timestamp: "2025-01-01T00:00:00Z",
           payload: {
+            title: "Auth feature",
             objective: "Implement authentication",
             successCriteria: ["Users can log in"],
             scopeIn: [],
             scopeOut: [],
-            
+
             status: GoalStatus.TODO,
           },
         },
@@ -953,6 +960,7 @@ describe("Goal Aggregate", () => {
       // Arrange
       const goal1 = Goal.create("goal_123");
       const event = goal1.add(
+        "Auth feature",
         "Implement authentication",
         ["Users can log in"],
         ["AuthController"]
@@ -972,7 +980,7 @@ describe("Goal Aggregate", () => {
     it("should rebuild aggregate with GoalRefinedEvent and GoalStartedEvent events", () => {
       // Arrange
       const goal1 = Goal.create("goal_123");
-      const addedEvent = goal1.add("Implement authentication", ["Users can log in"]);
+      const addedEvent = goal1.add("Auth feature", "Implement authentication", ["Users can log in"]);
       const refinedEvent = goal1.refine();
       const startedEvent = goal1.start();
 
@@ -989,8 +997,8 @@ describe("Goal Aggregate", () => {
     it("should rebuild aggregate with GoalUpdatedEvent event", () => {
       // Arrange
       const goal1 = Goal.create("goal_123");
-      const addedEvent = goal1.add("Original objective", ["Original criterion"], ["Original scope"]);
-      const updatedEvent = goal1.update("Updated objective", ["Updated criterion 1", "Updated criterion 2"]);
+      const addedEvent = goal1.add("Original goal", "Original objective", ["Original criterion"], ["Original scope"]);
+      const updatedEvent = goal1.update(undefined, "Updated objective", ["Updated criterion 1", "Updated criterion 2"]);
 
       // Act
       const goal2 = Goal.rehydrate("goal_123", [addedEvent, updatedEvent]);
@@ -1006,9 +1014,9 @@ describe("Goal Aggregate", () => {
     it("should rebuild aggregate with multiple GoalUpdatedEvent events", () => {
       // Arrange
       const goal1 = Goal.create("goal_123");
-      const addedEvent = goal1.add("Original objective", ["Criterion 1"]);
-      const updated1Event = goal1.update("Updated objective");
-      const updated2Event = goal1.update(undefined, ["New criterion"]);
+      const addedEvent = goal1.add("Original goal", "Original objective", ["Criterion 1"]);
+      const updated1Event = goal1.update(undefined, "Updated objective");
+      const updated2Event = goal1.update(undefined, undefined, ["New criterion"]);
 
       // Act
       const goal2 = Goal.rehydrate("goal_123", [addedEvent, updated1Event, updated2Event]);
@@ -1025,7 +1033,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalPausedEvent event from doing status with reason", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -1045,7 +1053,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalPausedEvent event with optional note", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -1063,7 +1071,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is not in doing status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act & Assert
       expect(() => goal.pause("ContextCompressed")).toThrow(
@@ -1074,7 +1082,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is already paused", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
@@ -1088,7 +1096,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if note is too long", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       const longNote = "a".repeat(501); // Max is 500
@@ -1100,7 +1108,7 @@ describe("Goal Aggregate", () => {
     it("should sanitize empty note to undefined", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -1116,7 +1124,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalResumedEvent event from paused status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
@@ -1136,7 +1144,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalResumedEvent event with optional note", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
@@ -1154,7 +1162,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is not paused", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -1167,7 +1175,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if note is too long", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
@@ -1180,7 +1188,7 @@ describe("Goal Aggregate", () => {
     it("should sanitize empty note to undefined", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
@@ -1197,7 +1205,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalSubmittedForReviewEvent event from doing status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -1216,7 +1224,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalSubmittedForReviewEvent event from blocked status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.block("Waiting for API credentials");
@@ -1233,7 +1241,7 @@ describe("Goal Aggregate", () => {
     it("should transition goal to in-review status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -1249,7 +1257,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is in to-do status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act & Assert
       expect(() => goal.submitForReview()).toThrow(
@@ -1260,7 +1268,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is in paused status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
@@ -1274,7 +1282,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is already in-review", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.submitForReview();
@@ -1294,11 +1302,12 @@ describe("Goal Aggregate", () => {
           version: 1,
           timestamp: "2025-01-01T00:00:00Z",
           payload: {
+            title: "Auth feature",
             objective: "Implement authentication",
             successCriteria: ["Users can log in"],
             scopeIn: [],
             scopeOut: [],
-            
+
             status: GoalStatus.TODO,
           },
         },
@@ -1359,11 +1368,12 @@ describe("Goal Aggregate", () => {
           version: 1,
           timestamp: "2025-01-01T00:00:00Z",
           payload: {
+            title: "Auth feature",
             objective: "Implement authentication",
             successCriteria: ["Users can log in"],
             scopeIn: [],
             scopeOut: [],
-            
+
             status: GoalStatus.TODO,
           },
         },
@@ -1429,7 +1439,7 @@ describe("Goal Aggregate", () => {
     it("should create GoalQualifiedEvent event from in-review status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.submitForReview();
@@ -1449,7 +1459,7 @@ describe("Goal Aggregate", () => {
     it("should transition goal to qualified status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.submitForReview();
@@ -1466,7 +1476,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is in to-do status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
 
       // Act & Assert
       expect(() => goal.qualify()).toThrow(
@@ -1477,7 +1487,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is in doing status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
 
@@ -1490,7 +1500,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is in blocked status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.block("Waiting for API credentials");
@@ -1504,7 +1514,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is in paused status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.pause("ContextCompressed");
@@ -1518,7 +1528,7 @@ describe("Goal Aggregate", () => {
     it("should throw error if goal is already qualified", () => {
       // Arrange
       const goal = Goal.create("goal_123");
-      goal.add("Implement authentication", ["Users can log in"]);
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
       goal.refine();
       goal.start();
       goal.submitForReview();
@@ -1539,11 +1549,12 @@ describe("Goal Aggregate", () => {
           version: 1,
           timestamp: "2025-01-01T00:00:00Z",
           payload: {
+            title: "Auth feature",
             objective: "Implement authentication",
             successCriteria: ["Users can log in"],
             scopeIn: [],
             scopeOut: [],
-            
+
             status: GoalStatus.TODO,
           },
         },

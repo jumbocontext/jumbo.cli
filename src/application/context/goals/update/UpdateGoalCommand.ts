@@ -4,6 +4,7 @@
  */
 export interface UpdateGoalCommand {
   readonly goalId: string;
+  readonly title?: string;
   readonly objective?: string;
   readonly successCriteria?: string[];
   readonly scopeIn?: string[];

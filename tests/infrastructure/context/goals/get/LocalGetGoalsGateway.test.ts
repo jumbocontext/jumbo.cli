@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { LocalGetGoalsGateway } from "../../../../../src/infrastructure/context/goals/get/LocalGetGoalsGateway.js";
+import { LocalGetGoalsGateway } from "../../../../../src/application/context/goals/get/LocalGetGoalsGateway.js";
 import { IGoalStatusReader } from "../../../../../src/application/context/goals/IGoalStatusReader.js";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
 
 function makeGoal(overrides: Partial<GoalView> = {}): GoalView {
   return {
     goalId: "goal_1",
+    title: "Test goal",
     objective: "Test goal",
     successCriteria: [],
     scopeIn: [],

@@ -25,6 +25,10 @@ export class SqliteGoalUpdatedProjector
     const updates: string[] = [];
     const values: any[] = [];
 
+    if (event.payload.title !== undefined) {
+      updates.push("title = ?");
+      values.push(event.payload.title);
+    }
     if (event.payload.objective !== undefined) {
       updates.push("objective = ?");
       values.push(event.payload.objective);

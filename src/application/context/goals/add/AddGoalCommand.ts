@@ -6,6 +6,7 @@
  * as part of orchestration (Clean Architecture principle).
  */
 export interface AddGoalCommand {
+  readonly title: string;
   readonly objective: string;
   readonly successCriteria: string[];
   readonly scopeIn?: string[];

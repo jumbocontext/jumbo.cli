@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { LocalGetRelationsGateway } from "../../../../../src/infrastructure/context/relations/get/LocalGetRelationsGateway.js";
+import { LocalGetRelationsGateway } from "../../../../../src/application/context/relations/get/LocalGetRelationsGateway.js";
 import { IRelationViewReader } from "../../../../../src/application/context/relations/get/IRelationViewReader.js";
 import { RelationView } from "../../../../../src/application/context/relations/RelationView.js";
 

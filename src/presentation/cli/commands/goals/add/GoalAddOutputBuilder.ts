@@ -29,11 +29,12 @@ export class GoalAddOutputBuilder {
    * Build output for successful goal creation.
    * Renders success message with goal details.
    */
-  buildSuccess(goalId: string, objective: string): TerminalOutput {
+  buildSuccess(goalId: string, title: string, objective: string): TerminalOutput {
     this.builder.reset();
     this.builder.addPrompt("✓ Goal defined");
     this.builder.addData({
       goalId,
+      title,
       objective,
       status: 'to-do'
     });

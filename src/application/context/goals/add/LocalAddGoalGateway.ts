@@ -10,6 +10,7 @@ export class LocalAddGoalGateway implements IAddGoalGateway {
 
   async addGoal(request: AddGoalRequest): Promise<AddGoalResponse> {
     const result = await this.commandHandler.execute({
+      title: request.title,
       objective: request.objective,
       successCriteria: request.successCriteria,
       scopeIn: request.scopeIn,

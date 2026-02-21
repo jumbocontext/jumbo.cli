@@ -1,4 +1,5 @@
 export interface AddGoalRequest {
+  readonly title: string;
   readonly objective: string;
   readonly successCriteria: string[];
   readonly scopeIn?: string[];

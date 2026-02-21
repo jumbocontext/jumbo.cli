@@ -35,6 +35,7 @@ export class UpdateGoalCommandHandler {
 
     // 3. Domain logic produces event
     const event = goal.update(
+      command.title,
       command.objective,
       command.successCriteria,
       command.scopeIn,

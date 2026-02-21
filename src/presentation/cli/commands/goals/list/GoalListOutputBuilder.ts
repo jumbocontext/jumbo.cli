@@ -89,6 +89,9 @@ export class GoalListOutputBuilder {
     for (const goal of sortedGoals) {
       const status = this.formatStatus(goal.status);
       output += `${status}  ${goal.goalId}\n`;
+      if (goal.title) {
+        output += `           ${goal.title}\n`;
+      }
       output += `           ${goal.objective}\n`;
       if (goal.note) {
         output += `           Note: ${goal.note}\n`;
@@ -127,6 +130,7 @@ export class GoalListOutputBuilder {
     this.builder.addData({
       goals: sortedGoals.map(goal => ({
         goalId: goal.goalId,
+        title: goal.title,
         objective: goal.objective,
         status: goal.status,
         note: goal.note,

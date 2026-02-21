@@ -34,6 +34,7 @@ export class AddGoalCommandHandler {
 
     // Domain logic produces event
     const event = goal.add(
+      command.title,
       command.objective,
       command.successCriteria,
       command.scopeIn,
@@ -80,6 +81,7 @@ export class AddGoalCommandHandler {
 
     // Update the previous goal's nextGoalId
     const updateEvent = previousGoal.update(
+      undefined,
       undefined,
       undefined,
       undefined,

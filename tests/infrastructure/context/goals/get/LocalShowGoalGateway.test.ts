@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { LocalShowGoalGateway } from "../../../../../src/infrastructure/context/goals/get/LocalShowGoalGateway.js";
+import { LocalShowGoalGateway } from "../../../../../src/application/context/goals/get/LocalShowGoalGateway.js";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/goals/get/GoalContextQueryHandler.js";
 import { ContextualGoalView } from "../../../../../src/application/context/goals/get/ContextualGoalView.js";
 
@@ -19,6 +19,7 @@ describe("LocalShowGoalGateway", () => {
     const mockView: ContextualGoalView = {
       goal: {
         goalId: "goal_123",
+        title: "Build feature",
         objective: "Build feature",
         successCriteria: ["Criteria 1"],
         scopeIn: ["Scope 1"],

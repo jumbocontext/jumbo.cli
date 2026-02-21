@@ -11,6 +11,7 @@ export class LocalUpdateGoalGateway implements IUpdateGoalGateway {
   async updateGoal(request: UpdateGoalRequest): Promise<UpdateGoalResponse> {
     const result = await this.commandHandler.execute({
       goalId: request.goalId,
+      title: request.title,
       objective: request.objective,
       successCriteria: request.successCriteria,
       scopeIn: request.scopeIn,

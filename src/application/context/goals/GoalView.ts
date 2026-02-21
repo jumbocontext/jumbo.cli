@@ -6,6 +6,7 @@ import { GoalStatusType } from "../../../domain/goals/Constants.js";
  */
 export interface GoalView {
   readonly goalId: string;
+  readonly title: string;
   readonly objective: string;
   readonly successCriteria: string[];
   readonly scopeIn: string[];

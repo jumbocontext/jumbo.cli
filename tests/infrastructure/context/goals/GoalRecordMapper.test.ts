@@ -19,6 +19,7 @@ describe("GoalRecordMapper", () => {
   function buildRecord(overrides: Partial<GoalRecord> = {}): GoalRecord {
     return {
       id: "goal_test-1",
+      title: "Test title",
       objective: "Test objective",
       successCriteria: '["criterion 1","criterion 2"]',
       scopeIn: '["in scope"]',
@@ -44,6 +45,7 @@ describe("GoalRecordMapper", () => {
       const view = mapper.toView(record);
 
       expect(view.goalId).toBe("goal_test-1");
+      expect(view.title).toBe("Test title");
       expect(view.objective).toBe("Test objective");
       expect(view.status).toBe(GoalStatus.TODO);
       expect(view.version).toBe(1);

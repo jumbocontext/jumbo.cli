@@ -16,6 +16,7 @@ describe("AddGoalController", () => {
 
   it("should delegate to gateway and return response", async () => {
     const request = {
+      title: "Auth feature",
       objective: "Implement authentication",
       successCriteria: ["Users can log in", "Token validation works"],
       scopeIn: ["AuthController"],
@@ -38,6 +39,7 @@ describe("AddGoalController", () => {
 
   it("should handle request with only required fields", async () => {
     const request = {
+      title: "Bug fix",
       objective: "Fix bug #123",
       successCriteria: ["Bug is resolved"],
     };

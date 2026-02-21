@@ -2,6 +2,7 @@ import { ValidationRule, ValidationResult } from "../../validation/ValidationRul
 import { GoalErrorMessages, GoalLimits, formatErrorMessage } from "../Constants.js";
 
 interface UpdateFields {
+  title?: string;
   objective?: string;
   successCriteria?: string[];
   scopeIn?: string[];
@@ -14,6 +15,7 @@ interface UpdateFields {
 export class UpdateFieldsProvidedRule implements ValidationRule<UpdateFields> {
   validate(fields: UpdateFields): ValidationResult {
     const hasChanges =
+      fields.title !== undefined ||
       fields.objective !== undefined ||
       fields.successCriteria !== undefined ||
       fields.scopeIn !== undefined ||
@@ -22,6 +24,34 @@ export class UpdateFieldsProvidedRule implements ValidationRule<UpdateFields> {
     return {
       isValid: hasChanges,
       errors: hasChanges ? [] : [GoalErrorMessages.NO_CHANGES_PROVIDED],
+    };
+  }
+}
+
+/**
+ * Validates title if provided (optional but must be valid if present)
+ */
+export class OptionalTitleValidRule implements ValidationRule<UpdateFields> {
+  validate(fields: UpdateFields): ValidationResult {
+    if (fields.title === undefined) {
+      return { isValid: true, errors: [] };
+    }
+
+    const errors: string[] = [];
+    if (!fields.title || fields.title.trim() === "") {
+      errors.push(GoalErrorMessages.TITLE_REQUIRED);
+    }
+    if (fields.title.length > GoalLimits.TITLE_MAX_LENGTH) {
+      errors.push(
+        formatErrorMessage(GoalErrorMessages.TITLE_TOO_LONG, {
+          max: GoalLimits.TITLE_MAX_LENGTH,
+        })
+      );
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
     };
   }
 }
@@ -150,6 +180,7 @@ export class OptionalScopeValidRule implements ValidationRule<UpdateFields> {
 
 export const UPDATE_RULES = [
   new UpdateFieldsProvidedRule(),
+  new OptionalTitleValidRule(),
   new OptionalObjectiveValidRule(),
   new OptionalSuccessCriteriaValidRule(),
   new OptionalScopeValidRule(),

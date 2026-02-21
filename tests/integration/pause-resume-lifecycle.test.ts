@@ -47,6 +47,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.eventBus
     );
     const addCommand: AddGoalCommand = {
+      title: "Pause/resume lifecycle",
       objective: "Test pause/resume lifecycle",
       successCriteria: ["Lifecycle works correctly"],
     };
@@ -171,6 +172,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.eventBus
     );
     const addResult = await addHandler.execute({
+      title: "Pause details",
       objective: "Test pause details",
       successCriteria: ["Works"],
     });
@@ -225,6 +227,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.eventBus
     );
     const addResult = await addHandler.execute({
+      title: "Multiple pause/resume",
       objective: "Test multiple pause/resume",
       successCriteria: ["Works"],
     });
@@ -303,6 +306,7 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.eventBus
     );
     const addResult = await addHandler.execute({
+      title: "Projection consistency",
       objective: "Test projection consistency",
       successCriteria: ["Consistent"],
     });

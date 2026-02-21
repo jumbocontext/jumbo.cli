@@ -5,7 +5,7 @@
  * Only provided fields are updated; omitted fields remain unchanged.
  *
  * Usage:
- *   jumbo goal update --goal-id <goalId> [--objective "..."] [--criteria "..."] [--scope-in "..."] [--scope-out "..."]
+ *   jumbo goal update --goal-id <goalId> [--title "..."] [--objective "..."] [--criteria "..."] [--scope-in "..."] [--scope-out "..."]
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
@@ -27,6 +27,10 @@ export const metadata: CommandMetadata = {
     }
   ],
   options: [
+    {
+      flags: "--title <text>",
+      description: "Updated title (max 60 characters)"
+    },
     {
       flags: "--objective <text>",
       description: "Updated objective"
@@ -50,6 +54,10 @@ export const metadata: CommandMetadata = {
   ],
   examples: [
     {
+      command: "jumbo goal update --goal-id goal_abc123 --title \"New Title\"",
+      description: "Update a goal's title only"
+    },
+    {
       command: "jumbo goal update --goal-id goal_abc123 --objective \"Updated goal\"",
       description: "Update a goal's objective only"
     },
@@ -72,6 +80,7 @@ export const metadata: CommandMetadata = {
 export async function goalUpdate(
   options: {
     goalId: string;
+    title?: string;
     objective?: string;
     criteria?: string[];
     scopeIn?: string[];
@@ -86,6 +95,7 @@ export async function goalUpdate(
   try {
     const request: UpdateGoalRequest = {
       goalId: options.goalId,
+      title: options.title,
       objective: options.objective,
       successCriteria: options.criteria,
       scopeIn: options.scopeIn,
