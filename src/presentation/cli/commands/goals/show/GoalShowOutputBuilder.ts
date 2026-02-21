@@ -1,6 +1,7 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { ContextualGoalView } from '../../../../../application/context/goals/get/ContextualGoalView.js';
+import { Colors } from '../../../rendering/StyleConfig.js';
 
 /**
  * Specialized builder for goal.show command output.
@@ -51,50 +52,50 @@ export class GoalShowOutputBuilder {
     const goal = contextualView.goal;
     const context = contextualView.context;
 
-    let output = "\n=== Goal Details ===\n\n" +
-                 `Goal ID:    ${goal.goalId}\n` +
-                 `Objective:  ${goal.objective}\n` +
-                 `Status:     ${this.formatStatus(goal.status)}\n` +
-                 `Version:    ${goal.version}\n` +
-                 `Created:    ${goal.createdAt}\n` +
-                 `Updated:    ${goal.updatedAt}`;
+    let output = Colors.gradientA("\n=== Goal Details ===\n") + "\n" +
+                 Colors.gradientB("Goal ID:    ") + Colors.gradientC(goal.goalId) + "\n" +
+                 Colors.gradientB("Objective:  ") + Colors.gradientC(goal.objective) + "\n" +
+                 Colors.gradientB("Status:     ") + Colors.gradientC(this.formatStatus(goal.status)) + "\n" +
+                 Colors.gradientB("Version:    ") + Colors.gradientC(String(goal.version)) + "\n" +
+                 Colors.gradientB("Created:    ") + Colors.gradientC(goal.createdAt) + "\n" +
+                 Colors.gradientB("Updated:    ") + Colors.gradientC(goal.updatedAt);
 
     if (goal.note) {
-      output += `\n\nNote:\n  ${goal.note}`;
+      output += "\n\n" + Colors.gradientB("Note:") + "\n  " + Colors.gradientC(goal.note);
     }
 
     if (goal.successCriteria.length > 0) {
-      output += "\n\nSuccess Criteria:";
+      output += "\n\n" + Colors.gradientB("Success Criteria:");
       for (const criterion of goal.successCriteria) {
-        output += `\n  - ${criterion}`;
+        output += "\n  - " + Colors.gradientC(criterion);
       }
     }
 
     if (goal.scopeIn.length > 0 || goal.scopeOut.length > 0) {
-      output += "\n\nScope:";
+      output += "\n\n" + Colors.gradientB("Scope:");
       if (goal.scopeIn.length > 0) {
-        output += "\n  In:";
+        output += "\n  " + Colors.gradientB("In:");
         for (const item of goal.scopeIn) {
-          output += `\n    - ${item}`;
+          output += "\n    - " + Colors.gradientC(item);
         }
       }
       if (goal.scopeOut.length > 0) {
-        output += "\n  Out:";
+        output += "\n  " + Colors.gradientB("Out:");
         for (const item of goal.scopeOut) {
-          output += `\n    - ${item}`;
+          output += "\n    - " + Colors.gradientC(item);
         }
       }
     }
 
     if (goal.nextGoalId) {
-      output += `\n\nNext Goal:  ${goal.nextGoalId}`;
+      output += "\n\n" + Colors.gradientB("Next Goal:  ") + Colors.gradientC(goal.nextGoalId);
     }
 
     if (goal.claimedBy) {
-      output += "\n\nClaim:" +
-                `\n  Claimed By:  ${goal.claimedBy}` +
-                `\n  Claimed At:  ${goal.claimedAt}` +
-                `\n  Expires At:  ${goal.claimExpiresAt}`;
+      output += "\n\n" + Colors.gradientB("Claim:") +
+                "\n  " + Colors.gradientB("Claimed By:  ") + Colors.gradientC(goal.claimedBy) +
+                "\n  " + Colors.gradientB("Claimed At:  ") + Colors.gradientC(goal.claimedAt!) +
+                "\n  " + Colors.gradientB("Expires At:  ") + Colors.gradientC(goal.claimExpiresAt!);
     }
 
     this.builder.addPrompt(output);
@@ -102,21 +103,21 @@ export class GoalShowOutputBuilder {
     // Architecture section
     if (context.architecture) {
       const arch = context.architecture;
-      let archOutput = `\n=== Architecture ===\n\n` +
-                       `Description: ${arch.description}\n` +
-                       `Organization: ${arch.organization}`;
+      let archOutput = Colors.gradientA("\n=== Architecture ===\n") + "\n" +
+                       Colors.gradientB("Description: ") + Colors.gradientC(arch.description) + "\n" +
+                       Colors.gradientB("Organization: ") + Colors.gradientC(arch.organization);
 
       if (arch.patterns && arch.patterns.length > 0) {
-        archOutput += "\n\nDesign Patterns:";
+        archOutput += "\n\n" + Colors.gradientB("Design Patterns:");
         for (const pattern of arch.patterns) {
-          archOutput += `\n  - ${pattern}`;
+          archOutput += "\n  - " + Colors.gradientC(pattern);
         }
       }
 
       if (arch.principles && arch.principles.length > 0) {
-        archOutput += "\n\nPrinciples:";
+        archOutput += "\n\n" + Colors.gradientB("Principles:");
         for (const principle of arch.principles) {
-          archOutput += `\n  - ${principle}`;
+          archOutput += "\n  - " + Colors.gradientC(principle);
         }
       }
 
@@ -125,46 +126,46 @@ export class GoalShowOutputBuilder {
 
     // Components section
     if (context.components.length > 0) {
-      let componentsOutput = "\n=== Related Components ===\n";
+      let componentsOutput = Colors.gradientA("\n=== Related Components ===\n");
       for (const component of context.components) {
-        componentsOutput += `\n- ${component.entity.name}: \n\t${component.entity.description}`;
+        componentsOutput += "\n- " + Colors.gradientB(component.entity.name + ":") + " \n\t" + Colors.gradientC(component.entity.description);
       }
       this.builder.addPrompt(componentsOutput);
     }
 
     // Dependencies section
     if (context.dependencies.length > 0) {
-      let dependenciesOutput = "\n=== Related Dependencies ===\n";
+      let dependenciesOutput = Colors.gradientA("\n=== Related Dependencies ===\n");
       for (const dependency of context.dependencies) {
         const purpose = dependency.entity.contract || dependency.entity.endpoint || 'Dependency relationship';
-        dependenciesOutput += `\n- ${dependency.entity.consumerId} → ${dependency.entity.providerId}: \n\t${purpose}`;
+        dependenciesOutput += "\n- " + Colors.gradientB(`${dependency.entity.consumerId} → ${dependency.entity.providerId}:`) + " \n\t" + Colors.gradientC(purpose);
       }
       this.builder.addPrompt(dependenciesOutput);
     }
 
     // Decisions section
     if (context.decisions.length > 0) {
-      let decisionsOutput = "\n=== Related Decisions ===\n";
+      let decisionsOutput = Colors.gradientA("\n=== Related Decisions ===\n");
       for (const decision of context.decisions) {
-        decisionsOutput += `\n- ${decision.entity.title}: \n\t${decision.entity.rationale}`;
+        decisionsOutput += "\n- " + Colors.gradientB(decision.entity.title + ":") + " \n\t" + Colors.gradientC(decision.entity.rationale);
       }
       this.builder.addPrompt(decisionsOutput);
     }
 
     // Invariants section
     if (context.invariants.length > 0) {
-      let invariantsOutput = "\n=== Invariants ===\n";
+      let invariantsOutput = Colors.gradientA("\n=== Invariants ===\n");
       for (const invariant of context.invariants) {
-        invariantsOutput += `\n- ${invariant.entity.title}: \n\t${invariant.entity.description}`;
+        invariantsOutput += "\n- " + Colors.gradientB(invariant.entity.title + ":") + " \n\t" + Colors.gradientC(invariant.entity.description);
       }
       this.builder.addPrompt(invariantsOutput);
     }
 
     // Guidelines section
     if (context.guidelines.length > 0) {
-      let guidelinesOutput = "\n=== Guidelines ===\n";
+      let guidelinesOutput = Colors.gradientA("\n=== Guidelines ===\n");
       for (const guideline of context.guidelines) {
-        guidelinesOutput += `\n- ${guideline.entity.category}: \n\t${guideline.entity.description}`;
+        guidelinesOutput += "\n- " + Colors.gradientB(guideline.entity.category + ":") + " \n\t" + Colors.gradientC(guideline.entity.description);
       }
       this.builder.addPrompt(guidelinesOutput);
     }

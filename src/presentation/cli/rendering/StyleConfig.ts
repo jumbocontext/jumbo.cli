@@ -31,6 +31,17 @@ export const Colors = {
   // Special
   brand: chalk.rgb(64, 200, 200),
   highlight: chalk.rgb(64, 128, 240),
+
+  // Monochrome gradient (bright → dim)
+  // gradientA: chalk.rgb(199, 189, 155),
+  // gradientB: chalk.rgb(206, 198, 168),
+  // gradientC: chalk.rgb(241, 239, 230),
+  // gradientA: chalk.rgb(109, 192, 241),
+  // gradientB: chalk.rgb(171, 215, 241),
+  // gradientC: chalk.rgb(232, 238, 241),
+  gradientA: chalk.rgb(255, 140, 0),
+  gradientB: chalk.rgb(255, 181, 84),
+  gradientC: chalk.rgb(255, 231, 199),
 } as const;
 
 /**
