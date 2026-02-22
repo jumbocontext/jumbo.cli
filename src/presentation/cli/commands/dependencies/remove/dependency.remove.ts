@@ -17,23 +17,23 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--dependency-id <dependencyId>",
+      flags: "-i, --id <id>",
       description: "ID of the dependency to remove"
     }
   ],
   options: [
     {
-      flags: "--reason <reason>",
+      flags: "-r, --reason <reason>",
       description: "Reason for removing the dependency"
     }
   ],
   examples: [
     {
-      command: "jumbo dependency remove --dependency-id dep_abc123",
+      command: "jumbo dependency remove --id dep_abc123",
       description: "Remove a dependency from the project"
     },
     {
-      command: "jumbo dependency remove --dependency-id dep_abc123 --reason 'Migrated to MongoDB'",
+      command: "jumbo dependency remove --id dep_abc123 --reason 'Migrated to MongoDB'",
       description: "Remove a dependency with a reason"
     }
   ],
@@ -46,7 +46,7 @@ export const metadata: CommandMetadata = {
  */
 export async function dependencyRemove(
   options: {
-    dependencyId: string;
+    id: string;
     reason?: string;
   },
   container: IApplicationContainer
@@ -55,7 +55,7 @@ export async function dependencyRemove(
 
   try {
     const request: RemoveDependencyRequest = {
-      dependencyId: options.dependencyId,
+      dependencyId: options.id,
       reason: options.reason,
     };
 

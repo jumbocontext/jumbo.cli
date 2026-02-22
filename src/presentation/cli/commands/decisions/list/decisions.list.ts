@@ -23,7 +23,7 @@ export const metadata: CommandMetadata = {
   category: "solution",
   options: [
     {
-      flags: "--status <status>",
+      flags: "-s, --status <status>",
       description: "Filter by status: active, superseded, reversed, or all (default: all)",
     },
   ],

@@ -16,23 +16,23 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--component-id <componentId>",
+      flags: "-i, --id <id>",
       description: "ID of the component to deprecate"
     }
   ],
   options: [
     {
-      flags: "--reason <reason>",
+      flags: "-r, --reason <reason>",
       description: "Reason for deprecation (max 500 chars)"
     }
   ],
   examples: [
     {
-      command: "jumbo component deprecate --component-id comp_123",
+      command: "jumbo component deprecate --id comp_123",
       description: "Deprecate a component without specifying a reason"
     },
     {
-      command: "jumbo component deprecate --component-id comp_123 --reason 'Replaced by NewAuthMiddleware'",
+      command: "jumbo component deprecate --id comp_123 --reason 'Replaced by NewAuthMiddleware'",
       description: "Deprecate a component with a reason"
     }
   ],
@@ -45,7 +45,7 @@ export const metadata: CommandMetadata = {
  */
 export async function componentDeprecate(
   options: {
-    componentId: string;
+    id: string;
     reason?: string;
   },
   container: IApplicationContainer
@@ -54,7 +54,7 @@ export async function componentDeprecate(
 
   try {
     const response = await container.deprecateComponentController.handle({
-      componentId: options.componentId,
+      componentId: options.id,
       reason: options.reason,
     });
 

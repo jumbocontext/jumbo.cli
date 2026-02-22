@@ -16,7 +16,7 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--decision-id <id>",
+      flags: "-i, --id <id>",
       description: "ID of the decision to supersede"
     },
     {
@@ -26,7 +26,7 @@ export const metadata: CommandMetadata = {
   ],
   examples: [
     {
-      command: "jumbo decision supersede --decision-id dec_123 --superseded-by dec_456",
+      command: "jumbo decision supersede --id dec_123 --superseded-by dec_456",
       description: "Mark a decision as superseded by another"
     }
   ],
@@ -39,7 +39,7 @@ export const metadata: CommandMetadata = {
  */
 export async function decisionSupersede(
   options: {
-    decisionId: string;
+    id: string;
     supersededBy: string;
   },
   container: IApplicationContainer
@@ -48,7 +48,7 @@ export async function decisionSupersede(
 
   try {
     const response = await container.supersedeDecisionController.handle({
-      decisionId: options.decisionId,
+      decisionId: options.id,
       supersededBy: options.supersededBy,
     });
 

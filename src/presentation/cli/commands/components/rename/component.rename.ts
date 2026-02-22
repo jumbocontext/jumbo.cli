@@ -16,18 +16,18 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--component-id <componentId>",
+      flags: "-i, --id <id>",
       description: "ID of the component to rename"
     },
     {
-      flags: "--name <name>",
+      flags: "-n, --name <name>",
       description: "New name for the component"
     }
   ],
   options: [],
   examples: [
     {
-      command: 'jumbo component rename --component-id comp_123 --name "NewComponentName"',
+      command: 'jumbo component rename --id comp_123 --name "NewComponentName"',
       description: "Rename a component"
     }
   ],
@@ -40,7 +40,7 @@ export const metadata: CommandMetadata = {
  */
 export async function componentRename(
   options: {
-    componentId: string;
+    id: string;
     name: string;
   },
   container: IApplicationContainer
@@ -49,7 +49,7 @@ export async function componentRename(
 
   try {
     const response = await container.renameComponentController.handle({
-      componentId: options.componentId,
+      componentId: options.id,
       name: options.name,
     });
 

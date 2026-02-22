@@ -18,7 +18,7 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--title <title>",
+      flags: "-t, --title <title>",
       description: "Decision title",
     },
     {

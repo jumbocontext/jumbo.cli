@@ -24,7 +24,7 @@ export const metadata: CommandMetadata = {
   category: "solution",
   options: [
     {
-      flags: "--status <status>",
+      flags: "-s, --status <status>",
       description: "Filter by status: active, deprecated, removed, or all (default: all)",
     },
   ],

@@ -17,7 +17,7 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--dependency-id <dependencyId>",
+      flags: "-i, --id <id>",
       description: "ID of the dependency to update"
     }
   ],
@@ -31,21 +31,21 @@ export const metadata: CommandMetadata = {
       description: "Updated contract or interface definition"
     },
     {
-      flags: "--status <status>",
+      flags: "-s, --status <status>",
       description: "Updated status (active, deprecated, removed)"
     }
   ],
   examples: [
     {
-      command: "jumbo dependency update --dependency-id dep_123 --endpoint '/api/v2/users'",
+      command: "jumbo dependency update --id dep_123 --endpoint '/api/v2/users'",
       description: "Update dependency endpoint"
     },
     {
-      command: "jumbo dependency update --dependency-id dep_123 --status deprecated",
+      command: "jumbo dependency update --id dep_123 --status deprecated",
       description: "Mark dependency as deprecated"
     },
     {
-      command: "jumbo dependency update --dependency-id dep_123 --contract 'REST API' --status active",
+      command: "jumbo dependency update --id dep_123 --contract 'REST API' --status active",
       description: "Update multiple fields"
     }
   ],
@@ -58,7 +58,7 @@ export const metadata: CommandMetadata = {
  */
 export async function dependencyUpdate(
   options: {
-    dependencyId: string;
+    id: string;
     endpoint?: string;
     contract?: string;
     status?: DependencyStatusType;
@@ -69,7 +69,7 @@ export async function dependencyUpdate(
 
   try {
     const response = await container.updateDependencyController.handle({
-      dependencyId: options.dependencyId,
+      dependencyId: options.id,
       endpoint: options.endpoint,
       contract: options.contract,
       status: options.status,

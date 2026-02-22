@@ -17,17 +17,17 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--decision-id <id>",
+      flags: "-i, --id <id>",
       description: "Decision ID to reverse"
     },
     {
-      flags: "--reason <reason>",
+      flags: "-r, --reason <reason>",
       description: "Reason for reversing the decision"
     }
   ],
   examples: [
     {
-      command: "jumbo decision reverse --decision-id dec_123 --reason \"Requirements changed\"",
+      command: "jumbo decision reverse --id dec_123 --reason \"Requirements changed\"",
       description: "Reverse a decision with reason"
     }
   ],
@@ -40,7 +40,7 @@ export const metadata: CommandMetadata = {
  */
 export async function decisionReverse(
   options: {
-    decisionId: string;
+    id: string;
     reason: string;
   },
   container: IApplicationContainer
@@ -49,7 +49,7 @@ export async function decisionReverse(
 
   try {
     const request: ReverseDecisionRequest = {
-      decisionId: options.decisionId,
+      decisionId: options.id,
       reason: options.reason,
     };
 

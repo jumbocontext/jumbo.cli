@@ -44,14 +44,14 @@ export class GoalCompleteOutputBuilder {
       "For each entity type below, consider whether any existing registrations need updating based on the work performed.\n\n" +
       "### Components\n" +
       "Did any component descriptions, responsibilities, or paths change? Were any components deprecated or removed?\n" +
-      "  Update: jumbo component update --component-id <id> --description \"...\" --responsibility \"...\"\n" +
-      "  Deprecate: jumbo component deprecate --component-id <id> --reason \"...\"\n" +
+      "  Update: jumbo component update --id <id> --description \"...\" --responsibility \"...\"\n" +
+      "  Deprecate: jumbo component deprecate --id <id> --reason \"...\"\n" +
       "  Add new: jumbo component add --name \"...\" --type \"...\" --description \"...\" --responsibility \"...\" --path \"...\"\n\n" +
       "### Decisions\n" +
       "Were any architectural decisions made, superseded, or invalidated by this work?\n" +
       "  Add: jumbo decision add --title \"...\" --context \"...\" --rationale \"...\"\n" +
-      "  Update: jumbo decision update --decision-id <id> --rationale \"...\"\n" +
-      "  Supersede: jumbo decision supersede --decision-id <id> --new-decision-id <new-id>\n\n" +
+      "  Update: jumbo decision update --id <id> --rationale \"...\"\n" +
+      "  Supersede: jumbo decision supersede --id <id> --new-decision-id <new-id>\n\n" +
       "### Invariants\n" +
       "Were any invariants introduced, weakened, strengthened, or made obsolete?\n" +
       "  Add: jumbo invariant add --title \"...\" --description \"...\" --enforcement \"...\"\n" +
@@ -65,8 +65,8 @@ export class GoalCompleteOutputBuilder {
       "### Dependencies\n" +
       "Were any inter-component dependencies added, removed, or changed?\n" +
       "  Add: jumbo dependency add --consumer-id <id> --provider-id <id> --contract \"...\"\n" +
-      "  Update: jumbo dependency update --dependency-id <id> --contract \"...\"\n" +
-      "  Remove: jumbo dependency remove --dependency-id <id>\n\n" +
+      "  Update: jumbo dependency update --id <id> --contract \"...\"\n" +
+      "  Remove: jumbo dependency remove --id <id>\n\n" +
       "### Architecture\n" +
       "Did this work change the architecture style, principles, or patterns?\n" +
       "  Update: jumbo architecture update --style \"...\" --principles \"...\"\n\n" +

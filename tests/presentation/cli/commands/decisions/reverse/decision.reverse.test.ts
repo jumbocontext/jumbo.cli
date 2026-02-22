@@ -36,7 +36,7 @@ describe("decision.reverse command", () => {
     mockController.handle.mockResolvedValue({ decisionId: "dec_123" });
 
     await decisionReverse(
-      { decisionId: "dec_123", reason: "Requirements changed" },
+      { id: "dec_123", reason: "Requirements changed" },
       mockContainer as IApplicationContainer
     );
 
@@ -53,7 +53,7 @@ describe("decision.reverse command", () => {
     const exitSpy = jest.spyOn(process, "exit").mockImplementation(() => undefined as never);
 
     await decisionReverse(
-      { decisionId: "dec_999", reason: "No longer needed" },
+      { id: "dec_999", reason: "No longer needed" },
       mockContainer as IApplicationContainer
     );
 

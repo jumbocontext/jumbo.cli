@@ -18,11 +18,11 @@ export const metadata: CommandMetadata = {
   category: "solution",
   options: [
     {
-      flags: "--id <componentId>",
+      flags: "-i, --id <componentId>",
       description: "ID of the component to show",
     },
     {
-      flags: "--name <name>",
+      flags: "-n, --name <name>",
       description: "Name of the component to show",
     },
   ],

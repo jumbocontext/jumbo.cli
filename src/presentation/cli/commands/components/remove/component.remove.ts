@@ -17,13 +17,13 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--component-id <componentId>",
+      flags: "-i, --id <id>",
       description: "ID of the component to remove"
     }
   ],
   examples: [
     {
-      command: "jumbo component remove --component-id comp_123",
+      command: "jumbo component remove --id comp_123",
       description: "Remove a deprecated component"
     }
   ],
@@ -36,7 +36,7 @@ export const metadata: CommandMetadata = {
  */
 export async function componentRemove(
   options: {
-    componentId: string;
+    id: string;
   },
   container: IApplicationContainer
 ) {
@@ -44,7 +44,7 @@ export async function componentRemove(
 
   try {
     const response = await container.removeComponentController.handle({
-      componentId: options.componentId,
+      componentId: options.id,
     });
 
     const data: Record<string, string> = {

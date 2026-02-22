@@ -17,15 +17,15 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--name <name>",
+      flags: "-n, --name <name>",
       description: "Component name"
     },
     {
-      flags: "--type <type>",
+      flags: "-T, --type <type>",
       description: "Component type (service, db, queue, ui, lib, api, worker, cache, storage)"
     },
     {
-      flags: "--description <description>",
+      flags: "-d, --description <description>",
       description: "What the component does"
     },
     {

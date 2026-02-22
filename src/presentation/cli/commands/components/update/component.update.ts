@@ -17,13 +17,13 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--component-id <componentId>",
+      flags: "-i, --id <id>",
       description: "ID of the component to update"
     }
   ],
   options: [
     {
-      flags: "--description <text>",
+      flags: "-d, --description <text>",
       description: "Updated description"
     },
     {
@@ -35,17 +35,17 @@ export const metadata: CommandMetadata = {
       description: "Updated file path"
     },
     {
-      flags: "--type <type>",
+      flags: "-T, --type <type>",
       description: "Updated component type (api, service, db, queue, ui, lib, worker, cache, storage)"
     }
   ],
   examples: [
     {
-      command: 'jumbo component update --component-id comp_123 --description "Updated: Handles all user operations"',
+      command: 'jumbo component update --id comp_123 --description "Updated: Handles all user operations"',
       description: "Update component description"
     },
     {
-      command: 'jumbo component update --component-id comp_123 --description "New description" --responsibility "New responsibility" --type api',
+      command: 'jumbo component update --id comp_123 --description "New description" --responsibility "New responsibility" --type api',
       description: "Update multiple fields"
     }
   ],
@@ -58,7 +58,7 @@ export const metadata: CommandMetadata = {
  */
 export async function componentUpdate(
   options: {
-    componentId: string;
+    id: string;
     description?: string;
     responsibility?: string;
     path?: string;
@@ -76,7 +76,7 @@ export async function componentUpdate(
 
   try {
     const response = await container.updateComponentController.handle({
-      componentId: options.componentId,
+      componentId: options.id,
       description: options.description,
       responsibility: options.responsibility,
       path: options.path,
@@ -86,7 +86,7 @@ export async function componentUpdate(
     // Success output
     const data: Record<string, string | number> = {
       componentId: response.componentId,
-      name: response.view?.name || options.componentId
+      name: response.view?.name || options.id
     };
 
     if (options.description) data.description = options.description;
@@ -94,7 +94,7 @@ export async function componentUpdate(
     if (options.path) data.path = options.path;
     if (options.type) data.type = options.type;
 
-    renderer.success(`Component '${response.view?.name || options.componentId}' updated`, data);
+    renderer.success(`Component '${response.view?.name || options.id}' updated`, data);
   } catch (error) {
     renderer.error("Failed to update component", error instanceof Error ? error : String(error));
     process.exit(1);

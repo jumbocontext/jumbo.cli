@@ -11,13 +11,13 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--decision-id <id>",
+      flags: "-i, --id <id>",
       description: "Decision ID to update"
     }
   ],
   options: [
     {
-      flags: "--title <title>",
+      flags: "-t, --title <title>",
       description: "Updated decision title"
     },
     {
@@ -39,11 +39,11 @@ export const metadata: CommandMetadata = {
   ],
   examples: [
     {
-      command: "jumbo decision update --decision-id dec_123 --title \"Use JWT with refresh tokens\"",
+      command: "jumbo decision update --id dec_123 --title \"Use JWT with refresh tokens\"",
       description: "Update decision title"
     },
     {
-      command: "jumbo decision update --decision-id dec_123 --context \"Updated context\" --rationale \"Updated rationale\"",
+      command: "jumbo decision update --id dec_123 --context \"Updated context\" --rationale \"Updated rationale\"",
       description: "Update multiple fields"
     }
   ],
@@ -56,7 +56,7 @@ export const metadata: CommandMetadata = {
  */
 export async function decisionUpdate(
   options: {
-    decisionId: string;
+    id: string;
     title?: string;
     context?: string;
     rationale?: string;
@@ -69,7 +69,7 @@ export async function decisionUpdate(
 
   try {
     const request: UpdateDecisionRequest = {
-      decisionId: options.decisionId,
+      decisionId: options.id,
       title: options.title,
       context: options.context,
       rationale: options.rationale,
