@@ -38,7 +38,7 @@ export const metadata: CommandMetadata = {
       description: "Type of relationship (e.g., involves, uses, depends-on)"
     },
     {
-      flags: "--description <description>",
+      flags: "-d, --description <description>",
       description: "Human-readable explanation of the relationship"
     }
   ],

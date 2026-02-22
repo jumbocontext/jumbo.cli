@@ -24,7 +24,7 @@ export const metadata: CommandMetadata = {
       description: "Filter by entity ID (requires --entity-type)",
     },
     {
-      flags: "--status <status>",
+      flags: "-s, --status <status>",
       description: "Filter by status: active (default), removed, or all",
     },
   ],

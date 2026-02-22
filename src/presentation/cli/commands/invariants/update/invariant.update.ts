@@ -16,21 +16,21 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--invariant-id <invariantId>",
+      flags: "-i, --id <id>",
       description: "ID of the invariant to update"
     }
   ],
   options: [
     {
-      flags: "--title <title>",
+      flags: "-t, --title <title>",
       description: "Updated invariant title"
     },
     {
-      flags: "--description <description>",
+      flags: "-d, --description <description>",
       description: "Updated description"
     },
     {
-      flags: "--rationale <rationale>",
+      flags: "-r, --rationale <rationale>",
       description: "Updated rationale"
     },
     {
@@ -40,11 +40,11 @@ export const metadata: CommandMetadata = {
   ],
   examples: [
     {
-      command: "jumbo invariant update --invariant-id inv_123 --title 'New Title'",
+      command: "jumbo invariant update --id inv_123 --title 'New Title'",
       description: "Update only the title"
     },
     {
-      command: "jumbo invariant update --invariant-id inv_123 --title 'HTTPS Only' --description 'All API calls must use HTTPS' --enforcement 'API gateway config'",
+      command: "jumbo invariant update --id inv_123 --title 'HTTPS Only' --description 'All API calls must use HTTPS' --enforcement 'API gateway config'",
       description: "Update multiple fields"
     }
   ],
@@ -56,7 +56,7 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function invariantUpdate(options: {
-  invariantId: string;
+  id: string;
   title?: string;
   description?: string;
   rationale?: string;
@@ -66,7 +66,7 @@ export async function invariantUpdate(options: {
 
   try {
     const response = await container.updateInvariantController.handle({
-      invariantId: options.invariantId,
+      invariantId: options.id,
       ...(options.title !== undefined && { title: options.title }),
       ...(options.description !== undefined && { description: options.description }),
       ...(options.rationale !== undefined && { rationale: options.rationale }),
@@ -83,7 +83,7 @@ export async function invariantUpdate(options: {
     if (response.version !== undefined) data.version = response.version;
 
     renderer.success(
-      `Invariant '${response.title || options.invariantId}' updated`,
+      `Invariant '${response.title || options.id}' updated`,
       data
     );
   } catch (error) {

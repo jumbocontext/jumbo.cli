@@ -17,23 +17,23 @@ export const metadata: CommandMetadata = {
   category: "relations",
   requiredOptions: [
     {
-      flags: "--relation-id <relationId>",
+      flags: "-i, --id <id>",
       description: "ID of the relation to remove"
     }
   ],
   options: [
     {
-      flags: "--reason <reason>",
+      flags: "-r, --reason <reason>",
       description: "Reason for removing the relation"
     }
   ],
   examples: [
     {
-      command: "jumbo relation remove --relation-id rel_abc123",
+      command: "jumbo relation remove --id rel_abc123",
       description: "Remove a relation"
     },
     {
-      command: 'jumbo relation remove --relation-id rel_abc123 --reason "Component was deprecated"',
+      command: 'jumbo relation remove --id rel_abc123 --reason "Component was deprecated"',
       description: "Remove a relation with a reason"
     }
   ],
@@ -45,14 +45,14 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function relationRemove(options: {
-  relationId: string;
+  id: string;
   reason?: string;
 }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
 
   try {
     const request: RemoveRelationRequest = {
-      relationId: options.relationId,
+      relationId: options.id,
       reason: options.reason,
     };
 

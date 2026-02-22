@@ -16,7 +16,7 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--id <invariantId>",
+      flags: "-i, --id <id>",
       description: "Invariant ID to remove"
     }
   ],

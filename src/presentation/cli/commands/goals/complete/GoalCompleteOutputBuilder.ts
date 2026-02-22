@@ -55,8 +55,8 @@ export class GoalCompleteOutputBuilder {
       "### Invariants\n" +
       "Were any invariants introduced, weakened, strengthened, or made obsolete?\n" +
       "  Add: jumbo invariant add --title \"...\" --description \"...\" --enforcement \"...\"\n" +
-      "  Update: jumbo invariant update --invariant-id <id> --description \"...\" --enforcement \"...\"\n" +
-      "  Remove: jumbo invariant remove --invariant-id <id>\n\n" +
+      "  Update: jumbo invariant update --id <id> --description \"...\" --enforcement \"...\"\n" +
+      "  Remove: jumbo invariant remove --id <id>\n\n" +
       "### Guidelines\n" +
       "Were any coding, testing, or documentation guidelines introduced or changed?\n" +
       "  Add: jumbo guideline add --category \"...\" --title \"...\" --description \"...\"\n" +

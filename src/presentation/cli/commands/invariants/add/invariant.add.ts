@@ -16,11 +16,11 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--title <title>",
+      flags: "-t, --title <title>",
       description: "Invariant title"
     },
     {
-      flags: "--description <description>",
+      flags: "-d, --description <description>",
       description: "Detailed description of the invariant"
     },
     {
@@ -30,7 +30,7 @@ export const metadata: CommandMetadata = {
   ],
   options: [
     {
-      flags: "--rationale <rationale>",
+      flags: "-r, --rationale <rationale>",
       description: "Why this invariant is non-negotiable"
     }
   ],
