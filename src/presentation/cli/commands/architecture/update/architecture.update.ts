@@ -17,7 +17,7 @@ export const metadata: CommandMetadata = {
   category: "solution",
   options: [
     {
-      flags: "--description <description>",
+      flags: "-d, --description <description>",
       description: "High-level architectural overview"
     },
     {
