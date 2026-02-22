@@ -50,6 +50,10 @@ export const metadata: CommandMetadata = {
     {
       flags: "--next-goal <goalId>",
       description: "Update the NextGoal property (chains to specified goal after completion)"
+    },
+    {
+      flags: "--prerequisite-goals <goalIds...>",
+      description: "Update prerequisite goal IDs that must be completed before this goal can start"
     }
   ],
   examples: [
@@ -86,6 +90,7 @@ export async function goalUpdate(
     scopeIn?: string[];
     scopeOut?: string[];
     nextGoal?: string;
+    prerequisiteGoals?: string[];
   },
   container: IApplicationContainer
 ) {
@@ -101,6 +106,7 @@ export async function goalUpdate(
       scopeIn: options.scopeIn,
       scopeOut: options.scopeOut,
       nextGoalId: options.nextGoal,
+      prerequisiteGoals: options.prerequisiteGoals,
     };
 
     const response = await container.updateGoalController.handle(request);

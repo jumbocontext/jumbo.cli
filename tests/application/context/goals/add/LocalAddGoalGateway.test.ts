@@ -38,6 +38,7 @@ describe("LocalAddGoalGateway", () => {
       scopeOut: ["AdminPanel"],
       nextGoalId: "goal_next",
       previousGoalId: "goal_prev",
+      prerequisiteGoals: undefined,
     });
   });
 
@@ -61,6 +62,7 @@ describe("LocalAddGoalGateway", () => {
       scopeOut: undefined,
       nextGoalId: undefined,
       previousGoalId: undefined,
+      prerequisiteGoals: undefined,
     });
   });
 });

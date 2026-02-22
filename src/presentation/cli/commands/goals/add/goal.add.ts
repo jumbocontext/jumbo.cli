@@ -55,6 +55,10 @@ export const metadata: CommandMetadata = {
     {
       flags: "--previous-goal <goalId>",
       description: "Updates the specified goal's NextGoal to point to this new goal (chains from specified goal)"
+    },
+    {
+      flags: "--prerequisite-goals <goalIds...>",
+      description: "Goal IDs that must be completed before this goal can start"
     }
   ],
   examples: [
@@ -161,6 +165,7 @@ export async function goalAdd(
     scopeOut?: string[];
     nextGoal?: string;
     previousGoal?: string;
+    prerequisiteGoals?: string[];
   },
   container: IApplicationContainer
 ) {
@@ -184,6 +189,7 @@ export async function goalAdd(
         scopeOut: inputs.scopeOut.length > 0 ? inputs.scopeOut : undefined,
         nextGoalId: options.nextGoal,
         previousGoalId: options.previousGoal,
+        prerequisiteGoals: options.prerequisiteGoals,
       };
 
       const response = await container.addGoalController.handle(request);
@@ -209,6 +215,7 @@ export async function goalAdd(
       scopeOut: options.scopeOut,
       nextGoalId: options.nextGoal,
       previousGoalId: options.previousGoal,
+      prerequisiteGoals: options.prerequisiteGoals,
     };
 
     const response = await container.addGoalController.handle(request);

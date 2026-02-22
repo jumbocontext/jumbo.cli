@@ -88,6 +88,13 @@ export class GoalShowOutputBuilder {
       }
     }
 
+    if (goal.prerequisiteGoals && goal.prerequisiteGoals.length > 0) {
+      output += "\n\n" + Colors.gradientB("Prerequisite Goals:");
+      for (const prereqId of goal.prerequisiteGoals) {
+        output += "\n  - " + Colors.gradientC(prereqId);
+      }
+    }
+
     if (goal.nextGoalId) {
       output += "\n\n" + Colors.gradientB("Next Goal:  ") + Colors.gradientC(goal.nextGoalId);
     }
@@ -204,6 +211,7 @@ export class GoalShowOutputBuilder {
         updatedAt: goal.updatedAt,
         note: goal.note,
         nextGoalId: goal.nextGoalId,
+        prerequisiteGoals: goal.prerequisiteGoals,
         claimedBy: goal.claimedBy,
         claimedAt: goal.claimedAt,
         claimExpiresAt: goal.claimExpiresAt

@@ -40,7 +40,8 @@ export class UpdateGoalCommandHandler {
       command.successCriteria,
       command.scopeIn,
       command.scopeOut,
-      command.nextGoalId
+      command.nextGoalId,
+      command.prerequisiteGoals
     );
 
     // 4. Persist event to file store

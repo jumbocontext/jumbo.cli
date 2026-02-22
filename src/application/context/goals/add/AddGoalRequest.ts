@@ -6,4 +6,5 @@ export interface AddGoalRequest {
   readonly scopeOut?: string[];
   readonly nextGoalId?: string;
   readonly previousGoalId?: string;
+  readonly prerequisiteGoals?: string[];
 }

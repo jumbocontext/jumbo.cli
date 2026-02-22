@@ -17,6 +17,7 @@ export class LocalAddGoalGateway implements IAddGoalGateway {
       scopeOut: request.scopeOut,
       nextGoalId: request.nextGoalId,
       previousGoalId: request.previousGoalId,
+      prerequisiteGoals: request.prerequisiteGoals,
     });
 
     return {

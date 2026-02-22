@@ -14,5 +14,6 @@ export interface GoalUpdatedEvent extends BaseEvent {
     readonly scopeIn?: string[];
     readonly scopeOut?: string[];
     readonly nextGoalId?: UUID;
+    readonly prerequisiteGoals?: UUID[];
   };
 }

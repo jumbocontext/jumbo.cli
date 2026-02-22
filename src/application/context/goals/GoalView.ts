@@ -22,4 +22,5 @@ export interface GoalView {
   readonly claimedAt?: string;      // ISO 8601 timestamp when claim was created
   readonly claimExpiresAt?: string; // ISO 8601 timestamp when claim expires
   readonly nextGoalId?: string;
+  readonly prerequisiteGoals?: string[];
 }

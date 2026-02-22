@@ -36,7 +36,8 @@ export class GoalAddOutputBuilder {
       goalId,
       title,
       objective,
-      status: 'to-do'
+      status: 'to-do',
+      message: `  goalId: ${goalId}\n  title: ${title}\n  objective: ${objective}\n  status: to-do`
     });
     return this.builder.build();
   }

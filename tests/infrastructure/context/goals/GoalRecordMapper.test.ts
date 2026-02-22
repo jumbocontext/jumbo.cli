@@ -34,6 +34,7 @@ describe("GoalRecordMapper", () => {
       claimedAt: null,
       claimExpiresAt: null,
       nextGoalId: null,
+      prerequisiteGoals: null,
       ...overrides,
     };
   }
@@ -163,6 +164,24 @@ describe("GoalRecordMapper", () => {
       const view = mapper.toView(record);
 
       expect(view.nextGoalId).toBe("goal_next-1");
+    });
+
+    it("coerces null prerequisiteGoals to undefined", () => {
+      const record = buildRecord({ prerequisiteGoals: null });
+
+      const view = mapper.toView(record);
+
+      expect(view.prerequisiteGoals).toBeUndefined();
+    });
+
+    it("parses prerequisiteGoals JSON string to array", () => {
+      const record = buildRecord({
+        prerequisiteGoals: '["goal_prereq-1","goal_prereq-2"]',
+      });
+
+      const view = mapper.toView(record);
+
+      expect(view.prerequisiteGoals).toEqual(["goal_prereq-1", "goal_prereq-2"]);
     });
   });
 });

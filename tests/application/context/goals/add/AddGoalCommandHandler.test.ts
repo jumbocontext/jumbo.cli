@@ -97,6 +97,42 @@ describe("AddGoalCommandHandler", () => {
     );
   });
 
+  it("should include prerequisiteGoals in event payload when provided", async () => {
+    // Arrange
+    const command: AddGoalCommand = {
+      title: "Dependent goal",
+      objective: "Implement feature that depends on others",
+      successCriteria: ["Feature works"],
+      prerequisiteGoals: ["goal_prereq-1", "goal_prereq-2"],
+    };
+
+    // Act
+    const result = await handler.execute(command);
+
+    // Assert
+    const appendedEvent = (eventWriter.append as jest.Mock).mock.calls[0][0];
+    expect(appendedEvent.payload.prerequisiteGoals).toEqual([
+      "goal_prereq-1",
+      "goal_prereq-2",
+    ]);
+  });
+
+  it("should not include prerequisiteGoals in event payload when not provided", async () => {
+    // Arrange
+    const command: AddGoalCommand = {
+      title: "Independent goal",
+      objective: "Implement standalone feature",
+      successCriteria: ["Feature works"],
+    };
+
+    // Act
+    await handler.execute(command);
+
+    // Assert
+    const appendedEvent = (eventWriter.append as jest.Mock).mock.calls[0][0];
+    expect(appendedEvent.payload.prerequisiteGoals).toBeUndefined();
+  });
+
   it("should propagate errors if event store fails", async () => {
     // Arrange
     const command: AddGoalCommand = {

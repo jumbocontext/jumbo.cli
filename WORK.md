@@ -18,16 +18,17 @@ In scope:
 - claim acquisition/release semantics per transition
 - work mode loop contracts (`work --plan|--implement|--review|--codify`)
 - primary flow vs exceptional flow command model
+- design for eventual PR automation implementation
 
 Out of scope:
-- detailed PR automation implementation
 - UI copy details
 - migration script details for existing historical events
 
 ## 4. Prerequisites
 1. `Goal.dependantOn -> Goal.id` exists and is enforced where needed.
-2. Claim storage supports ownership and lease expiry.
-3. Goal list query can filter by state and claim availability.
+2. Goal is  extended with gitBranch for interoperability between workers.
+3. Claim storage supports ownership and lease expiry.
+4. Goal list query can filter by state and claim availability.
 
 ## 5. Goals and Non-Goals
 Goals:
@@ -101,8 +102,9 @@ Rules:
 ### `work --implement`
 1. Select next `REFINED` goal with no active claim and dependencies satisfied.
 2. Acquire claim with `jumbo goal start --goal-id <id>`.
-3. Implement and emit progress updates.
-4. On completion, run `jumbo goal complete --goal-id <id>` to release claim.
+3. Creates and checks out the specified git branch.
+4. Implement and emit progress updates.
+5. On completion, run `jumbo goal complete --goal-id <id>` to release claim.
 
 ### `work --review`
 1. Select next `COMPLETED` goal with no active claim.
@@ -154,3 +156,53 @@ Migration policy (proposed):
 2. Autonomous loops can recover from crashes using lease expiry.
 3. Primary and exceptional flows are both documented and testable.
 4. Alias/deprecation strategy is documented before implementation begins.
+
+
+
+
+
+  Appendix: Design Notes for Hybrid/Distributed Operation
+
+
+  1. The Gateway as the "Context Switch"
+    To support both single-user (Local) and team (Hosted) modes, every transition command (Section 7) must delegate to an IGateway
+    implementation.
+   * `LocalGateway`: Interacts with the local SQLite database. Ideal for solo developers. Memory is machine-bound.
+   * `RemoteGateway`: Interacts with the Jumbo Cloud API. Facilitates GitHub Action integration, cross-agent coordination, and
+     team-wide persistent memory.
+   * Invariant: CLI Controllers only see the IGateway interface, ensuring the "Autonomous Work Mode" (Section 10) code is identical
+     across environments.
+
+
+  2. The "Double-Audit" Review Loop
+    The Review phase (Section 10.3) is reimagined as a cooperative loop between Audit Workers and Humans:
+   1. Agent Audit: Triggered by goal complete (PR push). A worker runs jumbo goal review. It pulls "Success Criteria" from the
+      Gateway, performs an automated audit, and registers AuditFindings (positive/negative) to the goal's event log.
+   2. Human Feedback: The human reviews the PR (and the Agent's Audit Report). Comments made in GitHub (via Webhook) or the CLI are
+      registered as FeedbackEvents.
+   3. Iteration: If FeedbackEvents exist and the goal is not APPROVED, a resume command moves the goal back to DOING. The next work
+      --implement session begins by synthesizing the AuditFindings and FeedbackEvents into a "Correction Plan."
+
+
+  3. Claim Portability & Heartbeats
+    Since .jumbo is not committed to Git (to avoid team conflicts), Claims (Section 9) must be managed by the storage provider:
+   * Local: Claims are rows in the local SQLite DB.
+   * Hosted: Claims are records in the Jumbo Cloud DB with a mandatory leaseExpiresAt (TTL).
+   * Heartbeat: In-progress workers (DOING, IN_REVIEW) must send a periodic "Heartbeat" to the Gateway. If a GitHub Action or local
+     shell crashes, the lease expires, allowing another worker (or the human) to resume and take over the claim.
+
+
+  4. Memory Synchronization (The "No-Git" Policy)
+    Persistent memory (Invariants, Decisions, Relations) stays out of the Git tree:
+   * Local: Stays in the local SQLite file.
+   * Hosted/Team: The CLI transparently "pushes" and "pulls" memory segments to the Hosted Gateway during goal refine and goal
+     codify.
+   * GitHub Actions: The work --review worker in CI initializes its context by fetching the "Refined Goal Map" from the Remote
+     Gateway using the PR's branch name as the lookup key.
+
+
+  5. Transition Policy: "Not Qualified"
+    When a review (Agent or Human) fails:
+   * Command: jumbo goal reject --reason <text>
+   * State: IN_REVIEW -> REFINED (or DOING if an active claim is immediately re-acquired).
+   * Claim: Release current review claim; mark goal as "Ready for Implementation" with attached feedback.

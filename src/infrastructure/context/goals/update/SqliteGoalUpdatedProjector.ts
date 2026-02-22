@@ -49,6 +49,10 @@ export class SqliteGoalUpdatedProjector
       updates.push("nextGoalId = ?");
       values.push(event.payload.nextGoalId);
     }
+    if (event.payload.prerequisiteGoals !== undefined) {
+      updates.push("prerequisiteGoals = ?");
+      values.push(JSON.stringify(event.payload.prerequisiteGoals));
+    }
 
     // Always update version and updatedAt
     updates.push("version = ?", "updatedAt = ?");

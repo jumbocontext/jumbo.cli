@@ -14,4 +14,5 @@ export interface AddGoalCommand {
   // Goal chaining fields
   readonly nextGoalId?: string;      // Sets NextGoal on this new goal
   readonly previousGoalId?: string;  // Updates the referenced goal's NextGoal to point to this new goal
+  readonly prerequisiteGoals?: string[];  // Goals that must be completed before this goal can start
 }

@@ -17,6 +17,7 @@ export class LocalUpdateGoalGateway implements IUpdateGoalGateway {
       scopeIn: request.scopeIn,
       scopeOut: request.scopeOut,
       nextGoalId: request.nextGoalId,
+      prerequisiteGoals: request.prerequisiteGoals,
     });
 
     return {

@@ -41,6 +41,7 @@ describe("LocalUpdateGoalGateway", () => {
       scopeIn: ["component A"],
       scopeOut: ["component B"],
       nextGoalId: "goal_456",
+      prerequisiteGoals: undefined,
     });
     expect(result).toEqual({ goalId: "goal_123" });
   });
@@ -61,6 +62,7 @@ describe("LocalUpdateGoalGateway", () => {
       scopeIn: undefined,
       scopeOut: undefined,
       nextGoalId: undefined,
+      prerequisiteGoals: undefined,
     });
     expect(result).toEqual({ goalId: "goal_123" });
   });
