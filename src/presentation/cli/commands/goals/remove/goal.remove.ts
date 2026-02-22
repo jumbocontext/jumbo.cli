@@ -17,7 +17,7 @@ export const metadata: CommandMetadata = {
   category: "work",
   requiredOptions: [
     {
-      flags: "--id <id>",
+      flags: "-i, --id <id>",
       description: "ID of the goal to remove"
     }
   ],

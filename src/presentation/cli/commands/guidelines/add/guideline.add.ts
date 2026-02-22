@@ -18,15 +18,15 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--category <category>",
+      flags: "-c, --category <category>",
       description: "Category (testing, codingStyle, process, communication, documentation, security, performance, other)"
     },
     {
-      flags: "--title <title>",
+      flags: "-t, --title <title>",
       description: "Guideline title"
     },
     {
-      flags: "--description <description>",
+      flags: "-d, --description <description>",
       description: "Detailed guideline description"
     },
     {

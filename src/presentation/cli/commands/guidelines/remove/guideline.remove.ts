@@ -16,24 +16,24 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--guideline-id <guidelineId>",
+      flags: "-i, --id <id>",
       description: "ID of the guideline to remove",
     },
   ],
   options: [
     {
-      flags: "--reason <text>",
+      flags: "-r, --reason <text>",
       description: "Reason for removal",
     },
   ],
   examples: [
     {
-      command: "jumbo guideline remove --guideline-id gl_123",
+      command: "jumbo guideline remove --id gl_123",
       description: "Remove a guideline",
     },
     {
       command:
-        "jumbo guideline remove --guideline-id gl_123 --reason 'Superseded by new testing framework'",
+        "jumbo guideline remove --id gl_123 --reason 'Superseded by new testing framework'",
       description: "Remove a guideline with reason",
     },
   ],
@@ -45,14 +45,14 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function guidelineRemove(options: {
-  guidelineId: string;
+  id: string;
   reason?: string;
 }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
 
   try {
     const response = await container.removeGuidelineController.handle({
-      guidelineId: options.guidelineId,
+      guidelineId: options.id,
       reason: options.reason,
     });
 

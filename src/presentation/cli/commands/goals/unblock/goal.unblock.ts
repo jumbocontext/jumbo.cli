@@ -17,13 +17,13 @@ export const metadata: CommandMetadata = {
   category: "work",
   requiredOptions: [
     {
-      flags: "--id <id>",
+      flags: "-i, --id <id>",
       description: "ID of the goal to unblock"
     }
   ],
   options: [
     {
-      flags: "--note <resolution>",
+      flags: "-N, --note <resolution>",
       description: "Optional resolution note explaining how the blocker was resolved"
     }
   ],

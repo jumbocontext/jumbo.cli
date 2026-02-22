@@ -18,22 +18,22 @@ export const metadata: CommandMetadata = {
   category: "solution",
   requiredOptions: [
     {
-      flags: "--guideline-id <guidelineId>",
+      flags: "-i, --id <id>",
       description: "ID of the guideline to update",
     },
   ],
   options: [
     {
-      flags: "--category <category>",
+      flags: "-c, --category <category>",
       description:
         "Updated category (testing, codingStyle, process, communication, documentation, security, performance, other)",
     },
     {
-      flags: "--title <title>",
+      flags: "-t, --title <title>",
       description: "Updated guideline title",
     },
     {
-      flags: "--description <description>",
+      flags: "-d, --description <description>",
       description: "Updated guideline description",
     },
     {
@@ -52,12 +52,12 @@ export const metadata: CommandMetadata = {
   examples: [
     {
       command:
-        "jumbo guideline update --guideline-id guid_123 --title 'Updated Title'",
+        "jumbo guideline update --id guid_123 --title 'Updated Title'",
       description: "Update guideline title",
     },
     {
       command:
-        "jumbo guideline update --guideline-id guid_123 --category testing --rationale 'Regulatory requirement'",
+        "jumbo guideline update --id guid_123 --category testing --rationale 'Regulatory requirement'",
       description: "Update guideline category and rationale",
     },
   ],
@@ -69,7 +69,7 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function guidelineUpdate(options: {
-  guidelineId: string;
+  id: string;
   category?: GuidelineCategoryValue;
   title?: string;
   description?: string;
@@ -81,7 +81,7 @@ export async function guidelineUpdate(options: {
 
   try {
     const response = await container.updateGuidelineController.handle({
-      id: options.guidelineId,
+      id: options.id,
       ...(options.category !== undefined && { category: options.category }),
       ...(options.title !== undefined && { title: options.title }),
       ...(options.description !== undefined && {
@@ -105,7 +105,7 @@ export async function guidelineUpdate(options: {
     if (response.version !== undefined) data.version = response.version;
 
     renderer.success(
-      `Guideline '${options.guidelineId}' updated successfully`,
+      `Guideline '${options.id}' updated successfully`,
       data
     );
   } catch (error) {

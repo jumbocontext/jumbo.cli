@@ -29,7 +29,7 @@ export const metadata: CommandMetadata = {
       description: "Guided goal creation with interactive prompts"
     },
     {
-      flags: "--title <title>",
+      flags: "-t, --title <title>",
       description: "Short title for the goal (max 60 characters)"
     },
     {

@@ -30,7 +30,7 @@ export const metadata: CommandMetadata = {
   hidden: true,
   options: [
     {
-      flags: "--status <statuses>",
+      flags: "-s, --status <statuses>",
       description: `Filter by status (comma-separated). Valid: ${VALID_STATUSES.join(", ")}`
     }
   ],

@@ -22,13 +22,13 @@ export const metadata: CommandMetadata = {
   category: "work",
   requiredOptions: [
     {
-      flags: "--id <id>",
+      flags: "-i, --id <id>",
       description: "ID of the goal to update"
     }
   ],
   options: [
     {
-      flags: "--title <text>",
+      flags: "-t, --title <text>",
       description: "Updated title (max 60 characters)"
     },
     {

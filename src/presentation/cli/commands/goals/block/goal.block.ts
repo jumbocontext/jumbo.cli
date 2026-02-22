@@ -17,11 +17,11 @@ export const metadata: CommandMetadata = {
   category: "work",
   requiredOptions: [
     {
-      flags: "--id <id>",
+      flags: "-i, --id <id>",
       description: "ID of the goal to block"
     },
     {
-      flags: "--note <reason>",
+      flags: "-N, --note <reason>",
       description: "Reason why the goal is blocked"
     }
   ],

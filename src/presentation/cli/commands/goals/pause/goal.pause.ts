@@ -18,17 +18,17 @@ export const metadata: CommandMetadata = {
   category: "work",
   requiredOptions: [
     {
-      flags: "--id <id>",
+      flags: "-i, --id <id>",
       description: "ID of the goal to pause"
     },
     {
-      flags: "--reason <reason>",
+      flags: "-r, --reason <reason>",
       description: "Reason for pausing (ContextCompressed, WorkPaused, Other)"
     }
   ],
   options: [
     {
-      flags: "--note <note>",
+      flags: "-N, --note <note>",
       description: "Optional note providing additional context"
     }
   ],

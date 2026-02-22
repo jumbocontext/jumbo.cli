@@ -14,7 +14,7 @@ export const metadata: CommandMetadata = {
   category: "solution",
   options: [
     {
-      flags: "--category <category>",
+      flags: "-c, --category <category>",
       description: "Filter by category (e.g., codingStyle, testing, process)",
     },
   ],
