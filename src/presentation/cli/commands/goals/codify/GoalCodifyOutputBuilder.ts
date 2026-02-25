@@ -1,15 +1,15 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { CompleteGoalResponse } from '../../../../../application/context/goals/complete/CompleteGoalResponse.js';
+import { CodifyGoalResponse } from '../../../../../application/context/goals/codify/CodifyGoalResponse.js';
 
 /**
- * Specialized builder for goal.complete command output.
- * Encapsulates all output rendering for the complete goal command.
+ * Specialized builder for goal.codify command output.
+ * Encapsulates all output rendering for the codify goal command.
  *
  * Pattern: Output builders contain ALL prompt and output content.
  * Command files must not duplicate or add additional output after calling the builder.
  */
-export class GoalCompleteOutputBuilder {
+export class GoalCodifyOutputBuilder {
   private builder: TerminalOutputBuilder;
 
   constructor() {
@@ -17,15 +17,26 @@ export class GoalCompleteOutputBuilder {
   }
 
   /**
-   * Build output for successful goal completion.
-   * Renders learning capture prompt, entity review, and optional next goal information.
+   * Build output for successful goal codification start.
+   * Renders codification instructions including architectural reconciliation prompt.
    */
-  buildSuccess(response: CompleteGoalResponse): TerminalOutput {
+  buildSuccess(response: CodifyGoalResponse): TerminalOutput {
     this.builder.reset();
+
+    const goal = response.goalContextView.goal;
+
+    // Header
+    this.builder.addPrompt(
+      "# Goal Codifying - Architectural Reconciliation\n" +
+      `Goal ID: ${goal.goalId}\n` +
+      `Objective: ${goal.objective}\n` +
+      `Status: ${goal.status}\n` +
+      "---"
+    );
 
     // Section 1: Capture new learnings
     this.builder.addPrompt(
-      "# Goal Completed - Capture Learnings\n" +
+      "## Capture Learnings\n" +
       "@LLM: Reflect on your interaction with the user during this goal.\n" +
       "Did it surface any NEW invariants, guidelines, decisions, components, dependencies, or architectural patterns not yet captured?\n" +
       "Were you corrected in a way that reveals a missing rule?\n" +
@@ -75,30 +86,23 @@ export class GoalCompleteOutputBuilder {
       "  Add: jumbo relation add --from-type <type> --from-id <id> --to-type <type> --to-id <id> --type <type> --strength <level>"
     );
 
-    // Next goal in chain (if exists)
-    if (response.nextGoal) {
-      this.builder.addPrompt("## Next goal in chain:");
-      this.builder.addData({
-        goalId: response.nextGoal.goalId,
-        objective: response.nextGoal.objective,
-        status: response.nextGoal.status,
-      });
-      this.builder.addPrompt(
-        "Start the next goal immediately. Run:\n" +
-        `  jumbo goal start --id ${response.nextGoal.goalId}`
-      );
-    }
+    // Next step
+    this.builder.addPrompt(
+      "## Next Step\n" +
+      "After completing the reconciliation above, close the goal:\n" +
+      `  Run: jumbo goal close --id ${goal.goalId}\n` +
+      "---"
+    );
 
     return this.builder.build();
   }
 
   /**
-   * Build output for goal completion failure.
-   * Renders error message when goal completion fails.
+   * Build output for goal codification failure.
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to complete goal");
+    this.builder.addPrompt("✗ Failed to codify goal");
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });

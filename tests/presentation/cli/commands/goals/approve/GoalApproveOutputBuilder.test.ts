@@ -22,7 +22,7 @@ describe("GoalApproveOutputBuilder", () => {
     expect(text).toContain("goal_123");
     expect(text).toContain("Implement authentication");
     expect(text).toContain("qualified");
-    expect(text).toContain("jumbo goal complete --id goal_123");
+    expect(text).toContain("jumbo goal codify --id goal_123");
   });
 
   it("should include next goal ID when present", () => {

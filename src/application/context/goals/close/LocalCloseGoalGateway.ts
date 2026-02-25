@@ -1,22 +1,22 @@
-import { ICompleteGoalGateway } from "./ICompleteGoalGateway.js";
-import { CompleteGoalRequest } from "./CompleteGoalRequest.js";
-import { CompleteGoalResponse } from "./CompleteGoalResponse.js";
-import { CompleteGoalCommandHandler } from "./CompleteGoalCommandHandler.js";
-import { IGoalCompleteReader } from "./IGoalCompleteReader.js";
+import { ICloseGoalGateway } from "./ICloseGoalGateway.js";
+import { CloseGoalRequest } from "./CloseGoalRequest.js";
+import { CloseGoalResponse } from "./CloseGoalResponse.js";
+import { CloseGoalCommandHandler } from "./CloseGoalCommandHandler.js";
+import { IGoalCloseReader } from "./IGoalCloseReader.js";
 import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
 import { GoalErrorMessages, formatErrorMessage } from "../../../../domain/goals/Constants.js";
 
-export class LocalCompleteGoalGateway implements ICompleteGoalGateway {
+export class LocalCloseGoalGateway implements ICloseGoalGateway {
   constructor(
-    private readonly commandHandler: CompleteGoalCommandHandler,
-    private readonly goalReader: IGoalCompleteReader,
+    private readonly commandHandler: CloseGoalCommandHandler,
+    private readonly goalReader: IGoalCloseReader,
     private readonly claimPolicy: GoalClaimPolicy,
     private readonly workerIdentityReader: IWorkerIdentityReader
   ) {}
 
-  async completeGoal(request: CompleteGoalRequest): Promise<CompleteGoalResponse> {
-    // Validate claim ownership - only the claimant can complete a goal
+  async closeGoal(request: CloseGoalRequest): Promise<CloseGoalResponse> {
+    // Validate claim ownership - only the claimant can close a goal
     const workerId = this.workerIdentityReader.workerId;
     const claimValidation = this.claimPolicy.canClaim(request.goalId, workerId);
     if (!claimValidation.allowed) {
@@ -27,13 +27,13 @@ export class LocalCompleteGoalGateway implements ICompleteGoalGateway {
       );
     }
 
-    // Delegate to command handler (validates QUALIFIED status, performs state change)
+    // Delegate to command handler (validates CODIFYING status, performs state change)
     await this.commandHandler.execute({ goalId: request.goalId });
 
     // Get updated goal view
     const goalView = await this.goalReader.findById(request.goalId);
     if (!goalView) {
-      throw new Error(`Goal not found after completion: ${request.goalId}`);
+      throw new Error(`Goal not found after close: ${request.goalId}`);
     }
 
     // Check for next goal

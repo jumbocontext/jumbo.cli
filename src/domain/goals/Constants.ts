@@ -22,7 +22,9 @@ export const GoalEventType = {
   REFINEMENT_STARTED: 'GoalRefinementStartedEvent',
   COMMITTED: 'GoalCommittedEvent',
   REJECTED: 'GoalRejectedEvent',
-  SUBMITTED: 'GoalSubmittedEvent'
+  SUBMITTED: 'GoalSubmittedEvent',
+  CODIFYING_STARTED: 'GoalCodifyingStartedEvent',
+  CLOSED: 'GoalClosedEvent'
 } as const;
 
 export type GoalEventTypeValue = typeof GoalEventType[keyof typeof GoalEventType];
@@ -41,6 +43,8 @@ export const GoalStatus = {
   REJECTED: 'rejected',
   UNBLOCKED: 'unblocked',
   SUBMITTED: 'submitted',
+  CODIFYING: 'codifying',
+  DONE: 'done',
 } as const;
 
 export type GoalStatusType = typeof GoalStatus[keyof typeof GoalStatus];
@@ -89,6 +93,10 @@ export const GoalErrorMessages = {
   CANNOT_COMMIT_IN_STATUS: 'Cannot commit goal in {status} status. Goal must be in in-refinement status.',
   CANNOT_REJECT_IN_STATUS: 'Cannot reject goal in {status} status. Goal must be in in-review status.',
   AUDIT_FINDINGS_REQUIRED: 'Audit findings are required when rejecting a goal.',
+  CANNOT_CODIFY_IN_STATUS: 'Cannot codify goal in {status} status. Goal must be in qualified status.',
+  ALREADY_CODIFYING: 'Goal is already in codifying status.',
+  CANNOT_CLOSE_IN_STATUS: 'Cannot close goal in {status} status. Goal must be in codifying status.',
+  ALREADY_DONE: 'Goal is already done.',
 } as const;
 
 // Numeric limits

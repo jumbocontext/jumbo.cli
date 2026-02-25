@@ -38,8 +38,9 @@ import { dependencyUpdate, metadata as dependencyUpdateMeta } from '../../comman
 import { goalAdd, metadata as goalAddMeta } from '../../commands/goals/add/goal.add.js';
 import { goalApprove, metadata as goalApproveMeta } from '../../commands/goals/approve/goal.approve.js';
 import { goalBlock, metadata as goalBlockMeta } from '../../commands/goals/block/goal.block.js';
+import { goalClose, metadata as goalCloseMeta } from '../../commands/goals/close/goal.close.js';
+import { goalCodify, metadata as goalCodifyMeta } from '../../commands/goals/codify/goal.codify.js';
 import { goalCommit, metadata as goalCommitMeta } from '../../commands/goals/commit/goal.commit.js';
-import { goalComplete, metadata as goalCompleteMeta } from '../../commands/goals/complete/goal.complete.js';
 import { goalsList, metadata as goalsListMeta } from '../../commands/goals/list/goals.list.js';
 import { goalPause, metadata as goalPauseMeta } from '../../commands/goals/pause/goal.pause.js';
 import { goalQualify, metadata as goalQualifyMeta } from '../../commands/goals/qualify/goal.qualify.js';
@@ -229,14 +230,19 @@ export const commands: RegisteredCommand[] = [
     handler: goalBlock
   },
   {
+    path: 'goal close',
+    metadata: goalCloseMeta,
+    handler: goalClose
+  },
+  {
+    path: 'goal codify',
+    metadata: goalCodifyMeta,
+    handler: goalCodify
+  },
+  {
     path: 'goal commit',
     metadata: goalCommitMeta,
     handler: goalCommit
-  },
-  {
-    path: 'goal complete',
-    metadata: goalCompleteMeta,
-    handler: goalComplete
   },
   {
     path: 'goals list',

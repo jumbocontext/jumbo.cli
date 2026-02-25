@@ -31,17 +31,17 @@ export class GoalApproveOutputBuilder {
       `Status: ${response.status}\n` +
       "---\n\n" +
       "## QA Review Passed\n" +
-      "The goal has been approved and is ready for completion.\n" +
+      "The goal has been approved and is ready for codification.\n" +
       "---"
     );
 
     // Next steps
     let nextSteps = "## Next Steps\n" +
-                    "Complete the goal:\n" +
-                    `  Run: jumbo goal complete --id ${response.goalId}`;
+                    "Codify the goal:\n" +
+                    `  Run: jumbo goal codify --id ${response.goalId}`;
 
     if (response.nextGoalId) {
-      nextSteps += "\n\nAfter completion, the next goal in the queue is:\n" +
+      nextSteps += "\n\nAfter closing, the next goal in the queue is:\n" +
                    `  Goal ID: ${response.nextGoalId}`;
     }
 

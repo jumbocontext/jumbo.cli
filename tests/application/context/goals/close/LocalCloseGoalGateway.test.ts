@@ -1,16 +1,16 @@
-import { LocalCompleteGoalGateway } from "../../../../../src/application/context/goals/complete/LocalCompleteGoalGateway";
-import { CompleteGoalCommandHandler } from "../../../../../src/application/context/goals/complete/CompleteGoalCommandHandler";
-import { IGoalCompleteReader } from "../../../../../src/application/context/goals/complete/IGoalCompleteReader";
+import { LocalCloseGoalGateway } from "../../../../../src/application/context/goals/close/LocalCloseGoalGateway";
+import { CloseGoalCommandHandler } from "../../../../../src/application/context/goals/close/CloseGoalCommandHandler";
+import { IGoalCloseReader } from "../../../../../src/application/context/goals/close/IGoalCloseReader";
 import { GoalClaimPolicy } from "../../../../../src/application/context/goals/claims/GoalClaimPolicy";
 import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 
-describe("LocalCompleteGoalGateway", () => {
-  let gateway: LocalCompleteGoalGateway;
-  let mockCommandHandler: jest.Mocked<CompleteGoalCommandHandler>;
-  let mockGoalReader: jest.Mocked<IGoalCompleteReader>;
+describe("LocalCloseGoalGateway", () => {
+  let gateway: LocalCloseGoalGateway;
+  let mockCommandHandler: jest.Mocked<CloseGoalCommandHandler>;
+  let mockGoalReader: jest.Mocked<IGoalCloseReader>;
   let mockClaimPolicy: jest.Mocked<GoalClaimPolicy>;
   let mockWorkerIdentityReader: IWorkerIdentityReader;
 
@@ -19,11 +19,11 @@ describe("LocalCompleteGoalGateway", () => {
   beforeEach(() => {
     mockCommandHandler = {
       execute: jest.fn(),
-    } as unknown as jest.Mocked<CompleteGoalCommandHandler>;
+    } as unknown as jest.Mocked<CloseGoalCommandHandler>;
 
     mockGoalReader = {
       findById: jest.fn(),
-    } as jest.Mocked<IGoalCompleteReader>;
+    } as jest.Mocked<IGoalCloseReader>;
 
     mockClaimPolicy = {
       canClaim: jest.fn().mockReturnValue({ allowed: true }),
@@ -33,7 +33,7 @@ describe("LocalCompleteGoalGateway", () => {
       workerId: testWorkerId,
     };
 
-    gateway = new LocalCompleteGoalGateway(
+    gateway = new LocalCloseGoalGateway(
       mockCommandHandler,
       mockGoalReader,
       mockClaimPolicy,
@@ -41,15 +41,15 @@ describe("LocalCompleteGoalGateway", () => {
     );
   });
 
-  it("completes a goal successfully", async () => {
+  it("closes a goal successfully and returns goalId, objective, status", async () => {
     const mockView: GoalView = {
       goalId: "goal_456",
-      objective: "Complete the controller",
+      objective: "Close the goal",
       successCriteria: ["Criteria"],
       scopeIn: [],
       scopeOut: [],
-      status: GoalStatus.COMPLETED,
-      version: 4,
+      status: GoalStatus.DONE,
+      version: 9,
       createdAt: "2025-01-01T00:00:00Z",
       updatedAt: "2025-01-01T00:00:00Z",
       progress: [],
@@ -58,24 +58,24 @@ describe("LocalCompleteGoalGateway", () => {
     mockCommandHandler.execute.mockResolvedValue({} as any);
     mockGoalReader.findById.mockResolvedValue(mockView);
 
-    const response = await gateway.completeGoal({ goalId: "goal_456" });
+    const response = await gateway.closeGoal({ goalId: "goal_456" });
 
     expect(response.goalId).toBe("goal_456");
-    expect(response.objective).toBe("Complete the controller");
-    expect(response.status).toBe(GoalStatus.COMPLETED);
+    expect(response.objective).toBe("Close the goal");
+    expect(response.status).toBe(GoalStatus.DONE);
     expect(response.nextGoal).toBeUndefined();
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({ goalId: "goal_456" });
   });
 
-  it("includes next goal in response when present", async () => {
+  it("includes next goal in response when nextGoalId exists", async () => {
     const mockView: GoalView = {
       goalId: "goal_456",
-      objective: "Complete the controller",
+      objective: "Close the goal",
       successCriteria: ["Criteria"],
       scopeIn: [],
       scopeOut: [],
-      status: GoalStatus.COMPLETED,
-      version: 4,
+      status: GoalStatus.DONE,
+      version: 9,
       createdAt: "2025-01-01T00:00:00Z",
       updatedAt: "2025-01-01T00:00:00Z",
       progress: [],
@@ -99,7 +99,7 @@ describe("LocalCompleteGoalGateway", () => {
       .mockResolvedValueOnce(mockView)
       .mockResolvedValueOnce(nextGoalView);
 
-    const response = await gateway.completeGoal({ goalId: "goal_456" });
+    const response = await gateway.closeGoal({ goalId: "goal_456" });
 
     expect(response.nextGoal).toBeDefined();
     expect(response.nextGoal?.goalId).toBe("goal_789");
@@ -107,7 +107,7 @@ describe("LocalCompleteGoalGateway", () => {
     expect(response.nextGoal?.status).toBe(GoalStatus.TODO);
   });
 
-  it("rejects completion when goal is claimed by another worker", async () => {
+  it("rejects close when goal is claimed by another worker", async () => {
     (mockClaimPolicy.canClaim as jest.Mock).mockReturnValue({
       allowed: false,
       reason: "CLAIMED_BY_ANOTHER_WORKER",
@@ -120,7 +120,7 @@ describe("LocalCompleteGoalGateway", () => {
     });
 
     await expect(
-      gateway.completeGoal({ goalId: "goal_123" })
+      gateway.closeGoal({ goalId: "goal_123" })
     ).rejects.toThrow(
       "Goal is claimed by another worker. Claim expires at 2025-01-15T11:00:00.000Z."
     );
@@ -129,23 +129,14 @@ describe("LocalCompleteGoalGateway", () => {
     expect(mockCommandHandler.execute).not.toHaveBeenCalled();
   });
 
-  it("throws error when goal not found after completion", async () => {
-    mockCommandHandler.execute.mockResolvedValue({} as any);
-    mockGoalReader.findById.mockResolvedValue(null);
-
-    await expect(
-      gateway.completeGoal({ goalId: "goal_456" })
-    ).rejects.toThrow("Goal not found after completion: goal_456");
-  });
-
   it("propagates errors from command handler", async () => {
     mockCommandHandler.execute.mockRejectedValue(
-      new Error("Goal is not in QUALIFIED status")
+      new Error("Cannot close goal in to-do status. Goal must be in codifying status.")
     );
 
     await expect(
-      gateway.completeGoal({ goalId: "goal_123" })
-    ).rejects.toThrow("Goal is not in QUALIFIED status");
+      gateway.closeGoal({ goalId: "goal_123" })
+    ).rejects.toThrow("Cannot close goal in to-do status. Goal must be in codifying status.");
 
     expect(mockGoalReader.findById).not.toHaveBeenCalled();
   });

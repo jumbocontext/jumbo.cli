@@ -1,10 +1,10 @@
 /**
- * CompleteGoalResponse
+ * CloseGoalResponse
  *
- * Response model for goal completion requests.
- * Returns minimal data after successful completion (token optimization).
+ * Response model for goal close requests.
+ * Returns minimal data after successful close (token optimization).
  */
-export interface CompleteGoalResponse {
+export interface CloseGoalResponse {
   readonly goalId: string;
   readonly objective: string;
   readonly status: string;

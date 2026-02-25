@@ -1,7 +1,7 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
-import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent, GoalRefinementStartedEvent, GoalCommittedEvent, GoalRejectedEvent, GoalSubmittedEvent } from "./EventIndex.js";
+import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent, GoalRefinementStartedEvent, GoalCommittedEvent, GoalRejectedEvent, GoalSubmittedEvent, GoalCodifyingStartedEvent, GoalClosedEvent } from "./EventIndex.js";
 import { GoalEventType, GoalStatus, GoalStatusType } from "./Constants.js";
 import { GoalPausedReasonsType } from "./GoalPausedReasons.js";
 import { OBJECTIVE_RULES } from "./rules/ObjectiveRules.js";
@@ -27,6 +27,8 @@ import { CanQualifyRule } from "./rules/CanQualifyRule.js";
 import { CanCommitRule } from "./rules/CanCommitRule.js";
 import { CanRejectRule } from "./rules/CanRejectRule.js";
 import { CanSubmitRule } from "./rules/CanSubmitRule.js";
+import { CanCodifyRule } from "./rules/CanCodifyRule.js";
+import { CanCloseRule } from "./rules/CanCloseRule.js";
 
 // Domain state: business properties + aggregate metadata
 export interface GoalState extends AggregateState {
@@ -209,6 +211,20 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
       case GoalEventType.SUBMITTED: {
         const e = event as GoalSubmittedEvent;
         state.status = e.payload.status;  // 'submitted'
+        state.version = e.version;
+        break;
+      }
+
+      case GoalEventType.CODIFYING_STARTED: {
+        const e = event as GoalCodifyingStartedEvent;
+        state.status = e.payload.status;  // 'codifying'
+        state.version = e.version;
+        break;
+      }
+
+      case GoalEventType.CLOSED: {
+        const e = event as GoalClosedEvent;
+        state.status = e.payload.status;  // 'done'
         state.version = e.version;
         break;
       }
@@ -736,6 +752,60 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
       },
       Goal.apply
     ) as GoalRejectedEvent;
+  }
+
+  /**
+   * Starts the codify phase for a goal after approval.
+   * Transitions status from "qualified" to "codifying".
+   * Acquires a claim for the worker performing codification.
+   *
+   * @param claimInfo - Claim information for the worker starting codification
+   * @returns GoalCodifyingStartedEvent
+   * @throws Error if goal is not in 'qualified' status
+   */
+  codify(claimInfo: {
+    claimedBy: string;
+    claimedAt: string;
+    claimExpiresAt: string;
+  }): GoalCodifyingStartedEvent {
+    // State validation: can only codify from qualified status
+    ValidationRuleSet.ensure(this.state, [new CanCodifyRule()]);
+
+    // Create and return event using BaseAggregate.makeEvent
+    return this.makeEvent(
+      GoalEventType.CODIFYING_STARTED,
+      {
+        status: GoalStatus.CODIFYING,
+        codifyStartedAt: new Date().toISOString(),
+        claimedBy: claimInfo.claimedBy,
+        claimedAt: claimInfo.claimedAt,
+        claimExpiresAt: claimInfo.claimExpiresAt,
+      },
+      Goal.apply
+    ) as GoalCodifyingStartedEvent;
+  }
+
+  /**
+   * Closes a goal after codification is complete.
+   * Transitions status from "codifying" to "done".
+   * Releases the claim held during codification.
+   *
+   * @returns GoalClosedEvent
+   * @throws Error if goal is not in 'codifying' status
+   */
+  close(): GoalClosedEvent {
+    // State validation: can only close from codifying status
+    ValidationRuleSet.ensure(this.state, [new CanCloseRule()]);
+
+    // Create and return event using BaseAggregate.makeEvent
+    return this.makeEvent(
+      GoalEventType.CLOSED,
+      {
+        status: GoalStatus.DONE,
+        closedAt: new Date().toISOString(),
+      },
+      Goal.apply
+    ) as GoalClosedEvent;
   }
 
   /**

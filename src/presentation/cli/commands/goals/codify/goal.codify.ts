@@ -1,42 +1,42 @@
 /**
- * CLI Command: jumbo goal complete
+ * CLI Command: jumbo goal codify
  *
- * Completes a QUALIFIED goal.
- * Goal must be in QUALIFIED status to be completed.
+ * Starts the codify phase on a qualified goal.
+ * Transitions goal from 'qualified' to 'codifying' status and acquires a claim.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { GoalCompleteOutputBuilder } from "./GoalCompleteOutputBuilder.js";
+import { GoalCodifyOutputBuilder } from "./GoalCodifyOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "Mark a qualified goal as completed",
+  description: "Start the codify phase on a qualified goal (architectural reconciliation)",
   category: "work",
   requiredOptions: [
     {
       flags: "-i, --id <id>",
-      description: "ID of the goal to complete"
+      description: "ID of the goal to codify"
     }
   ],
   options: [],
   examples: [
     {
-      command: "jumbo goal complete --id goal_abc123",
-      description: "Complete a qualified goal"
+      command: "jumbo goal codify --id goal_abc123",
+      description: "Start codifying a qualified goal"
     }
   ],
-  related: ["goal add", "goal start", "goal review"]
+  related: ["goal approve", "goal close"]
 };
 
 /**
  * Command handler
  * Called by Commander with parsed options
  */
-export async function goalComplete(
+export async function goalCodify(
   options: { id: string },
   container: IApplicationContainer
 ) {
@@ -44,18 +44,18 @@ export async function goalComplete(
 
   try {
     // 1. Execute via controller
-    const response = await container.completeGoalController.handle({
+    const response = await container.codifyGoalController.handle({
       goalId: options.id,
     });
 
     // 2. Build and render output using builder pattern
-    const outputBuilder = new GoalCompleteOutputBuilder();
+    const outputBuilder = new GoalCodifyOutputBuilder();
     const output = outputBuilder.buildSuccess(response);
 
     renderer.info(output.toHumanReadable());
 
   } catch (error) {
-    renderer.error("Failed to complete goal", error instanceof Error ? error : String(error));
+    renderer.error("Failed to codify goal", error instanceof Error ? error : String(error));
     process.exit(1);
   }
 }

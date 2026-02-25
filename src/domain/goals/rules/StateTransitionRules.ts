@@ -68,7 +68,7 @@ export class CanStartRule implements ValidationRule<GoalState> {
       };
     }
 
-    if (state.status === GoalStatus.COMPLETED) {
+    if (state.status === GoalStatus.COMPLETED || state.status === GoalStatus.DONE) {
       return {
         isValid: false,
         errors: [GoalErrorMessages.CANNOT_START_COMPLETED],
@@ -145,7 +145,7 @@ export class CanResetRule implements ValidationRule<GoalState> {
  */
 export class CanUpdateRule implements ValidationRule<GoalState> {
   validate(state: GoalState): ValidationResult {
-    if (state.status === GoalStatus.COMPLETED) {
+    if (state.status === GoalStatus.COMPLETED || state.status === GoalStatus.DONE) {
       return {
         isValid: false,
         errors: [GoalErrorMessages.CANNOT_UPDATE_COMPLETED],
@@ -163,9 +163,9 @@ export class CanUpdateRule implements ValidationRule<GoalState> {
  */
 export class CanBlockRule implements ValidationRule<GoalState> {
   validate(state: GoalState): ValidationResult {
-    // Valid statuses to block from: TODO, DOING, INREVIEW
-    // Invalid statuses: BLOCKED (already blocked), COMPLETED (can't block completed)
-    const validStatuses: string[] = [GoalStatus.TODO, GoalStatus.DOING, GoalStatus.INREVIEW];
+    // Valid statuses to block from: TODO, DOING, INREVIEW, CODIFYING
+    // Invalid statuses: BLOCKED (already blocked), COMPLETED/DONE (can't block terminal)
+    const validStatuses: string[] = [GoalStatus.TODO, GoalStatus.DOING, GoalStatus.INREVIEW, GoalStatus.CODIFYING];
     const isValid = validStatuses.includes(state.status);
 
     return {

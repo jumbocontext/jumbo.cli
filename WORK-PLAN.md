@@ -510,27 +510,27 @@ Manual steps to run at phase boundaries and after specific goals. Each goal's im
 ### After every goal
 
 ```
-[ ] npm test                          — all tests pass
-[ ] npx tsc --noEmit                  — type check passes
-[ ] npm run generate:commands          — if CLI commands were added or removed
-[ ] jumbo goal list                   — verify new states appear in default output
+[X] npm test                          — all tests pass
+[X] npx tsc --noEmit                  — type check passes
+[X] npm run generate:commands          — if CLI commands were added or removed
+[X] jumbo goal list                   — verify new states appear in default output
 ```
 
 ### After Goal 3 (end of Phase 1)
 
 ```
-[ ] Smoke test: create a goal, refine it, commit, start, block, unblock
+[X] Smoke test: create a goal, refine it, commit, start, block, unblock
     Verify: unblock lands in UNBLOCKED (not DOING), start works from UNBLOCKED
-[ ] Smoke test: start a goal, submit for review, reject with audit findings
+[X] Smoke test: start a goal, submit for review, reject with audit findings
     Verify: rejected goal is startable, audit findings visible in goal show
 ```
 
 ### Before Goal 4 (Phase 2 gate)
 
 ```
-[ ] Inventory all goals currently in DOING state:
+[X] Inventory all goals currently in DOING state:
     jumbo goal list --status doing
-[ ] Document which DOING goals need manual intervention after Goal 4:
+[X] Document which DOING goals need manual intervention after Goal 4:
     - Goals mid-implementation: will need `goal submit` before `goal review`
     - Goals with active claims: submit releases claims (acceptable?)
 ```
@@ -538,10 +538,10 @@ Manual steps to run at phase boundaries and after specific goals. Each goal's im
 ### After Goal 4
 
 ```
-[ ] For each previously-DOING goal that needs review:
+[X] For each previously-DOING goal that needs review:
     jumbo goal submit --id <goalId>
-[ ] Verify: goal review now requires SUBMITTED source state
-[ ] Verify: goal complete still works for QUALIFIED goals
+[X] Verify: goal review now requires SUBMITTED source state
+[X] Verify: goal complete still works for QUALIFIED goals
 ```
 
 ### After Goal 6 (end of Phase 2)
