@@ -517,7 +517,7 @@ import { HostSessionKeyResolver } from "./session/HostSessionKeyResolver.js";
 import { FsWorkerIdentityRegistry } from "./workers/FsWorkerIdentityRegistry.js";
 
 // Goal Claims
-import { FsGoalClaimStore } from "../context/goals/claims/FsGoalClaimStore.js";
+import { SqliteGoalClaimStore } from "../context/goals/claims/SqliteGoalClaimStore.js";
 import { GoalClaimPolicy } from "../../application/context/goals/claims/GoalClaimPolicy.js";
 
 export class HostBuilder {
@@ -566,7 +566,7 @@ export class HostBuilder {
     );
 
     // Create goal claim components
-    const goalClaimStore = new FsGoalClaimStore(this.rootDir);
+    const goalClaimStore = new SqliteGoalClaimStore(this.db);
     const goalClaimPolicy = new GoalClaimPolicy(goalClaimStore, clock);
 
     // Create database rebuild service and controller

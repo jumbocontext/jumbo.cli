@@ -1,43 +1,73 @@
 /**
- * Tests for FsGoalClaimStore
+ * Tests for SqliteGoalClaimStore
  */
 
-import * as fs from "fs-extra";
-import * as path from "path";
-import { FsGoalClaimStore } from "../../../../../src/infrastructure/context/goals/claims/FsGoalClaimStore";
+import Database from "better-sqlite3";
+import { SqliteGoalClaimStore } from "../../../../../src/infrastructure/context/goals/claims/SqliteGoalClaimStore";
 import { GoalClaim } from "../../../../../src/application/context/goals/claims/GoalClaim";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 
-describe("FsGoalClaimStore", () => {
-  let tmpDir: string;
-  let store: FsGoalClaimStore;
+describe("SqliteGoalClaimStore", () => {
+  let db: Database.Database;
+  let store: SqliteGoalClaimStore;
 
   const workerA = createWorkerId("worker-a-uuid");
   const workerB = createWorkerId("worker-b-uuid");
 
-  beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-claims-"));
-    store = new FsGoalClaimStore(tmpDir);
+  beforeEach(() => {
+    db = new Database(":memory:");
+    db.exec(`
+      CREATE TABLE goal_views (
+        goalId TEXT PRIMARY KEY,
+        objective TEXT NOT NULL,
+        successCriteria TEXT NOT NULL,
+        scopeIn TEXT NOT NULL,
+        scopeOut TEXT NOT NULL,
+        status TEXT NOT NULL,
+        note TEXT,
+        progress TEXT NOT NULL DEFAULT '[]',
+        version INTEGER NOT NULL,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        title TEXT NOT NULL DEFAULT '',
+        prerequisiteGoals TEXT,
+        nextGoalId TEXT,
+        claimedBy TEXT,
+        claimedAt TEXT,
+        claimExpiresAt TEXT
+      )
+    `);
+    store = new SqliteGoalClaimStore(db);
   });
 
-  afterEach(async () => {
-    await fs.remove(tmpDir);
+  afterEach(() => {
+    db.close();
   });
+
+  function insertGoal(goalId: string): void {
+    db.prepare(`
+      INSERT INTO goal_views (goalId, objective, successCriteria, scopeIn, scopeOut, status, progress, version, createdAt, updatedAt, title)
+      VALUES (?, 'test', '[]', '[]', '[]', 'defined', '[]', 1, '2025-01-15T10:00:00.000Z', '2025-01-15T10:00:00.000Z', 'test')
+    `).run(goalId);
+  }
 
   describe("getClaim", () => {
-    it("returns null when no claim exists", () => {
+    it("returns null when goal does not exist", () => {
       const claim = store.getClaim("goal_nonexistent");
 
       expect(claim).toBeNull();
     });
 
-    it("returns null when claims file does not exist", () => {
+    it("returns null when goal exists but has no claim", () => {
+      insertGoal("goal_123");
+
       const claim = store.getClaim("goal_123");
 
       expect(claim).toBeNull();
     });
 
     it("returns stored claim after setClaim", () => {
+      insertGoal("goal_123");
       const claim: GoalClaim = {
         goalId: "goal_123",
         claimedBy: workerA,
@@ -53,7 +83,8 @@ describe("FsGoalClaimStore", () => {
   });
 
   describe("setClaim", () => {
-    it("creates claims.json file on first setClaim", () => {
+    it("persists claim columns in goal_views row", () => {
+      insertGoal("goal_123");
       const claim: GoalClaim = {
         goalId: "goal_123",
         claimedBy: workerA,
@@ -63,27 +94,17 @@ describe("FsGoalClaimStore", () => {
 
       store.setClaim(claim);
 
-      const filePath = path.join(tmpDir, "claims.json");
-      expect(fs.existsSync(filePath)).toBe(true);
-    });
+      const row = db
+        .prepare("SELECT claimedBy, claimedAt, claimExpiresAt FROM goal_views WHERE goalId = ?")
+        .get("goal_123") as { claimedBy: string; claimedAt: string; claimExpiresAt: string };
 
-    it("persists claim with all required fields", () => {
-      const claim: GoalClaim = {
-        goalId: "goal_123",
-        claimedBy: workerA,
-        claimedAt: "2025-01-15T10:00:00.000Z",
-        claimExpiresAt: "2025-01-15T10:30:00.000Z",
-      };
-
-      store.setClaim(claim);
-
-      const filePath = path.join(tmpDir, "claims.json");
-      const content = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-
-      expect(content.claims["goal_123"]).toEqual(claim);
+      expect(row.claimedBy).toBe("worker-a-uuid");
+      expect(row.claimedAt).toBe("2025-01-15T10:00:00.000Z");
+      expect(row.claimExpiresAt).toBe("2025-01-15T10:30:00.000Z");
     });
 
     it("updates existing claim for same goalId", () => {
+      insertGoal("goal_123");
       const originalClaim: GoalClaim = {
         goalId: "goal_123",
         claimedBy: workerA,
@@ -95,7 +116,7 @@ describe("FsGoalClaimStore", () => {
         goalId: "goal_123",
         claimedBy: workerA,
         claimedAt: "2025-01-15T10:00:00.000Z",
-        claimExpiresAt: "2025-01-15T11:00:00.000Z", // Extended
+        claimExpiresAt: "2025-01-15T11:00:00.000Z",
       };
 
       store.setClaim(originalClaim);
@@ -105,7 +126,10 @@ describe("FsGoalClaimStore", () => {
       expect(retrieved?.claimExpiresAt).toBe("2025-01-15T11:00:00.000Z");
     });
 
-    it("stores multiple claims for different goals", () => {
+    it("stores claims for different goals independently", () => {
+      insertGoal("goal_123");
+      insertGoal("goal_456");
+
       const claim1: GoalClaim = {
         goalId: "goal_123",
         claimedBy: workerA,
@@ -130,6 +154,7 @@ describe("FsGoalClaimStore", () => {
 
   describe("releaseClaim", () => {
     it("removes existing claim", () => {
+      insertGoal("goal_123");
       const claim: GoalClaim = {
         goalId: "goal_123",
         claimedBy: workerA,
@@ -144,6 +169,9 @@ describe("FsGoalClaimStore", () => {
     });
 
     it("does not affect other claims", () => {
+      insertGoal("goal_123");
+      insertGoal("goal_456");
+
       const claim1: GoalClaim = {
         goalId: "goal_123",
         claimedBy: workerA,
@@ -167,35 +195,18 @@ describe("FsGoalClaimStore", () => {
     });
 
     it("handles releasing non-existent claim gracefully", () => {
-      // Should not throw
+      insertGoal("goal_123");
+      expect(() => store.releaseClaim("goal_123")).not.toThrow();
+    });
+
+    it("handles releasing claim on non-existent goal gracefully", () => {
       expect(() => store.releaseClaim("goal_nonexistent")).not.toThrow();
     });
   });
 
-  describe("error handling", () => {
-    it("starts fresh when claims file is corrupted", () => {
-      const filePath = path.join(tmpDir, "claims.json");
-      fs.writeFileSync(filePath, "{ invalid json", "utf-8");
-
-      // Should not throw
-      const claim = store.getClaim("goal_123");
-      expect(claim).toBeNull();
-
-      // Should be able to write new claims
-      const newClaim: GoalClaim = {
-        goalId: "goal_123",
-        claimedBy: workerA,
-        claimedAt: "2025-01-15T10:00:00.000Z",
-        claimExpiresAt: "2025-01-15T10:30:00.000Z",
-      };
-
-      store.setClaim(newClaim);
-      expect(store.getClaim("goal_123")).toEqual(newClaim);
-    });
-  });
-
-  describe("persistence across instances", () => {
-    it("loads claims from existing file", () => {
+  describe("claim column nullification", () => {
+    it("sets all claim columns to NULL on release", () => {
+      insertGoal("goal_123");
       const claim: GoalClaim = {
         goalId: "goal_123",
         claimedBy: workerA,
@@ -204,10 +215,15 @@ describe("FsGoalClaimStore", () => {
       };
 
       store.setClaim(claim);
+      store.releaseClaim("goal_123");
 
-      // Create new instance
-      const newStore = new FsGoalClaimStore(tmpDir);
-      expect(newStore.getClaim("goal_123")).toEqual(claim);
+      const row = db
+        .prepare("SELECT claimedBy, claimedAt, claimExpiresAt FROM goal_views WHERE goalId = ?")
+        .get("goal_123") as { claimedBy: string | null; claimedAt: string | null; claimExpiresAt: string | null };
+
+      expect(row.claimedBy).toBeNull();
+      expect(row.claimedAt).toBeNull();
+      expect(row.claimExpiresAt).toBeNull();
     });
   });
 });
