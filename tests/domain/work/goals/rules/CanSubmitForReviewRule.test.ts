@@ -14,7 +14,7 @@ function createGoalState(overrides: Partial<GoalState> = {}): GoalState {
     successCriteria: ["Test criterion"],
     scopeIn: [],
     scopeOut: [],
-    
+
     status: GoalStatus.TODO,
     version: 0,
     progress: [],
@@ -23,20 +23,28 @@ function createGoalState(overrides: Partial<GoalState> = {}): GoalState {
 }
 
 describe("CanSubmitForReviewRule", () => {
-  it("should pass when status is doing", () => {
+  it("should pass when status is submitted", () => {
     const rule = new CanSubmitForReviewRule();
-    const state = createGoalState({ status: GoalStatus.DOING });
+    const state = createGoalState({ status: GoalStatus.SUBMITTED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(true);
     expect(result.errors).toEqual([]);
   });
 
-  it("should pass when status is blocked", () => {
+  it("should fail when status is doing", () => {
+    const rule = new CanSubmitForReviewRule();
+    const state = createGoalState({ status: GoalStatus.DOING });
+    const result = rule.validate(state);
+    expect(result.isValid).toBe(false);
+    expect(result.errors[0]).toContain("Cannot submit goal for review in doing status");
+  });
+
+  it("should fail when status is blocked", () => {
     const rule = new CanSubmitForReviewRule();
     const state = createGoalState({ status: GoalStatus.BLOCKED });
     const result = rule.validate(state);
-    expect(result.isValid).toBe(true);
-    expect(result.errors).toEqual([]);
+    expect(result.isValid).toBe(false);
+    expect(result.errors[0]).toContain("Cannot submit goal for review in blocked status");
   });
 
   it("should fail when status is to-do", () => {

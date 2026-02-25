@@ -87,6 +87,9 @@ import { IGoalCommitEventReader } from "../context/goals/commit/IGoalCommitEvent
 import { RejectGoalController } from "../context/goals/reject/RejectGoalController.js";
 import { IGoalRejectedEventWriter } from "../context/goals/reject/IGoalRejectedEventWriter.js";
 import { IGoalRejectedEventReader } from "../context/goals/reject/IGoalRejectedEventReader.js";
+import { SubmitGoalController } from "../context/goals/submit/SubmitGoalController.js";
+import { IGoalSubmittedEventWriter } from "../context/goals/submit/IGoalSubmittedEventWriter.js";
+import { IGoalSubmittedEventReader } from "../context/goals/submit/IGoalSubmittedEventReader.js";
 
 // Audience Pain Controllers
 import { AddAudiencePainController } from "../context/audience-pains/add/AddAudiencePainController.js";
@@ -357,6 +360,7 @@ export interface IApplicationContainer {
   goalQualifiedEventStore: IGoalQualifiedEventWriter & IGoalQualifiedEventReader;
   goalCommittedEventStore: IGoalCommitEventWriter & IGoalCommitEventReader;
   goalRejectedEventStore: IGoalRejectedEventWriter & IGoalRejectedEventReader;
+  goalSubmittedEventStore: IGoalSubmittedEventWriter & IGoalSubmittedEventReader;
 
   // Work Category - Session Projection Stores - decomposed by use case
   sessionStartedProjector: ISessionStartedProjector;
@@ -396,6 +400,7 @@ export interface IApplicationContainer {
   qualifyGoalController: QualifyGoalController;
   commitGoalController: CommitGoalController;
   rejectGoalController: RejectGoalController;
+  submitGoalController: SubmitGoalController;
   blockGoalController: BlockGoalController;
   unblockGoalController: UnblockGoalController;
   getGoalsController: GetGoalsController;

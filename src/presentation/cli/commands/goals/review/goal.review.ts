@@ -1,8 +1,8 @@
 /**
  * CLI Command: jumbo goal review
  *
- * Submits a goal for QA review.
- * Transitions goal from 'doing' to 'in-review' status and renders QA criteria.
+ * Starts QA review on a submitted goal.
+ * Transitions goal from 'submitted' to 'in-review' status and renders QA criteria.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
@@ -15,22 +15,22 @@ import { GoalReviewOutputBuilder } from "./GoalReviewOutputBuilder.js";
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "Submit a goal for QA review",
+  description: "Start QA review on a submitted goal",
   category: "work",
   requiredOptions: [
     {
       flags: "-i, --id <id>",
-      description: "ID of the goal to submit for review"
+      description: "ID of the goal to review"
     }
   ],
   options: [],
   examples: [
     {
       command: "jumbo goal review --id goal_abc123",
-      description: "Submit a goal for QA review"
+      description: "Start QA review on a submitted goal"
     }
   ],
-  related: ["goal start", "goal qualify", "goal complete", "goal pause"]
+  related: ["goal submit", "goal qualify", "goal reject"]
 };
 
 /**

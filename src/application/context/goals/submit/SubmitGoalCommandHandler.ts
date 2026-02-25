@@ -1,35 +1,33 @@
-import { SubmitGoalForReviewCommand } from "./SubmitGoalForReviewCommand.js";
-import { IGoalSubmittedForReviewEventWriter } from "./IGoalSubmittedForReviewEventWriter.js";
-import { IGoalSubmittedForReviewEventReader } from "./IGoalSubmittedForReviewEventReader.js";
-import { IGoalSubmitForReviewReader } from "./IGoalSubmitForReviewReader.js";
+import { SubmitGoalCommand } from "./SubmitGoalCommand.js";
+import { IGoalSubmittedEventWriter } from "./IGoalSubmittedEventWriter.js";
+import { IGoalSubmittedEventReader } from "./IGoalSubmittedEventReader.js";
+import { IGoalSubmitReader } from "./IGoalSubmitReader.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Goal } from "../../../../domain/goals/Goal.js";
 import { GoalErrorMessages, formatErrorMessage } from "../../../../domain/goals/Constants.js";
 import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
-import { ISettingsReader } from "../../../settings/ISettingsReader.js";
 import { GoalContextQueryHandler } from "../get/GoalContextQueryHandler.js";
 import { ContextualGoalView } from "../get/ContextualGoalView.js";
 
 /**
- * Handles starting a QA review on a submitted goal.
+ * Handles submission of a goal after implementation is complete.
  * Loads aggregate from event history, calls domain logic, persists event.
- * Acquires a reviewer claim for the worker starting the review.
+ * Releases the implementer's claim after successful submission.
  * Returns ContextualGoalView for presentation layer.
  */
-export class SubmitGoalForReviewCommandHandler {
+export class SubmitGoalCommandHandler {
   constructor(
-    private readonly eventWriter: IGoalSubmittedForReviewEventWriter,
-    private readonly eventReader: IGoalSubmittedForReviewEventReader,
-    private readonly goalReader: IGoalSubmitForReviewReader,
+    private readonly eventWriter: IGoalSubmittedEventWriter,
+    private readonly eventReader: IGoalSubmittedEventReader,
+    private readonly goalReader: IGoalSubmitReader,
     private readonly eventBus: IEventBus,
     private readonly claimPolicy: GoalClaimPolicy,
     private readonly workerIdentityReader: IWorkerIdentityReader,
-    private readonly settingsReader: ISettingsReader,
     private readonly goalContextQueryHandler: GoalContextQueryHandler
   ) {}
 
-  async execute(command: SubmitGoalForReviewCommand): Promise<ContextualGoalView> {
+  async execute(command: SubmitGoalCommand): Promise<ContextualGoalView> {
     // 1. Check goal exists (query projection for fast check)
     const view = await this.goalReader.findById(command.goalId);
     if (!view) {
@@ -38,7 +36,7 @@ export class SubmitGoalForReviewCommandHandler {
       );
     }
 
-    // 2. Validate claim policy - reviewer can claim if no active claim exists
+    // 2. Validate claim ownership - only the claimant can submit a goal
     const workerId = this.workerIdentityReader.workerId;
     const claimValidation = this.claimPolicy.canClaim(command.goalId, workerId);
     if (!claimValidation.allowed) {
@@ -53,28 +51,19 @@ export class SubmitGoalForReviewCommandHandler {
     const history = await this.eventReader.readStream(command.goalId);
     const goal = Goal.rehydrate(command.goalId, history as any);
 
-    // 4. Prepare reviewer claim data before creating event
-    const settings = await this.settingsReader.read();
-    const claimDurationMs = settings.claims.claimDurationMinutes * 60 * 1000;
-    const claim = this.claimPolicy.prepareClaim(command.goalId, workerId, claimDurationMs);
+    // 4. Domain logic produces event (validates state)
+    const event = goal.submit();
 
-    // 5. Domain logic produces event with claim data (validates state)
-    const event = goal.submitForReview({
-      claimedBy: claim.claimedBy,
-      claimedAt: claim.claimedAt,
-      claimExpiresAt: claim.claimExpiresAt,
-    });
-
-    // 6. Persist event to file store
+    // 5. Persist event to file store
     await this.eventWriter.append(event);
 
-    // 7. Store reviewer claim after successful persistence
-    this.claimPolicy.storeClaim(claim);
+    // 6. Release implementer claim after successful persistence
+    this.claimPolicy.releaseClaim(command.goalId);
 
-    // 8. Publish event to bus (projections will update via subscriptions)
+    // 7. Publish event to bus (projections will update via subscriptions)
     await this.eventBus.publish(event);
 
-    // 9. Query goal context
+    // 8. Query goal context
     return this.goalContextQueryHandler.execute(command.goalId);
   }
 }

@@ -21,7 +21,8 @@ export const GoalEventType = {
   QUALIFIED: 'GoalQualifiedEvent',
   REFINEMENT_STARTED: 'GoalRefinementStartedEvent',
   COMMITTED: 'GoalCommittedEvent',
-  REJECTED: 'GoalRejectedEvent'
+  REJECTED: 'GoalRejectedEvent',
+  SUBMITTED: 'GoalSubmittedEvent'
 } as const;
 
 export type GoalEventTypeValue = typeof GoalEventType[keyof typeof GoalEventType];
@@ -39,6 +40,7 @@ export const GoalStatus = {
   IN_REFINEMENT: 'in-refinement',
   REJECTED: 'rejected',
   UNBLOCKED: 'unblocked',
+  SUBMITTED: 'submitted',
 } as const;
 
 export type GoalStatusType = typeof GoalStatus[keyof typeof GoalStatus];
@@ -80,7 +82,8 @@ export const GoalErrorMessages = {
   // Claim-related errors
   GOAL_CLAIMED_BY_ANOTHER_WORKER: 'Goal is claimed by another worker. Claim expires at {expiresAt}.',
   // Review and qualification state transition errors
-  CANNOT_SUBMIT_FOR_REVIEW_IN_STATUS: 'Cannot submit goal for review in {status} status. Goal must be in doing or blocked status.',
+  CANNOT_SUBMIT_IN_STATUS: 'Cannot submit goal in {status} status. Goal must be in doing status.',
+  CANNOT_SUBMIT_FOR_REVIEW_IN_STATUS: 'Cannot submit goal for review in {status} status. Goal must be in submitted status.',
   CANNOT_QUALIFY_IN_STATUS: 'Cannot qualify goal in {status} status. Goal must be in-review.',
   ALREADY_IN_REFINEMENT: 'Goal is already in refinement.',
   CANNOT_COMMIT_IN_STATUS: 'Cannot commit goal in {status} status. Goal must be in in-refinement status.',

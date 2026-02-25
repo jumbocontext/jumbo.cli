@@ -1335,7 +1335,7 @@ describe("Goal Aggregate", () => {
   });
 
   describe("submitForReview()", () => {
-    it("should create GoalSubmittedForReviewEvent event from doing status", () => {
+    it("should create GoalSubmittedForReviewEvent event from submitted status", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
@@ -1346,6 +1346,7 @@ describe("Goal Aggregate", () => {
       });
       goal.commit();
       goal.start();
+      goal.submit();
 
       // Act
       const event = goal.submitForReview();
@@ -1353,32 +1354,10 @@ describe("Goal Aggregate", () => {
       // Assert
       expect(event.type).toBe(GoalEventType.SUBMITTED_FOR_REVIEW);
       expect(event.aggregateId).toBe("goal_123");
-      expect(event.version).toBe(5);
+      expect(event.version).toBe(6);
       expect(event.payload.status).toBe(GoalStatus.INREVIEW);
       expect(event.payload.submittedAt).toBeDefined();
       expect(event.timestamp).toBeDefined();
-    });
-
-    it("should create GoalSubmittedForReviewEvent event from blocked status", () => {
-      // Arrange
-      const goal = Goal.create("goal_123");
-      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
-      goal.refine({
-        claimedBy: "worker_test",
-        claimedAt: "2025-01-01T00:00:00Z",
-        claimExpiresAt: "2025-01-01T01:00:00Z",
-      });
-      goal.commit();
-      goal.start();
-      goal.block("Waiting for API credentials");
-
-      // Act
-      const event = goal.submitForReview();
-
-      // Assert
-      expect(event.type).toBe(GoalEventType.SUBMITTED_FOR_REVIEW);
-      expect(event.payload.status).toBe(GoalStatus.INREVIEW);
-      expect(event.version).toBe(6);
     });
 
     it("should transition goal to in-review status", () => {
@@ -1392,6 +1371,7 @@ describe("Goal Aggregate", () => {
       });
       goal.commit();
       goal.start();
+      goal.submit();
 
       // Act
       goal.submitForReview();
@@ -1399,7 +1379,7 @@ describe("Goal Aggregate", () => {
       // Assert
       const snapshot = goal.snapshot;
       expect(snapshot.status).toBe(GoalStatus.INREVIEW);
-      expect(snapshot.version).toBe(5);
+      expect(snapshot.version).toBe(6);
     });
 
     it("should throw error if goal is in to-do status", () => {
@@ -1409,7 +1389,25 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.submitForReview()).toThrow(
-        "Cannot submit goal for review in to-do status. Goal must be in doing or blocked status."
+        "Cannot submit goal for review in to-do status. Goal must be in submitted status."
+      );
+    });
+
+    it("should throw error if goal is in doing status", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+
+      // Act & Assert
+      expect(() => goal.submitForReview()).toThrow(
+        "Cannot submit goal for review in doing status. Goal must be in submitted status."
       );
     });
 
@@ -1428,7 +1426,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.submitForReview()).toThrow(
-        "Cannot submit goal for review in paused status. Goal must be in doing or blocked status."
+        "Cannot submit goal for review in paused status. Goal must be in submitted status."
       );
     });
 
@@ -1443,11 +1441,12 @@ describe("Goal Aggregate", () => {
       });
       goal.commit();
       goal.start();
+      goal.submit();
       goal.submitForReview();
 
       // Act & Assert
       expect(() => goal.submitForReview()).toThrow(
-        "Cannot submit goal for review in in-review status. Goal must be in doing or blocked status."
+        "Cannot submit goal for review in in-review status. Goal must be in submitted status."
       );
     });
 
@@ -1513,7 +1512,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.submitForReview()).toThrow(
-        "Cannot submit goal for review in qualified status. Goal must be in doing or blocked status."
+        "Cannot submit goal for review in qualified status. Goal must be in submitted status."
       );
     });
 
@@ -1588,7 +1587,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.submitForReview()).toThrow(
-        "Cannot submit goal for review in completed status. Goal must be in doing or blocked status."
+        "Cannot submit goal for review in completed status. Goal must be in submitted status."
       );
     });
   });
@@ -1605,6 +1604,7 @@ describe("Goal Aggregate", () => {
       });
       goal.commit();
       goal.start();
+      goal.submit();
       goal.submitForReview();
 
       // Act
@@ -1613,7 +1613,7 @@ describe("Goal Aggregate", () => {
       // Assert
       expect(event.type).toBe(GoalEventType.QUALIFIED);
       expect(event.aggregateId).toBe("goal_123");
-      expect(event.version).toBe(6);
+      expect(event.version).toBe(7);
       expect(event.payload.status).toBe(GoalStatus.QUALIFIED);
       expect(event.payload.qualifiedAt).toBeDefined();
       expect(event.timestamp).toBeDefined();
@@ -1630,6 +1630,7 @@ describe("Goal Aggregate", () => {
       });
       goal.commit();
       goal.start();
+      goal.submit();
       goal.submitForReview();
 
       // Act
@@ -1638,7 +1639,7 @@ describe("Goal Aggregate", () => {
       // Assert
       const snapshot = goal.snapshot;
       expect(snapshot.status).toBe(GoalStatus.QUALIFIED);
-      expect(snapshot.version).toBe(6);
+      expect(snapshot.version).toBe(7);
     });
 
     it("should throw error if goal is in to-do status", () => {
@@ -1719,6 +1720,7 @@ describe("Goal Aggregate", () => {
       });
       goal.commit();
       goal.start();
+      goal.submit();
       goal.submitForReview();
       goal.qualify();
 

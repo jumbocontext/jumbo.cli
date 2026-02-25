@@ -98,7 +98,30 @@ describe("SqliteGoalSubmittedForReviewProjector", () => {
       expect(row.status).toBe(GoalStatus.INREVIEW);
     });
 
-    it("clears claim fields when submitted for review", async () => {
+    it("sets reviewer claim fields when submitted for review with claim info", async () => {
+      const event: GoalSubmittedForReviewEvent = {
+        type: GoalEventType.SUBMITTED_FOR_REVIEW,
+        aggregateId: "goal_test-1",
+        version: 2,
+        timestamp: "2026-02-02T10:00:00.000Z",
+        payload: {
+          status: GoalStatus.INREVIEW,
+          submittedAt: "2026-02-02T10:00:00.000Z",
+          claimedBy: "reviewer_456",
+          claimedAt: "2026-02-02T10:00:00.000Z",
+          claimExpiresAt: "2026-02-02T12:00:00.000Z",
+        },
+      };
+
+      await projector.applyGoalSubmittedForReview(event);
+
+      const row = db.prepare("SELECT claimedBy, claimedAt, claimExpiresAt FROM goal_views WHERE goalId = ?").get("goal_test-1") as any;
+      expect(row.claimedBy).toBe("reviewer_456");
+      expect(row.claimedAt).toBe("2026-02-02T10:00:00.000Z");
+      expect(row.claimExpiresAt).toBe("2026-02-02T12:00:00.000Z");
+    });
+
+    it("clears claim fields when submitted for review without claim info", async () => {
       const event: GoalSubmittedForReviewEvent = {
         type: GoalEventType.SUBMITTED_FOR_REVIEW,
         aggregateId: "goal_test-1",

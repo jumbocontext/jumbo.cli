@@ -50,6 +50,7 @@ import { goalResume, metadata as goalResumeMeta } from '../../commands/goals/res
 import { goalReview, metadata as goalReviewMeta } from '../../commands/goals/review/goal.review.js';
 import { goalShow, metadata as goalShowMeta } from '../../commands/goals/show/goal.show.js';
 import { goalStart, metadata as goalStartMeta } from '../../commands/goals/start/goal.start.js';
+import { goalSubmit, metadata as goalSubmitMeta } from '../../commands/goals/submit/goal.submit.js';
 import { goalUnblock, metadata as goalUnblockMeta } from '../../commands/goals/unblock/goal.unblock.js';
 import { goalUpdate, metadata as goalUpdateMeta } from '../../commands/goals/update/goal.update.js';
 import { goalUpdateProgress, metadata as goalUpdateProgressMeta } from '../../commands/goals/update-progress/goal.update-progress.js';
@@ -285,6 +286,11 @@ export const commands: RegisteredCommand[] = [
     path: 'goal start',
     metadata: goalStartMeta,
     handler: goalStart
+  },
+  {
+    path: 'goal submit',
+    metadata: goalSubmitMeta,
+    handler: goalSubmit
   },
   {
     path: 'goal unblock',

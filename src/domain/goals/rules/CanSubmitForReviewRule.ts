@@ -3,15 +3,13 @@ import { GoalState } from "../Goal.js";
 import { GoalStatus, GoalErrorMessages, formatErrorMessage } from "../Constants.js";
 
 /**
- * Validates that a goal can be submitted for review.
- * A goal can only be submitted for review if it's in 'doing' or 'blocked' status.
- * Cannot submit a goal that is in 'to-do', 'paused', 'completed', 'in-review', or 'qualified' status.
+ * Validates that a goal can be submitted for review (start QA review).
+ * A goal can only be submitted for review if it's in 'submitted' status.
+ * The implementation must first be submitted via 'goal submit' before review can begin.
  */
 export class CanSubmitForReviewRule implements ValidationRule<GoalState> {
   validate(state: GoalState): ValidationResult {
-    // Valid statuses to submit for review from: DOING, BLOCKED
-    const validStatuses: string[] = [GoalStatus.DOING, GoalStatus.BLOCKED];
-    const isValid = validStatuses.includes(state.status);
+    const isValid = state.status === GoalStatus.SUBMITTED;
 
     return {
       isValid,

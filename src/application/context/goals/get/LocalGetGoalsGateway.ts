@@ -16,6 +16,7 @@ const DEFAULT_STATUSES: readonly GoalStatusType[] = [
   GoalStatus.QUALIFIED,
   GoalStatus.REJECTED,
   GoalStatus.UNBLOCKED,
+  GoalStatus.SUBMITTED,
 ];
 
 export class LocalGetGoalsGateway implements IGetGoalsGateway {

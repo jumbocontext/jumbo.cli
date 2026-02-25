@@ -1,7 +1,7 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
-import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent, GoalRefinementStartedEvent, GoalCommittedEvent, GoalRejectedEvent } from "./EventIndex.js";
+import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent, GoalRefinementStartedEvent, GoalCommittedEvent, GoalRejectedEvent, GoalSubmittedEvent } from "./EventIndex.js";
 import { GoalEventType, GoalStatus, GoalStatusType } from "./Constants.js";
 import { GoalPausedReasonsType } from "./GoalPausedReasons.js";
 import { OBJECTIVE_RULES } from "./rules/ObjectiveRules.js";
@@ -26,6 +26,7 @@ import { CanSubmitForReviewRule } from "./rules/CanSubmitForReviewRule.js";
 import { CanQualifyRule } from "./rules/CanQualifyRule.js";
 import { CanCommitRule } from "./rules/CanCommitRule.js";
 import { CanRejectRule } from "./rules/CanRejectRule.js";
+import { CanSubmitRule } from "./rules/CanSubmitRule.js";
 
 // Domain state: business properties + aggregate metadata
 export interface GoalState extends AggregateState {
@@ -201,6 +202,13 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
         const e = event as GoalRejectedEvent;
         state.status = e.payload.status;  // 'rejected'
         state.note = e.payload.auditFindings;  // Store audit findings as note
+        state.version = e.version;
+        break;
+      }
+
+      case GoalEventType.SUBMITTED: {
+        const e = event as GoalSubmittedEvent;
+        state.status = e.payload.status;  // 'submitted'
         state.version = e.version;
         break;
       }
@@ -623,15 +631,42 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
   }
 
   /**
+   * Submits a goal after implementation is complete.
+   * Transitions status from "doing" to "submitted".
+   * Releases the implementer's claim so a reviewer can pick it up.
+   *
+   * @returns GoalSubmitted event
+   * @throws Error if goal is not in 'doing' status
+   */
+  submit(): GoalSubmittedEvent {
+    // 1. State validation: can only submit from doing status
+    ValidationRuleSet.ensure(this.state, [new CanSubmitRule()]);
+
+    // 2. Create and return event using BaseAggregate.makeEvent
+    return this.makeEvent(
+      GoalEventType.SUBMITTED,
+      {
+        status: GoalStatus.SUBMITTED,
+        submittedAt: new Date().toISOString(),
+      },
+      Goal.apply
+    ) as GoalSubmittedEvent;
+  }
+
+  /**
    * Submits a goal for QA review.
-   * Transitions status from "doing" or "blocked" to "in-review".
-   * Marks the point where implementation is considered complete and awaiting validation.
+   * Transitions status from "submitted" to "in-review".
+   * Marks the point where QA review begins on a submitted implementation.
    *
    * @returns GoalSubmittedForReview event
-   * @throws Error if goal is not in 'doing' or 'blocked' status
+   * @throws Error if goal is not in 'submitted' status
    */
-  submitForReview(): GoalSubmittedForReviewEvent {
-    // 1. State validation: can only submit for review from doing or blocked status
+  submitForReview(claimInfo?: {
+    claimedBy: string;
+    claimedAt: string;
+    claimExpiresAt: string;
+  }): GoalSubmittedForReviewEvent {
+    // 1. State validation: can only submit for review from submitted status
     ValidationRuleSet.ensure(this.state, [new CanSubmitForReviewRule()]);
 
     // 2. Create and return event using BaseAggregate.makeEvent
@@ -640,6 +675,12 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
       {
         status: GoalStatus.INREVIEW,
         submittedAt: new Date().toISOString(),
+        // Include claim info if provided (reviewer claim)
+        ...(claimInfo && {
+          claimedBy: claimInfo.claimedBy,
+          claimedAt: claimInfo.claimedAt,
+          claimExpiresAt: claimInfo.claimExpiresAt,
+        }),
       },
       Goal.apply
     ) as GoalSubmittedForReviewEvent;
