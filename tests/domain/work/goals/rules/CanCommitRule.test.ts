@@ -36,7 +36,7 @@ describe("CanCommitRule", () => {
     const state = createGoalState({ status: GoalStatus.TODO });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot commit goal in to-do status");
+    expect(result.errors[0]).toContain("Cannot commit goal in defined status");
   });
 
   it("should fail when status is doing", () => {
@@ -68,7 +68,7 @@ describe("CanCommitRule", () => {
     const state = createGoalState({ status: GoalStatus.COMPLETED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot commit goal in completed status");
+    expect(result.errors[0]).toContain("Cannot commit goal in done status");
   });
 
   it("should fail when status is qualified", () => {
@@ -76,7 +76,7 @@ describe("CanCommitRule", () => {
     const state = createGoalState({ status: GoalStatus.QUALIFIED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot commit goal in qualified status");
+    expect(result.errors[0]).toContain("Cannot commit goal in approved status");
   });
 
   it("should fail when status is refined", () => {

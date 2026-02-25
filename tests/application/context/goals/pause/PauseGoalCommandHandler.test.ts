@@ -237,7 +237,7 @@ describe("PauseGoalCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot pause goal in to-do status"
+      "Cannot pause goal in defined status"
     );
   });
 

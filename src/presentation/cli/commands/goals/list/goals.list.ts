@@ -18,7 +18,7 @@ import { GoalListOutputBuilder } from "./GoalListOutputBuilder.js";
 /**
  * Valid goal statuses for filtering
  */
-const VALID_STATUSES = ["to-do", "doing", "blocked", "paused", "refined", "in-refinement", "in-review", "qualified", "done"] as const;
+const VALID_STATUSES = ["defined", "doing", "blocked", "paused", "refined", "in-refinement", "in-review", "approved", "done"] as const;
 
 /**
  * Command metadata for auto-registration

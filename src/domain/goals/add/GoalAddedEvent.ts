@@ -4,7 +4,7 @@ import { GoalEventType, GoalStatusType } from "../Constants.js";
 /**
  * Emitted when a new goal is defined.
  * This is the first event in the Goal aggregate's lifecycle.
- * Goal starts in 'to-do' status.
+ * Goal starts in 'defined' status.
  */
 export interface GoalAddedEvent extends BaseEvent {
   readonly type: typeof GoalEventType.ADDED;

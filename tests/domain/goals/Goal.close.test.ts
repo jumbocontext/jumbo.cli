@@ -137,6 +137,6 @@ describe("Goal.close", () => {
 
     const goal = Goal.rehydrate(goalId, history as any);
 
-    expect(() => goal.close()).toThrow("Cannot close goal in to-do status");
+    expect(() => goal.close()).toThrow("Cannot close goal in defined status");
   });
 });

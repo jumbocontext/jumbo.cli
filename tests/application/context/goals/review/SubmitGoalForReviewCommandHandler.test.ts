@@ -259,7 +259,7 @@ describe("SubmitGoalForReviewCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot submit goal for review in to-do status. Goal must be in submitted status."
+      "Cannot submit goal for review in defined status. Goal must be in submitted status."
     );
   });
 
@@ -410,7 +410,7 @@ describe("SubmitGoalForReviewCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot submit goal for review in completed status. Goal must be in submitted status."
+      "Cannot submit goal for review in done status. Goal must be in submitted status."
     );
   });
 

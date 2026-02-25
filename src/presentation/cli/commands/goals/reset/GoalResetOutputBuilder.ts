@@ -21,7 +21,7 @@ export class GoalResetOutputBuilder {
    */
   buildSuccess(goalId: string, objective: string, status: string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✓ Goal reset to to-do status");
+    this.builder.addPrompt("✓ Goal reset to defined status");
     this.builder.addData({
       goalId,
       objective,

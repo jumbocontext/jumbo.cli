@@ -20,7 +20,7 @@ export class LocalResetGoalGateway implements IResetGoalGateway {
     return {
       goalId: result.goalId,
       objective: view?.objective || request.goalId,
-      status: view?.status || 'to-do',
+      status: view?.status || 'defined',
     };
   }
 }

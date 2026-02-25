@@ -200,7 +200,7 @@ describe("SessionStartTextRenderer", () => {
     it("should produce blocks for all context sections", () => {
       const context = createContext({
         activeGoals: [{ goalId: "g1", objective: "Active task", status: "doing" } as GoalView],
-        plannedGoals: [{ goalId: "g2", objective: "Planned task", status: "to-do" } as GoalView],
+        plannedGoals: [{ goalId: "g2", objective: "Planned task", status: "defined" } as GoalView],
       });
 
       const result = renderer.render(context);

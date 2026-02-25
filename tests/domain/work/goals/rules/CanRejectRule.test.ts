@@ -36,7 +36,7 @@ describe("CanRejectRule", () => {
     const state = createGoalState({ status: GoalStatus.TODO });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot reject goal in to-do status");
+    expect(result.errors[0]).toContain("Cannot reject goal in defined status");
   });
 
   it("should fail when status is doing", () => {
@@ -68,7 +68,7 @@ describe("CanRejectRule", () => {
     const state = createGoalState({ status: GoalStatus.QUALIFIED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot reject goal in qualified status");
+    expect(result.errors[0]).toContain("Cannot reject goal in approved status");
   });
 
   it("should fail when status is completed", () => {
@@ -76,6 +76,6 @@ describe("CanRejectRule", () => {
     const state = createGoalState({ status: GoalStatus.COMPLETED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot reject goal in completed status");
+    expect(result.errors[0]).toContain("Cannot reject goal in done status");
   });
 });

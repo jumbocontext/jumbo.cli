@@ -52,7 +52,7 @@ describe("CanSubmitForReviewRule", () => {
     const state = createGoalState({ status: GoalStatus.TODO });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot submit goal for review in to-do status");
+    expect(result.errors[0]).toContain("Cannot submit goal for review in defined status");
   });
 
   it("should fail when status is paused", () => {
@@ -68,7 +68,7 @@ describe("CanSubmitForReviewRule", () => {
     const state = createGoalState({ status: GoalStatus.COMPLETED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot submit goal for review in completed status");
+    expect(result.errors[0]).toContain("Cannot submit goal for review in done status");
   });
 
   it("should fail when status is in-review", () => {
@@ -84,6 +84,6 @@ describe("CanSubmitForReviewRule", () => {
     const state = createGoalState({ status: GoalStatus.QUALIFIED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot submit goal for review in qualified status");
+    expect(result.errors[0]).toContain("Cannot submit goal for review in approved status");
   });
 });

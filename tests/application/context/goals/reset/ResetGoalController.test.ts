@@ -21,7 +21,7 @@ describe("ResetGoalController", () => {
     const expectedResponse = {
       goalId: "goal_123",
       objective: "Reset this goal",
-      status: "to-do",
+      status: "defined",
     };
 
     mockGateway.resetGoal.mockResolvedValue(expectedResponse);

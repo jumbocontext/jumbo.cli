@@ -47,7 +47,7 @@ export class GoalQualifyOutputBuilder {
       `Status: ${response.status}\n` +
       "---\n\n" +
       "## QA Review Passed\n" +
-      "The goal has been verified and qualified for codification.\n" +
+      "The goal has been verified and approved for codification.\n" +
       "---"
     );
 

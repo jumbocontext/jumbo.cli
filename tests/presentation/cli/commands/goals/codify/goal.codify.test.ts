@@ -87,7 +87,7 @@ describe("goal.codify command", () => {
 
   it("should handle errors", async () => {
     mockCodifyGoalController.handle.mockRejectedValue(
-      new Error("Cannot codify goal in to-do status. Goal must be in qualified status.")
+      new Error("Cannot codify goal in defined status. Goal must be in approved status.")
     );
 
     await expect(

@@ -384,7 +384,7 @@ describe("RefineGoalCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot refine goal in completed status"
+      "Cannot refine goal in done status"
     );
   });
 

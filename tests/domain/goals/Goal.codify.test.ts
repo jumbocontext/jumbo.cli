@@ -139,6 +139,6 @@ describe("Goal.codify", () => {
         claimedAt: "2025-01-01T07:00:00Z",
         claimExpiresAt: "2025-01-01T09:00:00Z",
       })
-    ).toThrow("Cannot codify goal in to-do status");
+    ).toThrow("Cannot codify goal in defined status");
   });
 });

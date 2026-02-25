@@ -347,7 +347,7 @@ describe("CloseGoalCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot close goal in to-do status. Goal must be in codifying status."
+      "Cannot close goal in defined status. Goal must be in codifying status."
     );
   });
 

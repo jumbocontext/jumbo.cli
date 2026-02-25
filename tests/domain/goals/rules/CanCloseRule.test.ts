@@ -32,7 +32,7 @@ describe("CanCloseRule", () => {
   it("should reject close from QUALIFIED status", () => {
     const result = rule.validate(makeState(GoalStatus.QUALIFIED));
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot close goal in qualified status");
+    expect(result.errors[0]).toContain("Cannot close goal in approved status");
   });
 
   it("should reject close from DOING status", () => {
@@ -44,7 +44,7 @@ describe("CanCloseRule", () => {
   it("should reject close from TODO status", () => {
     const result = rule.validate(makeState(GoalStatus.TODO));
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot close goal in to-do status");
+    expect(result.errors[0]).toContain("Cannot close goal in defined status");
   });
 
   it("should reject close from REFINED status", () => {

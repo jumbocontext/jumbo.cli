@@ -18,6 +18,8 @@ export * from "./reject/GoalRejectedEvent.js";
 export * from "./submit/GoalSubmittedEvent.js";
 export * from "./codify/GoalCodifyingStartedEvent.js";
 export * from "./close/GoalClosedEvent.js";
+export * from "./approve/GoalApprovedEvent.js";
+export * from "./migrate/GoalStatusMigratedEvent.js";
 
 import { GoalAddedEvent} from "./add/GoalAddedEvent.js";
 import { GoalRefinedEvent} from "./refine/GoalRefinedEvent.js";
@@ -39,6 +41,8 @@ import { GoalRejectedEvent} from "./reject/GoalRejectedEvent.js";
 import { GoalSubmittedEvent} from "./submit/GoalSubmittedEvent.js";
 import { GoalCodifyingStartedEvent} from "./codify/GoalCodifyingStartedEvent.js";
 import { GoalClosedEvent} from "./close/GoalClosedEvent.js";
+import { GoalApprovedEvent} from "./approve/GoalApprovedEvent.js";
+import { GoalStatusMigratedEvent} from "./migrate/GoalStatusMigratedEvent.js";
 
 // Union type will expand as we add more events
 export type GoalEvent =
@@ -61,4 +65,6 @@ export type GoalEvent =
     GoalRejectedEvent |
     GoalSubmittedEvent |
     GoalCodifyingStartedEvent |
-    GoalClosedEvent;
+    GoalClosedEvent |
+    GoalApprovedEvent |
+    GoalStatusMigratedEvent;

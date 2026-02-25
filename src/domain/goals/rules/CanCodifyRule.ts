@@ -4,7 +4,7 @@ import { GoalStatus, GoalErrorMessages, formatErrorMessage } from "../Constants.
 
 /**
  * Validates that a goal can be codified.
- * A goal can only be codified if it's in 'qualified' status.
+ * A goal can only be codified if it's in 'approved' status.
  * Cannot codify a goal that is already codifying or done.
  */
 export class CanCodifyRule implements ValidationRule<GoalState> {

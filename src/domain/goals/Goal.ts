@@ -1,7 +1,7 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
-import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent, GoalRefinementStartedEvent, GoalCommittedEvent, GoalRejectedEvent, GoalSubmittedEvent, GoalCodifyingStartedEvent, GoalClosedEvent } from "./EventIndex.js";
+import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent, GoalRefinementStartedEvent, GoalCommittedEvent, GoalRejectedEvent, GoalSubmittedEvent, GoalCodifyingStartedEvent, GoalClosedEvent, GoalApprovedEvent, GoalStatusMigratedEvent } from "./EventIndex.js";
 import { GoalEventType, GoalStatus, GoalStatusType } from "./Constants.js";
 import { GoalPausedReasonsType } from "./GoalPausedReasons.js";
 import { OBJECTIVE_RULES } from "./rules/ObjectiveRules.js";
@@ -229,6 +229,20 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
         break;
       }
 
+      case GoalEventType.APPROVED: {
+        const e = event as GoalApprovedEvent;
+        state.status = e.payload.status;  // 'approved'
+        state.version = e.version;
+        break;
+      }
+
+      case GoalEventType.STATUS_MIGRATED: {
+        const e = event as GoalStatusMigratedEvent;
+        state.status = e.payload.status;  // new status value after migration
+        state.version = e.version;
+        break;
+      }
+
       case GoalEventType.REMOVED: {
         const e = event as GoalRemovedEvent;
         // Goal is removed - projection handles this via row deletion
@@ -315,12 +329,12 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
 
   /**
    * Starts refinement of a goal after creation.
-   * Transitions status from "to-do" to "in-refinement".
+   * Transitions status from "defined" to "in-refinement".
    * Acquires a claim for the worker performing refinement.
    *
    * @param claimInfo - Claim information for the worker starting refinement
    * @returns GoalRefinementStartedEvent
-   * @throws Error if goal is not in 'to-do' status
+   * @throws Error if goal is not in 'defined' status
    */
   refine(claimInfo: {
     claimedBy: string;
@@ -530,11 +544,11 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
   }
 
   /**
-   * Resets a goal back to 'to-do' status.
-   * Can transition from 'doing' or 'completed' status back to 'to-do'.
+   * Resets a goal back to 'defined' status.
+   * Can transition from 'doing' or 'done' status back to 'defined'.
    * Blocked goals cannot be reset to preserve blocker context.
    * @returns GoalReset event
-   * @throws Error if goal is blocked or already in 'to-do' status
+   * @throws Error if goal is blocked or already in 'defined' status
    */
   reset(): GoalResetEvent {
     // State validation using rules
@@ -703,26 +717,33 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
   }
 
   /**
-   * Qualifies a goal after successful QA review.
-   * Transitions status from "in-review" to "qualified".
-   * Marks the point where a goal has been validated and can proceed to completion.
+   * Approves a goal after successful QA review.
+   * Transitions status from "in-review" to "approved".
+   * Marks the point where a goal has been validated and can proceed to codification.
    *
-   * @returns GoalQualified event
+   * @returns GoalApproved event
    * @throws Error if goal is not in 'in-review' status
    */
-  qualify(): GoalQualifiedEvent {
-    // 1. State validation: can only qualify from in-review status
+  approve(): GoalApprovedEvent {
+    // 1. State validation: can only approve from in-review status
     ValidationRuleSet.ensure(this.state, [new CanQualifyRule()]);
 
     // 2. Create and return event using BaseAggregate.makeEvent
     return this.makeEvent(
-      GoalEventType.QUALIFIED,
+      GoalEventType.APPROVED,
       {
         status: GoalStatus.QUALIFIED,
-        qualifiedAt: new Date().toISOString(),
+        approvedAt: new Date().toISOString(),
       },
       Goal.apply
-    ) as GoalQualifiedEvent;
+    ) as GoalApprovedEvent;
+  }
+
+  /**
+   * @deprecated Use approve() instead. Retained for backward compatibility.
+   */
+  qualify(): GoalApprovedEvent {
+    return this.approve();
   }
 
   /**
@@ -756,19 +777,19 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
 
   /**
    * Starts the codify phase for a goal after approval.
-   * Transitions status from "qualified" to "codifying".
+   * Transitions status from "approved" to "codifying".
    * Acquires a claim for the worker performing codification.
    *
    * @param claimInfo - Claim information for the worker starting codification
    * @returns GoalCodifyingStartedEvent
-   * @throws Error if goal is not in 'qualified' status
+   * @throws Error if goal is not in 'approved' status
    */
   codify(claimInfo: {
     claimedBy: string;
     claimedAt: string;
     claimExpiresAt: string;
   }): GoalCodifyingStartedEvent {
-    // State validation: can only codify from qualified status
+    // State validation: can only codify from approved status
     ValidationRuleSet.ensure(this.state, [new CanCodifyRule()]);
 
     // Create and return event using BaseAggregate.makeEvent

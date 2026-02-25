@@ -25,16 +25,16 @@ export class GoalListOutputBuilder {
         return "[DOING]  ";
       case "blocked":
         return "[BLOCKED]";
-      case "to-do":
-        return "[TO-DO]  ";
+      case "defined":
+        return "[DEFINED]";
       case "refined":
         return "[REFINED]";
       case "paused":
         return "[PAUSED] ";
       case "in-review":
         return "[IN-REVIEW]";
-      case "qualified":
-        return "[QUALIFIED]";
+      case "approved":
+        return "[APPROVED]";
       case "rejected":
         return "[REJECTED]";
       case "unblocked":
@@ -70,16 +70,16 @@ export class GoalListOutputBuilder {
   buildActiveGoalsList(activeGoals: GoalView[]): TerminalOutput {
     this.builder.reset();
 
-    // Sort: first qualified, then in-review, then paused, then doing, then blocked, then refined, then to-do, then by createdAt
+    // Sort: first approved, then in-review, then paused, then doing, then blocked, then refined, then defined, then by createdAt
     const statusOrder: Record<string, number> = {
-      "qualified": 0,
+      "approved": 0,
       "in-review": 1,
       "paused": 2,
       "doing": 3,
       "blocked": 4,
       "unblocked": 5,
       "refined": 6,
-      "to-do": 7
+      "defined": 7
     };
 
     const sortedGoals = [...activeGoals].sort((a: GoalView, b: GoalView) => {
@@ -117,14 +117,14 @@ export class GoalListOutputBuilder {
 
     // Sort using same logic as human-readable output
     const statusOrder: Record<string, number> = {
-      "qualified": 0,
+      "approved": 0,
       "in-review": 1,
       "paused": 2,
       "doing": 3,
       "blocked": 4,
       "unblocked": 5,
       "refined": 6,
-      "to-do": 7
+      "defined": 7
     };
 
     const sortedGoals = [...activeGoals].sort((a: GoalView, b: GoalView) => {

@@ -2,7 +2,7 @@
  * CLI Command: jumbo goal qualify
  *
  * Qualifies a goal after successful QA review.
- * Transitions goal from 'in-review' to 'qualified' status and renders completion instructions.
+ * Transitions goal from 'in-review' to 'approved' status and renders codification instructions.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";

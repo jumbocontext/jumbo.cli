@@ -26,7 +26,7 @@ describe("CanSubmitRule", () => {
   it("should reject submission from TODO status", () => {
     const result = rule.validate(makeState(GoalStatus.TODO));
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot submit goal in to-do status");
+    expect(result.errors[0]).toContain("Cannot submit goal in defined status");
   });
 
   it("should reject submission from REFINED status", () => {

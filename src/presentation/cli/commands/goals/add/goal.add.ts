@@ -1,7 +1,7 @@
 /**
  * CLI Command: jumbo goal add
  *
- * Defines a new goal aggregate with 'to-do' status.
+ * Defines a new goal aggregate with 'defined' status.
  *
  * Usage:
  *   jumbo goal add --title "..." --objective "..." --criteria "..." [--scope-in "..."] [--scope-out "..."]

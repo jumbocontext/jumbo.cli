@@ -2,7 +2,7 @@
  * CLI Command: jumbo goal approve
  *
  * Approves a goal after successful QA review.
- * Transitions goal from 'in-review' to 'qualified' status and renders completion instructions.
+ * Transitions goal from 'in-review' to 'approved' status and renders codification instructions.
  *
  * This is the primary command for review approval.
  * See also: goal.qualify (deprecated alias).

@@ -225,7 +225,7 @@ describe("RejectGoalCommandHandler", () => {
     (eventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
 
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot reject goal in to-do status. Goal must be in in-review status."
+      "Cannot reject goal in defined status. Goal must be in in-review status."
     );
   });
 

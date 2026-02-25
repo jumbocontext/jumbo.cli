@@ -22,6 +22,7 @@ import { IEventStore } from "../../application/persistence/IEventStore.js";
 import { IEventBus } from "../../application/messaging/IEventBus.js";
 import { IClock } from "../../application/time-and-date/IClock.js";
 import { RebuildDatabaseController } from "../../application/maintenance/db/rebuild/RebuildDatabaseController.js";
+import { UpgradeCommandHandler } from "../../application/maintenance/upgrade/UpgradeCommandHandler.js";
 import { LocalRebuildDatabaseGateway } from "../../application/maintenance/db/rebuild/LocalRebuildDatabaseGateway.js";
 import { RepairMaintenanceController } from "../../application/maintenance/repair/RepairMaintenanceController.js";
 import { LocalRepairMaintenanceGateway } from "../../application/maintenance/repair/LocalRepairMaintenanceGateway.js";
@@ -176,6 +177,8 @@ import { SqliteGoalRejectedProjector } from "../context/goals/reject/SqliteGoalR
 import { SqliteGoalSubmittedProjector } from "../context/goals/submit/SqliteGoalSubmittedProjector.js";
 import { SqliteGoalCodifyingStartedProjector } from "../context/goals/codify/SqliteGoalCodifyingStartedProjector.js";
 import { SqliteGoalClosedProjector } from "../context/goals/close/SqliteGoalClosedProjector.js";
+import { SqliteGoalApprovedProjector } from "../context/goals/approve/SqliteGoalApprovedProjector.js";
+import { SqliteGoalStatusMigratedProjector } from "../context/goals/migrate/SqliteGoalStatusMigratedProjector.js";
 import { SqliteGoalContextAssembler } from "../context/SqliteGoalContextAssembler.js";
 import { SqliteGoalStatusReader } from "../context/goals/SqliteGoalStatusReader.js";
 // Decision Projection Stores - decomposed by use case
@@ -276,6 +279,8 @@ import { GoalRejectedEventHandler } from "../../application/context/goals/reject
 import { GoalSubmittedEventHandler } from "../../application/context/goals/submit/GoalSubmittedEventHandler.js";
 import { GoalCodifyingStartedEventHandler } from "../../application/context/goals/codify/GoalCodifyingStartedEventHandler.js";
 import { GoalClosedEventHandler } from "../../application/context/goals/close/GoalClosedEventHandler.js";
+import { GoalApprovedEventHandler } from "../../application/context/goals/approve/GoalApprovedEventHandler.js";
+import { GoalStatusMigratedEventHandler } from "../../application/context/goals/migrate/GoalStatusMigratedEventHandler.js";
 // Decision Event Handlers - decomposed by use case
 import { DecisionAddedEventHandler } from "../../application/context/decisions/add/DecisionAddedEventHandler.js";
 import { DecisionUpdatedEventHandler } from "../../application/context/decisions/update/DecisionUpdatedEventHandler.js";
@@ -574,6 +579,10 @@ export class HostBuilder {
     );
     const rebuildDatabaseGateway = new LocalRebuildDatabaseGateway(databaseRebuildService);
     const rebuildDatabaseController = new RebuildDatabaseController(rebuildDatabaseGateway);
+
+    // Upgrade command handler (uses event store + goal status reader created later)
+    // Deferred: upgradeCommandHandler is created after projectors are available
+
     // ============================================================
     // STEP 2: Create Domain Event Stores
     // ============================================================
@@ -688,7 +697,12 @@ export class HostBuilder {
     const goalSubmittedProjector = new SqliteGoalSubmittedProjector(this.db);
     const goalCodifyingStartedProjector = new SqliteGoalCodifyingStartedProjector(this.db);
     const goalClosedProjector = new SqliteGoalClosedProjector(this.db);
+    const goalApprovedProjector = new SqliteGoalApprovedProjector(this.db);
+    const goalStatusMigratedProjector = new SqliteGoalStatusMigratedProjector(this.db);
     const goalStatusReader = new SqliteGoalStatusReader(this.db);
+
+    // Upgrade command handler
+    const upgradeCommandHandler = new UpgradeCommandHandler(eventStore, goalStatusReader);
 
     // Solution Category
     // Architecture Projection Stores - decomposed by use case
@@ -1571,6 +1585,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const goalSubmittedEventHandler = new GoalSubmittedEventHandler(goalSubmittedProjector);
     const goalCodifyingStartedEventHandler = new GoalCodifyingStartedEventHandler(goalCodifyingStartedProjector);
     const goalClosedEventHandler = new GoalClosedEventHandler(goalClosedProjector);
+    const goalApprovedEventHandler = new GoalApprovedEventHandler(goalApprovedProjector);
+    const goalStatusMigratedEventHandler = new GoalStatusMigratedEventHandler(goalStatusMigratedProjector);
 
     // Solution Category
     // Architecture Event Handlers - decomposed by use case
@@ -1691,6 +1707,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     eventBus.subscribe("GoalSubmittedEvent", goalSubmittedEventHandler);
     eventBus.subscribe("GoalCodifyingStartedEvent", goalCodifyingStartedEventHandler);
     eventBus.subscribe("GoalClosedEvent", goalClosedEventHandler);
+    eventBus.subscribe("GoalApprovedEvent", goalApprovedEventHandler);
+    eventBus.subscribe("GoalStatusMigratedEvent", goalStatusMigratedEventHandler);
 
     // Solution Category - Architecture events - decomposed by use case
     eventBus.subscribe("ArchitectureDefinedEvent", architectureDefinedEventHandler);
@@ -1770,6 +1788,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       // Maintenance Controllers
       rebuildDatabaseController,
       repairMaintenanceController,
+      upgradeCommandHandler,
 
       // CLI Version
       cliVersionReader,

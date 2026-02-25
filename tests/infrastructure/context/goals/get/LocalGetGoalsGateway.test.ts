@@ -36,7 +36,7 @@ describe("LocalGetGoalsGateway", () => {
   it("should return all non-completed goals by default when no statuses specified", async () => {
     const allGoals = [
       makeGoal({ goalId: "g1", status: "doing" }),
-      makeGoal({ goalId: "g2", status: "completed" }),
+      makeGoal({ goalId: "g2", status: "done" }),
       makeGoal({ goalId: "g3", status: "blocked" }),
     ];
     mockReader.findAll.mockResolvedValue(allGoals);
@@ -71,7 +71,7 @@ describe("LocalGetGoalsGateway", () => {
 
   it("should return empty array when no goals match", async () => {
     mockReader.findAll.mockResolvedValue([
-      makeGoal({ status: "completed" }),
+      makeGoal({ status: "done" }),
     ]);
 
     const response = await gateway.getGoals({ statuses: ["doing"] });

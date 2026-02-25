@@ -236,7 +236,7 @@ describe("CommitGoalCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot commit goal in to-do status. Goal must be in in-refinement status."
+      "Cannot commit goal in defined status. Goal must be in in-refinement status."
     );
   });
 

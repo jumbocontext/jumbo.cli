@@ -45,7 +45,7 @@ describe("GoalAddOutputBuilder", () => {
       const output = outputBuilder.buildSuccess("goal_abc123", "JWT Auth", "Implement JWT authentication");
       const text = output.toHumanReadable();
 
-      expect(text).toContain("to-do");
+      expect(text).toContain("defined");
     });
 
     it("should include structured data section with goal details", () => {
@@ -58,7 +58,7 @@ describe("GoalAddOutputBuilder", () => {
       expect(data.goalId).toBe("goal_abc123");
       expect(data.title).toBe("JWT Auth");
       expect(data.objective).toBe("Implement JWT authentication");
-      expect(data.status).toBe("to-do");
+      expect(data.status).toBe("defined");
     });
   });
 

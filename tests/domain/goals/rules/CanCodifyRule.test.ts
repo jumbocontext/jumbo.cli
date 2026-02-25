@@ -38,7 +38,7 @@ describe("CanCodifyRule", () => {
   it("should reject codification from TODO status", () => {
     const result = rule.validate(makeState(GoalStatus.TODO));
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot codify goal in to-do status");
+    expect(result.errors[0]).toContain("Cannot codify goal in defined status");
   });
 
   it("should reject codification from DOING status", () => {

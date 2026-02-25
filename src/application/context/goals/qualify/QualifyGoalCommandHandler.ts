@@ -11,7 +11,7 @@ import { GoalContextQueryHandler } from "../get/GoalContextQueryHandler.js";
 import { ContextualGoalView } from "../get/ContextualGoalView.js";
 
 /**
- * Handles qualification of a goal after successful QA review.
+ * Handles approval of a goal after successful QA review.
  * Loads aggregate from event history, calls domain logic, persists event.
  * Returns ContextualGoalView for presentation layer.
  */
@@ -35,7 +35,7 @@ export class QualifyGoalCommandHandler {
       );
     }
 
-    // 2. Validate claim ownership - only the claimant can qualify a goal
+    // 2. Validate claim ownership - only the claimant can approve a goal
     const workerId = this.workerIdentityReader.workerId;
     const claimValidation = this.claimPolicy.canClaim(command.goalId, workerId);
     if (!claimValidation.allowed) {
@@ -51,7 +51,7 @@ export class QualifyGoalCommandHandler {
     const goal = Goal.rehydrate(command.goalId, history as any);
 
     // 4. Domain logic produces event (validates state)
-    const event = goal.qualify();
+    const event = goal.approve();
 
     // 5. Persist event to file store
     await this.eventWriter.append(event);

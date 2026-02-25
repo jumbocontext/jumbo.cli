@@ -239,7 +239,7 @@ describe("Goal Aggregate", () => {
         claimedAt: "2025-01-01T00:00:00Z",
         claimExpiresAt: "2025-01-01T01:00:00Z",
       })).toThrow(
-        "Cannot refine goal in doing status. Goal must be in to-do status."
+        "Cannot refine goal in doing status. Goal must be in defined status."
       );
     });
   });
@@ -407,7 +407,7 @@ describe("Goal Aggregate", () => {
       const goal = Goal.rehydrate("goal_123", history as any);
 
       // Act & Assert
-      expect(() => goal.start()).toThrow("Cannot start a completed goal.");
+      expect(() => goal.start()).toThrow("Cannot start a done goal.");
     });
   });
 
@@ -722,7 +722,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.unblock()).toThrow(
-        "Cannot unblock goal in to-do status. Goal must be blocked."
+        "Cannot unblock goal in defined status. Goal must be blocked."
       );
     });
 
@@ -854,7 +854,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.complete()).toThrow(
-        "Cannot complete goal. Goal must be qualified first."
+        "Cannot complete goal. Goal must be approved first."
       );
     });
 
@@ -873,7 +873,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.complete()).toThrow(
-        "Cannot complete goal. Goal must be qualified first."
+        "Cannot complete goal. Goal must be approved first."
       );
     });
 
@@ -884,7 +884,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.complete()).toThrow(
-        "Cannot complete goal. Goal must be qualified first."
+        "Cannot complete goal. Goal must be approved first."
       );
     });
 
@@ -959,7 +959,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.complete()).toThrow(
-        "Goal is already completed"
+        "Goal is already done"
       );
     });
 
@@ -1168,7 +1168,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.pause("ContextCompressed")).toThrow(
-        "Cannot pause goal in to-do status. Goal must be in doing status."
+        "Cannot pause goal in defined status. Goal must be in doing status."
       );
     });
 
@@ -1389,7 +1389,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.submitForReview()).toThrow(
-        "Cannot submit goal for review in to-do status. Goal must be in submitted status."
+        "Cannot submit goal for review in defined status. Goal must be in submitted status."
       );
     });
 
@@ -1512,7 +1512,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.submitForReview()).toThrow(
-        "Cannot submit goal for review in qualified status. Goal must be in submitted status."
+        "Cannot submit goal for review in approved status. Goal must be in submitted status."
       );
     });
 
@@ -1587,7 +1587,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.submitForReview()).toThrow(
-        "Cannot submit goal for review in completed status. Goal must be in submitted status."
+        "Cannot submit goal for review in done status. Goal must be in submitted status."
       );
     });
   });
@@ -1611,11 +1611,11 @@ describe("Goal Aggregate", () => {
       const event = goal.qualify();
 
       // Assert
-      expect(event.type).toBe(GoalEventType.QUALIFIED);
+      expect(event.type).toBe(GoalEventType.APPROVED);
       expect(event.aggregateId).toBe("goal_123");
       expect(event.version).toBe(7);
       expect(event.payload.status).toBe(GoalStatus.QUALIFIED);
-      expect(event.payload.qualifiedAt).toBeDefined();
+      expect(event.payload.approvedAt).toBeDefined();
       expect(event.timestamp).toBeDefined();
     });
 
@@ -1649,7 +1649,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.qualify()).toThrow(
-        "Cannot qualify goal in to-do status. Goal must be in-review."
+        "Cannot approve goal in defined status. Goal must be in-review."
       );
     });
 
@@ -1667,7 +1667,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.qualify()).toThrow(
-        "Cannot qualify goal in doing status. Goal must be in-review."
+        "Cannot approve goal in doing status. Goal must be in-review."
       );
     });
 
@@ -1686,7 +1686,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.qualify()).toThrow(
-        "Cannot qualify goal in blocked status. Goal must be in-review."
+        "Cannot approve goal in blocked status. Goal must be in-review."
       );
     });
 
@@ -1705,7 +1705,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.qualify()).toThrow(
-        "Cannot qualify goal in paused status. Goal must be in-review."
+        "Cannot approve goal in paused status. Goal must be in-review."
       );
     });
 
@@ -1726,7 +1726,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.qualify()).toThrow(
-        "Cannot qualify goal in qualified status. Goal must be in-review."
+        "Cannot approve goal in approved status. Goal must be in-review."
       );
     });
 
@@ -1801,7 +1801,7 @@ describe("Goal Aggregate", () => {
 
       // Act & Assert
       expect(() => goal.qualify()).toThrow(
-        "Cannot qualify goal in completed status. Goal must be in-review."
+        "Cannot approve goal in done status. Goal must be in-review."
       );
     });
   });

@@ -89,6 +89,13 @@ import { SqliteValuePropositionUpdatedProjector } from "../context/value-proposi
 import { SqliteValuePropositionRemovedProjector } from "../context/value-propositions/remove/SqliteValuePropositionRemovedProjector.js";
 import { SqliteRelationAddedProjector } from "../context/relations/add/SqliteRelationAddedProjector.js";
 import { SqliteRelationRemovedProjector } from "../context/relations/remove/SqliteRelationRemovedProjector.js";
+import { SqliteGoalRejectedProjector } from "../context/goals/reject/SqliteGoalRejectedProjector.js";
+import { SqliteGoalSubmittedProjector } from "../context/goals/submit/SqliteGoalSubmittedProjector.js";
+import { SqliteGoalCodifyingStartedProjector } from "../context/goals/codify/SqliteGoalCodifyingStartedProjector.js";
+import { SqliteGoalClosedProjector } from "../context/goals/close/SqliteGoalClosedProjector.js";
+import { SqliteGoalApprovedProjector } from "../context/goals/approve/SqliteGoalApprovedProjector.js";
+import { SqliteGoalStatusMigratedProjector } from "../context/goals/migrate/SqliteGoalStatusMigratedProjector.js";
+import { SqliteComponentRenamedProjector } from "../context/components/rename/SqliteComponentRenamedProjector.js";
 
 // Handlers
 import { SessionStartedEventHandler } from "../../application/context/sessions/start/SessionStartedEventHandler.js";
@@ -140,6 +147,13 @@ import { ValuePropositionUpdatedEventHandler } from "../../application/context/v
 import { ValuePropositionRemovedEventHandler } from "../../application/context/value-propositions/remove/ValuePropositionRemovedEventHandler.js";
 import { RelationAddedEventHandler } from "../../application/context/relations/add/RelationAddedEventHandler.js";
 import { RelationRemovedEventHandler } from "../../application/context/relations/remove/RelationRemovedEventHandler.js";
+import { GoalRejectedEventHandler } from "../../application/context/goals/reject/GoalRejectedEventHandler.js";
+import { GoalSubmittedEventHandler } from "../../application/context/goals/submit/GoalSubmittedEventHandler.js";
+import { GoalCodifyingStartedEventHandler } from "../../application/context/goals/codify/GoalCodifyingStartedEventHandler.js";
+import { GoalClosedEventHandler } from "../../application/context/goals/close/GoalClosedEventHandler.js";
+import { GoalApprovedEventHandler } from "../../application/context/goals/approve/GoalApprovedEventHandler.js";
+import { GoalStatusMigratedEventHandler } from "../../application/context/goals/migrate/GoalStatusMigratedEventHandler.js";
+import { ComponentRenamedEventHandler } from "../../application/context/components/rename/ComponentRenamedEventHandler.js";
 
 export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebuildService {
   constructor(
@@ -233,6 +247,13 @@ const audienceAddedProjector = new SqliteAudienceAddedProjector(newDb);
     const valuePropositionRemovedProjector = new SqliteValuePropositionRemovedProjector(newDb);
     const relationAddedProjector = new SqliteRelationAddedProjector(newDb);
     const relationRemovedProjector = new SqliteRelationRemovedProjector(newDb);
+    const goalRejectedProjector = new SqliteGoalRejectedProjector(newDb);
+    const goalSubmittedProjector = new SqliteGoalSubmittedProjector(newDb);
+    const goalCodifyingStartedProjector = new SqliteGoalCodifyingStartedProjector(newDb);
+    const goalClosedProjector = new SqliteGoalClosedProjector(newDb);
+    const goalApprovedProjector = new SqliteGoalApprovedProjector(newDb);
+    const goalStatusMigratedProjector = new SqliteGoalStatusMigratedProjector(newDb);
+    const componentRenamedProjector = new SqliteComponentRenamedProjector(newDb);
 
     // Step 6: Create all handlers
     const sessionStartedEventHandler = new SessionStartedEventHandler(sessionStartedProjector);
@@ -284,6 +305,13 @@ const audienceAddedEventHandler = new AudienceAddedEventHandler(audienceAddedPro
     const valuePropositionRemovedEventHandler = new ValuePropositionRemovedEventHandler(valuePropositionRemovedProjector);
     const relationAddedEventHandler = new RelationAddedEventHandler(relationAddedProjector);
     const relationRemovedEventHandler = new RelationRemovedEventHandler(relationRemovedProjector);
+    const goalRejectedEventHandler = new GoalRejectedEventHandler(goalRejectedProjector);
+    const goalSubmittedEventHandler = new GoalSubmittedEventHandler(goalSubmittedProjector);
+    const goalCodifyingStartedEventHandler = new GoalCodifyingStartedEventHandler(goalCodifyingStartedProjector);
+    const goalClosedEventHandler = new GoalClosedEventHandler(goalClosedProjector);
+    const goalApprovedEventHandler = new GoalApprovedEventHandler(goalApprovedProjector);
+    const goalStatusMigratedEventHandler = new GoalStatusMigratedEventHandler(goalStatusMigratedProjector);
+    const componentRenamedEventHandler = new ComponentRenamedEventHandler(componentRenamedProjector);
 
     // Step 7: Register all handlers to sequential bus
     sequentialEventBus.subscribe("SessionStartedEvent", sessionStartedEventHandler);
@@ -335,6 +363,13 @@ sequentialEventBus.subscribe("AudienceAddedEvent", audienceAddedEventHandler);
     sequentialEventBus.subscribe("ValuePropositionRemovedEvent", valuePropositionRemovedEventHandler);
     sequentialEventBus.subscribe("RelationAddedEvent", relationAddedEventHandler);
     sequentialEventBus.subscribe("RelationRemovedEvent", relationRemovedEventHandler);
+    sequentialEventBus.subscribe("GoalRejectedEvent", goalRejectedEventHandler);
+    sequentialEventBus.subscribe("GoalSubmittedEvent", goalSubmittedEventHandler);
+    sequentialEventBus.subscribe("GoalCodifyingStartedEvent", goalCodifyingStartedEventHandler);
+    sequentialEventBus.subscribe("GoalClosedEvent", goalClosedEventHandler);
+    sequentialEventBus.subscribe("GoalApprovedEvent", goalApprovedEventHandler);
+    sequentialEventBus.subscribe("GoalStatusMigratedEvent", goalStatusMigratedEventHandler);
+    sequentialEventBus.subscribe("ComponentRenamedEvent", componentRenamedEventHandler);
 
     // Step 8: Get all events from event store (file-based, still intact)
     const events = await this.eventStore.getAllEvents();

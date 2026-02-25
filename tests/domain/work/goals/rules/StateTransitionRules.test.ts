@@ -90,7 +90,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.COMPLETED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain("Cannot refine goal in completed status");
+      expect(result.errors[0]).toContain("Cannot refine goal in done status");
     });
   });
 
@@ -140,7 +140,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.COMPLETED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Cannot start a completed goal.");
+      expect(result.errors).toContain("Cannot start a done goal.");
     });
 
     it("should pass when status is rejected (rework)", () => {
@@ -190,7 +190,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.COMPLETED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Cannot update a completed goal");
+      expect(result.errors).toContain("Cannot update a done goal");
     });
   });
 
@@ -208,7 +208,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.DOING });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Cannot complete goal. Goal must be qualified first.");
+      expect(result.errors).toContain("Cannot complete goal. Goal must be approved first.");
     });
 
     it("should fail when status is blocked", () => {
@@ -216,7 +216,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.BLOCKED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Cannot complete goal. Goal must be qualified first.");
+      expect(result.errors).toContain("Cannot complete goal. Goal must be approved first.");
     });
 
     it("should fail when status is to-do", () => {
@@ -224,7 +224,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.TODO });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Cannot complete goal. Goal must be qualified first.");
+      expect(result.errors).toContain("Cannot complete goal. Goal must be approved first.");
     });
 
     it("should fail when status is in-review", () => {
@@ -232,7 +232,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.INREVIEW });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Cannot complete goal. Goal must be qualified first.");
+      expect(result.errors).toContain("Cannot complete goal. Goal must be approved first.");
     });
 
     it("should fail when status is paused", () => {
@@ -240,7 +240,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.PAUSED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Cannot complete goal. Goal must be qualified first.");
+      expect(result.errors).toContain("Cannot complete goal. Goal must be approved first.");
     });
 
     it("should fail when status is already completed", () => {
@@ -248,7 +248,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.COMPLETED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Goal is already completed");
+      expect(result.errors).toContain("Goal is already done");
     });
   });
 
@@ -282,7 +282,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.TODO });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Goal is already in to-do status");
+      expect(result.errors).toContain("Goal is already in defined status");
     });
 
     it("should pass when status is unblocked", () => {
@@ -332,7 +332,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.COMPLETED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain("Cannot block goal in completed status");
+      expect(result.errors[0]).toContain("Cannot block goal in done status");
     });
 
     it("should fail when status is unblocked", () => {
@@ -358,7 +358,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.TODO });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain("Cannot unblock goal in to-do status");
+      expect(result.errors[0]).toContain("Cannot unblock goal in defined status");
     });
 
     it("should fail when status is doing", () => {
@@ -374,7 +374,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.COMPLETED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain("Cannot unblock goal in completed status");
+      expect(result.errors[0]).toContain("Cannot unblock goal in done status");
     });
 
     it("should fail when status is unblocked", () => {
@@ -400,7 +400,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.TODO });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain("Cannot pause goal in to-do status");
+      expect(result.errors[0]).toContain("Cannot pause goal in defined status");
     });
 
     it("should fail when status is blocked", () => {
@@ -424,7 +424,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.COMPLETED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain("Cannot pause goal in completed status");
+      expect(result.errors[0]).toContain("Cannot pause goal in done status");
     });
   });
 
@@ -442,7 +442,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.TODO });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain("Cannot resume goal in to-do status");
+      expect(result.errors[0]).toContain("Cannot resume goal in defined status");
     });
 
     it("should fail when status is doing", () => {
@@ -466,7 +466,7 @@ describe("StateTransitionRules", () => {
       const state = createGoalState({ status: GoalStatus.COMPLETED });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors[0]).toContain("Cannot resume goal in completed status");
+      expect(result.errors[0]).toContain("Cannot resume goal in done status");
     });
   });
 });

@@ -172,16 +172,16 @@ describe("QualifyGoalCommandHandler", () => {
     // Verify event was appended to event store
     expect(eventWriter.append).toHaveBeenCalledTimes(1);
     const appendedEvent = (eventWriter.append as jest.Mock).mock.calls[0][0];
-    expect(appendedEvent.type).toBe(GoalEventType.QUALIFIED);
+    expect(appendedEvent.type).toBe(GoalEventType.APPROVED);
     expect(appendedEvent.aggregateId).toBe("goal_123");
     expect(appendedEvent.version).toBe(4);
     expect(appendedEvent.payload.status).toBe(GoalStatus.QUALIFIED);
-    expect(appendedEvent.payload.qualifiedAt).toBeDefined();
+    expect(appendedEvent.payload.approvedAt).toBeDefined();
 
     // Verify event was published to event bus
     expect(eventBus.publish).toHaveBeenCalledTimes(1);
     const publishedEvent = (eventBus.publish as jest.Mock).mock.calls[0][0];
-    expect(publishedEvent.type).toBe(GoalEventType.QUALIFIED);
+    expect(publishedEvent.type).toBe(GoalEventType.APPROVED);
     expect(publishedEvent.aggregateId).toBe("goal_123");
   });
 
@@ -237,7 +237,7 @@ describe("QualifyGoalCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot qualify goal in doing status. Goal must be in-review."
+      "Cannot approve goal in doing status. Goal must be in-review."
     );
   });
 
@@ -299,7 +299,7 @@ describe("QualifyGoalCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot qualify goal in to-do status. Goal must be in-review."
+      "Cannot approve goal in defined status. Goal must be in-review."
     );
   });
 
@@ -375,7 +375,7 @@ describe("QualifyGoalCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot qualify goal in qualified status. Goal must be in-review."
+      "Cannot approve goal in approved status. Goal must be in-review."
     );
   });
 
@@ -733,7 +733,7 @@ describe("QualifyGoalCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot qualify goal in blocked status. Goal must be in-review."
+      "Cannot approve goal in blocked status. Goal must be in-review."
     );
   });
 
@@ -818,7 +818,7 @@ describe("QualifyGoalCommandHandler", () => {
 
     // Act & Assert
     await expect(handler.execute(command)).rejects.toThrow(
-      "Cannot qualify goal in completed status. Goal must be in-review."
+      "Cannot approve goal in done status. Goal must be in-review."
     );
   });
 });

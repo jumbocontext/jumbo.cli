@@ -32,7 +32,7 @@ describe("Goal", () => {
         successCriteria: [],
         scopeIn: [],
         scopeOut: [],
-        status: 'to-do' as const,
+        status: 'defined' as const,
         version: 0,
         progress: [],
       };

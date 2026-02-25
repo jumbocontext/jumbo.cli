@@ -16,7 +16,7 @@ export class LocalQualifyGoalGateway implements IQualifyGoalGateway {
   ) {}
 
   async qualifyGoal(request: QualifyGoalRequest): Promise<QualifyGoalResponse> {
-    // 1. Validate claim ownership - only the claimant can qualify a goal
+    // 1. Validate claim ownership - only the claimant can approve a goal
     const workerId = this.workerIdentityReader.workerId;
     const claimValidation = this.claimPolicy.canClaim(request.goalId, workerId);
     if (!claimValidation.allowed) {

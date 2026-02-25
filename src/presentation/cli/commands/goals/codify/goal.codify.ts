@@ -1,8 +1,8 @@
 /**
  * CLI Command: jumbo goal codify
  *
- * Starts the codify phase on a qualified goal.
- * Transitions goal from 'qualified' to 'codifying' status and acquires a claim.
+ * Starts the codify phase on an approved goal.
+ * Transitions goal from 'approved' to 'codifying' status and acquires a claim.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
@@ -14,7 +14,7 @@ import { GoalCodifyOutputBuilder } from "./GoalCodifyOutputBuilder.js";
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "Start the codify phase on a qualified goal (architectural reconciliation)",
+  description: "Start the codify phase on an approved goal (architectural reconciliation)",
   category: "work",
   requiredOptions: [
     {
@@ -26,7 +26,7 @@ export const metadata: CommandMetadata = {
   examples: [
     {
       command: "jumbo goal codify --id goal_abc123",
-      description: "Start codifying a qualified goal"
+      description: "Start codifying an approved goal"
     }
   ],
   related: ["goal approve", "goal close"]

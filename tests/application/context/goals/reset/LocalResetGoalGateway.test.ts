@@ -58,7 +58,7 @@ describe("LocalResetGoalGateway", () => {
 
     expect(response.goalId).toBe("goal_789");
     expect(response.objective).toBe("goal_789");
-    expect(response.status).toBe("to-do");
+    expect(response.status).toBe("defined");
   });
 
   it("propagates errors from command handler", async () => {

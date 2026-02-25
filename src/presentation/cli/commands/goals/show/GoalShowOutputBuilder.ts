@@ -26,8 +26,8 @@ export class GoalShowOutputBuilder {
         return "doing (in progress)";
       case "blocked":
         return "blocked";
-      case "to-do":
-        return "to-do (planned)";
+      case "defined":
+        return "defined (planned)";
       case "done":
         return "done (completed)";
       case "refined":
@@ -36,8 +36,8 @@ export class GoalShowOutputBuilder {
         return "paused (temporarily stopped)";
       case "in-review":
         return "in-review (awaiting QA)";
-      case "qualified":
-        return "qualified (ready for completion)";
+      case "approved":
+        return "approved (ready for codification)";
       case "rejected":
         return "rejected (needs rework)";
       case "unblocked":

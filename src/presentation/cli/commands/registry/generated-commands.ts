@@ -67,6 +67,7 @@ import { invariantRemove, metadata as invariantRemoveMeta } from '../../commands
 import { invariantUpdate, metadata as invariantUpdateMeta } from '../../commands/invariants/update/invariant.update.js';
 import { dbRebuild, metadata as dbRebuildMeta } from '../../commands/maintenance/db/rebuild/db.rebuild.js';
 import { maintenanceRepair, metadata as maintenanceRepairMeta } from '../../commands/maintenance/repair/maintenance.repair.js';
+import { dbUpgrade, metadata as dbUpgradeMeta } from '../../commands/maintenance/upgrade/db.upgrade.js';
 import { projectInit, metadata as projectInitMeta } from '../../commands/project/init/project.init.js';
 import { projectUpdate, metadata as projectUpdateMeta } from '../../commands/project/update/project.update.js';
 import { relationAdd, metadata as relationAddMeta } from '../../commands/relations/add/relation.add.js';
@@ -373,6 +374,11 @@ export const commands: RegisteredCommand[] = [
     path: 'maintenance repair',
     metadata: maintenanceRepairMeta,
     handler: maintenanceRepair
+  },
+  {
+    path: 'db upgrade',
+    metadata: dbUpgradeMeta,
+    handler: dbUpgrade
   },
   {
     path: 'project init',

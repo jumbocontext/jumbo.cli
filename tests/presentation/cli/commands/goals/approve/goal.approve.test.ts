@@ -22,7 +22,7 @@ describe("goal.approve command", () => {
     mockQualifyGoalController = {
       handle: jest.fn<() => Promise<any>>().mockResolvedValue({
         goalId: "goal_123",
-        status: "qualified",
+        status: "approved",
         objective: "Implement authentication",
       }),
     };
@@ -71,7 +71,7 @@ describe("goal.approve command", () => {
 
   it("should handle errors", async () => {
     mockQualifyGoalController.handle.mockRejectedValue(
-      new Error("Cannot approve goal in to-do status. Goal must be in in-review status.")
+      new Error("Cannot approve goal in defined status. Goal must be in in-review status.")
     );
 
     await expect(

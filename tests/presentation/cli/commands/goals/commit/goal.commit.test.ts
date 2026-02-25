@@ -70,7 +70,7 @@ describe("goal.commit command", () => {
 
   it("should handle errors", async () => {
     mockCommitGoalController.handle.mockRejectedValue(
-      new Error("Cannot commit goal in to-do status. Goal must be in in-refinement status.")
+      new Error("Cannot commit goal in defined status. Goal must be in in-refinement status.")
     );
 
     await expect(

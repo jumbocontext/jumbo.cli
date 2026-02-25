@@ -68,7 +68,7 @@ describe("goal.close command", () => {
 
   it("should handle errors", async () => {
     mockCloseGoalController.handle.mockRejectedValue(
-      new Error("Cannot close goal in to-do status. Goal must be in codifying status.")
+      new Error("Cannot close goal in defined status. Goal must be in codifying status.")
     );
 
     await expect(

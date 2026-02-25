@@ -131,12 +131,12 @@ describe("LocalCloseGoalGateway", () => {
 
   it("propagates errors from command handler", async () => {
     mockCommandHandler.execute.mockRejectedValue(
-      new Error("Cannot close goal in to-do status. Goal must be in codifying status.")
+      new Error("Cannot close goal in defined status. Goal must be in codifying status.")
     );
 
     await expect(
       gateway.closeGoal({ goalId: "goal_123" })
-    ).rejects.toThrow("Cannot close goal in to-do status. Goal must be in codifying status.");
+    ).rejects.toThrow("Cannot close goal in defined status. Goal must be in codifying status.");
 
     expect(mockGoalReader.findById).not.toHaveBeenCalled();
   });

@@ -11,7 +11,7 @@ describe("GoalApproveOutputBuilder", () => {
   it("should build success output with goal details and next step", () => {
     const response: QualifyGoalResponse = {
       goalId: "goal_123",
-      status: "qualified",
+      status: "approved",
       objective: "Implement authentication",
     };
 
@@ -21,14 +21,14 @@ describe("GoalApproveOutputBuilder", () => {
     expect(text).toContain("Goal Approved");
     expect(text).toContain("goal_123");
     expect(text).toContain("Implement authentication");
-    expect(text).toContain("qualified");
+    expect(text).toContain("approved");
     expect(text).toContain("jumbo goal codify --id goal_123");
   });
 
   it("should include next goal ID when present", () => {
     const response: QualifyGoalResponse = {
       goalId: "goal_123",
-      status: "qualified",
+      status: "approved",
       objective: "Implement authentication",
       nextGoalId: "goal_456",
     };

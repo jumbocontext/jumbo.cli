@@ -1,7 +1,7 @@
 /**
  * CLI Command: jumbo goal refine
  *
- * Starts refinement of a goal (transitions status from 'to-do' to 'in-refinement').
+ * Starts refinement of a goal (transitions status from 'defined' to 'in-refinement').
  * Goals must be refined and committed before they can be started.
  *
  * In interactive mode, prompts to register relations with components,
@@ -65,7 +65,7 @@ export async function goalRefine(
   const outputBuilder = new GoalRefineOutputBuilder();
 
   try {
-    // 1. Verify goal exists and is in to-do status
+    // 1. Verify goal exists and is in defined status
     const goalView = await container.goalContextReader.findById(options.id);
     if (!goalView) {
       const output = outputBuilder.buildGoalNotFoundError(options.id);

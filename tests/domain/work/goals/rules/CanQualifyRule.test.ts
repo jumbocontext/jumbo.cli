@@ -36,7 +36,7 @@ describe("CanQualifyRule", () => {
     const state = createGoalState({ status: GoalStatus.TODO });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot qualify goal in to-do status");
+    expect(result.errors[0]).toContain("Cannot approve goal in defined status");
   });
 
   it("should fail when status is doing", () => {
@@ -44,7 +44,7 @@ describe("CanQualifyRule", () => {
     const state = createGoalState({ status: GoalStatus.DOING });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot qualify goal in doing status");
+    expect(result.errors[0]).toContain("Cannot approve goal in doing status");
   });
 
   it("should fail when status is blocked", () => {
@@ -52,7 +52,7 @@ describe("CanQualifyRule", () => {
     const state = createGoalState({ status: GoalStatus.BLOCKED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot qualify goal in blocked status");
+    expect(result.errors[0]).toContain("Cannot approve goal in blocked status");
   });
 
   it("should fail when status is paused", () => {
@@ -60,7 +60,7 @@ describe("CanQualifyRule", () => {
     const state = createGoalState({ status: GoalStatus.PAUSED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot qualify goal in paused status");
+    expect(result.errors[0]).toContain("Cannot approve goal in paused status");
   });
 
   it("should fail when status is completed", () => {
@@ -68,7 +68,7 @@ describe("CanQualifyRule", () => {
     const state = createGoalState({ status: GoalStatus.COMPLETED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot qualify goal in completed status");
+    expect(result.errors[0]).toContain("Cannot approve goal in done status");
   });
 
   it("should fail when status is qualified", () => {
@@ -76,6 +76,6 @@ describe("CanQualifyRule", () => {
     const state = createGoalState({ status: GoalStatus.QUALIFIED });
     const result = rule.validate(state);
     expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot qualify goal in qualified status");
+    expect(result.errors[0]).toContain("Cannot approve goal in approved status");
   });
 });

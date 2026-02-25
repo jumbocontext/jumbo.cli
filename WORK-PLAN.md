@@ -547,10 +547,10 @@ Manual steps to run at phase boundaries and after specific goals. Each goal's im
 ### After Goal 6 (end of Phase 2)
 
 ```
-[ ] Verify: goal complete command is removed (should error)
-[ ] Verify: full new lifecycle works end-to-end:
+[X] Verify: goal complete command is removed (should error)
+[X] Verify: full new lifecycle works end-to-end:
     add → refine → commit → start → submit → review → approve → codify → close
-[ ] Verify: DONE goals excluded from goal list default output
+[X] Verify: DONE goals excluded from goal list default output
 ```
 
 ### After Goal 7 (migration)
