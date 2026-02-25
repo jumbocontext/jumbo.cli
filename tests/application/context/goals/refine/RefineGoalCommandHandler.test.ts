@@ -20,6 +20,7 @@ describe("RefineGoalCommandHandler", () => {
   let claimPolicy: {
     canClaim: jest.Mock;
     prepareClaim: jest.Mock;
+    prepareEntryClaim: jest.Mock;
     storeClaim: jest.Mock;
     releaseClaim: jest.Mock;
   };
@@ -58,6 +59,15 @@ describe("RefineGoalCommandHandler", () => {
         claimedBy: "worker_test",
         claimedAt: "2025-01-01T00:00:00Z",
         claimExpiresAt: "2025-01-01T01:00:00Z",
+      }),
+      prepareEntryClaim: jest.fn().mockReturnValue({
+        allowed: true,
+        claim: {
+          goalId: "goal_123",
+          claimedBy: "worker_test",
+          claimedAt: "2025-01-01T00:00:00Z",
+          claimExpiresAt: "2025-01-01T01:00:00Z",
+        },
       }),
       storeClaim: jest.fn(),
       releaseClaim: jest.fn(),
@@ -386,6 +396,121 @@ describe("RefineGoalCommandHandler", () => {
     await expect(handler.execute(command)).rejects.toThrow(
       "Cannot refine goal in done status"
     );
+  });
+
+  it("should allow idempotent re-entry when goal is IN_REFINEMENT with expired claim", async () => {
+    // Arrange
+    const command: RefineGoalCommand = {
+      goalId: "goal_123",
+    };
+
+    // Mock projection exists (in-refinement status)
+    const mockView: GoalView = {
+      goalId: "goal_123",
+      objective: "Implement authentication",
+      successCriteria: ["Users can log in"],
+      scopeIn: [],
+      scopeOut: [],
+      status: GoalStatus.IN_REFINEMENT,
+      version: 2,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T00:00:00Z",
+      progress: [],
+    };
+    (goalReader.findById as jest.Mock).mockResolvedValue(mockView);
+
+    // Mock prepareEntryClaim returns allowed (expired claim re-entry)
+    claimPolicy.prepareEntryClaim.mockReturnValue({
+      allowed: true,
+      claim: {
+        goalId: "goal_123",
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T02:00:00Z",
+        claimExpiresAt: "2025-01-01T03:00:00Z",
+      },
+    });
+
+    // Mock event history (GoalAddedEvent, GoalRefinementStartedEvent)
+    const mockHistory = [
+      {
+        type: GoalEventType.ADDED,
+        aggregateId: "goal_123",
+        version: 1,
+        timestamp: "2025-01-01T00:00:00Z",
+        payload: {
+          objective: "Implement authentication",
+          successCriteria: ["Users can log in"],
+          scopeIn: [],
+          scopeOut: [],
+          status: GoalStatus.TODO,
+        },
+      },
+      {
+        type: GoalEventType.REFINEMENT_STARTED,
+        aggregateId: "goal_123",
+        version: 2,
+        timestamp: "2025-01-01T01:00:00Z",
+        payload: {
+          status: GoalStatus.IN_REFINEMENT,
+          refinementStartedAt: "2025-01-01T01:00:00Z",
+          claimedBy: "other_worker",
+          claimedAt: "2025-01-01T01:00:00Z",
+          claimExpiresAt: "2025-01-01T02:00:00Z",
+        },
+      },
+    ];
+    (eventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
+
+    // Act
+    const result = await handler.execute(command);
+
+    // Assert - re-entry succeeds, new event persisted
+    expect(result.goal.goalId).toBe("goal_123");
+    expect(eventWriter.append).toHaveBeenCalledTimes(1);
+    const appendedEvent = (eventWriter.append as jest.Mock).mock.calls[0][0];
+    expect(appendedEvent.type).toBe(GoalEventType.REFINEMENT_STARTED);
+    expect(appendedEvent.payload.status).toBe(GoalStatus.IN_REFINEMENT);
+    expect(claimPolicy.storeClaim).toHaveBeenCalled();
+  });
+
+  it("should reject re-entry when another worker holds an active claim", async () => {
+    // Arrange
+    const command: RefineGoalCommand = {
+      goalId: "goal_123",
+    };
+
+    // Mock projection exists
+    const mockView: GoalView = {
+      goalId: "goal_123",
+      objective: "Implement authentication",
+      successCriteria: ["Users can log in"],
+      scopeIn: [],
+      scopeOut: [],
+      status: GoalStatus.IN_REFINEMENT,
+      version: 2,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T00:00:00Z",
+      progress: [],
+    };
+    (goalReader.findById as jest.Mock).mockResolvedValue(mockView);
+
+    // Mock prepareEntryClaim returns rejected (active claim from another worker)
+    claimPolicy.prepareEntryClaim.mockReturnValue({
+      allowed: false,
+      reason: "CLAIMED_BY_ANOTHER_WORKER",
+      existingClaim: {
+        goalId: "goal_123",
+        claimedBy: "other_worker",
+        claimedAt: "2025-01-01T01:00:00Z",
+        claimExpiresAt: "2025-01-01T03:00:00Z",
+      },
+    });
+
+    // Act & Assert
+    await expect(handler.execute(command)).rejects.toThrow(
+      "Goal is claimed by another worker. Claim expires at 2025-01-01T03:00:00Z."
+    );
+    expect(eventWriter.append).not.toHaveBeenCalled();
   });
 
   it("should propagate errors if event store fails", async () => {

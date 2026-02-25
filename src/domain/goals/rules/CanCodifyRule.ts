@@ -9,11 +9,9 @@ import { GoalStatus, GoalErrorMessages, formatErrorMessage } from "../Constants.
  */
 export class CanCodifyRule implements ValidationRule<GoalState> {
   validate(state: GoalState): ValidationResult {
+    // Allow CODIFYING for idempotent re-entry (claim validation at application layer)
     if (state.status === GoalStatus.CODIFYING) {
-      return {
-        isValid: false,
-        errors: [GoalErrorMessages.ALREADY_CODIFYING],
-      };
+      return { isValid: true, errors: [] };
     }
 
     if (state.status === GoalStatus.DONE) {

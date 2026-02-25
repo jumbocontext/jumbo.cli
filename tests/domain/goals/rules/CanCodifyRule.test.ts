@@ -23,10 +23,10 @@ describe("CanCodifyRule", () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  it("should reject codification from CODIFYING status (already codifying)", () => {
+  it("should allow codification from CODIFYING status (idempotent re-entry)", () => {
     const result = rule.validate(makeState(GoalStatus.CODIFYING));
-    expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("already in codifying status");
+    expect(result.isValid).toBe(true);
+    expect(result.errors).toHaveLength(0);
   });
 
   it("should reject codification from DONE status (already done)", () => {

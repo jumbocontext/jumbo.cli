@@ -17,12 +17,9 @@ export class CanRefineRule implements ValidationRule<GoalState> {
       };
     }
 
-    // Already in refinement - return specific error
+    // Already in refinement - allow for idempotent re-entry (claim validation happens at application layer)
     if (state.status === GoalStatus.IN_REFINEMENT) {
-      return {
-        isValid: false,
-        errors: [GoalErrorMessages.ALREADY_IN_REFINEMENT],
-      };
+      return { isValid: true, errors: [] };
     }
 
     // Can only refine from TODO status

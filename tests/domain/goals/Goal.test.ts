@@ -2,8 +2,8 @@
  * Tests for Goal aggregate
  */
 
-import { Goal } from "../../../../src/domain/goals/Goal";
-import { GoalEventType, GoalStatus } from "../../../../src/domain/goals/Constants";
+import { Goal } from "../../../src/domain/goals/Goal";
+import { GoalEventType, GoalStatus } from "../../../src/domain/goals/Constants";
 
 describe("Goal Aggregate", () => {
   describe("define()", () => {
@@ -203,7 +203,7 @@ describe("Goal Aggregate", () => {
       expect(snapshot.version).toBe(2);
     });
 
-    it("should throw error when refining goal already in refinement", () => {
+    it("should allow idempotent re-entry when goal is already in refinement", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
@@ -213,12 +213,16 @@ describe("Goal Aggregate", () => {
         claimExpiresAt: "2025-01-01T01:00:00Z",
       }); // First refine → IN_REFINEMENT
 
-      // Act & Assert
-      expect(() => goal.refine({
+      // Act - re-entry should succeed at domain level (claim validation at application layer)
+      const event = goal.refine({
         claimedBy: "worker_test",
-        claimedAt: "2025-01-01T00:00:00Z",
-        claimExpiresAt: "2025-01-01T01:00:00Z",
-      })).toThrow("Goal is already in refinement.");
+        claimedAt: "2025-01-01T02:00:00Z",
+        claimExpiresAt: "2025-01-01T03:00:00Z",
+      });
+
+      // Assert
+      expect(event.type).toBe(GoalEventType.REFINEMENT_STARTED);
+      expect(event.payload.status).toBe(GoalStatus.IN_REFINEMENT);
     });
 
     it("should throw error when refining a doing goal", () => {
@@ -1430,7 +1434,7 @@ describe("Goal Aggregate", () => {
       );
     });
 
-    it("should throw error if goal is already in-review", () => {
+    it("should allow idempotent re-entry when goal is already in-review", () => {
       // Arrange
       const goal = Goal.create("goal_123");
       goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
@@ -1444,10 +1448,16 @@ describe("Goal Aggregate", () => {
       goal.submit();
       goal.submitForReview();
 
-      // Act & Assert
-      expect(() => goal.submitForReview()).toThrow(
-        "Cannot submit goal for review in in-review status. Goal must be in submitted status."
-      );
+      // Act - re-entry should succeed at domain level (claim validation at application layer)
+      const event = goal.submitForReview({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T02:00:00Z",
+        claimExpiresAt: "2025-01-01T03:00:00Z",
+      });
+
+      // Assert
+      expect(event.type).toBe(GoalEventType.SUBMITTED_FOR_REVIEW);
+      expect(event.payload.status).toBe(GoalStatus.INREVIEW);
     });
 
     it("should throw error if goal is in qualified status", () => {

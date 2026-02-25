@@ -2,9 +2,9 @@
  * Tests for CanSubmitForReviewRule validation rule
  */
 
-import { CanSubmitForReviewRule } from "../../../../../src/domain/goals/rules/CanSubmitForReviewRule";
-import { GoalState } from "../../../../../src/domain/goals/Goal";
-import { GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { CanSubmitForReviewRule } from "../../../../src/domain/goals/rules/CanSubmitForReviewRule";
+import { GoalState } from "../../../../src/domain/goals/Goal";
+import { GoalStatus } from "../../../../src/domain/goals/Constants";
 
 // Helper to create a minimal GoalState for testing
 function createGoalState(overrides: Partial<GoalState> = {}): GoalState {
@@ -71,12 +71,12 @@ describe("CanSubmitForReviewRule", () => {
     expect(result.errors[0]).toContain("Cannot submit goal for review in done status");
   });
 
-  it("should fail when status is in-review", () => {
+  it("should pass when status is in-review (idempotent re-entry)", () => {
     const rule = new CanSubmitForReviewRule();
     const state = createGoalState({ status: GoalStatus.INREVIEW });
     const result = rule.validate(state);
-    expect(result.isValid).toBe(false);
-    expect(result.errors[0]).toContain("Cannot submit goal for review in in-review status");
+    expect(result.isValid).toBe(true);
+    expect(result.errors).toEqual([]);
   });
 
   it("should fail when status is qualified", () => {

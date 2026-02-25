@@ -13,9 +13,9 @@ import {
   CanUnblockRule,
   CanPauseRule,
   CanResumeRule,
-} from "../../../../../src/domain/goals/rules/StateTransitionRules";
-import { GoalState } from "../../../../../src/domain/goals/Goal";
-import { GoalStatus } from "../../../../../src/domain/goals/Constants";
+} from "../../../../src/domain/goals/rules/StateTransitionRules";
+import { GoalState } from "../../../../src/domain/goals/Goal";
+import { GoalStatus } from "../../../../src/domain/goals/Constants";
 
 // Helper to create a minimal GoalState for testing
 function createGoalState(overrides: Partial<GoalState> = {}): GoalState {
@@ -69,12 +69,12 @@ describe("StateTransitionRules", () => {
       expect(result.errors).toContain("Goal is already refined.");
     });
 
-    it("should fail when status is in-refinement", () => {
+    it("should pass when status is in-refinement (idempotent re-entry)", () => {
       const rule = new CanRefineRule();
       const state = createGoalState({ status: GoalStatus.IN_REFINEMENT });
       const result = rule.validate(state);
-      expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Goal is already in refinement.");
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
     });
 
     it("should fail when status is doing", () => {

@@ -201,6 +201,95 @@ describe("GoalClaimPolicy", () => {
     });
   });
 
+  describe("prepareEntryClaim", () => {
+    it("prepares new claim when no existing claim exists", () => {
+      (claimStore.getClaim as jest.Mock).mockReturnValue(null);
+
+      const result = policy.prepareEntryClaim(goalId, workerA, claimDurationMs);
+
+      expect(result.allowed).toBe(true);
+      if (result.allowed) {
+        expect(result.claim.goalId).toBe(goalId);
+        expect(result.claim.claimedBy).toBe(workerA);
+        expect(result.claim.claimedAt).toBe("2025-01-15T10:00:00.000Z");
+        expect(result.claim.claimExpiresAt).toBe("2025-01-15T10:30:00.000Z");
+      }
+    });
+
+    it("prepares refreshed claim when same worker holds active claim (lease renewal)", () => {
+      const existingClaim: GoalClaim = {
+        goalId,
+        claimedBy: workerA,
+        claimedAt: "2025-01-15T08:00:00.000Z",
+        claimExpiresAt: "2025-01-15T10:30:00.000Z", // Active
+      };
+      (claimStore.getClaim as jest.Mock).mockReturnValue(existingClaim);
+
+      const result = policy.prepareEntryClaim(goalId, workerA, claimDurationMs);
+
+      expect(result.allowed).toBe(true);
+      if (result.allowed) {
+        expect(result.claim.claimedBy).toBe(workerA);
+        // Preserves original claimedAt (lease renewal)
+        expect(result.claim.claimedAt).toBe("2025-01-15T08:00:00.000Z");
+        // New expiration
+        expect(result.claim.claimExpiresAt).toBe("2025-01-15T10:30:00.000Z");
+      }
+    });
+
+    it("prepares new claim when existing claim has expired (crash recovery)", () => {
+      const expiredClaim: GoalClaim = {
+        goalId,
+        claimedBy: workerB,
+        claimedAt: "2025-01-15T07:00:00.000Z",
+        claimExpiresAt: "2025-01-15T09:00:00.000Z", // Expired (before 10:00)
+      };
+      (claimStore.getClaim as jest.Mock).mockReturnValue(expiredClaim);
+
+      const result = policy.prepareEntryClaim(goalId, workerA, claimDurationMs);
+
+      expect(result.allowed).toBe(true);
+      if (result.allowed) {
+        expect(result.claim.claimedBy).toBe(workerA);
+        // New claimedAt (not preserving expired worker's time)
+        expect(result.claim.claimedAt).toBe("2025-01-15T10:00:00.000Z");
+        expect(result.claim.claimExpiresAt).toBe("2025-01-15T10:30:00.000Z");
+      }
+    });
+
+    it("rejects when another worker holds an active claim", () => {
+      const activeClaim: GoalClaim = {
+        goalId,
+        claimedBy: workerB,
+        claimedAt: "2025-01-15T09:30:00.000Z",
+        claimExpiresAt: "2025-01-15T10:30:00.000Z", // Active
+      };
+      (claimStore.getClaim as jest.Mock).mockReturnValue(activeClaim);
+
+      const result = policy.prepareEntryClaim(goalId, workerA, claimDurationMs);
+
+      expect(result.allowed).toBe(false);
+      if (!result.allowed) {
+        expect(result.reason).toBe("CLAIMED_BY_ANOTHER_WORKER");
+        expect(result.existingClaim).toEqual(activeClaim);
+      }
+    });
+
+    it("allows claim at exact expiration time (expired)", () => {
+      const expiredClaim: GoalClaim = {
+        goalId,
+        claimedBy: workerB,
+        claimedAt: "2025-01-15T09:30:00.000Z",
+        claimExpiresAt: "2025-01-15T10:00:00.000Z", // Exactly now
+      };
+      (claimStore.getClaim as jest.Mock).mockReturnValue(expiredClaim);
+
+      const result = policy.prepareEntryClaim(goalId, workerA, claimDurationMs);
+
+      expect(result.allowed).toBe(true);
+    });
+  });
+
   describe("prepareRefreshedClaim", () => {
     it("prepares refreshed claim data without persisting to store", () => {
       const existingClaim: GoalClaim = {

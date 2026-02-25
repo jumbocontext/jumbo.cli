@@ -38,13 +38,16 @@ export class SubmitGoalForReviewCommandHandler {
       );
     }
 
-    // 2. Validate claim policy - reviewer can claim if no active claim exists
+    // 2. Validate and prepare claim for entry or idempotent re-entry
     const workerId = this.workerIdentityReader.workerId;
-    const claimValidation = this.claimPolicy.canClaim(command.goalId, workerId);
-    if (!claimValidation.allowed) {
+    const settings = await this.settingsReader.read();
+    const claimDurationMs = settings.claims.claimDurationMinutes * 60 * 1000;
+    const entryResult = this.claimPolicy.prepareEntryClaim(command.goalId, workerId, claimDurationMs);
+
+    if (!entryResult.allowed) {
       throw new Error(
         formatErrorMessage(GoalErrorMessages.GOAL_CLAIMED_BY_ANOTHER_WORKER, {
-          expiresAt: claimValidation.existingClaim.claimExpiresAt,
+          expiresAt: entryResult.existingClaim.claimExpiresAt,
         })
       );
     }
@@ -53,28 +56,23 @@ export class SubmitGoalForReviewCommandHandler {
     const history = await this.eventReader.readStream(command.goalId);
     const goal = Goal.rehydrate(command.goalId, history as any);
 
-    // 4. Prepare reviewer claim data before creating event
-    const settings = await this.settingsReader.read();
-    const claimDurationMs = settings.claims.claimDurationMinutes * 60 * 1000;
-    const claim = this.claimPolicy.prepareClaim(command.goalId, workerId, claimDurationMs);
-
-    // 5. Domain logic produces event with claim data (validates state)
+    // 4. Domain logic produces event with claim data (validates state)
     const event = goal.submitForReview({
-      claimedBy: claim.claimedBy,
-      claimedAt: claim.claimedAt,
-      claimExpiresAt: claim.claimExpiresAt,
+      claimedBy: entryResult.claim.claimedBy,
+      claimedAt: entryResult.claim.claimedAt,
+      claimExpiresAt: entryResult.claim.claimExpiresAt,
     });
 
-    // 6. Persist event to file store
+    // 5. Persist event to file store
     await this.eventWriter.append(event);
 
-    // 7. Store reviewer claim after successful persistence
-    this.claimPolicy.storeClaim(claim);
+    // 6. Store reviewer claim after successful persistence
+    this.claimPolicy.storeClaim(entryResult.claim);
 
-    // 8. Publish event to bus (projections will update via subscriptions)
+    // 7. Publish event to bus (projections will update via subscriptions)
     await this.eventBus.publish(event);
 
-    // 9. Query goal context
+    // 8. Query goal context
     return this.goalContextQueryHandler.execute(command.goalId);
   }
 }

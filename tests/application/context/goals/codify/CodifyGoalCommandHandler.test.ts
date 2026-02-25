@@ -248,6 +248,196 @@ describe("CodifyGoalCommandHandler", () => {
     expect(publishedEvent.aggregateId).toBe("goal_123");
   });
 
+  it("should allow idempotent re-entry when goal is already CODIFYING with expired claim", async () => {
+    // Arrange
+    const command: CodifyGoalCommand = {
+      goalId: "goal_123",
+    };
+
+    // Mock projection exists (codifying status)
+    const mockView: GoalView = {
+      goalId: "goal_123",
+      objective: "Implement authentication",
+      successCriteria: ["Users can log in"],
+      scopeIn: [],
+      scopeOut: [],
+      status: GoalStatus.CODIFYING,
+      version: 8,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T07:00:00Z",
+      progress: [],
+    };
+    (goalReader.findById as jest.Mock).mockResolvedValue(mockView);
+
+    // Mock expired claim from another worker (crash recovery)
+    const otherWorkerId = createWorkerId("crashed-worker-id");
+    (claimStore.getClaim as jest.Mock).mockReturnValue({
+      goalId: "goal_123",
+      claimedBy: otherWorkerId,
+      claimedAt: "2025-01-15T07:00:00.000Z",
+      claimExpiresAt: "2025-01-15T09:00:00.000Z", // Expired before current time (10:00)
+    });
+
+    // Mock event history to CODIFYING state
+    const codifyingHistory = [
+      ...buildQualifiedHistory("goal_123"),
+      {
+        type: GoalEventType.CODIFYING_STARTED,
+        aggregateId: "goal_123",
+        version: 8,
+        timestamp: "2025-01-01T07:00:00Z",
+        payload: {
+          status: GoalStatus.CODIFYING,
+          codifyStartedAt: "2025-01-01T07:00:00Z",
+          claimedBy: otherWorkerId,
+          claimedAt: "2025-01-01T07:00:00Z",
+          claimExpiresAt: "2025-01-01T09:00:00Z",
+        },
+      },
+    ];
+    (eventReader.readStream as jest.Mock).mockResolvedValue(codifyingHistory);
+
+    // Mock goal context query result
+    const mockContext = {
+      goal: mockView,
+      context: {
+        components: [],
+        dependencies: [],
+        decisions: [],
+        invariants: [],
+        guidelines: [],
+        architecture: null,
+      },
+    };
+    (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
+
+    // Act
+    const result = await handler.execute(command);
+
+    // Assert - re-entry succeeds, new event persisted
+    expect(result.goal.goalId).toBe("goal_123");
+    expect(eventWriter.append).toHaveBeenCalledTimes(1);
+    const appendedEvent = (eventWriter.append as jest.Mock).mock.calls[0][0];
+    expect(appendedEvent.type).toBe(GoalEventType.CODIFYING_STARTED);
+    expect(appendedEvent.payload.status).toBe(GoalStatus.CODIFYING);
+    expect(appendedEvent.payload.claimedBy).toBe(testWorkerId);
+
+    // Verify claim was stored
+    expect(claimStore.setClaim).toHaveBeenCalledTimes(1);
+  });
+
+  it("should reject re-entry when goal is CODIFYING with active claim from another worker", async () => {
+    // Arrange
+    const command: CodifyGoalCommand = {
+      goalId: "goal_123",
+    };
+
+    // Mock projection exists
+    const mockView: GoalView = {
+      goalId: "goal_123",
+      objective: "Implement authentication",
+      successCriteria: ["Users can log in"],
+      scopeIn: [],
+      scopeOut: [],
+      status: GoalStatus.CODIFYING,
+      version: 8,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T07:00:00Z",
+      progress: [],
+    };
+    (goalReader.findById as jest.Mock).mockResolvedValue(mockView);
+
+    // Mock active claim from another worker
+    const otherWorkerId = createWorkerId("other-worker-id");
+    (claimStore.getClaim as jest.Mock).mockReturnValue({
+      goalId: "goal_123",
+      claimedBy: otherWorkerId,
+      claimedAt: "2025-01-15T09:30:00.000Z",
+      claimExpiresAt: "2025-01-15T11:00:00.000Z", // Active
+    });
+
+    // Act & Assert
+    await expect(handler.execute(command)).rejects.toThrow(
+      "Goal is claimed by another worker. Claim expires at 2025-01-15T11:00:00.000Z."
+    );
+    expect(eventWriter.append).not.toHaveBeenCalled();
+  });
+
+  it("should allow same-worker re-entry with lease renewal", async () => {
+    // Arrange
+    const command: CodifyGoalCommand = {
+      goalId: "goal_123",
+    };
+
+    // Mock projection exists (codifying status)
+    const mockView: GoalView = {
+      goalId: "goal_123",
+      objective: "Implement authentication",
+      successCriteria: ["Users can log in"],
+      scopeIn: [],
+      scopeOut: [],
+      status: GoalStatus.CODIFYING,
+      version: 8,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T07:00:00Z",
+      progress: [],
+    };
+    (goalReader.findById as jest.Mock).mockResolvedValue(mockView);
+
+    // Mock active claim from same worker (lease renewal scenario)
+    (claimStore.getClaim as jest.Mock).mockReturnValue({
+      goalId: "goal_123",
+      claimedBy: testWorkerId,
+      claimedAt: "2025-01-15T08:00:00.000Z",
+      claimExpiresAt: "2025-01-15T10:30:00.000Z", // Active, same worker
+    });
+
+    // Mock event history to CODIFYING state
+    const codifyingHistory = [
+      ...buildQualifiedHistory("goal_123"),
+      {
+        type: GoalEventType.CODIFYING_STARTED,
+        aggregateId: "goal_123",
+        version: 8,
+        timestamp: "2025-01-01T07:00:00Z",
+        payload: {
+          status: GoalStatus.CODIFYING,
+          codifyStartedAt: "2025-01-01T07:00:00Z",
+          claimedBy: testWorkerId,
+          claimedAt: "2025-01-15T08:00:00.000Z",
+          claimExpiresAt: "2025-01-15T10:30:00.000Z",
+        },
+      },
+    ];
+    (eventReader.readStream as jest.Mock).mockResolvedValue(codifyingHistory);
+
+    // Mock goal context query result
+    const mockContext = {
+      goal: mockView,
+      context: {
+        components: [],
+        dependencies: [],
+        decisions: [],
+        invariants: [],
+        guidelines: [],
+        architecture: null,
+      },
+    };
+    (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
+
+    // Act
+    const result = await handler.execute(command);
+
+    // Assert - re-entry succeeds with lease renewal
+    expect(result.goal.goalId).toBe("goal_123");
+    expect(eventWriter.append).toHaveBeenCalledTimes(1);
+    const appendedEvent = (eventWriter.append as jest.Mock).mock.calls[0][0];
+    expect(appendedEvent.type).toBe(GoalEventType.CODIFYING_STARTED);
+    expect(appendedEvent.payload.claimedBy).toBe(testWorkerId);
+    // Claim preserves original claimedAt (refreshed, not new)
+    expect(appendedEvent.payload.claimedAt).toBe("2025-01-15T08:00:00.000Z");
+  });
+
   it("should throw error if goal not found", async () => {
     // Arrange
     const command: CodifyGoalCommand = {

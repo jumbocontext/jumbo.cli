@@ -9,7 +9,8 @@ import { GoalStatus, GoalErrorMessages, formatErrorMessage } from "../Constants.
  */
 export class CanSubmitForReviewRule implements ValidationRule<GoalState> {
   validate(state: GoalState): ValidationResult {
-    const isValid = state.status === GoalStatus.SUBMITTED;
+    // Allow SUBMITTED (first entry) or IN_REVIEW (idempotent re-entry, claim validation at application layer)
+    const isValid = state.status === GoalStatus.SUBMITTED || state.status === GoalStatus.INREVIEW;
 
     return {
       isValid,

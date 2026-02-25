@@ -23,6 +23,13 @@ export type ClaimValidationResult =
   | { allowed: false; reason: ClaimRejectionReason; existingClaim: GoalClaim };
 
 /**
+ * Result of preparing a claim for entry or re-entry.
+ */
+export type EntryClaimResult =
+  | { allowed: true; claim: GoalClaim }
+  | { allowed: false; reason: ClaimRejectionReason; existingClaim: GoalClaim };
+
+/**
  * Reasons why a claim was rejected.
  */
 export type ClaimRejectionReason = "CLAIMED_BY_ANOTHER_WORKER";
@@ -166,5 +173,48 @@ export class GoalClaimPolicy {
    */
   releaseClaim(goalId: string): void {
     this.claimStore.releaseClaim(goalId);
+  }
+
+  /**
+   * Validates and prepares a claim for goal entry or idempotent re-entry.
+   * This is the reusable pattern shared across all entry commands (refine, start, review, codify).
+   *
+   * Handles three scenarios:
+   * 1. No existing claim or expired claim → prepares new claim
+   * 2. Same worker holds active claim → prepares refreshed claim (lease renewal)
+   * 3. Another worker holds active claim → returns rejection
+   *
+   * @param goalId - The ID of the goal to claim
+   * @param workerId - The ID of the worker attempting entry
+   * @param durationMs - Duration of the claim in milliseconds
+   * @returns EntryClaimResult indicating if the claim is allowed and the prepared claim
+   */
+  prepareEntryClaim(goalId: string, workerId: WorkerId, durationMs: number): EntryClaimResult {
+    const existingClaim = this.claimStore.getClaim(goalId);
+
+    // No existing claim - prepare new claim
+    if (!existingClaim) {
+      return { allowed: true, claim: this.prepareClaim(goalId, workerId, durationMs) };
+    }
+
+    // Check if requesting worker already owns the claim (lease renewal)
+    if (existingClaim.claimedBy === workerId) {
+      return { allowed: true, claim: this.prepareRefreshedClaim(goalId, workerId, durationMs) };
+    }
+
+    // Check if claim has expired (re-entry after crash)
+    const nowIso = this.clock.nowIso();
+    const now = new Date(nowIso);
+    const expiresAt = new Date(existingClaim.claimExpiresAt);
+    if (now >= expiresAt) {
+      return { allowed: true, claim: this.prepareClaim(goalId, workerId, durationMs) };
+    }
+
+    // Another worker has an active claim
+    return {
+      allowed: false,
+      reason: "CLAIMED_BY_ANOTHER_WORKER",
+      existingClaim,
+    };
   }
 }
