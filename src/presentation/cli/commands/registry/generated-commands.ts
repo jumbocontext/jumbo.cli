@@ -36,6 +36,7 @@ import { dependenciesList, metadata as dependenciesListMeta } from '../../comman
 import { dependencyRemove, metadata as dependencyRemoveMeta } from '../../commands/dependencies/remove/dependency.remove.js';
 import { dependencyUpdate, metadata as dependencyUpdateMeta } from '../../commands/dependencies/update/dependency.update.js';
 import { goalAdd, metadata as goalAddMeta } from '../../commands/goals/add/goal.add.js';
+import { goalApprove, metadata as goalApproveMeta } from '../../commands/goals/approve/goal.approve.js';
 import { goalBlock, metadata as goalBlockMeta } from '../../commands/goals/block/goal.block.js';
 import { goalCommit, metadata as goalCommitMeta } from '../../commands/goals/commit/goal.commit.js';
 import { goalComplete, metadata as goalCompleteMeta } from '../../commands/goals/complete/goal.complete.js';
@@ -216,6 +217,11 @@ export const commands: RegisteredCommand[] = [
     path: 'goal add',
     metadata: goalAddMeta,
     handler: goalAdd
+  },
+  {
+    path: 'goal approve',
+    metadata: goalApproveMeta,
+    handler: goalApprove
   },
   {
     path: 'goal block',

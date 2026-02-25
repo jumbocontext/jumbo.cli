@@ -1,32 +1,35 @@
 /**
- * CLI Command: jumbo goal qualify
+ * CLI Command: jumbo goal approve
  *
- * Qualifies a goal after successful QA review.
+ * Approves a goal after successful QA review.
  * Transitions goal from 'in-review' to 'qualified' status and renders completion instructions.
+ *
+ * This is the primary command for review approval.
+ * See also: goal.qualify (deprecated alias).
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { GoalQualifyOutputBuilder } from "./GoalQualifyOutputBuilder.js";
+import { GoalApproveOutputBuilder } from "./GoalApproveOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "Qualify a goal after successful QA review",
+  description: "Approve a goal after successful QA review",
   category: "work",
   requiredOptions: [
     {
       flags: "-i, --id <id>",
-      description: "ID of the goal to qualify"
+      description: "ID of the goal to approve"
     }
   ],
   options: [],
   examples: [
     {
-      command: "jumbo goal qualify --id goal_abc123",
-      description: "Qualify a goal after QA review passes"
+      command: "jumbo goal approve --id goal_abc123",
+      description: "Approve a goal after QA review passes"
     }
   ],
   related: ["goal review", "goal complete", "goal start"]
@@ -36,30 +39,26 @@ export const metadata: CommandMetadata = {
  * Command handler
  * Called by Commander with parsed options
  */
-export async function goalQualify(
+export async function goalApprove(
   options: { id: string },
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Emit deprecation warning
-    const outputBuilder = new GoalQualifyOutputBuilder();
-    const warning = outputBuilder.buildDeprecationWarning();
-    renderer.info(warning.toHumanReadable());
-
-    // 2. Execute via controller
+    // 1. Execute via controller (delegates to same QualifyGoalController)
     const response = await container.qualifyGoalController.handle({
       goalId: options.id,
     });
 
-    // 3. Build and render output using builder pattern
+    // 2. Build and render output using builder pattern
+    const outputBuilder = new GoalApproveOutputBuilder();
     const output = outputBuilder.buildSuccess(response);
 
     renderer.info(output.toHumanReadable());
 
   } catch (error) {
-    renderer.error("Failed to qualify goal", error instanceof Error ? error : String(error));
+    renderer.error("Failed to approve goal", error instanceof Error ? error : String(error));
     process.exit(1);
   }
 }
