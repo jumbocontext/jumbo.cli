@@ -428,6 +428,7 @@ import { UpdateGoalProgressController } from "../../application/context/goals/up
 
 // StartGoal Controller-Gateway
 import { StartGoalCommandHandler } from "../../application/context/goals/start/StartGoalCommandHandler.js";
+import { PrerequisitePolicy } from "../../domain/goals/rules/PrerequisitePolicy.js";
 import { LocalStartGoalGateway } from "../../application/context/goals/start/LocalStartGoalGateway.js";
 import { StartGoalController } from "../../application/context/goals/start/StartGoalController.js";
 
@@ -1003,6 +1004,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     );
 
     // StartGoal Controller
+    const prerequisitePolicy = new PrerequisitePolicy();
     const startGoalCommandHandler = new StartGoalCommandHandler(
       goalStartedEventStore,
       goalStartedEventStore,
@@ -1011,7 +1013,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       goalClaimPolicy,
       workerIdentityReader,
       settingsReader,
-      goalContextQueryHandler
+      goalContextQueryHandler,
+      prerequisitePolicy
     );
     const startGoalGateway = new LocalStartGoalGateway(
       startGoalCommandHandler

@@ -13,6 +13,7 @@ import { RefineGoalCommandHandler } from "../../src/application/context/goals/re
 import { RefineGoalCommand } from "../../src/application/context/goals/refine/RefineGoalCommand.js";
 import { StartGoalCommandHandler } from "../../src/application/context/goals/start/StartGoalCommandHandler.js";
 import { StartGoalCommand } from "../../src/application/context/goals/start/StartGoalCommand.js";
+import { PrerequisitePolicy } from "../../src/domain/goals/rules/PrerequisitePolicy.js";
 import { PauseGoalCommandHandler } from "../../src/application/context/goals/pause/PauseGoalCommandHandler.js";
 import { PauseGoalCommand } from "../../src/application/context/goals/pause/PauseGoalCommand.js";
 import { ResumeGoalCommandHandler } from "../../src/application/context/goals/resume/ResumeGoalCommandHandler.js";
@@ -98,7 +99,8 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler
+      container.goalContextQueryHandler,
+      new PrerequisitePolicy()
     );
     const startCommand: StartGoalCommand = {
       goalId,
@@ -212,7 +214,8 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler
+      container.goalContextQueryHandler,
+      new PrerequisitePolicy()
     );
     await startHandler.execute({ goalId });
 
@@ -271,7 +274,8 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler
+      container.goalContextQueryHandler,
+      new PrerequisitePolicy()
     );
     await startHandler.execute({ goalId });
 
@@ -354,7 +358,8 @@ describe("Pause-Resume Lifecycle Integration", () => {
       container.goalClaimPolicy,
       container.workerIdentityReader,
       container.settingsReader,
-      container.goalContextQueryHandler
+      container.goalContextQueryHandler,
+      new PrerequisitePolicy()
     );
     await startHandler.execute({ goalId });
 

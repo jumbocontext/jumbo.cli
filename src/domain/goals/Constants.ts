@@ -101,6 +101,7 @@ export const GoalErrorMessages = {
   ALREADY_DONE: 'Goal is already done.',
   CANNOT_RESET_WAITING_STATE: 'Cannot reset goal. Goal is already in waiting state ({status}).',
   CANNOT_RESET_TO_IN_PROGRESS: 'Cannot reset to in-progress state. Reset targets must be waiting states.',
+  PREREQUISITES_NOT_SATISFIED: 'Cannot start goal. The following prerequisites are not yet satisfied:\n{details}',
 } as const;
 
 // Numeric limits
@@ -138,6 +139,18 @@ export const IN_PROGRESS_STATES: ReadonlySet<GoalStatusType> = new Set([
 export const TERMINAL_STATES: ReadonlySet<GoalStatusType> = new Set([
   GoalStatus.DONE,
   GoalStatus.COMPLETED,
+] as GoalStatusType[]);
+
+/**
+ * Statuses that satisfy prerequisite requirements for goal start.
+ * A prerequisite goal must be at SUBMITTED or later to allow dependent goals to start.
+ */
+export const SATISFIED_PREREQUISITE_STATUSES: ReadonlySet<GoalStatusType> = new Set([
+  GoalStatus.SUBMITTED,
+  GoalStatus.INREVIEW,
+  GoalStatus.QUALIFIED,
+  GoalStatus.CODIFYING,
+  GoalStatus.DONE,
 ] as GoalStatusType[]);
 
 /**
