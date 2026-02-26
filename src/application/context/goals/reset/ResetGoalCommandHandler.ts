@@ -9,7 +9,7 @@ import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
 
 /**
- * Handles resetting a goal back to 'to-do' status.
+ * Handles resetting a goal back to its last waiting state.
  * Loads aggregate from event history, calls domain logic, persists event.
  * Releases goal claims on successful reset.
  */

@@ -1,6 +1,6 @@
 import { ValidationRule, ValidationResult } from "../../validation/ValidationRule.js";
 import { GoalState } from "../Goal.js";
-import { GoalStatus, GoalErrorMessages, formatErrorMessage } from "../Constants.js";
+import { GoalStatus, GoalErrorMessages, formatErrorMessage, WAITING_STATES } from "../Constants.js";
 
 /**
  * Validates that a goal can be refined (transition to 'refined' status).
@@ -112,12 +112,15 @@ export class CanCompleteRule implements ValidationRule<GoalState> {
 }
 
 /**
- * Validates that a goal can be reset (transition back to 'defined' status).
- * A goal can be reset from 'doing' or 'done' status.
- * Cannot reset a blocked goal (to preserve blocker context) or one already in 'defined'.
+ * Validates that a goal can be reset to its last waiting state.
+ * A goal can be reset from in-progress states (IN_REFINEMENT, DOING, IN_REVIEW, CODIFYING)
+ * and terminal states (DONE).
+ * Cannot reset a blocked goal (to preserve blocker context).
+ * Cannot reset a goal already in a waiting state.
  */
 export class CanResetRule implements ValidationRule<GoalState> {
   validate(state: GoalState): ValidationResult {
+    // Blocked goals require explicit unblock to preserve blocker context
     if (state.status === GoalStatus.BLOCKED) {
       return {
         isValid: false,
@@ -125,13 +128,18 @@ export class CanResetRule implements ValidationRule<GoalState> {
       };
     }
 
-    if (state.status === GoalStatus.TODO) {
+    // Goals already in a waiting state cannot be reset
+    if (WAITING_STATES.has(state.status)) {
       return {
         isValid: false,
-        errors: [GoalErrorMessages.ALREADY_TODO],
+        errors: [formatErrorMessage(
+          GoalErrorMessages.CANNOT_RESET_WAITING_STATE,
+          { status: state.status }
+        )],
       };
     }
 
+    // In-progress and terminal states are valid for reset
     return { isValid: true, errors: [] };
   }
 }

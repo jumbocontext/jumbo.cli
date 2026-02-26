@@ -1815,4 +1815,281 @@ describe("Goal Aggregate", () => {
       );
     });
   });
+
+  describe("reset()", () => {
+    it("should reset IN_REFINEMENT goal back to DEFINED", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+
+      const event = goal.reset();
+
+      expect(event.type).toBe(GoalEventType.RESET);
+      expect(event.payload.status).toBe(GoalStatus.TODO);
+      expect(goal.snapshot.status).toBe(GoalStatus.TODO);
+    });
+
+    it("should reset DOING goal back to REFINED (default entry point)", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+
+      const event = goal.reset();
+
+      expect(event.type).toBe(GoalEventType.RESET);
+      expect(event.payload.status).toBe(GoalStatus.REFINED);
+      expect(goal.snapshot.status).toBe(GoalStatus.REFINED);
+    });
+
+    it("should reset DOING goal back to REJECTED when entered from rejected", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.submit();
+      goal.submitForReview();
+      goal.reject("Failing tests");
+      // Start from rejected state
+      goal.start();
+
+      const event = goal.reset();
+
+      expect(event.payload.status).toBe(GoalStatus.REJECTED);
+      expect(goal.snapshot.status).toBe(GoalStatus.REJECTED);
+    });
+
+    it("should reset DOING goal back to UNBLOCKED when entered from unblocked", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.block("Waiting for dependency");
+      goal.unblock("Dependency resolved");
+      // Start from unblocked state
+      goal.start();
+
+      const event = goal.reset();
+
+      expect(event.payload.status).toBe(GoalStatus.UNBLOCKED);
+      expect(goal.snapshot.status).toBe(GoalStatus.UNBLOCKED);
+    });
+
+    it("should reset IN_REVIEW goal back to SUBMITTED", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.submit();
+      goal.submitForReview();
+
+      const event = goal.reset();
+
+      expect(event.payload.status).toBe(GoalStatus.SUBMITTED);
+      expect(goal.snapshot.status).toBe(GoalStatus.SUBMITTED);
+    });
+
+    it("should reset CODIFYING goal back to APPROVED", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.submit();
+      goal.submitForReview();
+      goal.approve();
+      goal.codify({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+
+      const event = goal.reset();
+
+      expect(event.payload.status).toBe(GoalStatus.QUALIFIED);
+      expect(goal.snapshot.status).toBe(GoalStatus.QUALIFIED);
+    });
+
+    it("should reset DONE goal back to APPROVED", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.submit();
+      goal.submitForReview();
+      goal.approve();
+      goal.codify({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.close();
+
+      const event = goal.reset();
+
+      expect(event.payload.status).toBe(GoalStatus.QUALIFIED);
+      expect(goal.snapshot.status).toBe(GoalStatus.QUALIFIED);
+    });
+
+    it("should throw error when resetting a BLOCKED goal", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.block("Waiting for dependency");
+
+      expect(() => goal.reset()).toThrow(
+        "Cannot reset a blocked goal. Unblock it first to preserve blocker context."
+      );
+    });
+
+    it("should throw error when resetting a DEFINED goal (waiting state)", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+
+      expect(() => goal.reset()).toThrow(
+        "Cannot reset goal. Goal is already in waiting state"
+      );
+    });
+
+    it("should throw error when resetting a REFINED goal (waiting state)", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+
+      expect(() => goal.reset()).toThrow(
+        "Cannot reset goal. Goal is already in waiting state"
+      );
+    });
+
+    it("should throw error when resetting a SUBMITTED goal (waiting state)", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.submit();
+
+      expect(() => goal.reset()).toThrow(
+        "Cannot reset goal. Goal is already in waiting state"
+      );
+    });
+
+    it("should throw error when resetting an APPROVED goal (waiting state)", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.submit();
+      goal.submitForReview();
+      goal.approve();
+
+      expect(() => goal.reset()).toThrow(
+        "Cannot reset goal. Goal is already in waiting state"
+      );
+    });
+
+    it("should throw error when resetting a PAUSED goal (waiting state)", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.pause("ContextCompressed");
+
+      expect(() => goal.reset()).toThrow(
+        "Cannot reset goal. Goal is already in waiting state"
+      );
+    });
+
+    it("should clear lastWaitingStatus on reset", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+
+      // Reset from DOING to REFINED
+      goal.reset();
+      expect(goal.snapshot.lastWaitingStatus).toBeUndefined();
+    });
+
+    it("should preserve lastWaitingStatus through pause/resume cycle", () => {
+      const goal = Goal.create("goal_123");
+      goal.add("Auth feature", "Implement authentication", ["Users can log in"]);
+      goal.refine({
+        claimedBy: "worker_test",
+        claimedAt: "2025-01-01T00:00:00Z",
+        claimExpiresAt: "2025-01-01T01:00:00Z",
+      });
+      goal.commit();
+      goal.start();
+      goal.pause("ContextCompressed");
+      goal.resume();
+
+      // After pause/resume, should still reset to REFINED (not PAUSED)
+      const event = goal.reset();
+      expect(event.payload.status).toBe(GoalStatus.REFINED);
+    });
+  });
 });

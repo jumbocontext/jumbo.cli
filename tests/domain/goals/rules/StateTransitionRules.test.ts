@@ -253,6 +253,15 @@ describe("StateTransitionRules", () => {
   });
 
   describe("CanResetRule", () => {
+    // In-progress states: allowed
+    it("should pass when status is in-refinement", () => {
+      const rule = new CanResetRule();
+      const state = createGoalState({ status: GoalStatus.IN_REFINEMENT });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
     it("should pass when status is doing", () => {
       const rule = new CanResetRule();
       const state = createGoalState({ status: GoalStatus.DOING });
@@ -261,7 +270,32 @@ describe("StateTransitionRules", () => {
       expect(result.errors).toEqual([]);
     });
 
-    it("should pass when status is completed", () => {
+    it("should pass when status is in-review", () => {
+      const rule = new CanResetRule();
+      const state = createGoalState({ status: GoalStatus.INREVIEW });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it("should pass when status is codifying", () => {
+      const rule = new CanResetRule();
+      const state = createGoalState({ status: GoalStatus.CODIFYING });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    // Terminal states: allowed
+    it("should pass when status is done", () => {
+      const rule = new CanResetRule();
+      const state = createGoalState({ status: GoalStatus.DONE });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
+    it("should pass when status is completed (legacy)", () => {
       const rule = new CanResetRule();
       const state = createGoalState({ status: GoalStatus.COMPLETED });
       const result = rule.validate(state);
@@ -269,6 +303,7 @@ describe("StateTransitionRules", () => {
       expect(result.errors).toEqual([]);
     });
 
+    // Blocked: special rejection
     it("should fail when status is blocked", () => {
       const rule = new CanResetRule();
       const state = createGoalState({ status: GoalStatus.BLOCKED });
@@ -277,20 +312,61 @@ describe("StateTransitionRules", () => {
       expect(result.errors).toContain("Cannot reset a blocked goal. Unblock it first to preserve blocker context.");
     });
 
-    it("should fail when status is already to-do", () => {
+    // Waiting states: rejected
+    it("should fail when status is defined (waiting state)", () => {
       const rule = new CanResetRule();
       const state = createGoalState({ status: GoalStatus.TODO });
       const result = rule.validate(state);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain("Goal is already in defined status");
+      expect(result.errors[0]).toContain("Cannot reset goal. Goal is already in waiting state");
     });
 
-    it("should pass when status is unblocked", () => {
+    it("should fail when status is refined (waiting state)", () => {
+      const rule = new CanResetRule();
+      const state = createGoalState({ status: GoalStatus.REFINED });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(false);
+      expect(result.errors[0]).toContain("Cannot reset goal. Goal is already in waiting state");
+    });
+
+    it("should fail when status is rejected (waiting state)", () => {
+      const rule = new CanResetRule();
+      const state = createGoalState({ status: GoalStatus.REJECTED });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(false);
+      expect(result.errors[0]).toContain("Cannot reset goal. Goal is already in waiting state");
+    });
+
+    it("should fail when status is unblocked (waiting state)", () => {
       const rule = new CanResetRule();
       const state = createGoalState({ status: GoalStatus.UNBLOCKED });
       const result = rule.validate(state);
-      expect(result.isValid).toBe(true);
-      expect(result.errors).toEqual([]);
+      expect(result.isValid).toBe(false);
+      expect(result.errors[0]).toContain("Cannot reset goal. Goal is already in waiting state");
+    });
+
+    it("should fail when status is submitted (waiting state)", () => {
+      const rule = new CanResetRule();
+      const state = createGoalState({ status: GoalStatus.SUBMITTED });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(false);
+      expect(result.errors[0]).toContain("Cannot reset goal. Goal is already in waiting state");
+    });
+
+    it("should fail when status is approved (waiting state)", () => {
+      const rule = new CanResetRule();
+      const state = createGoalState({ status: GoalStatus.QUALIFIED });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(false);
+      expect(result.errors[0]).toContain("Cannot reset goal. Goal is already in waiting state");
+    });
+
+    it("should fail when status is paused (waiting state)", () => {
+      const rule = new CanResetRule();
+      const state = createGoalState({ status: GoalStatus.PAUSED });
+      const result = rule.validate(state);
+      expect(result.isValid).toBe(false);
+      expect(result.errors[0]).toContain("Cannot reset goal. Goal is already in waiting state");
     });
   });
 

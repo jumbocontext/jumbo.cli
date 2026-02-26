@@ -99,6 +99,8 @@ export const GoalErrorMessages = {
   ALREADY_CODIFYING: 'Goal is already in codifying status.',
   CANNOT_CLOSE_IN_STATUS: 'Cannot close goal in {status} status. Goal must be in codifying status.',
   ALREADY_DONE: 'Goal is already done.',
+  CANNOT_RESET_WAITING_STATE: 'Cannot reset goal. Goal is already in waiting state ({status}).',
+  CANNOT_RESET_TO_IN_PROGRESS: 'Cannot reset to in-progress state. Reset targets must be waiting states.',
 } as const;
 
 // Numeric limits
@@ -113,6 +115,42 @@ export const GoalLimits = {
   // Embedded context: file path limits (only validation needed - other fields pre-validated by source aggregates)
   FILE_PATH_MAX_LENGTH: 500
 } as const;
+
+// State classification sets for reset logic
+export const WAITING_STATES: ReadonlySet<GoalStatusType> = new Set([
+  GoalStatus.TODO,
+  GoalStatus.REFINED,
+  GoalStatus.REJECTED,
+  GoalStatus.UNBLOCKED,
+  GoalStatus.SUBMITTED,
+  GoalStatus.QUALIFIED,
+  GoalStatus.PAUSED,
+  GoalStatus.BLOCKED,
+] as GoalStatusType[]);
+
+export const IN_PROGRESS_STATES: ReadonlySet<GoalStatusType> = new Set([
+  GoalStatus.IN_REFINEMENT,
+  GoalStatus.DOING,
+  GoalStatus.INREVIEW,
+  GoalStatus.CODIFYING,
+] as GoalStatusType[]);
+
+export const TERMINAL_STATES: ReadonlySet<GoalStatusType> = new Set([
+  GoalStatus.DONE,
+  GoalStatus.COMPLETED,
+] as GoalStatusType[]);
+
+/**
+ * Deterministic reset targets for states with a single predecessor waiting state.
+ * DOING is excluded because it has multiple entry points (REFINED, REJECTED, UNBLOCKED).
+ * Note: DONE and COMPLETED both resolve to 'done' — single entry covers both.
+ */
+export const DETERMINISTIC_RESET_TARGETS: ReadonlyMap<GoalStatusType, GoalStatusType> = new Map([
+  [GoalStatus.IN_REFINEMENT, GoalStatus.TODO],
+  [GoalStatus.INREVIEW, GoalStatus.SUBMITTED],
+  [GoalStatus.CODIFYING, GoalStatus.QUALIFIED],
+  [GoalStatus.DONE, GoalStatus.QUALIFIED],
+]);
 
 // Helper function for message formatting
 export function formatErrorMessage(

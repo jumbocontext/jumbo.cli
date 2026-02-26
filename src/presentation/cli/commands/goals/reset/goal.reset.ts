@@ -1,8 +1,9 @@
 /**
  * CLI Command: jumbo goal reset
  *
- * Resets a goal back to 'defined' status from 'doing' or 'done'.
+ * Resets a goal back to its last waiting state.
  * Blocked goals cannot be reset to preserve blocker context.
+ * Goals already in a waiting state cannot be reset.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
@@ -14,7 +15,7 @@ import { GoalResetOutputBuilder } from "./GoalResetOutputBuilder.js";
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "Reset a goal back to 'defined' status",
+  description: "Reset a goal back to its last waiting state",
   category: "work",
   requiredOptions: [
     {
@@ -25,10 +26,10 @@ export const metadata: CommandMetadata = {
   examples: [
     {
       command: "jumbo goal reset --id goal_abc123",
-      description: "Reset a goal to 'defined' status"
+      description: "Reset a goal to its last waiting state"
     }
   ],
-  related: ["goal start", "goal complete", "goal unblock"]
+  related: ["goal start", "goal unblock"]
 };
 
 /**

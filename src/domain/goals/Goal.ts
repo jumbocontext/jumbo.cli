@@ -2,7 +2,7 @@ import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent, GoalRefinementStartedEvent, GoalCommittedEvent, GoalRejectedEvent, GoalSubmittedEvent, GoalCodifyingStartedEvent, GoalClosedEvent, GoalApprovedEvent, GoalStatusMigratedEvent } from "./EventIndex.js";
-import { GoalEventType, GoalStatus, GoalStatusType } from "./Constants.js";
+import { GoalEventType, GoalStatus, GoalStatusType, WAITING_STATES, IN_PROGRESS_STATES, TERMINAL_STATES, DETERMINISTIC_RESET_TARGETS } from "./Constants.js";
 import { GoalPausedReasonsType } from "./GoalPausedReasons.js";
 import { OBJECTIVE_RULES } from "./rules/ObjectiveRules.js";
 import { TITLE_RULES } from "./rules/TitleRules.js";
@@ -44,6 +44,7 @@ export interface GoalState extends AggregateState {
   progress: string[];  // Tracks completed sub-tasks (append-only)
   nextGoalId?: UUID;
   prerequisiteGoals?: UUID[];
+  lastWaitingStatus?: GoalStatusType;  // Tracks the waiting state entered from when transitioning to in-progress
 }
 
 export class Goal extends BaseAggregate<GoalState, GoalEvent> {
@@ -84,6 +85,9 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
 
       case GoalEventType.REFINEMENT_STARTED: {
         const e = event as GoalRefinementStartedEvent;
+        if (WAITING_STATES.has(state.status)) {
+          state.lastWaitingStatus = state.status;
+        }
         state.status = e.payload.status;  // "in-refinement"
         state.version = e.version;
         break;
@@ -98,6 +102,9 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
 
       case GoalEventType.STARTED: {
         const e = event as GoalStartedEvent;
+        if (WAITING_STATES.has(state.status)) {
+          state.lastWaitingStatus = state.status;
+        }
         state.status = e.payload.status;  // "doing"
         state.version = e.version;
         break;
@@ -172,8 +179,9 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
 
       case GoalEventType.RESET: {
         const e = event as GoalResetEvent;
-        state.status = e.payload.status;  // 'to-do'
+        state.status = e.payload.status;  // Dynamic target waiting state
         state.note = undefined;            // Clear any notes from previous states
+        state.lastWaitingStatus = undefined; // Clear tracking on reset
         state.version = e.version;
         break;
       }
@@ -188,6 +196,9 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
 
       case GoalEventType.SUBMITTED_FOR_REVIEW: {
         const e = event as GoalSubmittedForReviewEvent;
+        if (WAITING_STATES.has(state.status)) {
+          state.lastWaitingStatus = state.status;
+        }
         state.status = e.payload.status;  // 'in-review'
         state.version = e.version;
         break;
@@ -217,6 +228,9 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
 
       case GoalEventType.CODIFYING_STARTED: {
         const e = event as GoalCodifyingStartedEvent;
+        if (WAITING_STATES.has(state.status)) {
+          state.lastWaitingStatus = state.status;
+        }
         state.status = e.payload.status;  // 'codifying'
         state.version = e.version;
         break;
@@ -544,24 +558,53 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
   }
 
   /**
-   * Resets a goal back to 'defined' status.
-   * Can transition from 'doing' or 'done' status back to 'defined'.
-   * Blocked goals cannot be reset to preserve blocker context.
+   * Resets a goal back to its last waiting state.
+   * The target is computed from the state machine:
+   * - IN_REFINEMENT → DEFINED
+   * - DOING → last waiting state (REFINED, REJECTED, or UNBLOCKED)
+   * - IN_REVIEW → SUBMITTED
+   * - CODIFYING → APPROVED
+   * - DONE → APPROVED
+   * Blocked goals cannot be reset. Goals already in waiting states cannot be reset.
    * @returns GoalReset event
-   * @throws Error if goal is blocked or already in 'defined' status
+   * @throws Error if goal is blocked, already in a waiting state, or target cannot be determined
    */
   reset(): GoalResetEvent {
     // State validation using rules
     ValidationRuleSet.ensure(this.state, [new CanResetRule()]);
 
+    // Compute target status
+    const targetStatus = this.computeResetTarget();
+
     // Create and return event
     return this.makeEvent(
       GoalEventType.RESET,
       {
-        status: GoalStatus.TODO
+        status: targetStatus
       },
       Goal.apply
     ) as GoalResetEvent;
+  }
+
+  /**
+   * Computes the reset target status based on the current state.
+   * Uses deterministic mapping for states with single predecessors,
+   * and lastWaitingStatus for DOING (which has multiple entry points).
+   */
+  private computeResetTarget(): GoalStatusType {
+    // Check deterministic mapping first (IN_REFINEMENT, IN_REVIEW, CODIFYING, DONE)
+    const deterministicTarget = DETERMINISTIC_RESET_TARGETS.get(this.state.status);
+    if (deterministicTarget) {
+      return deterministicTarget;
+    }
+
+    // DOING: use tracked lastWaitingStatus, fall back to REFINED for pre-tracking events
+    if (this.state.status === GoalStatus.DOING) {
+      return this.state.lastWaitingStatus ?? GoalStatus.REFINED;
+    }
+
+    // Fallback (should not be reached if CanResetRule validated correctly)
+    return GoalStatus.TODO;
   }
 
   /**
