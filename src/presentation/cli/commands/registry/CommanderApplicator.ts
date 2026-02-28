@@ -128,8 +128,9 @@ export class CommanderApplicator {
     const { parent, subcommand } = extractParts(registeredCommand.path);
 
     for (const alias of aliases) {
+      const aliasOptions = registeredCommand.metadata.hidden ? { hidden: true } : {};
       const cmd = this.program
-        .command(alias)
+        .command(alias, aliasOptions)
         .description(
           `${registeredCommand.metadata.description} (alias for "${parent} ${subcommand}")`
         );

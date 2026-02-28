@@ -55,8 +55,13 @@ export class AgentFileProtocol implements IAgentFileProtocol {
         // Jumbo section missing - append it
         const updatedContent = content + "\n\n" + AgentInstructions.getJumboSection();
         await fs.writeFile(agentsMdPath, updatedContent, "utf-8");
+      } else {
+        // Jumbo section present - replace with current version
+        const replaced = AgentInstructions.replaceJumboSection(content);
+        if (replaced !== null) {
+          await fs.writeFile(agentsMdPath, replaced, "utf-8");
+        }
       }
-      // else: Jumbo section already present - no-op
     } catch (error) {
       // Graceful degradation - log but don't throw
       console.warn(`Warning: Failed to update AGENTS.md: ${error instanceof Error ? error.message : String(error)}`);

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { LocalPlanProjectInitGateway } from "../../../../../src/application/context/project/init/LocalPlanProjectInitGateway.js";
 import { IAgentFileProtocol } from "../../../../../src/application/context/project/init/IAgentFileProtocol.js";
+import { IGitignoreProtocol } from "../../../../../src/application/context/project/init/IGitignoreProtocol.js";
 import { ISettingsInitializer } from "../../../../../src/application/settings/ISettingsInitializer.js";
 import { PlannedFileChange } from "../../../../../src/application/context/project/init/PlannedFileChange.js";
 
@@ -8,6 +9,7 @@ describe("LocalPlanProjectInitGateway", () => {
   let gateway: LocalPlanProjectInitGateway;
   let mockAgentFileProtocol: jest.Mocked<IAgentFileProtocol>;
   let mockSettingsInitializer: jest.Mocked<ISettingsInitializer>;
+  let mockGitignoreProtocol: jest.Mocked<IGitignoreProtocol>;
 
   beforeEach(() => {
     mockAgentFileProtocol = {
@@ -23,10 +25,15 @@ describe("LocalPlanProjectInitGateway", () => {
       getPlannedFileChange: jest.fn<ISettingsInitializer["getPlannedFileChange"]>().mockResolvedValue(null),
     } as jest.Mocked<ISettingsInitializer>;
 
-    gateway = new LocalPlanProjectInitGateway(mockAgentFileProtocol, mockSettingsInitializer);
+    mockGitignoreProtocol = {
+      ensureExclusions: jest.fn<IGitignoreProtocol["ensureExclusions"]>().mockResolvedValue(undefined),
+      getPlannedFileChanges: jest.fn<IGitignoreProtocol["getPlannedFileChanges"]>().mockResolvedValue([]),
+    } as jest.Mocked<IGitignoreProtocol>;
+
+    gateway = new LocalPlanProjectInitGateway(mockAgentFileProtocol, mockSettingsInitializer, mockGitignoreProtocol);
   });
 
-  it("should aggregate agent file changes and settings change into response", async () => {
+  it("should aggregate agent file changes, settings change, and gitignore changes into response", async () => {
     const agentChanges: PlannedFileChange[] = [
       { path: "AGENTS.md", action: "create", description: "Agent instructions file" },
       { path: ".claude/settings.json", action: "create", description: "Claude agent config" },
@@ -36,15 +43,20 @@ describe("LocalPlanProjectInitGateway", () => {
       action: "create",
       description: "Jumbo settings file",
     };
+    const gitignoreChanges: PlannedFileChange[] = [
+      { path: ".gitignore", action: "create", description: "Exclude Jumbo internal state from version control" },
+    ];
 
     mockAgentFileProtocol.getPlannedFileChanges.mockResolvedValue(agentChanges);
     mockSettingsInitializer.getPlannedFileChange.mockResolvedValue(settingsChange);
+    mockGitignoreProtocol.getPlannedFileChanges.mockResolvedValue(gitignoreChanges);
 
     const response = await gateway.planProjectInit({ projectRoot: "/test/project" });
 
-    expect(response.plannedChanges).toEqual([...agentChanges, settingsChange]);
+    expect(response.plannedChanges).toEqual([...agentChanges, settingsChange, ...gitignoreChanges]);
     expect(mockAgentFileProtocol.getPlannedFileChanges).toHaveBeenCalledWith("/test/project");
     expect(mockSettingsInitializer.getPlannedFileChange).toHaveBeenCalled();
+    expect(mockGitignoreProtocol.getPlannedFileChanges).toHaveBeenCalledWith("/test/project");
   });
 
   it("should exclude settings change when settingsInitializer returns null", async () => {
@@ -54,6 +66,7 @@ describe("LocalPlanProjectInitGateway", () => {
 
     mockAgentFileProtocol.getPlannedFileChanges.mockResolvedValue(agentChanges);
     mockSettingsInitializer.getPlannedFileChange.mockResolvedValue(null);
+    mockGitignoreProtocol.getPlannedFileChanges.mockResolvedValue([]);
 
     const response = await gateway.planProjectInit({ projectRoot: "/test/project" });
 
@@ -63,6 +76,7 @@ describe("LocalPlanProjectInitGateway", () => {
   it("should return empty planned changes when no changes are needed", async () => {
     mockAgentFileProtocol.getPlannedFileChanges.mockResolvedValue([]);
     mockSettingsInitializer.getPlannedFileChange.mockResolvedValue(null);
+    mockGitignoreProtocol.getPlannedFileChanges.mockResolvedValue([]);
 
     const response = await gateway.planProjectInit({ projectRoot: "/test/project" });
 

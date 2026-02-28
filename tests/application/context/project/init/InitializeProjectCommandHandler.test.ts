@@ -7,6 +7,7 @@ import { InitializeProjectCommand } from "../../../../../src/application/context
 import { IProjectInitializedEventWriter } from "../../../../../src/application/context/project/init/IProjectInitializedEventWriter.js";
 import { IProjectInitReader } from "../../../../../src/application/context/project/init/IProjectInitReader.js";
 import { IAgentFileProtocol } from "../../../../../src/application/context/project/init/IAgentFileProtocol.js";
+import { IGitignoreProtocol } from "../../../../../src/application/context/project/init/IGitignoreProtocol.js";
 import { ISettingsInitializer } from "../../../../../src/application/settings/ISettingsInitializer.js";
 import { IEventBus } from "../../../../../src/application/messaging/IEventBus.js";
 import { ProjectErrorMessages, ProjectEventType } from "../../../../../src/domain/project/Constants.js";
@@ -21,6 +22,7 @@ describe("InitializeProjectCommandHandler", () => {
   let reader: jest.Mocked<IProjectInitReader>;
   let agentFileProtocol: jest.Mocked<IAgentFileProtocol>;
   let settingsInitializer: jest.Mocked<ISettingsInitializer>;
+  let gitignoreProtocol: jest.Mocked<IGitignoreProtocol>;
 
   beforeEach(() => {
     eventWriter = {
@@ -50,12 +52,18 @@ describe("InitializeProjectCommandHandler", () => {
       getPlannedFileChange: jest.fn().mockResolvedValue(null),
     };
 
+    gitignoreProtocol = {
+      ensureExclusions: jest.fn().mockResolvedValue(undefined),
+      getPlannedFileChanges: jest.fn().mockResolvedValue([]),
+    };
+
     handler = new InitializeProjectCommandHandler(
       eventWriter,
       eventBus,
       reader,
       agentFileProtocol,
-      settingsInitializer
+      settingsInitializer,
+      gitignoreProtocol
     );
   });
 
@@ -85,9 +93,10 @@ describe("InitializeProjectCommandHandler", () => {
       expect(agentFileProtocol.ensureAgentsMd).not.toHaveBeenCalled();
       expect(agentFileProtocol.ensureAgentConfigurations).not.toHaveBeenCalled();
       expect(settingsInitializer.ensureSettingsFileExists).not.toHaveBeenCalled();
+      expect(gitignoreProtocol.ensureExclusions).not.toHaveBeenCalled();
     });
 
-    it("should initialize project and ensure settings file exists", async () => {
+    it("should initialize project and ensure all side effects execute", async () => {
       reader.getProject.mockResolvedValue(null);
 
       const command: InitializeProjectCommand = {
@@ -111,6 +120,7 @@ describe("InitializeProjectCommandHandler", () => {
       expect(agentFileProtocol.ensureAgentsMd).toHaveBeenCalledWith("/repo");
       expect(agentFileProtocol.ensureAgentConfigurations).toHaveBeenCalledWith("/repo");
       expect(settingsInitializer.ensureSettingsFileExists).toHaveBeenCalledTimes(1);
+      expect(gitignoreProtocol.ensureExclusions).toHaveBeenCalledWith("/repo");
     });
   });
 });

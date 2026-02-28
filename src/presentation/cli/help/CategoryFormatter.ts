@@ -89,7 +89,8 @@ function formatCategory(category: CommandCategory | "uncategorized", commands: R
  * Format all commands grouped by category (gh-style)
  */
 export function formatCategorizedCommands(commands: RegisteredCommand[]): string {
-  const grouped = groupByCategory(commands);
+  const visible = commands.filter(c => !c.metadata.hidden);
+  const grouped = groupByCategory(visible);
   const sections: string[] = [];
 
   // Add categories in defined order

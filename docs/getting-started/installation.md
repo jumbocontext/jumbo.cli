@@ -1,3 +1,10 @@
+---
+title: Installation
+description: Install Jumbo globally to use it across all your projects.
+sidebar:
+  order: 1
+---
+
 # Install Jumbo
 
 Install Jumbo globally to use it across all your projects.
@@ -34,7 +41,7 @@ npm install -g jumbo-cli
 Expected output:
 
 ```
-jumbo-cli/1.0.0-beta.0
+jumbo-cli/1.0.1
 ```
 
 You can also run `jumbo` without arguments to see the quick start instructions.
@@ -54,4 +61,5 @@ If `jumbo` is not recognized after installation:
 ## Next steps
 
 - [Initialize your first project](quickstart.md)
+- [What Jumbo creates](what-jumbo-creates.md) — Understand every file Jumbo adds to your project
 - [Understand core concepts](concepts.md)

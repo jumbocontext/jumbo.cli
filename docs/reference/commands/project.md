@@ -1,3 +1,10 @@
+---
+title: Project Commands Reference
+description: Complete reference for all project-related commands — init and update.
+sidebar:
+  order: 3
+---
+
 # Project Commands Reference
 
 Complete reference for all project-related commands.

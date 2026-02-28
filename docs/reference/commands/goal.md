@@ -1,3 +1,10 @@
+---
+title: Goal Commands Reference
+description: Complete reference for all goal-related commands — definition, refinement, execution, review, codification, and management.
+sidebar:
+  order: 1
+---
+
 # Goal Commands Reference
 
 Complete reference for all goal-related commands.
@@ -12,49 +19,94 @@ Define a new goal.
 
 ```bash
 > jumbo goal add --objective <text> [options]
-jumbo goal add --interactive
+> jumbo goal add --interactive
 ```
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
+| `-t, --title <text>` | Short title for the goal (max 60 characters) |
 | `--objective <text>` | What needs to be accomplished (required unless `--interactive`) |
 | `--criteria <items...>` | Success criteria (can specify multiple) |
 | `--scope-in <items...>` | Components in scope |
 | `--scope-out <items...>` | Components explicitly out of scope |
-| `--boundary <items...>` | Non-negotiable constraints |
 | `--interactive` | Use guided wizard |
 | `--next-goal <goalId>` | Chain to another goal after completion |
 | `--previous-goal <goalId>` | Chain from another goal to this one |
-| `--files-to-create <files...>` | New files this goal will create |
-| `--files-to-change <files...>` | Existing files this goal will modify |
+| `--prerequisite-goals <goalIds...>` | Goal IDs that must be at submitted+ status before this goal can start |
 
 ### Examples
 
-Create a goal with guided prompts:
-
 ```bash
+# Create with guided prompts
 > jumbo goal add --interactive
-```
 
-Add a goal with success criteria:
+# Add with title and criteria
+> jumbo goal add --title "JWT Auth" --objective "Implement JWT auth" --criteria "Token generation" "Token validation"
 
-```bash
-> jumbo goal add --objective "Implement JWT auth" --criteria "Token generation" "Token validation"
-```
-
-Add a goal with scope defined:
-
-```bash
+# Add with scope
 > jumbo goal add --objective "Refactor UserService" --scope-in UserService AuthMiddleware --scope-out AdminRoutes
+
+# Add with prerequisites
+> jumbo goal add --objective "Deploy to prod" --prerequisite-goals goal_abc123 goal_def456
+```
+
+---
+
+## jumbo goal refine
+
+Start refinement of a goal — displays details and transitions to `in-refinement`.
+
+### Synopsis
+
+```bash
+> jumbo goal refine --id <goalId> [--interactive]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to refine (required) |
+| `--interactive` | Guided refinement with prompts to register relations |
+
+### Examples
+
+```bash
+> jumbo goal refine --id goal_abc123
+> jumbo goal refine --id goal_abc123 --interactive
+```
+
+---
+
+## jumbo goal commit
+
+Commit a goal after refinement is complete — transitions from `in-refinement` to `refined`.
+
+### Synopsis
+
+```bash
+> jumbo goal commit --id <goalId>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to commit (required) |
+
+### Examples
+
+```bash
+> jumbo goal commit --id goal_abc123
 ```
 
 ---
 
 ## jumbo goal start
 
-Start working on a goal (transitions from `to-do` to `doing`).
+Start a refined goal — transitions from `refined` to `doing` and delivers the goal context packet.
 
 ### Synopsis
 
@@ -66,7 +118,12 @@ Start working on a goal (transitions from `to-do` to `doing`).
 
 | Option | Description |
 |--------|-------------|
-| `--id <goalId>` | ID of the goal to start (required) |
+| `-i, --id <goalId>` | ID of the goal to start (required) |
+
+### Notes
+
+- Prerequisite goals must be at `submitted` or later status before starting
+- Delivers the goal's full context packet to the agent
 
 ### Examples
 
@@ -76,26 +133,55 @@ Start working on a goal (transitions from `to-do` to `doing`).
 
 ---
 
-## jumbo goal complete
+## jumbo goal pause
 
-Mark a goal as completed.
+Pause an active goal — transitions from `doing` to `paused`.
 
 ### Synopsis
 
 ```bash
-> jumbo goal complete --id <goalId>
+> jumbo goal pause --id <goalId> --reason <reason> [--note <text>]
 ```
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--id <goalId>` | ID of the goal to complete (required) |
+| `-i, --id <goalId>` | ID of the goal to pause (required) |
+| `-r, --reason <reason>` | Reason for pausing: `ContextCompressed`, `WorkPaused`, `Other` (required) |
+| `-N, --note <text>` | Additional context about the pause |
 
 ### Examples
 
 ```bash
-> jumbo goal complete --id goal_abc123
+> jumbo goal pause --id goal_abc123 --reason ContextCompressed
+> jumbo goal pause --id goal_abc123 --reason Other --note "Need to switch priorities"
+```
+
+---
+
+## jumbo goal resume
+
+Resume work on a goal — transitions `paused` to `doing`, or reloads context if already `doing`.
+
+### Synopsis
+
+```bash
+> jumbo goal resume --id <goalId> [--note <text>]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to resume (required) |
+| `-N, --note <text>` | Note about resumption (only used when transitioning from paused) |
+
+### Examples
+
+```bash
+> jumbo goal resume --id goal_abc123
+> jumbo goal resume --id goal_abc123 --note "Ready to continue"
 ```
 
 ---
@@ -114,8 +200,8 @@ Mark a goal as blocked with a reason.
 
 | Option | Description |
 |--------|-------------|
-| `--id <goalId>` | ID of the goal to block (required) |
-| `--note <reason>` | Why the goal is blocked (required) |
+| `-i, --id <goalId>` | ID of the goal to block (required) |
+| `-N, --note <reason>` | Why the goal is blocked (required) |
 
 ### Examples
 
@@ -139,28 +225,190 @@ Unblock a goal and resume work.
 
 | Option | Description |
 |--------|-------------|
-| `--id <goalId>` | ID of the goal to unblock (required) |
-| `--note <resolution>` | How the blocker was resolved (optional) |
+| `-i, --id <goalId>` | ID of the goal to unblock (required) |
+| `-N, --note <resolution>` | How the blocker was resolved (optional) |
 
 ### Examples
 
-Unblock a goal:
-
 ```bash
 > jumbo goal unblock --id goal_abc123
+> jumbo goal unblock --id goal_abc123 --note "API credentials received"
 ```
 
-Unblock with resolution note:
+---
+
+## jumbo goal submit
+
+Submit a goal after implementation is complete — transitions from `doing` to `submitted`.
+
+### Synopsis
 
 ```bash
-> jumbo goal unblock --id goal_abc123 --note "API credentials received"
+> jumbo goal submit --id <goalId>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to submit (required) |
+
+### Examples
+
+```bash
+> jumbo goal submit --id goal_abc123
+```
+
+---
+
+## jumbo goal review
+
+Start QA review on a submitted goal — transitions from `submitted` to `in-review` and delivers the QA verification prompt.
+
+### Synopsis
+
+```bash
+> jumbo goal review --id <goalId>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to review (required) |
+
+### Examples
+
+```bash
+> jumbo goal review --id goal_abc123
+```
+
+---
+
+## jumbo goal approve
+
+Approve a goal after successful QA review — transitions from `in-review` to `approved`.
+
+### Synopsis
+
+```bash
+> jumbo goal approve --id <goalId>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to approve (required) |
+
+### Examples
+
+```bash
+> jumbo goal approve --id goal_abc123
+```
+
+---
+
+## jumbo goal reject
+
+Reject a goal after failed QA review — transitions from `in-review` back to `doing`.
+
+### Synopsis
+
+```bash
+> jumbo goal reject --id <goalId> --audit-findings <findings>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to reject (required) |
+| `-a, --audit-findings <findings>` | Description of implementation problems that need fixing (required) |
+
+### Examples
+
+```bash
+> jumbo goal reject --id goal_abc123 --audit-findings "Missing error handling in API endpoint"
+```
+
+---
+
+## jumbo goal codify
+
+Start the codification phase on an approved goal — transitions from `approved` to `codifying`. Prompts for architectural reconciliation.
+
+### Synopsis
+
+```bash
+> jumbo goal codify --id <goalId>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to codify (required) |
+
+### Examples
+
+```bash
+> jumbo goal codify --id goal_abc123
+```
+
+---
+
+## jumbo goal close
+
+Close a goal after codification is complete — transitions from `codifying` to `done`.
+
+### Synopsis
+
+```bash
+> jumbo goal close --id <goalId>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to close (required) |
+
+### Examples
+
+```bash
+> jumbo goal close --id goal_abc123
+```
+
+---
+
+## jumbo goal complete
+
+Mark a goal as completed (shortcut that skips review/codification phases).
+
+### Synopsis
+
+```bash
+> jumbo goal complete --id <goalId>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to complete (required) |
+
+### Examples
+
+```bash
+> jumbo goal complete --id goal_abc123
 ```
 
 ---
 
 ## jumbo goal reset
 
-Reset a goal back to `to-do` status.
+Reset a goal back to its last waiting state. The target is computed dynamically based on the current status.
 
 ### Synopsis
 
@@ -172,12 +420,18 @@ Reset a goal back to `to-do` status.
 
 | Option | Description |
 |--------|-------------|
-| `--id <goalId>` | ID of the goal to reset (required) |
+| `-i, --id <goalId>` | ID of the goal to reset (required) |
 
-### Notes
+### Reset targets
 
-- Blocked goals cannot be reset (unblock them first)
-- Can reset goals in `doing` or `completed` status
+| Current status | Resets to |
+|---------------|-----------|
+| `in-refinement` | `defined` |
+| `in-review` | `submitted` |
+| `codifying` | `approved` |
+| `doing` | `lastWaitingStatus` or `refined` |
+
+For goals in `doing`, the reset target is the last "waiting" status before entering execution. This handles pause/resume cycles correctly — a resume does not overwrite the original entry point.
 
 ### Examples
 
@@ -187,32 +441,60 @@ Reset a goal back to `to-do` status.
 
 ---
 
-## jumbo goal resume
+## jumbo goal update
 
-Resume work on an in-progress goal (loads goal context).
+Update an existing goal's properties. Partial updates are supported — only specified fields change.
 
 ### Synopsis
 
 ```bash
-> jumbo goal resume --id <goalId>
+> jumbo goal update --id <goalId> [options]
 ```
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--id <goalId>` | ID of the goal to resume (required) |
-
-### Notes
-
-- Only works for goals in `doing` status
-- Use `goal start` for `to-do` goals
-- Use `goal unblock` for `blocked` goals
+| `-i, --id <goalId>` | ID of the goal to update (required) |
+| `-t, --title <text>` | Updated title (max 60 characters) |
+| `--objective <text>` | Updated objective |
+| `--criteria <items...>` | Updated success criteria |
+| `--scope-in <items...>` | Updated in-scope items |
+| `--scope-out <items...>` | Updated out-of-scope items |
+| `--next-goal <goalId>` | Update the next goal chain |
+| `--prerequisite-goals <goalIds...>` | Update prerequisite goal IDs |
 
 ### Examples
 
 ```bash
-> jumbo goal resume --id goal_abc123
+> jumbo goal update --id goal_abc123 --title "New Title"
+> jumbo goal update --id goal_abc123 --objective "Updated goal" --scope-in "Component A"
+> jumbo goal update --id goal_abc123 --prerequisite-goals goal_def456
+```
+
+---
+
+## jumbo goal update-progress
+
+Append a task description to a goal's progress log.
+
+### Synopsis
+
+```bash
+> jumbo goal update-progress --id <goalId> --task-description <text>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal (required) |
+| `--task-description <text>` | Description of the completed sub-task (required) |
+
+### Examples
+
+```bash
+> jumbo goal update-progress --id goal_abc123 --task-description "Implemented user login form"
 ```
 
 ---
@@ -231,17 +513,7 @@ Display full goal details.
 
 | Option | Description |
 |--------|-------------|
-| `--id <goalId>` | ID of the goal to show (required) |
-
-### Output
-
-Displays:
-- Goal ID and objective
-- Current status
-- Success criteria
-- Scope (in and out)
-- Boundaries
-- Notes and timestamps
+| `-i, --id <goalId>` | ID of the goal to show (required) |
 
 ### Examples
 
@@ -251,56 +523,9 @@ Displays:
 
 ---
 
-## jumbo goal update
-
-Update an existing goal's properties.
-
-### Synopsis
-
-```bash
-> jumbo goal update --id <goalId> [options]
-```
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `--id <goalId>` | ID of the goal to update (required) |
-| `--objective <text>` | Updated objective |
-| `--criteria <items...>` | Updated success criteria |
-| `--scope-in <items...>` | Updated in-scope items |
-| `--scope-out <items...>` | Updated out-of-scope items |
-| `--boundary <items...>` | Updated boundaries |
-
-### Notes
-
-Partial updates are supported—only specified fields change.
-
-### Examples
-
-Update objective only:
-
-```bash
-> jumbo goal update --id goal_abc123 --objective "Updated goal"
-```
-
-Update success criteria:
-
-```bash
-> jumbo goal update --id goal_abc123 --criteria "Criterion 1" "Criterion 2"
-```
-
-Update multiple fields:
-
-```bash
-> jumbo goal update --id goal_abc123 --objective "New objective" --scope-in "Component A"
-```
-
----
-
 ## jumbo goal remove
 
-Remove a goal from active tracking.
+Remove a goal from active tracking. Event history is preserved; only the active view is removed.
 
 ### Synopsis
 
@@ -312,11 +537,7 @@ Remove a goal from active tracking.
 
 | Option | Description |
 |--------|-------------|
-| `--id <goalId>` | ID of the goal to remove (required) |
-
-### Notes
-
-Event history is preserved; only the active view is removed.
+| `-i, --id <goalId>` | ID of the goal to remove (required) |
 
 ### Examples
 
@@ -328,20 +549,33 @@ Event history is preserved; only the active view is removed.
 
 ## jumbo goals list
 
-List all active (non-completed) goals.
+List goals filtered by status.
 
 ### Synopsis
 
 ```bash
-> jumbo goals list
+> jumbo goals list [--status <statuses>]
 ```
 
-### Output
+### Options
 
-Displays all goals with status `to-do`, `doing`, or `blocked`.
+| Option | Description |
+|--------|-------------|
+| `-s, --status <statuses>` | Filter by status (comma-separated) |
+
+### Valid status values
+
+`defined`, `doing`, `blocked`, `paused`, `refined`, `in-refinement`, `in-review`, `approved`, `done`
 
 ### Examples
 
 ```bash
+# List all active goals
 > jumbo goals list
+
+# List only goals in progress
+> jumbo goals list --status doing
+
+# List doing and blocked goals
+> jumbo goals list --status doing,blocked
 ```

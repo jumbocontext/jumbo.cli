@@ -1,3 +1,10 @@
+---
+title: Goal Management
+description: Master Jumbo's 13-state goal lifecycle — from definition and refinement through execution, review, codification, and completion.
+sidebar:
+  order: 2
+---
+
 # Goal Management
 
 Track work effectively with Jumbo's goal system.
@@ -6,9 +13,9 @@ Track work effectively with Jumbo's goal system.
 
 ## Overview
 
-Goals are the heart of Jumbo's context management. When you start a goal, Jumbo delivers a context packet to your AI agent containing:
+Goals are the heart of Jumbo's context management. Each goal moves through four phases: **refinement**, **execution**, **review**, and **codification**. At each transition, Jumbo delivers optimized context packets to your AI agent containing:
 
-- The goal's objective, criteria, and boundaries
+- The goal's objective, criteria, and scope
 - Relevant components and dependencies
 - Applicable invariants and guidelines
 - Recent architectural decisions
@@ -18,30 +25,70 @@ Goals are the heart of Jumbo's context management. When you start a goal, Jumbo 
 ## Goal lifecycle
 
 ```
-┌─────────┐     start      ┌─────────┐    complete    ┌───────────┐
-│  to-do  │ ─────────────► │  doing  │ ─────────────► │ completed │
-└─────────┘                └─────────┘                └───────────┘
-     ▲                          │
-     │                          │ block
-     │ reset                    ▼
-     │                     ┌─────────┐
-     └──────────────────── │ blocked │
-              unblock      └─────────┘
+                          ┌──────────────────────────────────────┐
+                          │           REFINEMENT                 │
+                          │                                      │
+                          │  DEFINED ──► IN_REFINEMENT ──► REFINED
+                          │                                  │   │
+                          └──────────────────────────────────│───┘
+                                                             │
+                                            start            │
+                                                             ▼
+┌────────────────────────────────────────────────────────────────┐
+│                        EXECUTION                               │
+│                                                                │
+│          ┌──────── PAUSED                                      │
+│          │ resume     ▲ pause                                  │
+│          ▼            │                                        │
+│        DOING ────► BLOCKED                                     │
+│          │         unblock ──► UNBLOCKED ──► DOING             │
+│          │ submit                                              │
+│          ▼                                                     │
+└────────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────────┐
+│                        REVIEW                                  │
+│                                                                │
+│        SUBMITTED ──► IN_REVIEW ──┬──► APPROVED                 │
+│            ▲                     │                              │
+│            └──── REJECTED ◄──────┘                              │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+                          │
+                          ▼
+┌────────────────────────────────────────────────────────────────┐
+│                     CODIFICATION                               │
+│                                                                │
+│               APPROVED ──► CODIFYING ──► DONE                  │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
 ```
 
 | Status | Description |
 |--------|-------------|
-| `to-do` | Defined but not started |
-| `doing` | Currently in progress |
+| `defined` | Goal created, not yet refined |
+| `in-refinement` | Relations to project entities being curated |
+| `refined` | Refinement complete, ready to start |
+| `doing` | Currently being implemented |
+| `paused` | Temporarily paused |
 | `blocked` | Impeded by an external factor |
-| `completed` | Successfully finished |
+| `unblocked` | Blocker resolved, transitioning back to doing |
+| `submitted` | Implementation complete, awaiting QA review |
+| `in-review` | QA review in progress |
+| `rejected` | QA review failed, needs rework |
+| `approved` | QA review passed |
+| `codifying` | Architectural reconciliation in progress |
+| `done` | Goal closed after codification |
 
 ---
 
-## Create a goal
+## Phase 1: Definition and refinement
 
-### Interactive mode  
-<sub>\#for-devs</sub>
+### Create a goal
+
+#### Interactive mode
+<sub>#for-devs</sub>
 
 Use the guided wizard for complex goals:
 
@@ -49,44 +96,60 @@ Use the guided wizard for complex goals:
 > jumbo goal add --interactive
 ```
 
-The wizard walks you through:
-
-1. Defining the objective
-2. Selecting in-scope components
-3. Choosing relevant invariants and guidelines
-4. Specifying success criteria
-5. Setting boundaries
-
-*Note: If no relevant context is selected all available context will be rendered to the agent when started.*
-
-### Command-line mode  
-<sub>\#for-devs-and-agents</sub>
+#### Command-line mode
+<sub>#for-devs-and-agents</sub>
 
 Create a goal directly:
 
 ```bash
-> jumbo goal add --objective "Implement Rules Engine Pattern for Goal aggregate" --criteria "Validation rules extracted to dedicated rule classes" "Goal aggregate uses rule engine for all validations" "Rules are composable and reusable"
+> jumbo goal add --title "JWT Auth" --objective "Implement JWT authentication" --criteria "Token generation works" "Token validation works"
 ```
 
-### All options
+#### Options
 
 | Option | Description |
 |--------|-------------|
-| `--objective <text>` | What needs to be accomplished (required) |
+| `--title <text>` | Short title for the goal (max 60 characters) |
+| `--objective <text>` | What needs to be accomplished (required unless `--interactive`) |
 | `--criteria <items...>` | Success criteria (can specify multiple) |
 | `--scope-in <items...>` | Components in scope |
 | `--scope-out <items...>` | Components explicitly out of scope |
-| `--boundary <items...>` | Non-negotiable constraints |
 | `--interactive` | Use guided wizard |
 | `--next-goal <goalId>` | Chain to another goal after completion |
 | `--previous-goal <goalId>` | Chain from another goal to this one |
+| `--prerequisite-goals <goalIds...>` | Goals that must reach submitted+ status before this goal can start |
+
+### Refine a goal
+<sub>#for-devs-and-agents</sub>
+
+Refinement curates relations between the goal and project entities (components, decisions, invariants, guidelines, dependencies). This ensures the agent receives optimal architectural context when the goal is started.
+
+```bash
+> jumbo goal refine --id goal_abc123
+```
+
+Use `--interactive` for guided prompts to register relations:
+
+```bash
+> jumbo goal refine --id goal_abc123 --interactive
+```
+
+### Commit refinement
+
+Lock the refinement and transition to `refined`:
+
+```bash
+> jumbo goal commit --id goal_abc123
+```
 
 ---
 
-## Start a goal 
-<sub>\#for-agents \#manual-option</sub>
+## Phase 2: Execution
 
-*NOTE: Agents should do this automatially if the Jumbo workflow is used. It can be useful to utilize Jumbo as a backlog to track your work. If you want to implement a goal manually, this command can be used in parallel without disrupting your agent flow. When ready to work on a goal:*
+### Start a goal
+<sub>#for-agents #manual-option</sub>
+
+When ready to work on a refined goal:
 
 ```bash
 > jumbo goal start --id goal_abc123
@@ -94,158 +157,170 @@ Create a goal directly:
 
 This:
 
-1. Transitions the goal to `doing` status
-2. Delivers the goal's context packet to your AI agent
-3. Provides guidance for working within scope
+1. Validates prerequisite goals are at `submitted` or later status
+2. Transitions the goal to `doing`
+3. Delivers the goal's context packet to your AI agent
 
-Your AI agent receives all relevant project knowledge to begin work immediately.
+### Track progress
 
----
-
-## View goal details
-<sub>\#for-devs \#agent-option</sub>
-
-Display complete goal information:
+Record completed sub-tasks during implementation:
 
 ```bash
-> jumbo goal show --id goal_abc123
+> jumbo goal update-progress --id goal_abc123 --task-description "Implemented user login form"
 ```
 
-Output includes:
+### Pause a goal
 
-- Goal ID and objective
-- Current status
-- Success criteria
-- Scope (in and out)
-- Boundaries
-- Notes and timestamps
-
----
-
-## Update a goal
-<sub>\#for-agents-and-devs</sub>
-
-Modify goal properties without changing status:
+Temporarily suspend work:
 
 ```bash
-> jumbo goal update --id goal_abc123 --objective "Updated objective"
+> jumbo goal pause --id goal_abc123 --reason ContextCompressed
 ```
 
-Update criteria:
+| Reason | When to use |
+|--------|-------------|
+| `ContextCompressed` | Agent context window was compressed |
+| `WorkPaused` | Switching to other work |
+| `Other` | Any other reason (use `--note` for details) |
+
+Add context with `--note`:
 
 ```bash
-> jumbo goal update --id goal_abc123 --criteria "New criterion 1" "New criterion 2"
+> jumbo goal pause --id goal_abc123 --reason Other --note "Need to switch priorities"
 ```
 
-Update multiple fields:
+### Resume a goal
 
-```bash
-> jumbo goal update --id goal_abc123 --objective "New objective" --scope-in "ComponentA"
-```
-
-Partial updates are supported—only specified fields change.
-
----
-
-## Block a goal
-<sub>\#for-agents-and-devs</sub>
-
-When progress is impeded:
-
-```bash
-> jumbo goal block --id goal_abc123 --note "Waiting for API credentials"
-```
-
-The blocker reason is recorded for future reference. This preserves context about why work stopped.
-
----
-
-## Unblock a goal
-<sub>\#for-agents-and-devs</sub>
-
-When the blocker is resolved:
-
-```bash
-> jumbo goal unblock --id goal_abc123
-```
-
-Add a resolution note:
-
-```bash
-> jumbo goal unblock --id goal_abc123 --note "Credentials received from DevOps"
-```
-
-The goal returns to `doing` status.
-
----
-
-## Complete a goal
-<sub>\#for-agents-and-devs</sub>
-
-When success criteria are met:
-
-```bash
-> jumbo goal complete --id goal_abc123
-```
-
-Jumbo prompts your AI agent to reflect on lessons learned and suggest knowledge to capture (invariants, guidelines, decisions).
-
-If the goal is chained to another goal, Jumbo suggests the next goal to start.
-
----
-
-## Resume a goal
-<sub>\#for-agents-and-devs</sub>
-
-Return to an in-progress goal in a new session:
+Return to a paused goal or reload context for an active goal:
 
 ```bash
 > jumbo goal resume --id goal_abc123
 ```
 
-This reloads the goal context without changing status. Use this when:
+Add a note when resuming from paused:
 
-- Starting a new session with an existing in-progress goal
-- Switching between multiple active goals
-- Refreshing context after project knowledge changes
+```bash
+> jumbo goal resume --id goal_abc123 --note "Ready to continue"
+```
 
-> **Note:** `resume` only works for goals in `doing` status. Use `start` for `to-do` goals or `unblock` for `blocked` goals.
+### Block a goal
+
+When progress is impeded by an external factor:
+
+```bash
+> jumbo goal block --id goal_abc123 --note "Waiting for API credentials"
+```
+
+### Unblock a goal
+
+When the blocker is resolved:
+
+```bash
+> jumbo goal unblock --id goal_abc123 --note "Credentials received from DevOps"
+```
+
+---
+
+## Phase 3: Review
+
+### Submit for review
+
+After implementation is complete:
+
+```bash
+> jumbo goal submit --id goal_abc123
+```
+
+### Start QA review
+
+Begin the review process:
+
+```bash
+> jumbo goal review --id goal_abc123
+```
+
+This delivers the goal's full context (objective, criteria, scope, related entities) as a QA verification prompt.
+
+### Approve or reject
+
+If all criteria are met:
+
+```bash
+> jumbo goal approve --id goal_abc123
+```
+
+If issues are found:
+
+```bash
+> jumbo goal reject --id goal_abc123 --audit-findings "Missing error handling in API endpoint"
+```
+
+Rejection transitions the goal back to `doing` so the agent can address the findings, then re-submit.
+
+---
+
+## Phase 4: Codification
+
+### Codify
+
+After approval, reconcile architectural learnings:
+
+```bash
+> jumbo goal codify --id goal_abc123
+```
+
+This prompts the agent to reflect on whether the implementation surfaced new invariants, guidelines, decisions, or components that should be registered.
+
+### Close
+
+After codification is complete:
+
+```bash
+> jumbo goal close --id goal_abc123
+```
+
+The goal transitions to `done`. If chained to another goal, Jumbo suggests the next goal to start.
 
 ---
 
 ## Reset a goal
-<sub>\#for-agents-and-devs</sub>
 
-Move a goal back to `to-do` status:
+Reset dynamically computes a target state based on where the goal currently is:
 
 ```bash
 > jumbo goal reset --id goal_abc123
 ```
 
-Use this to:
+| Current status | Resets to |
+|---------------|-----------|
+| `in-refinement` | `defined` |
+| `in-review` | `submitted` |
+| `codifying` | `approved` |
+| `doing` | `lastWaitingStatus` or `refined` |
 
-- Re-plan a goal that was started prematurely
-- Return a completed goal to the backlog
-
-> **Note:** Blocked goals cannot be reset—unblock them first to preserve blocker context.
+For goals in `doing`, the reset target is the last "waiting" status the goal was in before entering execution. If the goal was paused and resumed, it resets to where it was before the pause/resume cycle. If no waiting status was recorded, it resets to `refined`.
 
 ---
 
-## Remove a goal
-<sub>\#for-devs</sub>
+## Prerequisite goals
 
-Remove a goal from active tracking:
+Goals can declare prerequisites that must be met before starting:
 
 ```bash
-> jumbo goal remove --id goal_abc123
+> jumbo goal add --objective "Deploy to production" --prerequisite-goals goal_abc123 goal_def456
 ```
 
-Event history is preserved; only the active view is removed.
+Prerequisites can also be set via update:
+
+```bash
+> jumbo goal update --id goal_xyz789 --prerequisite-goals goal_abc123
+```
+
+The prerequisite policy enforces that all prerequisite goals must be at `submitted` or later status (submitted, in-review, approved, codifying, or done) before the dependent goal can start.
 
 ---
 
-## Chain goals
-<sub>\#for-agents-and-devs</sub>
+## Goal chaining
 
 Link goals in a sequence for multi-step work:
 
@@ -265,14 +340,47 @@ Create a goal that precedes another:
 
 ---
 
-## List goals
-<sub>\#for-agents-and-devs</sub>
+## Other commands
 
-View all active (non-completed) goals:
+### View goal details
+
+```bash
+> jumbo goal show --id goal_abc123
+```
+
+### Update a goal
+
+Modify goal properties (partial updates supported):
+
+```bash
+> jumbo goal update --id goal_abc123 --title "New Title" --objective "Updated objective"
+```
+
+### Complete a goal (shortcut)
+
+Skip the review/codification phases:
+
+```bash
+> jumbo goal complete --id goal_abc123
+```
+
+### Remove a goal
+
+```bash
+> jumbo goal remove --id goal_abc123
+```
+
+Event history is preserved; only the active view is removed.
+
+### List goals
 
 ```bash
 > jumbo goals list
+> jumbo goals list --status doing
+> jumbo goals list --status doing,blocked
 ```
+
+Valid status filters: `defined`, `doing`, `blocked`, `paused`, `refined`, `in-refinement`, `in-review`, `approved`, `done`.
 
 ---
 
@@ -284,8 +392,8 @@ View all active (non-completed) goals:
 2. **Define measurable criteria**
    "Tests pass" not "It works"
 
-3. **Set clear boundaries**
-   Prevent scope creep before it happens
+3. **Refine before starting**
+   Curating relations ensures your agent gets precise context
 
 4. **Use interactive mode for complex goals**
    The wizard helps you select relevant context
@@ -293,8 +401,8 @@ View all active (non-completed) goals:
 5. **Block rather than abandon**
    Preserves blocker context for future sessions
 
-6. **Complete goals explicitly**
-   Triggers knowledge capture prompts
+6. **Always review and codify**
+   The review phase catches deviations; codification captures learnings
 
 ---
 

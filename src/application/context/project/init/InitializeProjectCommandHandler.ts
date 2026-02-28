@@ -9,6 +9,7 @@
  * 5. Publishes event to event bus for projection updates
  * 6. Creates/updates AGENTS.md with Jumbo instructions
  * 7. Configures all supported agents (markdown files, settings, hooks)
+ * 8. Ensures .gitignore excludes Jumbo internal state
  */
 
 import { InitializeProjectCommand } from "./InitializeProjectCommand.js";
@@ -16,6 +17,7 @@ import { IProjectInitializedEventWriter } from "./IProjectInitializedEventWriter
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { IProjectInitReader } from "./IProjectInitReader.js";
 import { IAgentFileProtocol } from "./IAgentFileProtocol.js";
+import { IGitignoreProtocol } from "./IGitignoreProtocol.js";
 import { ISettingsInitializer } from "../../../settings/ISettingsInitializer.js";
 import { Project } from "../../../../domain/project/Project.js";
 import { ProjectErrorMessages } from "../../../../domain/project/Constants.js";
@@ -26,7 +28,8 @@ export class InitializeProjectCommandHandler {
     private readonly eventBus: IEventBus,
     private readonly reader: IProjectInitReader,
     private readonly agentFileProtocol: IAgentFileProtocol,
-    private readonly settingsInitializer: ISettingsInitializer
+    private readonly settingsInitializer: ISettingsInitializer,
+    private readonly gitignoreProtocol: IGitignoreProtocol
   ) {}
 
   async execute(
@@ -63,6 +66,9 @@ export class InitializeProjectCommandHandler {
 
     // 7. Ensure default settings file exists (side effect)
     await this.settingsInitializer.ensureSettingsFileExists();
+
+    // 8. Ensure .gitignore excludes Jumbo internal state (side effect)
+    await this.gitignoreProtocol.ensureExclusions(projectRoot);
 
     return { projectId };
   }

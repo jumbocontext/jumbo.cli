@@ -237,6 +237,7 @@ import { SqliteProjectUpdatedProjector } from "../context/project/update/SqliteP
 import { SqliteProjectContextReader } from "../context/project/query/SqliteProjectContextReader.js";
 // Project Services
 import { AgentFileProtocol } from "../context/project/init/AgentFileProtocol.js";
+import { FsGitignoreProtocol } from "../context/project/init/FsGitignoreProtocol.js";
 import { InitializeProjectCommandHandler } from "../../application/context/project/init/InitializeProjectCommandHandler.js";
 import { LocalPlanProjectInitGateway } from "../../application/context/project/init/LocalPlanProjectInitGateway.js";
 import { PlanProjectInitController } from "../../application/context/project/init/PlanProjectInitController.js";
@@ -1507,16 +1508,19 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     );
 
     // Project Initialization Protocol
+    const gitignoreProtocol = new FsGitignoreProtocol();
     const initializeProjectCommandHandler = new InitializeProjectCommandHandler(
       projectInitializedEventStore,
       eventBus,
       projectInitializedProjector,
       agentFileProtocol,
-      settingsInitializer
+      settingsInitializer,
+      gitignoreProtocol
     );
     const localPlanProjectInitGateway = new LocalPlanProjectInitGateway(
       agentFileProtocol,
-      settingsInitializer
+      settingsInitializer,
+      gitignoreProtocol
     );
     const planProjectInitController = new PlanProjectInitController(
       localPlanProjectInitGateway

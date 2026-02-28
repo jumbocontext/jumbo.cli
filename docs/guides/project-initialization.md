@@ -1,3 +1,10 @@
+---
+title: Project Initialization
+description: Configure Jumbo for your project with interactive or scripted initialization.
+sidebar:
+  order: 1
+---
+
 # Project Initialization
 
 Configure Jumbo for your project.

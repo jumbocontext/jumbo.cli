@@ -3,12 +3,14 @@ import { PlanProjectInitRequest } from "./PlanProjectInitRequest.js";
 import { PlanProjectInitResponse } from "./PlanProjectInitResponse.js";
 import { PlannedFileChange } from "./PlannedFileChange.js";
 import { IAgentFileProtocol } from "./IAgentFileProtocol.js";
+import { IGitignoreProtocol } from "./IGitignoreProtocol.js";
 import { ISettingsInitializer } from "../../../settings/ISettingsInitializer.js";
 
 export class LocalPlanProjectInitGateway implements IPlanProjectInitGateway {
   constructor(
     private readonly agentFileProtocol: IAgentFileProtocol,
-    private readonly settingsInitializer: ISettingsInitializer
+    private readonly settingsInitializer: ISettingsInitializer,
+    private readonly gitignoreProtocol: IGitignoreProtocol
   ) {}
 
   async planProjectInit(request: PlanProjectInitRequest): Promise<PlanProjectInitResponse> {
@@ -23,6 +25,10 @@ export class LocalPlanProjectInitGateway implements IPlanProjectInitGateway {
     if (settingsChange) {
       changes.push(settingsChange);
     }
+
+    // Get gitignore changes (if needed)
+    const gitignoreChanges = await this.gitignoreProtocol.getPlannedFileChanges(request.projectRoot);
+    changes.push(...gitignoreChanges);
 
     return { plannedChanges: changes };
   }
