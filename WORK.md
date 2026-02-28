@@ -16,9 +16,10 @@ Jumbo needs mode-based autonomous operation that is:
 In scope:
 - goal lifecycle transitions for plan, implement, review, and codify phases
 - claim acquisition/release semantics per transition
-- work mode loop contracts (`work --plan|--implement|--review|--codify`)
+- autonomous worker architecture: agent skills define loop protocols, worker commands handle goal selection and state transitions, worker mode state on the worker registry filters downstream command output to prevent prompt conflicts
 - primary flow vs exceptional flow command model
 - migration strategy for existing goal data (state renames, semantic shifts)
+- worker identity migration from filesystem to SQLite with mode column
 
 
 ## 4. Prerequisites
@@ -26,6 +27,7 @@ In scope:
 2. Claim storage supports ownership, lease expiry and is persisted to the data store - not file based.
 3. Since .jumbo is not committed to Git (to avoid team conflicts), Claims must be managed by the storage provider.
 4. Goal list query can filter by state and claim availability.
+5. Worker identity is persisted to the data store (not file-based) with support for worker mode state, enabling output filtering and worker loop coordination.
 
 ## 5. Goals and Non-Goals
 Goals:
@@ -109,36 +111,93 @@ Rules:
 7. Claims use opaque claim tokens, and mutating commands on in-progress states must validate token ownership.
 8. Compaction hooks rely on claim lineage: `pre-compact` pauses the active goal by `(workerId, active claim)` and `post-compact` resumes the paused goal by `(workerId, paused claim lineage)`.
 
-## 10. Work Mode Protocols
+## 10. Autonomous Worker Architecture
 
-### `work --plan`
-1. Select next goal in `DEFINED` or `IN_REFINEMENT` (expired claim) state, with prerequisite goals at least `REFINED`, ordered by priority then created time.
-2. Acquire claim and run `jumbo goal refine --id <goal-id>`.
-3. Apply refine-jumbo-goal skill.
-4. On completion, run `jumbo goal commit --id <goal-id>` to release claim.
+### 10.1 Design Problem
 
-### `work --implement`
-1. Select next goal in `REFINED`, `REJECTED`, `UNBLOCKED`, or `DOING` (expired claim) state, with prerequisite goals at least `SUBMITTED`, ordered by priority then created time.
-2. Acquire claim with `jumbo goal start --id <goal-id>`.
-3. Apply implement-jumbo-goal skill.
-4. On completion, run `jumbo goal submit --id <goal-id>` to release claim.
+Existing goal commands (e.g., `goal refine`, `goal start`) return agent-directed prompts designed for a single-goal interactive workflow. These prompts instruct the agent on next steps ("now run `goal commit`", "proceed to start the next goal"). An autonomous worker loop also needs to direct the agent's next action (loop back, select another goal, stop on empty queue). Two competing instruction sources in the same agent context causes the agent to follow the wrong protocol.
 
-### `work --review`
-1. Select next goal in `SUBMITTED` or `IN_REVIEW` (expired claim) state, ordered by submission time then created time.
-2. Acquire claim with `jumbo goal review --id <goal-id>`.
-3. Audit implementation against criteria/scope/invariants.
-4. Apply review-jumbo-goal skill.
-5. If qualified, run `jumbo goal approve --id <goal-id>` to release claim.
-6. If not qualified, record findings and return goal to implement flow via `jumbo goal reject --id <goal-id> --audit-findings [...]`.
-7. If the approved goal has an `unblocksGoalId`, run `jumbo goal unblock --id <unblocks-goal-id>`.
+### 10.2 Solution: Skills Own Behavior, Commands Own Data
 
-### `work --codify`
-1. Select next goal in `APPROVED` or `CODIFYING` (expired claim) state, ordered by approval time then created time.
-2. Acquire claim with `jumbo goal codify --id <goal-id>`.
-3. Reconcile Jumbo's architectural model — verify components, dependencies, decisions, guidelines, invariants, and relations reflect what was built.
-4. Update CHANGELOG with what was delivered.
-5. Update any affected documentation.
-6. Run `jumbo goal close --id <goal-id>` to release claim.
+The architecture separates concerns across three layers:
+
+1. **Agent skills** (`.agents/skills/`) define the autonomous loop protocol. The skill is the entry point — a developer starts a terminal window and invokes a slash command (e.g., `/plan-worker`). The skill instructs the agent to run worker commands in a loop with a single agenda.
+
+2. **Worker commands** (`jumbo worker plan|implement|review|codify`) handle goal selection and state transitions. Each invocation is a single iteration: select next eligible goal → run the entry transition → return goal context. The agent/skill is the loop controller, not the command. Worker commands also register the active worker mode on the worker identity record.
+
+3. **Worker mode state** (`workerMode` on the worker registry) acts as a filter for all downstream command output. When a worker command sets `workerMode: 'plan'`, all subsequent goal commands (e.g., `goal commit`) check this flag and suppress behavioral prompts, returning only data/context. This eliminates the prompt conflict without per-command flags or fragile "ignore these instructions" conventions.
+
+### 10.3 Worker Mode Lifecycle
+
+1. Developer runs `/plan-worker` skill in a terminal session.
+2. Skill instructs agent to run `jumbo worker plan`.
+3. `worker plan` sets `workerMode: 'plan'` on the current worker's registry entry (persisted to SQLite).
+4. `worker plan` runs the GoalSelector to find the next eligible goal.
+5. If no eligible goal → returns "queue empty" response. Skill terminates the loop.
+6. If eligible goal found → internally invokes the entry transition (e.g., `goal refine`) and returns the goal context (objective, criteria, scope, related entities) without behavioral prompts.
+7. Agent follows skill protocol to do the work.
+8. Agent runs the exit command (e.g., `goal commit --id X`). Exit command sees `workerMode` is set, returns minimal confirmation without continuation prompts.
+9. Skill loops: agent runs `jumbo worker plan` again → step 4.
+10. On loop termination (empty queue or skill exit), `workerMode` is cleared.
+
+### 10.4 GoalSelector
+
+All four worker modes share a single GoalSelector component that takes mode-specific configuration and returns the next eligible goal. Selection logic:
+
+1. Query `IGoalStatusReader` for goals in the mode's eligible statuses.
+2. For stale in-progress statuses (e.g., IN_REFINEMENT for plan mode), filter to only those with expired claims.
+3. Evaluate prerequisite satisfaction via `PrerequisiteSatisfactionPolicy` — check whether all prerequisite goals have reached the mode's threshold status.
+4. Apply ordering: priority descending, then created time ascending.
+5. Return the single best candidate, or null if queue is empty.
+
+Mode-specific configuration:
+
+| Mode | Eligible Statuses | Stale In-Progress | Prereq Threshold | Entry Command | Exit Command(s) |
+|---|---|---|---|---|---|
+| plan | DEFINED, IN_REFINEMENT* | IN_REFINEMENT | REFINED | `goal refine` | `goal commit` |
+| implement | REFINED, REJECTED, UNBLOCKED, DOING* | DOING | SUBMITTED | `goal start` | `goal submit` |
+| review | SUBMITTED, IN_REVIEW* | IN_REVIEW | none | `goal review` | `goal approve` / `goal reject` |
+| codify | APPROVED, CODIFYING* | CODIFYING | none | `goal codify` | `goal close` |
+
+(*) Stale = in the in-progress state with an expired claim.
+
+### 10.5 Worker Identity and Mode Storage
+
+Worker identity is currently persisted to the filesystem (`workers.json` via `FsWorkerIdentityRegistry`). This must be migrated to SQLite before worker modes can be implemented:
+
+- Claims reference `WorkerId` and are already stored in SQLite. The worker identity that anchors those claims should be co-located.
+- `workerMode` must be queryable by output builders at runtime — file-based storage is insufficient for this cross-cutting concern.
+- A `workers` table stores: `workerId` (PK), `hostSessionKey` (unique), `mode` (nullable), `createdAt`, `lastSeenAt`.
+- `IWorkerIdentityReader` interface is preserved. A new `IWorkerModeAccessor` interface provides `getMode()` / `setMode()` for read/write access to the worker's active mode.
+
+### 10.6 Output Filtering by Worker Mode
+
+When `workerMode` is set on the current worker:
+
+- Goal command output builders check `workerMode` via `IWorkerModeAccessor`.
+- Behavioral prompts (next-step instructions, continuation suggestions) are suppressed.
+- Data content (goal context, status confirmations, error messages) is preserved.
+- This applies to all goal transition commands uniformly — no per-command opt-in required.
+- When `workerMode` is null (interactive use), output is unchanged.
+
+### 10.7 Worker Skills
+
+Each worker mode has a corresponding agent skill that defines the loop protocol:
+
+- `/plan-worker` — loop: `jumbo worker plan` → refine-jumbo-goal skill work → `goal commit` → repeat
+- `/implement-worker` — loop: `jumbo worker plan` → implement work → `goal submit` → repeat
+- `/review-worker` — loop: `jumbo worker review` → review-jumbo-goal skill work → `goal approve` or `goal reject` → repeat
+- `/codify-worker` — loop: `jumbo worker codify` → reconciliation work → `goal close` → repeat
+
+Skills are markdown documents in `.agents/skills/` with the same structure as existing skills (e.g., `refine-jumbo-goals`). They are the primary interface for autonomous operation — developers invoke skills, not raw worker commands.
+
+### 10.8 Interaction with work pause / work resume
+
+The existing `work pause` and `work resume` commands compose with worker mode:
+
+- `work pause` finds the active claimed goal for the current worker (unchanged behavior). Worker mode is preserved across pause — the worker is still in plan/implement/review/codify mode, just paused.
+- `work resume` resumes the paused goal and restores session context. The skill loop continues from where it left off.
+- Compaction hooks (`pre-compact` → pause, `post-compact` → resume) work identically — workerMode persists through the pause/resume cycle.
 
 ## 11. Crash Recovery and Idempotency
 1. Worker crash during an in-progress phase leaves goal in current in-progress state with a decaying claim.
@@ -244,6 +303,11 @@ Migration policy:
    `SUBMITTED` (stored as `'submitted'`). The command is `goal submit`. This avoids the semantic collision where `COMPLETED` would shift from terminal to mid-lifecycle, confusing both human developers and agents. `goal complete` is removed, not aliased, because the semantic shift makes an alias misleading.
 9. **Should existing `GoalCompletedEvent` and `GoalQualifiedEvent` be removed?**
    No. Both are retained in the event type union and in `Goal.apply()` for backward-compatible replay of pre-migration event streams. No new code path produces them.
+
+10. **Should autonomous worker modes be CLI commands, agent skills, or both?**
+    Both. Agent skills define the loop protocol and are the developer's entry point (e.g., `/plan-worker`). Worker commands (`jumbo worker plan`) handle goal selection and state transitions — one iteration per invocation. The skill is the loop controller; the command is a single-shot operation. Worker mode state is persisted on the worker registry and read by output builders to suppress behavioral prompts from goal commands, preventing competing instruction sources.
+11. **Where should worker mode state live?**
+    On the worker identity record in SQLite (not file-based). Worker identity must migrate from `FsWorkerIdentityRegistry` (`workers.json`) to SQLite to co-locate with claims and enable queryable worker mode state. A `mode` column on the `workers` table is set by worker commands and read by output builders.
 
 ## 15. Scope and Future Work
 This RFC is scoped to single-machine, single-user operation: one developer running up to four concurrent terminals (one per work mode). The developer manages git branching and working directory conventions outside of Jumbo. Claims prevent double-assignment; mode separation prevents filesystem contention.
