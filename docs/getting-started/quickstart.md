@@ -1,3 +1,10 @@
+---
+title: Quickstart
+description: Get Jumbo working with your AI coding agent in under 2 minutes.
+sidebar:
+  order: 2
+---
+
 # Quickstart
 
 Get Jumbo working with your AI coding agent in under 2 minutes.
@@ -22,7 +29,7 @@ Navigate to your project directory and run:
 > jumbo init
 ```
 
-Follow the interactive prompts to configure your project. Jumbo creates a `.jumbo/` directory containing your project's memory store.
+Follow the interactive prompts to configure your project. Jumbo creates a `.jumbo/` directory containing your project's memory store and configures agent hook files. See [What Jumbo creates](what-jumbo-creates.md) for the full list of files.
 
 ---
 
@@ -60,7 +67,7 @@ SUCCESS Goal defined
     - Rate limits configurable per route via config
     - Bypasses health check and metrics endpoints
     - Includes unit tests for limit exceeded scenarios
-  status: to-do
+  status: defined
 ```
 
 ---
@@ -90,6 +97,7 @@ Jumbo records the completion and prompts your AI agent to capture any lessons le
 
 ## What's next?
 
+- [What Jumbo creates](what-jumbo-creates.md) — Understand the full project footprint
 - [Deep dive into goal management](../guides/goal-management.md) — Learn the full goal lifecycle
 - [Project initialization guide](../guides/project-initialization.md) — Configure hooks and capture project knowledge
 - [Session management](../guides/session-management.md) — Manage work sessions effectively
