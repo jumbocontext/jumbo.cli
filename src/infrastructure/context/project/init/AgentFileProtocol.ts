@@ -47,20 +47,17 @@ export class AgentFileProtocol implements IAgentFileProtocol {
         return;
       }
 
-      // File exists - check if Jumbo section is present
+      // File exists - try to replace existing Jumbo section (current or legacy markers)
       const content = await fs.readFile(agentsMdPath, "utf-8");
-      const jumboMarker = AgentInstructions.getJumboSectionMarker();
+      const replaced = AgentInstructions.replaceJumboSection(content);
 
-      if (!content.includes(jumboMarker)) {
-        // Jumbo section missing - append it
+      if (replaced !== null) {
+        // Jumbo section found (current or legacy) - replace with current version
+        await fs.writeFile(agentsMdPath, replaced, "utf-8");
+      } else {
+        // No Jumbo section found - append it
         const updatedContent = content + "\n\n" + AgentInstructions.getJumboSection();
         await fs.writeFile(agentsMdPath, updatedContent, "utf-8");
-      } else {
-        // Jumbo section present - replace with current version
-        const replaced = AgentInstructions.replaceJumboSection(content);
-        if (replaced !== null) {
-          await fs.writeFile(agentsMdPath, replaced, "utf-8");
-        }
       }
     } catch (error) {
       // Graceful degradation - log but don't throw

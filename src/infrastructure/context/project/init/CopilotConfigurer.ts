@@ -54,7 +54,7 @@ export class CopilotConfigurer implements IConfigurer {
 
       // File exists - check if Jumbo section is present
       const content = await fs.readFile(copilotInstructionsPath, "utf-8");
-      const jumboMarker = AgentInstructions.getJumboSectionMarker();
+      const jumboMarker = AgentInstructions.getCopilotSectionMarker();
 
       if (!content.includes(jumboMarker)) {
         // Jumbo section missing - append it

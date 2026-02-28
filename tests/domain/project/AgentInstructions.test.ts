@@ -2,7 +2,7 @@
  * Tests for AgentInstructions value object
  */
 
-import { AgentInstructions } from "../../../../src/domain/project/AgentInstructions";
+import { AgentInstructions } from "../../../src/domain/project/AgentInstructions";
 
 describe("AgentInstructions Value Object", () => {
   describe("getJumboSection()", () => {
@@ -11,8 +11,8 @@ describe("AgentInstructions Value Object", () => {
       const content = AgentInstructions.getJumboSection();
 
       // Assert
-      expect(content).toContain("## Instructions for Jumbo");
-      expect(content).toContain("**IMPORTANT: This project uses Jumbo CLI for agent orchestration and context management.**");
+      expect(content).toContain("## Instructions for Agents on how to collaborate with Jumbo");
+      expect(content).toContain("Jumbo CLI for agent orchestration and context management");
       expect(content).toContain("jumbo session start");
       expect(content).toContain("jumbo goal start");
       expect(content).toContain("jumbo component add");
@@ -37,7 +37,7 @@ describe("AgentInstructions Value Object", () => {
 
       // Assert
       expect(content).toContain("### Be Proactive");
-      expect(content).toContain("Be vigilant in identifying insights");
+      expect(content).toContain("Be vigilant in identifying");
     });
   });
 
@@ -48,7 +48,7 @@ describe("AgentInstructions Value Object", () => {
 
       // Assert
       expect(content).toContain("# Agents.md");
-      expect(content).toContain("## Instructions for Jumbo");
+      expect(content).toContain("## Instructions for Agents on how to collaborate with Jumbo");
     });
 
     it("should include Jumbo section in full content", () => {
@@ -82,18 +82,29 @@ describe("AgentInstructions Value Object", () => {
     });
   });
 
-  describe("getJumboSectionMarker()", () => {
-    it("should return the section marker used for detection", () => {
+  describe("getLegacyJumboSectionMarkers()", () => {
+    it("should return an array of all historically used section headings", () => {
       // Act
-      const marker = AgentInstructions.getJumboSectionMarker();
+      const markers = AgentInstructions.getLegacyJumboSectionMarkers();
 
       // Assert
-      expect(marker).toBe("## Instructions for Jumbo");
+      expect(markers).toContain("## Instructions for Jumbo");
     });
 
-    it("should match the marker in getJumboSection()", () => {
+    it("should not include the current marker", () => {
       // Act
-      const marker = AgentInstructions.getJumboSectionMarker();
+      const legacyMarkers = AgentInstructions.getLegacyJumboSectionMarkers();
+      const currentMarker = AgentInstructions.getCurrentJumboSectionMarker();
+
+      // Assert
+      expect(legacyMarkers).not.toContain(currentMarker);
+    });
+  });
+
+  describe("getCurrentJumboSectionMarker()", () => {
+    it("should match the heading in getJumboSection()", () => {
+      // Act
+      const marker = AgentInstructions.getCurrentJumboSectionMarker();
       const section = AgentInstructions.getJumboSection();
 
       // Assert
@@ -102,14 +113,14 @@ describe("AgentInstructions Value Object", () => {
   });
 
   describe("replaceJumboSection()", () => {
-    it("should return null when marker is not present", () => {
+    it("should return null when no marker is present", () => {
       const content = "# My AGENTS.md\n\nSome other content.";
       expect(AgentInstructions.replaceJumboSection(content)).toBeNull();
     });
 
-    it("should replace section with current version", () => {
-      const oldSection = "## Instructions for Jumbo\n\nOld content here.\n";
-      const content = `# Agents.md\n\n${oldSection}`;
+    it("should replace section when current marker is present", () => {
+      const currentMarker = AgentInstructions.getCurrentJumboSectionMarker();
+      const content = `# Agents.md\n\n${currentMarker}\n\nOld content here.\n`;
 
       const result = AgentInstructions.replaceJumboSection(content);
 
@@ -118,9 +129,30 @@ describe("AgentInstructions Value Object", () => {
       expect(result).not.toContain("Old content here.");
     });
 
+    it("should replace section when a legacy marker is present", () => {
+      const legacyMarker = AgentInstructions.getLegacyJumboSectionMarkers()[0];
+      const content = `# Agents.md\n\n${legacyMarker}\n\nLegacy content here.\n`;
+
+      const result = AgentInstructions.replaceJumboSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain(AgentInstructions.getJumboSection());
+      expect(result).not.toContain("Legacy content here.");
+      expect(result).not.toContain(legacyMarker);
+    });
+
+    it("should append when no marker is found", () => {
+      const content = "# My AGENTS.md\n\nNo Jumbo section here.";
+      const result = AgentInstructions.replaceJumboSection(content);
+
+      // replaceJumboSection returns null when no marker found (caller appends)
+      expect(result).toBeNull();
+    });
+
     it("should preserve content before the section", () => {
       const before = "# My Project\n\nCustom intro.\n\n";
-      const content = `${before}## Instructions for Jumbo\n\nOld content.\n`;
+      const currentMarker = AgentInstructions.getCurrentJumboSectionMarker();
+      const content = `${before}${currentMarker}\n\nOld content.\n`;
 
       const result = AgentInstructions.replaceJumboSection(content);
 
@@ -129,8 +161,8 @@ describe("AgentInstructions Value Object", () => {
     });
 
     it("should preserve content after the section when next heading exists", () => {
-      const content =
-        "# Agents.md\n\n## Instructions for Jumbo\n\nOld.\n\n## Other Section\n\nKeep this.";
+      const currentMarker = AgentInstructions.getCurrentJumboSectionMarker();
+      const content = `# Agents.md\n\n${currentMarker}\n\nOld.\n\n## Other Section\n\nKeep this.`;
 
       const result = AgentInstructions.replaceJumboSection(content);
 
@@ -140,12 +172,25 @@ describe("AgentInstructions Value Object", () => {
     });
 
     it("should handle section at EOF", () => {
-      const content = "# Agents.md\n\n## Instructions for Jumbo\n\nOld content at EOF.";
+      const currentMarker = AgentInstructions.getCurrentJumboSectionMarker();
+      const content = `# Agents.md\n\n${currentMarker}\n\nOld content at EOF.`;
 
       const result = AgentInstructions.replaceJumboSection(content);
 
       expect(result).not.toBeNull();
       expect(result).toContain(AgentInstructions.getJumboSection());
+    });
+
+    it("should preserve content after legacy section when next heading exists", () => {
+      const legacyMarker = AgentInstructions.getLegacyJumboSectionMarkers()[0];
+      const content = `# Agents.md\n\n${legacyMarker}\n\nOld.\n\n## Other Section\n\nKeep this.`;
+
+      const result = AgentInstructions.replaceJumboSection(content);
+
+      expect(result).not.toBeNull();
+      expect(result).toContain("## Other Section");
+      expect(result).toContain("Keep this.");
+      expect(result).toContain(AgentInstructions.getCurrentJumboSectionMarker());
     });
   });
 
