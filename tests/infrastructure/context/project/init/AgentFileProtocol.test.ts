@@ -5,7 +5,9 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { AgentFileProtocol } from "../../../../../src/infrastructure/context/project/init/AgentFileProtocol";
-import { AgentInstructions } from "../../../../../src/domain/project/AgentInstructions";
+import { AgentsMdContent } from "../../../../../src/domain/project/AgentsMdContent";
+import { AgentFileReferenceContent } from "../../../../../src/domain/project/AgentFileReferenceContent";
+import { CopilotInstructionsContent } from "../../../../../src/domain/project/CopilotInstructionsContent";
 
 describe("AgentFileProtocol", () => {
   let tmpDir: string;
@@ -32,7 +34,7 @@ describe("AgentFileProtocol", () => {
 
       const content = await fs.readFile(agentsMdPath, "utf-8");
       expect(content).toContain("# Agents.md");
-      expect(content).toContain(AgentInstructions.getCurrentJumboSectionMarker());
+      expect(content).toContain(AgentsMdContent.getCurrentJumboSectionMarker());
     });
 
     it("should append Jumbo section if AGENTS.md exists without it", async () => {
@@ -50,13 +52,13 @@ describe("AgentFileProtocol", () => {
       // Assert
       const content = await fs.readFile(agentsMdPath, "utf-8");
       expect(content).toContain("Existing content here.");
-      expect(content).toContain(AgentInstructions.getCurrentJumboSectionMarker());
+      expect(content).toContain(AgentsMdContent.getCurrentJumboSectionMarker());
     });
 
     it("should replace outdated Jumbo section with current version", async () => {
       // Arrange - write AGENTS.md with outdated Jumbo section
       const agentsMdPath = path.join(tmpDir, "AGENTS.md");
-      const currentMarker = AgentInstructions.getCurrentJumboSectionMarker();
+      const currentMarker = AgentsMdContent.getCurrentJumboSectionMarker();
       const outdatedContent = `# Agents.md\n\n${currentMarker}\n\nOld outdated instructions.\n`;
       await fs.writeFile(agentsMdPath, outdatedContent, "utf-8");
 
@@ -65,7 +67,7 @@ describe("AgentFileProtocol", () => {
 
       // Assert
       const content = await fs.readFile(agentsMdPath, "utf-8");
-      expect(content).toContain(AgentInstructions.getJumboSection());
+      expect(content).toContain(AgentsMdContent.getJumboSection());
       expect(content).not.toContain("Old outdated instructions.");
       const markerRegex = new RegExp(currentMarker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
       const occurrences = (content.match(markerRegex) || []).length;
@@ -75,7 +77,7 @@ describe("AgentFileProtocol", () => {
     it("should replace legacy Jumbo section with current version", async () => {
       // Arrange - write AGENTS.md with legacy section marker
       const agentsMdPath = path.join(tmpDir, "AGENTS.md");
-      const legacyMarker = AgentInstructions.getLegacyJumboSectionMarkers()[0];
+      const legacyMarker = AgentsMdContent.getLegacyJumboSectionMarkers()[0];
       const legacyContent = `# Agents.md\n\n${legacyMarker}\n\nLegacy instructions.\n`;
       await fs.writeFile(agentsMdPath, legacyContent, "utf-8");
 
@@ -84,7 +86,7 @@ describe("AgentFileProtocol", () => {
 
       // Assert
       const content = await fs.readFile(agentsMdPath, "utf-8");
-      expect(content).toContain(AgentInstructions.getJumboSection());
+      expect(content).toContain(AgentsMdContent.getJumboSection());
       expect(content).not.toContain("Legacy instructions.");
       expect(content).not.toContain(legacyMarker);
     });
@@ -92,7 +94,7 @@ describe("AgentFileProtocol", () => {
     it("should preserve non-Jumbo content when replacing", async () => {
       // Arrange
       const agentsMdPath = path.join(tmpDir, "AGENTS.md");
-      const currentMarker = AgentInstructions.getCurrentJumboSectionMarker();
+      const currentMarker = AgentsMdContent.getCurrentJumboSectionMarker();
       const content = `# Agents.md\n\n## My Custom Section\n\nKeep this.\n\n${currentMarker}\n\nOld.\n`;
       await fs.writeFile(agentsMdPath, content, "utf-8");
 
@@ -103,7 +105,7 @@ describe("AgentFileProtocol", () => {
       const result = await fs.readFile(agentsMdPath, "utf-8");
       expect(result).toContain("My Custom Section");
       expect(result).toContain("Keep this.");
-      expect(result).toContain(AgentInstructions.getJumboSection());
+      expect(result).toContain(AgentsMdContent.getJumboSection());
       expect(result).not.toContain("\nOld.\n");
     });
 
@@ -233,7 +235,7 @@ describe("AgentFileProtocol", () => {
     it("should not duplicate reference if already present in CLAUDE.md", async () => {
       // Arrange
       const claudeMdPath = path.join(tmpDir, "CLAUDE.md");
-      const initialContent = AgentInstructions.getAgentFileReference();
+      const initialContent = AgentFileReferenceContent.getAgentFileReference();
       await fs.writeFile(claudeMdPath, initialContent, "utf-8");
 
       // Act
@@ -320,13 +322,13 @@ describe("AgentFileProtocol", () => {
         expect(exists).toBe(true);
 
         const content = await fs.readFile(agentsMdPath, "utf-8");
-        expect(content).toContain(AgentInstructions.getCurrentJumboSectionMarker());
+        expect(content).toContain(AgentsMdContent.getCurrentJumboSectionMarker());
       });
 
       it("should replace outdated Jumbo section", async () => {
         // Arrange - write AGENTS.md with current marker but outdated content
         const agentsMdPath = path.join(tmpDir, "AGENTS.md");
-        const currentMarker = AgentInstructions.getCurrentJumboSectionMarker();
+        const currentMarker = AgentsMdContent.getCurrentJumboSectionMarker();
         const outdatedContent = `# Agents.md\n\n${currentMarker}\n\nOld outdated content.\n`;
         await fs.writeFile(agentsMdPath, outdatedContent, "utf-8");
 
@@ -335,14 +337,14 @@ describe("AgentFileProtocol", () => {
 
         // Assert
         const content = await fs.readFile(agentsMdPath, "utf-8");
-        expect(content).toContain(AgentInstructions.getJumboSection());
+        expect(content).toContain(AgentsMdContent.getJumboSection());
         expect(content).not.toContain("Old outdated content.");
       });
 
       it("should replace legacy Jumbo section with current version", async () => {
         // Arrange - write AGENTS.md with legacy marker
         const agentsMdPath = path.join(tmpDir, "AGENTS.md");
-        const legacyMarker = AgentInstructions.getLegacyJumboSectionMarkers()[0];
+        const legacyMarker = AgentsMdContent.getLegacyJumboSectionMarkers()[0];
         const legacyContent = `# Agents.md\n\n${legacyMarker}\n\nLegacy content.\n`;
         await fs.writeFile(agentsMdPath, legacyContent, "utf-8");
 
@@ -351,7 +353,7 @@ describe("AgentFileProtocol", () => {
 
         // Assert
         const content = await fs.readFile(agentsMdPath, "utf-8");
-        expect(content).toContain(AgentInstructions.getJumboSection());
+        expect(content).toContain(AgentsMdContent.getJumboSection());
         expect(content).not.toContain("Legacy content.");
         expect(content).not.toContain(legacyMarker);
       });
@@ -359,7 +361,7 @@ describe("AgentFileProtocol", () => {
       it("should preserve non-Jumbo content", async () => {
         // Arrange
         const agentsMdPath = path.join(tmpDir, "AGENTS.md");
-        const currentMarker = AgentInstructions.getCurrentJumboSectionMarker();
+        const currentMarker = AgentsMdContent.getCurrentJumboSectionMarker();
         const content = `# Agents.md\n\n## My Custom Section\n\nKeep this.\n\n${currentMarker}\n\nOld.\n`;
         await fs.writeFile(agentsMdPath, content, "utf-8");
 
@@ -383,7 +385,7 @@ describe("AgentFileProtocol", () => {
         // Assert
         const content = await fs.readFile(agentsMdPath, "utf-8");
         expect(content).toContain("Custom content only.");
-        expect(content).toContain(AgentInstructions.getCurrentJumboSectionMarker());
+        expect(content).toContain(AgentsMdContent.getCurrentJumboSectionMarker());
       });
     });
 
@@ -415,7 +417,7 @@ describe("AgentFileProtocol", () => {
 
         // Assert
         const content = await fs.readFile(claudeMdPath, "utf-8");
-        expect(content).toContain(AgentInstructions.getAgentFileReference().trim());
+        expect(content).toContain(AgentFileReferenceContent.getAgentFileReference().trim());
         expect(content).not.toContain("Old instructions.");
       });
 
@@ -432,7 +434,7 @@ describe("AgentFileProtocol", () => {
 
         // Assert
         const content = await fs.readFile(copilotPath, "utf-8");
-        expect(content).toContain(AgentInstructions.getCopilotInstructions());
+        expect(content).toContain(CopilotInstructionsContent.getCopilotInstructions());
         expect(content).not.toContain("Old copilot content.");
       });
     });
@@ -449,7 +451,7 @@ describe("AgentFileProtocol", () => {
         const agentsMdPath = path.join(tmpDir, "AGENTS.md");
         const agentsContent = await fs.readFile(agentsMdPath, "utf-8");
         const markerRegex = new RegExp(
-          AgentInstructions.getCurrentJumboSectionMarker().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+          AgentsMdContent.getCurrentJumboSectionMarker().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
           "g"
         );
         const agentsOccurrences = (agentsContent.match(markerRegex) || []).length;
@@ -474,7 +476,7 @@ describe("AgentFileProtocol", () => {
       const agentsMdPath = path.join(tmpDir, "AGENTS.md");
       const content = await fs.readFile(agentsMdPath, "utf-8");
       const markerRegex = new RegExp(
-        AgentInstructions.getCurrentJumboSectionMarker().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+        AgentsMdContent.getCurrentJumboSectionMarker().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
         "g"
       );
       const occurrences = (content.match(markerRegex) || []).length;

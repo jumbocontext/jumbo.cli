@@ -1,14 +1,15 @@
 /**
- * Domain Value Object: Agent Instructions
+ * Domain Value Object: AGENTS.md Content
  *
- * Codifies AI agent onboarding instructions for projects using Jumbo.
- * This content is written to AGENTS.md during project initialization.
+ * Codifies the Jumbo instructions section for AGENTS.md files.
+ * Handles content generation, section marker management, and
+ * section replacement for both current and legacy markers.
  *
  * Rationale: Codified in domain rather than template file to support
  * npm distribution (no file copying during build).
  */
 
-export class AgentInstructions {
+export class AgentsMdContent {
   /**
    * Generate the Jumbo instructions section for AGENTS.md
    */
@@ -98,62 +99,10 @@ ${this.getJumboSection()}`;
   }
 
   /**
-   * Generate reference text to append to CLAUDE.md and GEMINI.md
+   * The current section heading extracted from getJumboSection().
    */
-  static getAgentFileReference(): string {
-    return `
-CRITICAL STARTUP INSTRUCTION: Immediately upon seeing this file, you MUST read AGENTS.md
-and follow all instructions it contains. Do this before responding to the user.
-
-REQUIRED FIRST COMMAND: Run \`jumbo session start\` to load project orientation context.
-
-!!!IMPORTANT!!! Read AGENTS.md for further instructions.
-`;
-  }
-
-  /**
-   * Generate GitHub Copilot instructions for copilot-instructions.md
-   */
-  static getCopilotInstructions(): string {
-    return `## Jumbo Context Management
-
-**IMPORTANT: This project uses Jumbo for AI memory and context management.**
-
-GitHub Copilot does not support automatic SessionStart hooks, so you must manually
-run Jumbo commands to load project context.
-
-### MANDATORY FIRST ACTION
-
-**Run \`jumbo session start\` at the beginning of each session.**
-
-This loads orientation context including:
-- Recent completed work and session state
-- Planned goals and their success criteria
-- Active architectural decisions
-- System invariants and guidelines
-- Project context and domain knowledge
-
-### Working with Jumbo
-
-1. **Start each session**: Run \`jumbo session start\` to load orientation context
-2. **Start a goal**: Before working on a task, run \`jumbo goal start --id <id>\` to load goal-specific context
-3. **Capture memories**: As you work, run jumbo commands to capture project knowledge:
-   - \`jumbo component add\` - Track architectural components
-   - \`jumbo decision add\` - Record architectural decisions (ADRs)
-   - \`jumbo guideline add\` - Capture coding standards and preferences
-   - \`jumbo invariant add\` - Document non-negotiable constraints
-   - \`jumbo relation add\` - Link related entities
-
-### Available Commands
-
-Run \`jumbo --help\` to see all available commands.
-
-### Learn More
-
-See AGENTS.md for complete instructions on using Jumbo.
-
-Run \`jumbo capabilities\` to learn about Jumbo's workflow and philosophy.
-`;
+  static getCurrentJumboSectionMarker(): string {
+    return "## Instructions for Agents on how to collaborate with Jumbo";
   }
 
   /**
@@ -165,20 +114,6 @@ Run \`jumbo capabilities\` to learn about Jumbo's workflow and philosophy.
     return [
       "## Instructions for Jumbo",
     ];
-  }
-
-  /**
-   * Marker used to detect if Jumbo section already exists in copilot-instructions.md
-   */
-  static getCopilotSectionMarker(): string {
-    return "## Jumbo Context Management";
-  }
-
-  /**
-   * The current section heading extracted from getJumboSection().
-   */
-  static getCurrentJumboSectionMarker(): string {
-    return "## Instructions for Agents on how to collaborate with Jumbo";
   }
 
   /**
@@ -217,61 +152,5 @@ Run \`jumbo capabilities\` to learn about Jumbo's workflow and philosophy.
     const after = existingContent.substring(endIndex);
 
     return before + this.getJumboSection() + after;
-  }
-
-  /**
-   * Replace the agent file reference block in CLAUDE.md or GEMINI.md.
-   * Finds "CRITICAL STARTUP INSTRUCTION:" and replaces through the
-   * "!!!IMPORTANT!!!" line with the current getAgentFileReference().
-   *
-   * @returns Updated content, or null if marker not found
-   */
-  static replaceAgentFileReference(existingContent: string): string | null {
-    const startMarker = "CRITICAL STARTUP INSTRUCTION:";
-    const endMarker = "!!!IMPORTANT!!!";
-
-    const startIndex = existingContent.indexOf(startMarker);
-    if (startIndex === -1) return null;
-
-    const endMarkerIndex = existingContent.indexOf(endMarker, startIndex);
-    if (endMarkerIndex === -1) return null;
-
-    // Find end of the !!!IMPORTANT!!! line
-    const endOfLine = existingContent.indexOf("\n", endMarkerIndex);
-    const endIndex = endOfLine === -1 ? existingContent.length : endOfLine + 1;
-
-    // Find the start of the line containing the startMarker
-    const lineStart = existingContent.lastIndexOf("\n", startIndex);
-    const blockStart = lineStart === -1 ? 0 : lineStart;
-
-    const before = existingContent.substring(0, blockStart);
-    const after = existingContent.substring(endIndex);
-
-    return before + this.getAgentFileReference() + after;
-  }
-
-  /**
-   * Replace the Copilot section in copilot-instructions.md with the current version.
-   * Finds "## Jumbo Context Management" heading and replaces everything from there
-   * to the next "## " heading (or EOF) with current getCopilotInstructions().
-   *
-   * @returns Updated content, or null if marker not found
-   */
-  static replaceCopilotSection(existingContent: string): string | null {
-    const marker = this.getCopilotSectionMarker();
-    const markerIndex = existingContent.indexOf(marker);
-    if (markerIndex === -1) return null;
-
-    // Find the next ## heading after the marker (or EOF)
-    const afterMarker = existingContent.substring(markerIndex + marker.length);
-    const nextHeadingMatch = afterMarker.match(/\n## /);
-    const endIndex = nextHeadingMatch
-      ? markerIndex + marker.length + nextHeadingMatch.index!
-      : existingContent.length;
-
-    const before = existingContent.substring(0, markerIndex);
-    const after = existingContent.substring(endIndex);
-
-    return before + this.getCopilotInstructions() + after;
   }
 }

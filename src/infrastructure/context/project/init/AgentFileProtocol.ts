@@ -17,7 +17,7 @@ import path from "path";
 import fs from "fs-extra";
 import { IAgentFileProtocol } from "../../../../application/context/project/init/IAgentFileProtocol.js";
 import { PlannedFileChange } from "../../../../application/context/project/init/PlannedFileChange.js";
-import { AgentInstructions } from "../../../../domain/project/AgentInstructions.js";
+import { AgentsMdContent } from "../../../../domain/project/AgentsMdContent.js";
 import { IConfigurer } from "./IConfigurer.js";
 import { ClaudeConfigurer } from "./ClaudeConfigurer.js";
 import { GeminiConfigurer } from "./GeminiConfigurer.js";
@@ -43,20 +43,20 @@ export class AgentFileProtocol implements IAgentFileProtocol {
 
       if (!exists) {
         // File doesn't exist - create with full content
-        await fs.writeFile(agentsMdPath, AgentInstructions.getFullContent(), "utf-8");
+        await fs.writeFile(agentsMdPath, AgentsMdContent.getFullContent(), "utf-8");
         return;
       }
 
       // File exists - try to replace existing Jumbo section (current or legacy markers)
       const content = await fs.readFile(agentsMdPath, "utf-8");
-      const replaced = AgentInstructions.replaceJumboSection(content);
+      const replaced = AgentsMdContent.replaceJumboSection(content);
 
       if (replaced !== null) {
         // Jumbo section found (current or legacy) - replace with current version
         await fs.writeFile(agentsMdPath, replaced, "utf-8");
       } else {
         // No Jumbo section found - append it
-        const updatedContent = content + "\n\n" + AgentInstructions.getJumboSection();
+        const updatedContent = content + "\n\n" + AgentsMdContent.getJumboSection();
         await fs.writeFile(agentsMdPath, updatedContent, "utf-8");
       }
     } catch (error) {
@@ -85,19 +85,19 @@ export class AgentFileProtocol implements IAgentFileProtocol {
 
       if (!exists) {
         // File doesn't exist - create with full content (same as ensure)
-        await fs.writeFile(agentsMdPath, AgentInstructions.getFullContent(), "utf-8");
+        await fs.writeFile(agentsMdPath, AgentsMdContent.getFullContent(), "utf-8");
         return;
       }
 
       const content = await fs.readFile(agentsMdPath, "utf-8");
-      const replaced = AgentInstructions.replaceJumboSection(content);
+      const replaced = AgentsMdContent.replaceJumboSection(content);
 
       if (replaced !== null) {
         // Jumbo section found - replace with current version
         await fs.writeFile(agentsMdPath, replaced, "utf-8");
       } else {
         // Jumbo section not found - append (same as ensure)
-        const updatedContent = content + "\n\n" + AgentInstructions.getJumboSection();
+        const updatedContent = content + "\n\n" + AgentsMdContent.getJumboSection();
         await fs.writeFile(agentsMdPath, updatedContent, "utf-8");
       }
     } catch (error) {
