@@ -4,8 +4,8 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { AgentFileProtocol } from "../../../src/infrastructure/context/project/init/AgentFileProtocol";
-import { AgentInstructions } from "../../../src/domain/project/AgentInstructions";
+import { AgentFileProtocol } from "../../../../../src/infrastructure/context/project/init/AgentFileProtocol";
+import { AgentInstructions } from "../../../../../src/domain/project/AgentInstructions";
 
 describe("AgentFileProtocol", () => {
   let tmpDir: string;
@@ -53,19 +53,40 @@ describe("AgentFileProtocol", () => {
       expect(content).toContain("## Instructions for Jumbo");
     });
 
-    it("should not duplicate Jumbo section if already present", async () => {
-      // Arrange
+    it("should replace outdated Jumbo section with current version", async () => {
+      // Arrange - write AGENTS.md with outdated Jumbo section
       const agentsMdPath = path.join(tmpDir, "AGENTS.md");
-      const initialContent = AgentInstructions.getFullContent();
-      await fs.writeFile(agentsMdPath, initialContent, "utf-8");
+      const jumboMarker = AgentInstructions.getJumboSectionMarker();
+      const outdatedContent = `# Agents.md\n\n${jumboMarker}\n\nOld outdated instructions.\n`;
+      await fs.writeFile(agentsMdPath, outdatedContent, "utf-8");
 
       // Act
       await protocol.ensureAgentsMd(tmpDir);
 
       // Assert
       const content = await fs.readFile(agentsMdPath, "utf-8");
+      expect(content).toContain(AgentInstructions.getJumboSection());
+      expect(content).not.toContain("Old outdated instructions.");
       const occurrences = (content.match(/## Instructions for Jumbo/g) || []).length;
       expect(occurrences).toBe(1);
+    });
+
+    it("should preserve non-Jumbo content when replacing", async () => {
+      // Arrange
+      const agentsMdPath = path.join(tmpDir, "AGENTS.md");
+      const jumboMarker = AgentInstructions.getJumboSectionMarker();
+      const content = `# Agents.md\n\n## My Custom Section\n\nKeep this.\n\n${jumboMarker}\n\nOld.\n`;
+      await fs.writeFile(agentsMdPath, content, "utf-8");
+
+      // Act
+      await protocol.ensureAgentsMd(tmpDir);
+
+      // Assert
+      const result = await fs.readFile(agentsMdPath, "utf-8");
+      expect(result).toContain("My Custom Section");
+      expect(result).toContain("Keep this.");
+      expect(result).toContain(AgentInstructions.getJumboSection());
+      expect(result).not.toContain("Old.");
     });
 
     it("should handle errors gracefully without throwing", async () => {

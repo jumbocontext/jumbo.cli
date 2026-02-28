@@ -100,28 +100,38 @@ All data stays local. Nothing leaves your machine.
 No network calls. No lag. Works instantaneously.  
 
 
-## What's in the trunk?  
+## What's in the trunk?
 Jumbo models memories as the following aggregates:
 
-- **Project**  
+- **Project**
 What you are building and who it's for.
-- **Architecture**  
+- **Architecture**
 Your solution design, structure and patterns applied.
-- **Components**  
+- **Components**
 The parts comprising your solution and their roles.
-- **Dependencies**  
+- **Dependencies**
 What your project relies on.
-- **Decisions**  
+- **Decisions**
 A history of why you chose what you chose.
-- **Guidelines**  
+- **Guidelines**
 The preferences, best practices, and the standards you adhere to.
-- **Invariants**  
+- **Invariants**
 The rules you simply won't compromise on.
-- **Goals**  
-What you're working on—now, next and later.
-- **Sessions**  
-The state of the project.
-- **Context Packets**  
+- **Audiences**
+Who uses your product and their priorities.
+- **Audience Pains**
+The problems your audiences face that you aim to solve.
+- **Value Propositions**
+How your product addresses each audience pain.
+- **Relations**
+Connections between goals and knowledge entities for targeted context delivery.
+- **Goals**
+What you're working on—a 13-state lifecycle with refinement, review, and codification phases.
+- **Sessions**
+Manage work continuity with pause, resume, compact, and multi-agent support.
+- **Maintenance**
+Repair agent configuration and rebuild projections when needed.
+- **Context Packets**
 Optimized context packets delivered to your AI agents.
 
 
@@ -180,7 +190,7 @@ Change agents and models at will. `jumbo` just picks up where you left off.
 
 **What coding agents does jumbo work with?**
 
-`jumbo` has been battle tested with Claude Code CLI, Gemini CLI, and Copilot CLI. More to be verified soon...
+`jumbo` has been battle tested with Claude Code, GitHub Copilot, and Gemini. More to be verified soon...
 
 **What IDEs are supported?**
 
