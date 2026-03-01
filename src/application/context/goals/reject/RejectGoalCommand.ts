@@ -4,5 +4,5 @@
  */
 export interface RejectGoalCommand {
   readonly goalId: string;
-  readonly auditFindings: string;
+  readonly reviewIssues: string;
 }

@@ -30,7 +30,9 @@ export class CommanderApplicator {
     const grouped = this.groupByParent(commands);
 
     for (const parent of grouped.keys()) {
-      this.createParentCommand(program, parent);
+      if (parent !== null) {
+        this.createParentCommand(program, parent);
+      }
     }
 
     for (const command of commands) {
@@ -39,16 +41,21 @@ export class CommanderApplicator {
     }
   }
 
-  private groupByParent(commands: RegisteredCommand[]): Map<string, RegisteredCommand[]> {
-    const grouped = new Map<string, RegisteredCommand[]>();
+  private groupByParent(commands: RegisteredCommand[]): Map<string | null, RegisteredCommand[]> {
+    const grouped = new Map<string | null, RegisteredCommand[]>();
     for (const command of commands) {
-      const { parent } = extractParts(command.path);
+      const parent = this.getParent(command.path);
       if (!grouped.has(parent)) {
         grouped.set(parent, []);
       }
       grouped.get(parent)?.push(command);
     }
     return grouped;
+  }
+
+  private getParent(path: string): string | null {
+    const parts = path.split(/\s+/).filter(p => p.length > 0);
+    return parts.length === 1 ? null : parts[0];
   }
 
   private createParentCommand(program: Command, parent: string): Command {
@@ -60,13 +67,15 @@ export class CommanderApplicator {
   }
 
   private registerCommand(registeredCommand: RegisteredCommand): void {
-    const { parent, subcommand } = extractParts(registeredCommand.path);
-    const parentCmd = this.parentCommands.get(parent)!;
+    const parent = this.getParent(registeredCommand.path);
+    const isTopLevel = parent === null;
+    const commandName = isTopLevel ? registeredCommand.path : extractParts(registeredCommand.path).subcommand;
+    const containerCmd = isTopLevel ? this.program! : this.parentCommands.get(parent)!;
 
     // Create command with hidden option if marked
     const commandOptions = registeredCommand.metadata.hidden ? { hidden: true } : {};
-    const cmd = parentCmd
-      .command(subcommand, commandOptions)
+    const cmd = containerCmd
+      .command(commandName, commandOptions)
       .description(registeredCommand.metadata.description);
 
     // Add options

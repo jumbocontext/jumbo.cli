@@ -2,8 +2,8 @@
  * Tests for RepairOutputBuilder
  */
 
-import { RepairOutputBuilder } from "../../../../src/presentation/cli/commands/maintenance/repair/RepairOutputBuilder";
-import { RepairStepResult } from "../../../../src/application/maintenance/repair/RepairMaintenanceResponse";
+import { RepairOutputBuilder } from "../../../src/presentation/cli/commands/repair/RepairOutputBuilder";
+import { RepairStepResult } from "../../../src/application/repair/RepairResponse";
 
 describe("RepairOutputBuilder", () => {
   let builder: RepairOutputBuilder;

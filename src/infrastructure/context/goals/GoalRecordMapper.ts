@@ -23,6 +23,7 @@ export class GoalRecordMapper {
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
       note: record.note || undefined,
+      reviewIssues: record.reviewIssues || undefined,
       progress: JSON.parse(record.progress || "[]"),
       claimedBy: record.claimedBy || undefined,
       claimedAt: record.claimedAt || undefined,

@@ -1,5 +1,5 @@
 /**
- * CLI Command: jumbo maintenance repair (aliased as jumbo repair)
+ * CLI Command: jumbo repair
  *
  * Re-injects current-version agent configuration files and optionally
  * rebuilds the database. Use after upgrading Jumbo CLI to bring
@@ -7,9 +7,9 @@
  * settings files up to date.
  */
 
-import { CommandMetadata } from "../../registry/CommandMetadata.js";
-import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { Renderer } from "../../../rendering/Renderer.js";
+import { CommandMetadata } from "../registry/CommandMetadata.js";
+import { IApplicationContainer } from "../../../../application/host/IApplicationContainer.js";
+import { Renderer } from "../../rendering/Renderer.js";
 import { RepairOutputBuilder } from "./RepairOutputBuilder.js";
 
 /**
@@ -17,7 +17,6 @@ import { RepairOutputBuilder } from "./RepairOutputBuilder.js";
  */
 export const metadata: CommandMetadata = {
   description: "Repair agent configuration files and optionally rebuild the database",
-  topLevelAliases: ["repair"],
   options: [
     {
       flags: "--yes",
@@ -64,7 +63,7 @@ interface RepairOptions {
  * Command handler
  * Called by Commander with parsed options
  */
-export async function maintenanceRepair(options: RepairOptions, container: IApplicationContainer) {
+export async function repair(options: RepairOptions, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
   const outputBuilder = new RepairOutputBuilder();
 
@@ -77,7 +76,7 @@ export async function maintenanceRepair(options: RepairOptions, container: IAppl
     }
 
     // Commander inverts --no-X flags: --no-agents sets options.agents = false
-    const response = await container.repairMaintenanceController.handle({
+    const response = await container.repairController.handle({
       doAgents: options.agents !== false,
       doSettings: options.settings !== false,
       doDb: options.db !== false,

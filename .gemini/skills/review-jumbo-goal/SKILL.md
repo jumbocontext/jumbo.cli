@@ -1,11 +1,11 @@
 ---
 name: review-jumbo-goal
-description: Use when a Jumbo goal needs QA review after implementation. Runs the review protocol, verifies every objective, criterion, and related entity constraint, and loops until all pass or escalates unresolvable issues.
+description: Use when a Jumbo goal needs QA review after implementation. Runs the review protocol, verifies every objective, criterion, and related entity constraint, and approves the goal for codification or rejects it with feedback.
 ---
 
 # Review Jumbo Goal
 
-**Prompt:** Review a completed Jumbo goal implementation against its objective, success criteria, scope, and all related architectural context. Fix failures and re-review until everything passes.
+**Prompt:** Review a completed Jumbo goal implementation against its objective, success criteria, scope, and all related architectural context. Approve the goal if no issue are found, otherwise document the issues and reject the goal.
 
 ## Why Review Matters
 
@@ -29,7 +29,7 @@ For each success criterion listed in the output:
 2. Read the relevant code
 3. Confirm the criterion is **fully** met — not partially, not approximately
 
-If ANY criterion is not met: fix the issue, then re-run `jumbo goal review --id <goal-id>`.
+If ANY criterion is not met: add the issues to a list for feedback.
 
 ### 3. Verify Scope Compliance
 
@@ -38,7 +38,7 @@ If the review output includes scope sections:
 - **In Scope**: Confirm all work was done within the listed files/areas. No under-delivery.
 - **Out of Scope**: Confirm no work leaked into excluded areas. No over-delivery.
 
-If scope is violated: adjust the implementation, then re-run `jumbo goal review --id <goal-id>`.
+If scope is violated: add the issues to the feedback list.
 
 ### 4. Verify Architecture Alignment
 
@@ -48,7 +48,7 @@ If the review output includes architecture:
 - **Design patterns**: Were prescribed patterns applied where applicable?
 - **Principles**: Do all new artifacts reflect the listed principles?
 
-If architecture is misaligned: fix it, then re-run `jumbo goal review --id <goal-id>`.
+If architecture is misaligned: add the issues to the feedback list.
 
 ### 5. Verify Related Entities
 
@@ -60,7 +60,7 @@ For each category in the review output:
 - **Invariants**: Does the implementation adhere to every listed invariant? This is non-negotiable.
 - **Guidelines**: Does the implementation follow listed guidelines?
 
-If ANY entity constraint is violated: fix the issue, then re-run `jumbo goal review --id <goal-id>`.
+If ANY entity constraint is violated: add the issues to the feedback list.
 
 ### 6. Run Tests
 
@@ -68,23 +68,27 @@ If ANY entity constraint is violated: fix the issue, then re-run `jumbo goal rev
 npm test
 ```
 
-All tests must pass. If tests fail: fix them, then re-run `jumbo goal review --id <goal-id>`.
+All tests must pass. If tests fail: add the issues to the feedback list.
 
 ### 7. Qualify or Re-Review
 
 **If ALL checks pass** (criteria, scope, architecture, entities, tests):
 
 ```bash
-jumbo goal qualify --id <goal-id>
+jumbo goal approve --id <goal-id>
 ```
 
-**If ANY check failed**: fix, then loop back to step 1.
+**If ANY check failed**:
+
+```bash
+jumbo goal reject --id <goal-id> --audit-findings <list of issues>
+```
+
 
 ## Rules
 
-1. **Never qualify with unresolved failures.** Every criterion, invariant, and test must pass before qualifying.
+1. **Never approve with unresolved failures.** Every criterion, invariant, and test must pass before approving.
 2. **Never skip entity categories.** Review output includes entities for a reason — each was registered during refinement as essential context.
 3. **Always run tests.** Implementation without passing tests is incomplete.
-4. **Fix, don't defer.** When you find an issue, fix it immediately and re-review. Do not log it for later.
-5. **Re-review after every fix.** Each fix may introduce new issues. Always re-run the full review after changes.
-6. **Read the code, don't assume.** Verify each criterion by reading actual implementation, not by recalling what you wrote.
+4. **Document issues clearly.** When rejecting a goal, provide detailed feedback for each failure.
+5. **Read the code, don't assume.** Verify each criterion by reading actual implementation, not by recalling what you wrote.

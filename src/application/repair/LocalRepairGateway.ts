@@ -1,12 +1,12 @@
-import { IRepairMaintenanceGateway } from "./IRepairMaintenanceGateway.js";
-import { RepairMaintenanceRequest } from "./RepairMaintenanceRequest.js";
-import { RepairMaintenanceResponse, RepairStepResult } from "./RepairMaintenanceResponse.js";
-import { IAgentFileProtocol } from "../../context/project/init/IAgentFileProtocol.js";
-import { ISettingsInitializer } from "../../settings/ISettingsInitializer.js";
-import { IDatabaseRebuildService } from "../db/rebuild/IDatabaseRebuildService.js";
-import { IProjectRootResolver } from "../../context/project/IProjectRootResolver.js";
+import { IRepairGateway } from "./IRepairGateway.js";
+import { RepairRequest } from "./RepairRequest.js";
+import { RepairResponse, RepairStepResult } from "./RepairResponse.js";
+import { IAgentFileProtocol } from "../context/project/init/IAgentFileProtocol.js";
+import { ISettingsInitializer } from "../settings/ISettingsInitializer.js";
+import { IDatabaseRebuildService } from "../maintenance/db/rebuild/IDatabaseRebuildService.js";
+import { IProjectRootResolver } from "../context/project/IProjectRootResolver.js";
 
-export class LocalRepairMaintenanceGateway implements IRepairMaintenanceGateway {
+export class LocalRepairGateway implements IRepairGateway {
   constructor(
     private readonly projectRootResolver: IProjectRootResolver,
     private readonly agentFileProtocol: IAgentFileProtocol,
@@ -14,7 +14,7 @@ export class LocalRepairMaintenanceGateway implements IRepairMaintenanceGateway 
     private readonly databaseRebuildService: IDatabaseRebuildService
   ) {}
 
-  async repairMaintenance(request: RepairMaintenanceRequest): Promise<RepairMaintenanceResponse> {
+  async repair(request: RepairRequest): Promise<RepairResponse> {
     const projectRoot = this.projectRootResolver.resolve();
     const steps: RepairStepResult[] = [];
 

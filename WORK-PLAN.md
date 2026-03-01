@@ -40,13 +40,16 @@ Phase 3 – Cleanup & Infrastructure
   Goal 8: Migrate claims from filesystem to SQLite
   Goal 9: Idempotent re-entry for expired claims                      [depends: Goals 1,6,8]
   Goal 15: Update goal reset for new states                           [depends: Goal 7]
+  Goal 16: Migrate worker identity from filesystem to SQLite          [new prerequisite for Phase 4]
 
-Phase 4 – Autonomous Work Modes
-  Goal 10: work --plan mode                                           [depends: Goals 1,9]
-  Goal 11: work --implement mode                                      [depends: Goals 2,3,9]
-  Goal 12: work --review mode                                         [depends: Goals 2,9]
-  Goal 13: work --codify mode                                         [depends: Goals 6,9]
-  Goal 14: Prerequisite enforcement per work mode                     [depends: Goals 10-13]
+Phase 4 – Autonomous Worker Architecture
+  Goal 10: GoalSelector + PrerequisiteSatisfactionPolicy              [depends: Goals 9,16]
+           Shared selection engine for all worker modes
+  Goal 11: Worker commands + output filtering                         [depends: Goal 10]
+           jumbo worker plan|implement|review|codify commands
+           workerMode-aware output builders
+  Goal 12: Worker skills                                              [depends: Goal 11]
+           /plan-worker, /implement-worker, /review-worker, /codify-worker
 ```
 
 ---
@@ -295,101 +298,108 @@ Phase 4 – Autonomous Work Modes
 
 ---
 
-### Goal 10: Implement work --plan mode
+### Goal 10: GoalSelector and PrerequisiteSatisfactionPolicy
 
-**Objective:** Create the autonomous plan worker loop that selects DEFINED or stale IN_REFINEMENT goals, refines them, and marks them refined.
+**Objective:** Build the shared goal selection engine used by all worker modes. The GoalSelector takes a mode-specific configuration (eligible statuses, stale in-progress statuses, prerequisite threshold, ordering) and returns the single best candidate goal. PrerequisiteSatisfactionPolicy evaluates whether a goal's prerequisites have reached a minimum status threshold.
+
+**Design context:** All four worker modes (plan, implement, review, codify) are the same selection pattern with different configuration. The GoalSelector is the non-trivial shared infrastructure; the worker commands themselves are thin wrappers around it. See RFC §10.4 for the mode configuration table.
 
 **Scope:**
-- Add `--plan` flag to `work` command namespace
-- Implement goal selection: DEFINED or IN_REFINEMENT (expired claim), prerequisite goals at least REFINED, ordered by priority then created time
-- Worker loop: select → refine → apply refine-jumbo-goal skill → commit
-- Handle empty queue (no eligible goals) gracefully
+- Create `GoalSelector` in the application layer, accepting a `WorkModeConfig` and returning the next eligible `GoalView | null`
+- `WorkModeConfig` defines: `eligibleStatuses`, `staleInProgressStatuses` (subset needing expired-claim filtering), `prerequisiteThreshold` (nullable), ordering strategy
+- Create `PrerequisiteSatisfactionPolicy` in the domain layer — given a goal's `prerequisiteGoals[]` and a threshold status, queries current statuses and evaluates whether all prerequisites meet or exceed the threshold
+- Define explicit state ordering for "at least" comparisons: DEFINED < IN_REFINEMENT < REFINED < DOING < SUBMITTED < IN_REVIEW < APPROVED < CODIFYING < DONE
+- Create the four `WorkModeConfig` instances (plan, implement, review, codify) as described in RFC §10.4
+- Handle empty queue (no eligible goals) with a deterministic "queue empty" result
 
 **Criteria:**
-- `jumbo work --plan` selects and refines the next eligible goal
-- Prerequisite goals must be at least REFINED
-- Stale IN_REFINEMENT goals (expired claims) are picked up
-- Empty queue produces clean exit
+- GoalSelector returns the correct next goal for each mode's configuration
+- Stale in-progress goals (expired claims) are included; active claims are excluded
+- Prerequisite satisfaction is evaluated correctly per mode threshold (plan: REFINED, implement: SUBMITTED, review/codify: none)
+- State ordering is explicit, testable, and covers all states
+- Empty queue returns null, not an error
+- All four mode configs are defined and tested
 
-**Prerequisites:** Goals 1, 9
+**Prerequisites:** Goals 9, 16
 
 ---
 
-### Goal 11: Implement work --implement mode
+### Goal 11: Worker commands and output filtering
 
-**Objective:** Create the autonomous implement worker loop that selects REFINED, REJECTED, UNBLOCKED, or stale DOING goals, implements them, and submits them for review.
+**Objective:** Create the `jumbo worker plan|implement|review|codify` commands and implement workerMode-aware output filtering. Each worker command sets `workerMode` on the current worker's registry entry, runs the GoalSelector, invokes the appropriate entry transition, and returns goal context without behavioral prompts. All downstream goal commands check `workerMode` and suppress agent-directed continuation instructions when it is set.
+
+**Design context:** The prompt conflict problem — existing goal commands return agent-directed prompts ("now run goal commit", "proceed to start the next goal") that compete with the worker skill's loop protocol. The solution is `workerMode` as session state: set once by the worker command, read by every output builder. When set, output builders return only data/context (objective, criteria, scope, related entities, status confirmations, errors). When null (interactive use), output is unchanged. See RFC §10.2, §10.3, §10.6.
 
 **Scope:**
-- Add `--implement` flag to `work` command namespace
-- Implement goal selection: REFINED, REJECTED, UNBLOCKED, or DOING (expired claim), prerequisite goals at least SUBMITTED, ordered by priority then created time
-- Worker loop: select → start → create/checkout git branch → apply implement skill → submit
-- Handle blocker discovery (block goal, create unblocking goal)
+- Create `jumbo worker plan` command (full vertical: CLI command → controller → gateway using GoalSelector + entry command handler)
+- Create `jumbo worker implement`, `jumbo worker review`, `jumbo worker codify` commands following the same pattern
+- Each worker command: (1) sets `workerMode` on current worker via `IWorkerModeAccessor`, (2) calls GoalSelector with mode config, (3) if queue empty → returns empty response, (4) if goal found → delegates to existing entry command handler (refine/start/review/codify), (5) returns goal context
+- Update all goal transition output builders to check `workerMode` via `IWorkerModeAccessor` — suppress behavioral/continuation prompts when mode is set, preserve data content
+- Worker commands clear `workerMode` on queue-empty (loop termination signal)
+- Wire `IWorkerModeAccessor` into `IApplicationContainer` and `HostBuilder`
+- Run `npm run generate:commands`
 
 **Criteria:**
-- `jumbo work --implement` selects and implements the next eligible goal
-- Prerequisite goals must be at least SUBMITTED
-- REJECTED and UNBLOCKED goals are eligible alongside REFINED
-- Git branch creation/checkout is handled
+- `jumbo worker plan` sets workerMode, selects next eligible goal, runs entry transition, returns goal context without behavioral prompts
+- Same for `jumbo worker implement`, `jumbo worker review`, `jumbo worker codify`
+- When workerMode is set, all goal command outputs suppress continuation/next-step instructions
+- When workerMode is null (interactive use), all outputs are unchanged
+- Queue empty returns clean response and clears workerMode
+- Existing `work pause` / `work resume` compose correctly — workerMode persists through pause/resume cycle
 
-**Prerequisites:** Goals 2, 3, 9
+**Prerequisites:** Goal 10
 
 ---
 
-### Goal 12: Implement work --review mode
+### Goal 12: Worker skills
 
-**Objective:** Create the autonomous review worker loop that selects SUBMITTED or stale IN_REVIEW goals, reviews them, and either approves or rejects.
+**Objective:** Create the four agent skills that define autonomous loop protocols for each worker mode. Skills are the developer's entry point — they invoke a slash command to start a worker, and the skill instructs the agent to run worker commands in a loop with a single agenda.
+
+**Design context:** Skills are markdown documents in `.agents/skills/` with YAML frontmatter, following the same structure as existing skills (e.g., `refine-jumbo-goals`). The skill owns the behavioral contract (loop structure, termination conditions, error handling); the worker command owns the data (goal selection, state transitions, context delivery). See RFC §10.7.
 
 **Scope:**
-- Add `--review` flag to `work` command namespace
-- Implement goal selection: SUBMITTED or IN_REVIEW (expired claim), ordered by submission time then created time
-- Worker loop: select → review → apply review-jumbo-goal skill → approve or reject
-- If approved and goal has `unblocksGoalId`, run `goal unblock` on the blocked goal
+- Create `/plan-worker` skill: loop protocol for `jumbo worker plan` → refinement work → `goal commit` → repeat until queue empty
+- Create `/implement-worker` skill: loop protocol for `jumbo worker implement` → implementation work → `goal submit` → repeat until queue empty
+- Create `/review-worker` skill: loop protocol for `jumbo worker review` → review work → `goal approve` or `goal reject` → repeat until queue empty
+- Create `/codify-worker` skill: loop protocol for `jumbo worker codify` → reconciliation work → `goal close` → repeat until queue empty
+- Each skill defines: loop structure, how to interpret worker command output, when to stop, how to handle errors and blockers
+- Skills reference the appropriate work skills for the actual work content (e.g., plan-worker references refine-jumbo-goals skill for refinement steps)
+- Mirror skills to `.claude/skills/`, `.gemini/skills/`, `.codex/skills/` per existing convention
 
 **Criteria:**
-- `jumbo work --review` selects and reviews the next eligible goal
-- Review produces either approve (→ APPROVED) or reject (→ REJECTED with audit findings)
-- Approved goals with `unblocksGoalId` trigger automatic unblock
+- Four worker skills are created and mirrored to all agent-specific skill directories
+- Each skill defines a complete loop protocol that an agent can follow autonomously
+- Skills correctly reference worker commands and exit commands
+- Skills handle queue-empty termination gracefully
+- Skills do not conflict with goal command output (workerMode filtering handles this)
 
-**Prerequisites:** Goals 2, 9
+**Prerequisites:** Goal 11
 
 ---
 
-### Goal 13: Implement work --codify mode
+### Goal 16: Migrate worker identity from filesystem to SQLite
 
-**Objective:** Create the autonomous codify worker loop that selects APPROVED or stale CODIFYING goals and performs architectural reconciliation.
+**Objective:** Move worker identity persistence from `FsWorkerIdentityRegistry` (`workers.json`) to SQLite, adding a `mode` column to support worker loop modes. This aligns worker storage with claim storage (already in SQLite) and enables output builders to read `workerMode` for prompt filtering.
 
-**Scope:**
-- Add `--codify` flag to `work` command namespace
-- Implement goal selection: APPROVED or CODIFYING (expired claim), ordered by approval time then created time
-- Worker loop: select → codify → reconcile architecture → update CHANGELOG → update docs → close
-
-**Criteria:**
-- `jumbo work --codify` selects and codifies the next eligible goal
-- Produces reconciled architectural model, updated CHANGELOG, updated documentation
-- Close transitions goal to DONE
-
-**Prerequisites:** Goals 6, 9
-
----
-
-### Goal 14: Prerequisite enforcement per work mode
-
-**Objective:** Implement mode-specific prerequisite satisfaction rules as defined in the RFC: plan requires prereqs at REFINED+, implement requires prereqs at SUBMITTED+, review and codify have no prerequisite checks.
+**Design context:** Claims reference `WorkerId` values and are stored in SQLite (`goal_views` table). The worker identity that anchors those claims lives in a flat JSON file (`workers.json`). This split is inconsistent — worker identity should be co-located with claims in the database. Additionally, the `workerMode` feature (RFC §10.3) requires queryable worker state that file-based storage cannot provide. See RFC §10.5.
 
 **Scope:**
-- Create prerequisite satisfaction query that checks goal states
-- Integrate into goal selection in work --plan (prereqs ≥ REFINED)
-- Integrate into goal selection in work --implement (prereqs ≥ SUBMITTED)
-- work --review and --codify skip prerequisite checks
-- Define state ordering for "at least" comparisons
+- Create `workers` table via SQLite migration: `workerId TEXT PK`, `hostSessionKey TEXT UNIQUE`, `mode TEXT NULL`, `createdAt TEXT`, `lastSeenAt TEXT`
+- Create `SqliteWorkerIdentityRegistry` implementing `IWorkerIdentityReader` — same lazy resolution logic as `FsWorkerIdentityRegistry` but backed by SQLite
+- Create `IWorkerModeAccessor` interface with `getMode(): WorkerMode | null` and `setMode(mode: WorkerMode | null): void`
+- `SqliteWorkerIdentityRegistry` also implements `IWorkerModeAccessor`
+- Wire `SqliteWorkerIdentityRegistry` into `HostBuilder`, replacing `FsWorkerIdentityRegistry`
+- Remove `FsWorkerIdentityRegistry` and `workers.json` dependency
+- Expose `IWorkerModeAccessor` on `IApplicationContainer`
 
 **Criteria:**
-- Plan mode skips goals whose prerequisites are not yet REFINED
-- Implement mode skips goals whose prerequisites are not yet SUBMITTED
-- Review and codify modes ignore prerequisites
-- State ordering is explicit and testable
-
-**Prerequisites:** Goals 10, 11, 12, 13
+- Workers are read from and written to SQLite via a new `workers` table
+- `FsWorkerIdentityRegistry` is replaced by `SqliteWorkerIdentityRegistry`
+- `workers.json` file is no longer created or referenced
+- `IWorkerIdentityReader` interface preserved, lazy resolution logic unchanged
+- New `IWorkerModeAccessor` interface for reading and writing worker mode
+- `mode` column supports null, plan, implement, review, codify values
+- All existing tests pass, new tests for SQLite registry added
 
 ---
 
@@ -446,47 +456,17 @@ jumbo goal add --title "G8: Migrate claim storage from filesystem to SQLite" --o
 # Goal 9
 jumbo goal add --title "G9: Add idempotent re-entry for expired claims" --objective "Enable crash recovery by making entry commands idempotent: if a goal is already in the target in-progress state with an expired claim, the command re-acquires the claim instead of failing." --criteria "Each entry command is idempotent for its target in-progress state when claim is expired" --criteria "Active non-expired claims by another worker are still rejected" --criteria "Deterministic error codes returned for invalid transitions" --prerequisite-goals goal_694a93a4-29a3-41e2-b82f-a65704623cb5 goal_a9e7d914-b55e-4dc5-b929-68cdeb0f2d1d --prerequisite-goals goal_694a93a4-29a3-41e2-b82f-a65704623cb5 goal_a9e7d914-b55e-4dc5-b929-68cdeb0f2d1d goal_a040ee1e-9e5b-4c28-a40b-5df84ceb14c6 --previous-goal goal_a040ee1e-9e5b-4c28-a40b-5df84ceb14c6
 
-# Goal 10
-jumbo goal add
-  --title "G10: Implement work --plan mode"
-  --objective "Create the autonomous plan worker loop that selects DEFINED or stale IN_REFINEMENT goals, refines them, and marks them refined."
-  --criteria "work --plan selects and refines the next eligible goal"
-  --criteria "Prerequisite goals must be at least REFINED"
-  --criteria "Stale IN_REFINEMENT goals with expired claims are picked up"
-  --criteria "Empty queue produces clean exit"
-  --prerequisite-goals goal_694a93a4-29a3-41e2-b82f-a65704623cb5 goal_5860f626-a3a9-4791-9b10-a81c9bb4eb2a
+# Goal 16 (registered: goal_fb2bfe7d-cc0f-47ce-b5f2-18f5efa227fd)
+# Already registered. Migrate worker identity from filesystem to SQLite.
 
-# Goal 11
-jumbo goal add
-  --title "G11: Implement work --implement mode"
-  --objective "Create the autonomous implement worker loop that selects REFINED, REJECTED, UNBLOCKED, or stale DOING goals, implements them, and submits them for review."
-  --criteria "work --implement selects and implements the next eligible goal"
-  --criteria "Prerequisite goals must be at least SUBMITTED"
-  --criteria "REJECTED and UNBLOCKED goals are eligible alongside REFINED"
-  --criteria "Git branch creation and checkout is handled"
-  --prerequisite-goals goal_ff0f9051-6aff-4d0a-920b-1852398e0156 goal_fc43f7f3-6daa-4711-82fb-f31bf6061c79 goal_5860f626-a3a9-4791-9b10-a81c9bb4eb2a
+# Goal 10 — GoalSelector + PrerequisiteSatisfactionPolicy
+# Not yet registered. Depends on Goals 9, 16. Register after those goals are created.
 
-# Goal 12
-jumbo goal add
-  --title "G12: Implement work --review mode"
-  --objective "Create the autonomous review worker loop that selects SUBMITTED or stale IN_REVIEW goals, reviews them, and either approves or rejects."
-  --criteria "work --review selects and reviews the next eligible goal"
-  --criteria "Review produces either approve or reject with audit findings"
-  --criteria "Approved goals with unblocksGoalId trigger automatic unblock"
-  --prerequisite-goals goal_ff0f9051-6aff-4d0a-920b-1852398e0156 goal_5860f626-a3a9-4791-9b10-a81c9bb4eb2a
+# Goal 11 — Worker commands + output filtering
+# Not yet registered. Depends on Goal 10. Register after Goal 10 is created.
 
-# Goal 13
-jumbo goal add
-  --title "G13: Implement work --codify mode"
-  --objective "Create the autonomous codify worker loop that selects APPROVED or stale CODIFYING goals and performs architectural reconciliation."
-  --criteria "work --codify selects and codifies the next eligible goal"
-  --criteria "Produces reconciled architectural model, updated CHANGELOG, updated documentation"
-  --criteria "Close transitions goal to DONE"
-  --prerequisite-goals goal_a9e7d914-b55e-4dc5-b929-68cdeb0f2d1d  --prerequisite-goals goal_a9e7d914-b55e-4dc5-b929-68cdeb0f2d1d goal_5860f626-a3a9-4791-9b10-a81c9bb4eb2a
- goal_5860f626-a3a9-4791-9b10-a81c9bb4eb2a
-
-# Goal 14
-jumbo goal add --title "G14: Prerequisite enforcement" --objective "Implement prerequisite satisfaction rules: 'jumbo goal start' requires prereqs at SUBMITTED+, review and codify have no prerequisite checks." --criteria "'jumbo goal start' rejects goals whose prerequisites are not yet APPROVED, CODIFYING or DONE" --criteria "Review and codify modes ignore prerequisites" --criteria "State ordering is explicit and testable"
+# Goal 12 — Worker skills
+# Not yet registered. Depends on Goal 11. Register after Goal 11 is created.
 
 # Goal 15
 jumbo goal add --title "G15: Update goal reset for new states" --objective "Extend 'jumbo goal reset' to handle all new states, restricting reset target to the goal's last waiting state — resetting to an in-progress state is not permitted." --criteria "'jumbo goal reset' works for goals in any of the new states" --criteria "Reset target is restricted to the goal's last waiting state" --criteria "Resetting to an in-progress state is rejected with a deterministic error" --criteria "Active claims are released on reset" --prerequisite-goals goal_39ea9943-371b-4078-a92b-dab5590cf1b1 --previous-goal goal_5860f626-a3a9-4791-9b10-a81c9bb4eb2a
@@ -594,14 +574,47 @@ Manual steps to run at phase boundaries and after specific goals. Each goal's im
 [ ] Verify reset from every new state lands on correct waiting state
 ```
 
-### After Goal 14 (end of Phase 4)
+### After Goal 16 (worker identity migration)
+
+```
+[ ] jumbo db rebuild
+[ ] Verify workers.json is no longer created or referenced
+[ ] Verify worker identity resolution works:
+    jumbo worker view             — should show workerId from SQLite
+[ ] Verify workerMode column exists and defaults to null
+```
+
+### After Goal 10 (GoalSelector)
+
+```
+[ ] Unit test: GoalSelector returns correct goal for each mode config
+[ ] Unit test: stale in-progress goals (expired claims) are included
+[ ] Unit test: active claims are excluded
+[ ] Unit test: prerequisite threshold filtering works per mode
+[ ] Unit test: empty queue returns null
+```
+
+### After Goal 11 (worker commands + output filtering)
+
+```
+[ ] Smoke test: jumbo worker plan selects a DEFINED goal and returns context
+[ ] Verify: workerMode is set on the worker record after running worker command
+[ ] Verify: goal commit output suppresses behavioral prompts when workerMode is set
+[ ] Verify: goal commit output is unchanged when workerMode is null (interactive)
+[ ] Verify: queue empty clears workerMode
+[ ] Verify: work pause / work resume preserves workerMode
+```
+
+### After Goal 12 (worker skills — end of Phase 4)
 
 ```
 [ ] End-to-end autonomous mode test:
     1. Add 2 goals where goal B has goal A as prerequisite
-    2. jumbo work --plan          — should pick goal A (B blocked by prereq)
-    3. jumbo work --implement     — should pick goal A
-    4. jumbo work --review        — should pick goal A
-    5. jumbo work --codify        — should pick goal A
+    2. Invoke /plan-worker skill  — should pick goal A (B blocked by prereq)
+    3. Invoke /implement-worker   — should pick goal A
+    4. Invoke /review-worker      — should pick goal A
+    5. Invoke /codify-worker      — should pick goal A
     6. Repeat: goal B should now be eligible in each mode
+[ ] Verify: skill loop terminates cleanly on empty queue
+[ ] Verify: skills are mirrored to .claude/skills/, .gemini/skills/, .codex/skills/
 ```

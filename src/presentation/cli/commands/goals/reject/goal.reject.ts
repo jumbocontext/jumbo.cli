@@ -3,7 +3,7 @@
  *
  * Rejects a goal after failed QA review.
  * Transitions goal from 'in-review' to 'rejected' status,
- * records audit findings, and releases the reviewer's claim.
+ * records review issues, and releases the reviewer's claim.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
@@ -23,15 +23,15 @@ export const metadata: CommandMetadata = {
       description: "ID of the goal to reject"
     },
     {
-      flags: "-a, --audit-findings <findings>",
+      flags: "-r, --review-issues <issues>",
       description: "Description of implementation problems that need fixing"
     }
   ],
   options: [],
   examples: [
     {
-      command: 'jumbo goal reject --id goal_abc123 --audit-findings "Missing error handling in API endpoint"',
-      description: "Reject a goal with audit findings"
+      command: 'jumbo goal reject --id goal_abc123 --review-issues "Missing error handling in API endpoint"',
+      description: "Reject a goal with review issues"
     }
   ],
   related: ["goal review", "goal qualify", "goal start"]
@@ -42,7 +42,7 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function goalReject(
-  options: { id: string; auditFindings: string },
+  options: { id: string; reviewIssues: string },
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
@@ -52,7 +52,7 @@ export async function goalReject(
     // 1. Execute via controller
     const response = await container.rejectGoalController.handle({
       goalId: options.id,
-      auditFindings: options.auditFindings,
+      reviewIssues: options.reviewIssues,
     });
 
     // 2. Build and render output using builder pattern

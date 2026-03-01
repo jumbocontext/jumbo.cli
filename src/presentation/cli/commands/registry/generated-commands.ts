@@ -67,13 +67,13 @@ import { invariantsList, metadata as invariantsListMeta } from '../../commands/i
 import { invariantRemove, metadata as invariantRemoveMeta } from '../../commands/invariants/remove/invariant.remove.js';
 import { invariantUpdate, metadata as invariantUpdateMeta } from '../../commands/invariants/update/invariant.update.js';
 import { dbRebuild, metadata as dbRebuildMeta } from '../../commands/maintenance/db/rebuild/db.rebuild.js';
-import { maintenanceRepair, metadata as maintenanceRepairMeta } from '../../commands/maintenance/repair/maintenance.repair.js';
 import { dbUpgrade, metadata as dbUpgradeMeta } from '../../commands/maintenance/upgrade/db.upgrade.js';
 import { projectInit, metadata as projectInitMeta } from '../../commands/project/init/project.init.js';
 import { projectUpdate, metadata as projectUpdateMeta } from '../../commands/project/update/project.update.js';
 import { relationAdd, metadata as relationAddMeta } from '../../commands/relations/add/relation.add.js';
 import { relationsList, metadata as relationsListMeta } from '../../commands/relations/list/relations.list.js';
 import { relationRemove, metadata as relationRemoveMeta } from '../../commands/relations/remove/relation.remove.js';
+import { repair, metadata as repairMeta } from '../../commands/repair/repair.js';
 import { sessionCompact, metadata as sessionCompactMeta } from '../../commands/sessions/compact/session.compact.js';
 import { sessionEnd, metadata as sessionEndMeta } from '../../commands/sessions/end/session.end.js';
 import { sessionsList, metadata as sessionsListMeta } from '../../commands/sessions/list/sessions.list.js';
@@ -377,11 +377,6 @@ export const commands: RegisteredCommand[] = [
     handler: dbRebuild
   },
   {
-    path: 'maintenance repair',
-    metadata: maintenanceRepairMeta,
-    handler: maintenanceRepair
-  },
-  {
     path: 'db upgrade',
     metadata: dbUpgradeMeta,
     handler: dbUpgrade
@@ -410,6 +405,11 @@ export const commands: RegisteredCommand[] = [
     path: 'relation remove',
     metadata: relationRemoveMeta,
     handler: relationRemove
+  },
+  {
+    path: 'repair',
+    metadata: repairMeta,
+    handler: repair
   },
   {
     path: 'session compact',

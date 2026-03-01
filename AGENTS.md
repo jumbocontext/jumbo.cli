@@ -10,17 +10,17 @@ Sincerely,
 Project Administrator
 
 ### When you start a new Session Start
-Run `jumbo session start`  
-  
+Run `jumbo session start`
+
 This orients you with the current state of the project: high-level project, recent events and a goal backlog to select work from.
 
 ### Pre Compaction/Compression
-If a goal is actively being implemented. 
+If a goal is actively being implemented.
 
 Run `jumbo work pause`
 
-### After Compaction/Compression  
-Run `jumbo work resume`  
+### After Compaction/Compression
+Run `jumbo work resume`
 
 This will automatically serve context of a goal that you were progressing on prior to compaction.
 

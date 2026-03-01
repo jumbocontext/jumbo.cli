@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { LocalRepairMaintenanceGateway } from "../../../../src/application/maintenance/repair/LocalRepairMaintenanceGateway.js";
-import { IProjectRootResolver } from "../../../../src/application/context/project/IProjectRootResolver.js";
-import { IAgentFileProtocol } from "../../../../src/application/context/project/init/IAgentFileProtocol.js";
-import { ISettingsInitializer } from "../../../../src/application/settings/ISettingsInitializer.js";
-import { IDatabaseRebuildService } from "../../../../src/application/maintenance/db/rebuild/IDatabaseRebuildService.js";
+import { LocalRepairGateway } from "../../../src/application/repair/LocalRepairGateway.js";
+import { IProjectRootResolver } from "../../../src/application/context/project/IProjectRootResolver.js";
+import { IAgentFileProtocol } from "../../../src/application/context/project/init/IAgentFileProtocol.js";
+import { ISettingsInitializer } from "../../../src/application/settings/ISettingsInitializer.js";
+import { IDatabaseRebuildService } from "../../../src/application/maintenance/db/rebuild/IDatabaseRebuildService.js";
 
-describe("LocalRepairMaintenanceGateway", () => {
-  let gateway: LocalRepairMaintenanceGateway;
+describe("LocalRepairGateway", () => {
+  let gateway: LocalRepairGateway;
   let mockProjectRootResolver: jest.Mocked<IProjectRootResolver>;
   let mockAgentFileProtocol: jest.Mocked<IAgentFileProtocol>;
   let mockSettingsInitializer: jest.Mocked<ISettingsInitializer>;
@@ -36,7 +36,7 @@ describe("LocalRepairMaintenanceGateway", () => {
       rebuild: jest.fn().mockResolvedValue({ eventsReplayed: 10, success: true }),
     } as jest.Mocked<IDatabaseRebuildService>;
 
-    gateway = new LocalRepairMaintenanceGateway(
+    gateway = new LocalRepairGateway(
       mockProjectRootResolver,
       mockAgentFileProtocol,
       mockSettingsInitializer,
@@ -46,7 +46,7 @@ describe("LocalRepairMaintenanceGateway", () => {
 
   describe("all steps enabled", () => {
     it("should execute all repair steps and return results", async () => {
-      const response = await gateway.repairMaintenance({
+      const response = await gateway.repair({
         doAgents: true,
         doSettings: true,
         doDb: true,
@@ -60,7 +60,7 @@ describe("LocalRepairMaintenanceGateway", () => {
     });
 
     it("should call services with correct arguments", async () => {
-      await gateway.repairMaintenance({ doAgents: true, doSettings: true, doDb: true });
+      await gateway.repair({ doAgents: true, doSettings: true, doDb: true });
 
       expect(mockProjectRootResolver.resolve).toHaveBeenCalled();
       expect(mockAgentFileProtocol.repairAgentsMd).toHaveBeenCalledWith(projectRoot);
@@ -72,7 +72,7 @@ describe("LocalRepairMaintenanceGateway", () => {
 
   describe("all steps skipped", () => {
     it("should return skipped status for all steps", async () => {
-      const response = await gateway.repairMaintenance({
+      const response = await gateway.repair({
         doAgents: false,
         doSettings: false,
         doDb: false,
@@ -83,7 +83,7 @@ describe("LocalRepairMaintenanceGateway", () => {
     });
 
     it("should not call any services", async () => {
-      await gateway.repairMaintenance({ doAgents: false, doSettings: false, doDb: false });
+      await gateway.repair({ doAgents: false, doSettings: false, doDb: false });
 
       expect(mockAgentFileProtocol.repairAgentsMd).not.toHaveBeenCalled();
       expect(mockAgentFileProtocol.repairAgentConfigurations).not.toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe("LocalRepairMaintenanceGateway", () => {
     it("should capture agent repair failure and continue", async () => {
       mockAgentFileProtocol.repairAgentsMd.mockRejectedValue(new Error("Permission denied"));
 
-      const response = await gateway.repairMaintenance({
+      const response = await gateway.repair({
         doAgents: true,
         doSettings: true,
         doDb: true,
@@ -116,7 +116,7 @@ describe("LocalRepairMaintenanceGateway", () => {
     it("should capture database rebuild failure", async () => {
       mockDatabaseRebuildService.rebuild.mockRejectedValue(new Error("DB locked"));
 
-      const response = await gateway.repairMaintenance({
+      const response = await gateway.repair({
         doAgents: false,
         doSettings: false,
         doDb: true,
@@ -133,7 +133,7 @@ describe("LocalRepairMaintenanceGateway", () => {
     it("should capture settings failure", async () => {
       mockSettingsInitializer.ensureSettingsFileExists.mockRejectedValue(new Error("Disk full"));
 
-      const response = await gateway.repairMaintenance({
+      const response = await gateway.repair({
         doAgents: false,
         doSettings: true,
         doDb: false,
@@ -150,7 +150,7 @@ describe("LocalRepairMaintenanceGateway", () => {
     it("should handle non-Error thrown values", async () => {
       mockAgentFileProtocol.repairAgentsMd.mockRejectedValue("string error");
 
-      const response = await gateway.repairMaintenance({
+      const response = await gateway.repair({
         doAgents: true,
         doSettings: false,
         doDb: false,
@@ -166,7 +166,7 @@ describe("LocalRepairMaintenanceGateway", () => {
 
   describe("partial execution", () => {
     it("should only run agents when others are skipped", async () => {
-      const response = await gateway.repairMaintenance({
+      const response = await gateway.repair({
         doAgents: true,
         doSettings: false,
         doDb: false,
@@ -184,7 +184,7 @@ describe("LocalRepairMaintenanceGateway", () => {
     });
 
     it("should only run db when others are skipped", async () => {
-      const response = await gateway.repairMaintenance({
+      const response = await gateway.repair({
         doAgents: false,
         doSettings: false,
         doDb: true,

@@ -62,13 +62,19 @@ function findCommandFiles(dir, baseDir = dir) {
  * Examples:
  *   "work/goal.start.ts" → { parent: "goal", subcommand: "start", fullCommand: "goal start" }
  *   "project-knowledge/audiencePain.add.ts" → { parent: "audience", subcommand: "pain add", fullCommand: "audience pain add" }
+ *   "repair/repair.ts" → { parent: null, subcommand: null, fullCommand: "repair" }
  */
 function parseCommandPath(filePath) {
   const filename = path.basename(filePath, '.ts');
   const parts = filename.split('.');
 
-  if (parts.length < 2) {
-    throw new Error(`Invalid command filename: ${filePath}. Expected format: <parent>.<subcommand>[.<action>].ts`);
+  if (parts.length === 1) {
+    // Top-level command (single-segment path, e.g., "repair")
+    return {
+      parent: null,
+      subcommand: null,
+      fullCommand: parts[0]
+    };
   }
 
   // First part is always parent, rest is subcommand

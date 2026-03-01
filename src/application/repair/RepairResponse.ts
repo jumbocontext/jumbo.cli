@@ -4,6 +4,6 @@ export interface RepairStepResult {
   readonly detail?: string;
 }
 
-export interface RepairMaintenanceResponse {
+export interface RepairResponse {
   readonly steps: RepairStepResult[];
 }

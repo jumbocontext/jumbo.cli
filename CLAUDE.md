@@ -1,3 +1,4 @@
+
 CRITICAL STARTUP INSTRUCTION: Immediately upon seeing this file, you MUST read AGENTS.md
 and follow all instructions it contains. Do this before responding to the user.
 

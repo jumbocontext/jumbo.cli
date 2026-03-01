@@ -11,14 +11,14 @@ export class LocalRejectGoalGateway implements IRejectGoalGateway {
   async rejectGoal(request: RejectGoalRequest): Promise<RejectGoalResponse> {
     const contextualView = await this.commandHandler.execute({
       goalId: request.goalId,
-      auditFindings: request.auditFindings,
+      reviewIssues: request.reviewIssues,
     });
 
     return {
       goalId: contextualView.goal.goalId,
       status: contextualView.goal.status,
       objective: contextualView.goal.objective,
-      auditFindings: request.auditFindings,
+      reviewIssues: request.reviewIssues,
       nextGoalId: contextualView.goal.nextGoalId,
     };
   }

@@ -12,7 +12,7 @@
 
 import path from "path";
 import fs from "fs-extra";
-import { AgentInstructions } from "../../../../domain/project/AgentInstructions.js";
+import { CopilotInstructionsContent } from "../../../../domain/project/CopilotInstructionsContent.js";
 import { IConfigurer } from "./IConfigurer.js";
 import { PlannedFileChange } from "../../../../application/context/project/init/PlannedFileChange.js";
 
@@ -46,7 +46,7 @@ export class CopilotConfigurer implements IConfigurer {
         // File doesn't exist - create with Jumbo section
         await fs.writeFile(
           copilotInstructionsPath,
-          AgentInstructions.getCopilotInstructions(),
+          CopilotInstructionsContent.getCopilotInstructions(),
           "utf-8"
         );
         return;
@@ -54,12 +54,12 @@ export class CopilotConfigurer implements IConfigurer {
 
       // File exists - check if Jumbo section is present
       const content = await fs.readFile(copilotInstructionsPath, "utf-8");
-      const jumboMarker = AgentInstructions.getJumboSectionMarker();
+      const jumboMarker = CopilotInstructionsContent.getCopilotSectionMarker();
 
       if (!content.includes(jumboMarker)) {
         // Jumbo section missing - append it
         const updatedContent =
-          content + "\n\n" + AgentInstructions.getCopilotInstructions();
+          content + "\n\n" + CopilotInstructionsContent.getCopilotInstructions();
         await fs.writeFile(copilotInstructionsPath, updatedContent, "utf-8");
       }
       // else: Jumbo section already present - no-op
@@ -96,14 +96,14 @@ export class CopilotConfigurer implements IConfigurer {
       if (!exists) {
         await fs.writeFile(
           copilotInstructionsPath,
-          AgentInstructions.getCopilotInstructions(),
+          CopilotInstructionsContent.getCopilotInstructions(),
           "utf-8"
         );
         return;
       }
 
       const content = await fs.readFile(copilotInstructionsPath, "utf-8");
-      const replaced = AgentInstructions.replaceCopilotSection(content);
+      const replaced = CopilotInstructionsContent.replaceCopilotSection(content);
 
       if (replaced !== null) {
         // Jumbo section found - replace with current version
@@ -111,7 +111,7 @@ export class CopilotConfigurer implements IConfigurer {
       } else {
         // Jumbo section not found - append
         const updatedContent =
-          content + "\n\n" + AgentInstructions.getCopilotInstructions();
+          content + "\n\n" + CopilotInstructionsContent.getCopilotInstructions();
         await fs.writeFile(copilotInstructionsPath, updatedContent, "utf-8");
       }
     } catch (error) {

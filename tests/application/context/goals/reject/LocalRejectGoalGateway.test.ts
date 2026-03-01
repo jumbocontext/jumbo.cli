@@ -39,18 +39,18 @@ describe("LocalRejectGoalGateway", () => {
 
     const result = await gateway.rejectGoal({
       goalId: "goal_123",
-      auditFindings: "Missing error handling",
+      reviewIssues: "Missing error handling",
     });
 
     expect(result.goalId).toBe("goal_123");
     expect(result.status).toBe(GoalStatus.REJECTED);
     expect(result.objective).toBe("Test objective");
-    expect(result.auditFindings).toBe("Missing error handling");
+    expect(result.reviewIssues).toBe("Missing error handling");
     expect(result.nextGoalId).toBe("goal_456");
 
     expect(commandHandler.execute).toHaveBeenCalledWith({
       goalId: "goal_123",
-      auditFindings: "Missing error handling",
+      reviewIssues: "Missing error handling",
     });
   });
 
@@ -62,7 +62,7 @@ describe("LocalRejectGoalGateway", () => {
     await expect(
       gateway.rejectGoal({
         goalId: "goal_123",
-        auditFindings: "Some findings",
+        reviewIssues: "Some findings",
       })
     ).rejects.toThrow("Handler failure");
   });

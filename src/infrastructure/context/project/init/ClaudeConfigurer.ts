@@ -13,7 +13,7 @@
 
 import path from "path";
 import fs from "fs-extra";
-import { AgentInstructions } from "../../../../domain/project/AgentInstructions.js";
+import { AgentFileReferenceContent } from "../../../../domain/project/AgentFileReferenceContent.js";
 import { SafeClaudeSettingsMerger } from "./SafeClaudeSettingsMerger.js";
 import { IConfigurer } from "./IConfigurer.js";
 import { PlannedFileChange } from "../../../../application/context/project/init/PlannedFileChange.js";
@@ -34,7 +34,7 @@ export class ClaudeConfigurer implements IConfigurer {
    */
   private async ensureClaudeMd(projectRoot: string): Promise<void> {
     const claudeMdPath = path.join(projectRoot, "CLAUDE.md");
-    const reference = AgentInstructions.getAgentFileReference();
+    const reference = AgentFileReferenceContent.getAgentFileReference();
 
     try {
       const exists = await fs.pathExists(claudeMdPath);
@@ -141,7 +141,7 @@ export class ClaudeConfigurer implements IConfigurer {
    */
   private async repairClaudeMd(projectRoot: string): Promise<void> {
     const claudeMdPath = path.join(projectRoot, "CLAUDE.md");
-    const reference = AgentInstructions.getAgentFileReference();
+    const reference = AgentFileReferenceContent.getAgentFileReference();
 
     try {
       const exists = await fs.pathExists(claudeMdPath);
@@ -152,7 +152,7 @@ export class ClaudeConfigurer implements IConfigurer {
       }
 
       const content = await fs.readFile(claudeMdPath, "utf-8");
-      const replaced = AgentInstructions.replaceAgentFileReference(content);
+      const replaced = AgentFileReferenceContent.replaceAgentFileReference(content);
 
       if (replaced !== null) {
         // Reference block found - replace with current version

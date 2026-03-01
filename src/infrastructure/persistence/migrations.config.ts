@@ -41,5 +41,7 @@ export function getNamespaceMigrations(infrastructureDir: string): NamespaceMigr
     { namespace: "value-propositions", path: path.join(infrastructureDir, "context/value-propositions/migrations") },
     // Relations category
     { namespace: "relations", path: path.join(infrastructureDir, "context/relations/migrations") },
+    // Host category
+    { namespace: "workers", path: path.join(infrastructureDir, "host/workers/migrations") },
   ];
 }

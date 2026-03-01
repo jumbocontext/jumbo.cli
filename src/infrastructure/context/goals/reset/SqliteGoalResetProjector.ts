@@ -25,6 +25,7 @@ export class SqliteGoalResetProjector
       UPDATE goal_views
       SET status = ?,
           note = NULL,
+          reviewIssues = NULL,
           claimedBy = NULL,
           claimedAt = NULL,
           claimExpiresAt = NULL,

@@ -30,6 +30,22 @@
           }
         ]
       }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "exit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jumbo session end --focus {focus} --summary {summary}"
+          }
+        ]
+      }
+    ]
+  },
+  "tools": {
+    "allowed": [
+      "run_shell_command(jumbo --help)"
     ]
   }
 }

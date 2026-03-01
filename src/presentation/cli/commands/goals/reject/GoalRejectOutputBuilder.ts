@@ -18,7 +18,7 @@ export class GoalRejectOutputBuilder {
 
   /**
    * Build output for successful goal rejection.
-   * Renders rejection result with audit findings and next steps for the implementing agent.
+   * Renders rejection result with review issues and next steps for the implementing agent.
    */
   buildSuccess(response: RejectGoalResponse): TerminalOutput {
     this.builder.reset();
@@ -31,12 +31,12 @@ export class GoalRejectOutputBuilder {
       "---\n\n" +
       "## QA Review Failed\n" +
       "The goal has been returned for rework. The following issues were found:\n\n" +
-      `${response.auditFindings}\n` +
+      `${response.reviewIssues}\n` +
       "---"
     );
 
     let nextSteps = "## Next Steps\n" +
-                    "The implementing agent should address the audit findings and restart the goal:\n" +
+                    "The implementing agent should address the review issues and restart the goal:\n" +
                     `  Run: jumbo goal start --id ${response.goalId}`;
 
     if (response.nextGoalId) {

@@ -1,9 +1,9 @@
-import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
-import { TerminalOutput } from '../../../output/TerminalOutput.js';
-import { RepairStepResult } from '../../../../../application/maintenance/repair/RepairMaintenanceResponse.js';
+import { TerminalOutputBuilder } from '../../output/TerminalOutputBuilder.js';
+import { TerminalOutput } from '../../output/TerminalOutput.js';
+import { RepairStepResult } from '../../../../application/repair/RepairResponse.js';
 
 /**
- * Specialized builder for maintenance.repair command output.
+ * Specialized builder for repair command output.
  * Encapsulates all output rendering for the repair command.
  */
 export class RepairOutputBuilder {

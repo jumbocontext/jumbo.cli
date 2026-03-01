@@ -29,6 +29,7 @@ describe("GoalRecordMapper", () => {
       createdAt: "2026-02-01T10:00:00.000Z",
       updatedAt: "2026-02-01T10:00:00.000Z",
       note: null,
+      reviewIssues: null,
       progress: "[]",
       claimedBy: null,
       claimedAt: null,
@@ -120,6 +121,22 @@ describe("GoalRecordMapper", () => {
       const view = mapper.toView(record);
 
       expect(view.note).toBe("Blocked on dependency");
+    });
+
+    it("coerces null reviewIssues to undefined", () => {
+      const record = buildRecord({ reviewIssues: null });
+
+      const view = mapper.toView(record);
+
+      expect(view.reviewIssues).toBeUndefined();
+    });
+
+    it("preserves non-null reviewIssues value", () => {
+      const record = buildRecord({ reviewIssues: "Tests are failing in auth module" });
+
+      const view = mapper.toView(record);
+
+      expect(view.reviewIssues).toBe("Tests are failing in auth module");
     });
 
     it("coerces null claim fields to undefined", () => {

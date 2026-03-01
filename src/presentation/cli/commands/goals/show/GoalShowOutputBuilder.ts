@@ -69,6 +69,10 @@ export class GoalShowOutputBuilder {
       output += "\n\n" + Colors.gradientB("Note:") + "\n  " + Colors.gradientC(goal.note);
     }
 
+    if (goal.reviewIssues) {
+      output += "\n\n" + Colors.gradientB("Review Issues:") + "\n  " + Colors.gradientC(goal.reviewIssues);
+    }
+
     if (goal.successCriteria.length > 0) {
       output += "\n\n" + Colors.gradientB("Success Criteria:");
       for (const criterion of goal.successCriteria) {
@@ -214,6 +218,7 @@ export class GoalShowOutputBuilder {
         createdAt: goal.createdAt,
         updatedAt: goal.updatedAt,
         note: goal.note,
+        reviewIssues: goal.reviewIssues,
         nextGoalId: goal.nextGoalId,
         prerequisiteGoals: goal.prerequisiteGoals,
         claimedBy: goal.claimedBy,

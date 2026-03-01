@@ -18,7 +18,7 @@ import { IEventBus } from "../messaging/IEventBus.js";
 import { IClock } from "../time-and-date/IClock.js";
 import { RebuildDatabaseController } from "../maintenance/db/rebuild/RebuildDatabaseController.js";
 import { UpgradeCommandHandler } from "../maintenance/upgrade/UpgradeCommandHandler.js";
-import { RepairMaintenanceController } from "../maintenance/repair/RepairMaintenanceController.js";
+import { RepairController } from "../repair/RepairController.js";
 import { ILogger } from "../logging/ILogger.js";
 import { IProjectRootResolver } from "../context/project/IProjectRootResolver.js";
 
@@ -346,7 +346,7 @@ export interface IApplicationContainer {
 
   // Maintenance Controllers
   rebuildDatabaseController: RebuildDatabaseController;
-  repairMaintenanceController: RepairMaintenanceController;
+  repairController: RepairController;
   upgradeCommandHandler: UpgradeCommandHandler;
 
   // CLI Version

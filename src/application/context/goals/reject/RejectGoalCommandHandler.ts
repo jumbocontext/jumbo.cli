@@ -51,8 +51,8 @@ export class RejectGoalCommandHandler {
     const history = await this.eventReader.readStream(command.goalId);
     const goal = Goal.rehydrate(command.goalId, history as any);
 
-    // 4. Domain logic produces event (validates state and audit findings)
-    const event = goal.reject(command.auditFindings);
+    // 4. Domain logic produces event (validates state and review issues)
+    const event = goal.reject(command.reviewIssues);
 
     // 5. Persist event to file store
     await this.eventWriter.append(event);

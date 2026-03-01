@@ -171,6 +171,12 @@ function resolveCommandPath(
     return aliasedCommand.path;
   }
 
+  // Check if this is a single-segment top-level command (e.g., "repair")
+  const topLevelCommand = commands.find((c) => c.path === firstArg);
+  if (topLevelCommand) {
+    return topLevelCommand.path;
+  }
+
   // Otherwise, try to match as "parent subcommand"
   if (positionalArgs.length >= 2) {
     const commandPath = `${positionalArgs[0]} ${positionalArgs[1]}`;

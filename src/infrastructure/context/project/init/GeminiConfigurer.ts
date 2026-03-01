@@ -10,7 +10,7 @@
 
 import path from "path";
 import fs from "fs-extra";
-import { AgentInstructions } from "../../../../domain/project/AgentInstructions.js";
+import { AgentFileReferenceContent } from "../../../../domain/project/AgentFileReferenceContent.js";
 import { SafeGeminiSettingsMerger } from "./SafeGeminiSettingsMerger.js";
 import { IConfigurer } from "./IConfigurer.js";
 import { PlannedFileChange } from "../../../../application/context/project/init/PlannedFileChange.js";
@@ -31,7 +31,7 @@ export class GeminiConfigurer implements IConfigurer {
    */
   private async ensureGeminiMd(projectRoot: string): Promise<void> {
     const geminiMdPath = path.join(projectRoot, "GEMINI.md");
-    const reference = AgentInstructions.getAgentFileReference();
+    const reference = AgentFileReferenceContent.getAgentFileReference();
 
     try {
       const exists = await fs.pathExists(geminiMdPath);
@@ -138,7 +138,7 @@ export class GeminiConfigurer implements IConfigurer {
    */
   private async repairGeminiMd(projectRoot: string): Promise<void> {
     const geminiMdPath = path.join(projectRoot, "GEMINI.md");
-    const reference = AgentInstructions.getAgentFileReference();
+    const reference = AgentFileReferenceContent.getAgentFileReference();
 
     try {
       const exists = await fs.pathExists(geminiMdPath);
@@ -149,7 +149,7 @@ export class GeminiConfigurer implements IConfigurer {
       }
 
       const content = await fs.readFile(geminiMdPath, "utf-8");
-      const replaced = AgentInstructions.replaceAgentFileReference(content);
+      const replaced = AgentFileReferenceContent.replaceAgentFileReference(content);
 
       if (replaced !== null) {
         // Reference block found - replace with current version

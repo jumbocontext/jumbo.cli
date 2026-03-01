@@ -18,6 +18,7 @@ export interface GoalRecord {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly note: string | null;
+  readonly reviewIssues: string | null;
   readonly progress: string; // JSON array
   readonly claimedBy: string | null;
   readonly claimedAt: string | null;

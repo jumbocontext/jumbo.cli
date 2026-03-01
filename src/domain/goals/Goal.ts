@@ -41,6 +41,7 @@ export interface GoalState extends AggregateState {
   status: GoalStatusType;
   version: number;
   note?: string;  // Optional: populated when blocked or completed
+  reviewIssues?: string;  // Optional: populated when rejected with review findings
   progress: string[];  // Tracks completed sub-tasks (append-only)
   nextGoalId?: UUID;
   prerequisiteGoals?: UUID[];
@@ -181,6 +182,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
         const e = event as GoalResetEvent;
         state.status = e.payload.status;  // Dynamic target waiting state
         state.note = undefined;            // Clear any notes from previous states
+        state.reviewIssues = undefined;    // Clear review issues from previous rejection
         state.lastWaitingStatus = undefined; // Clear tracking on reset
         state.version = e.version;
         break;
@@ -214,7 +216,8 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
       case GoalEventType.REJECTED: {
         const e = event as GoalRejectedEvent;
         state.status = e.payload.status;  // 'rejected'
-        state.note = e.payload.auditFindings;  // Store audit findings as note
+        // Backward compatibility: legacy persisted events use 'auditFindings'
+        state.reviewIssues = e.payload.reviewIssues ?? e.payload.auditFindings;
         state.version = e.version;
         break;
       }
@@ -792,19 +795,19 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
   /**
    * Rejects a goal after failed QA review.
    * Transitions status from "in-review" to "rejected".
-   * Records audit findings describing implementation problems that need fixing.
-   * The implementing agent can reference these findings when reworking.
+   * Records review issues describing implementation problems that need fixing.
+   * The implementing agent can reference these issues when reworking.
    *
-   * @param auditFindings - Description of implementation problems found during review
+   * @param reviewIssues - Description of implementation problems found during review
    * @returns GoalRejected event
-   * @throws Error if goal is not in 'in-review' status or audit findings are invalid
+   * @throws Error if goal is not in 'in-review' status or review issues are invalid
    */
-  reject(auditFindings: string): GoalRejectedEvent {
+  reject(reviewIssues: string): GoalRejectedEvent {
     // 1. State validation: can only reject from in-review status
     ValidationRuleSet.ensure(this.state, [new CanRejectRule()]);
 
-    // 2. Input validation: audit findings must be provided and valid
-    ValidationRuleSet.ensure(auditFindings, NOTE_RULES);
+    // 2. Input validation: review issues must be provided and valid
+    ValidationRuleSet.ensure(reviewIssues, NOTE_RULES);
 
     // 3. Create and return event using BaseAggregate.makeEvent
     return this.makeEvent(
@@ -812,7 +815,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
       {
         status: GoalStatus.REJECTED,
         rejectedAt: new Date().toISOString(),
-        auditFindings,
+        reviewIssues,
       },
       Goal.apply
     ) as GoalRejectedEvent;

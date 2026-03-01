@@ -23,19 +23,19 @@ describe("RejectGoalController", () => {
       goalId: "goal_123",
       status: "rejected",
       objective: "Test objective",
-      auditFindings: "Missing error handling",
+      reviewIssues: "Missing error handling",
     };
     (gateway.rejectGoal as jest.Mock).mockResolvedValue(mockResponse);
 
     const result = await controller.handle({
       goalId: "goal_123",
-      auditFindings: "Missing error handling",
+      reviewIssues: "Missing error handling",
     });
 
     expect(result).toEqual(mockResponse);
     expect(gateway.rejectGoal).toHaveBeenCalledWith({
       goalId: "goal_123",
-      auditFindings: "Missing error handling",
+      reviewIssues: "Missing error handling",
     });
   });
 
@@ -47,7 +47,7 @@ describe("RejectGoalController", () => {
     await expect(
       controller.handle({
         goalId: "goal_123",
-        auditFindings: "Some findings",
+        reviewIssues: "Some findings",
       })
     ).rejects.toThrow("Gateway failure");
   });
