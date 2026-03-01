@@ -4,7 +4,7 @@
 
 import { Relation } from "../../../src/domain/relations/Relation";
 import { RelationEventType, EntityType } from "../../../src/domain/relations/Constants";
-import { RelationAddedEvent } from "../../../src/domain/relations/EventIndex";
+import { RelationAddedEvent, RelationDeactivatedEvent, RelationReactivatedEvent } from "../../../src/domain/relations/EventIndex";
 
 describe("Relation Aggregate", () => {
   describe("add()", () => {
@@ -269,6 +269,139 @@ describe("Relation Aggregate", () => {
       expect(snapshot.strength).toBe("strong");
       expect(snapshot.description).toBe("Test relation");
       expect(snapshot.version).toBe(1);
+    });
+  });
+
+  describe("deactivate() / reactivate()", () => {
+    it("should deactivate an active relation", () => {
+      const relation = Relation.create("relation_123");
+      relation.add(
+        EntityType.GOAL,
+        "goal-1",
+        EntityType.COMPONENT,
+        "component-1",
+        "involves",
+        "Goal requires this component"
+      );
+
+      const event = relation.deactivate("Referenced entity became inactive");
+
+      expect(event.type).toBe(RelationEventType.DEACTIVATED);
+      expect(event.aggregateId).toBe("relation_123");
+      expect(event.version).toBe(2);
+      expect(event.payload.reason).toBe("Referenced entity became inactive");
+      expect(event.payload.deactivatedAt).toBeDefined();
+      expect(relation.snapshot.status).toBe("deactivated");
+    });
+
+    it("should reactivate a deactivated relation", () => {
+      const relation = Relation.create("relation_123");
+      relation.add(
+        EntityType.GOAL,
+        "goal-1",
+        EntityType.COMPONENT,
+        "component-1",
+        "involves",
+        "Goal requires this component"
+      );
+      relation.deactivate("Paused");
+
+      const event = relation.reactivate("Dependency restored");
+
+      expect(event.type).toBe(RelationEventType.REACTIVATED);
+      expect(event.aggregateId).toBe("relation_123");
+      expect(event.version).toBe(3);
+      expect(event.payload.reason).toBe("Dependency restored");
+      expect(event.payload.reactivatedAt).toBeDefined();
+      expect(relation.snapshot.status).toBe("active");
+    });
+
+    it("should throw when deactivating a non-active relation", () => {
+      const relation = Relation.create("relation_123");
+      relation.add(
+        EntityType.GOAL,
+        "goal-1",
+        EntityType.COMPONENT,
+        "component-1",
+        "involves",
+        "Goal requires this component"
+      );
+      relation.deactivate("Paused");
+
+      expect(() => relation.deactivate("Again")).toThrow("is not active");
+    });
+
+    it("should throw when reactivating a non-deactivated relation", () => {
+      const relation = Relation.create("relation_123");
+      relation.add(
+        EntityType.GOAL,
+        "goal-1",
+        EntityType.COMPONENT,
+        "component-1",
+        "involves",
+        "Goal requires this component"
+      );
+
+      expect(() => relation.reactivate("Try")).toThrow("is not deactivated");
+    });
+
+    it("should not allow deactivate or reactivate after removal", () => {
+      const relation = Relation.create("relation_123");
+      relation.add(
+        EntityType.GOAL,
+        "goal-1",
+        EntityType.COMPONENT,
+        "component-1",
+        "involves",
+        "Goal requires this component"
+      );
+      relation.remove("No longer relevant");
+
+      expect(() => relation.deactivate("Try")).toThrow("is not active");
+      expect(() => relation.reactivate("Try")).toThrow("is not deactivated");
+    });
+
+    it("rehydrates through deactivate and reactivate transitions", () => {
+      const addedEvent: RelationAddedEvent = {
+        type: RelationEventType.ADDED,
+        aggregateId: "relation_123",
+        version: 1,
+        timestamp: "2025-01-01T00:00:00Z",
+        payload: {
+          fromEntityType: EntityType.GOAL,
+          fromEntityId: "goal-1",
+          toEntityType: EntityType.COMPONENT,
+          toEntityId: "comp-1",
+          relationType: "involves",
+          strength: "strong",
+          description: "Test relation"
+        }
+      };
+      const deactivatedEvent: RelationDeactivatedEvent = {
+        type: RelationEventType.DEACTIVATED,
+        aggregateId: "relation_123",
+        version: 2,
+        timestamp: "2025-01-01T01:00:00Z",
+        payload: {
+          reason: "paused",
+          deactivatedAt: "2025-01-01T01:00:00Z"
+        }
+      };
+      const reactivatedEvent: RelationReactivatedEvent = {
+        type: RelationEventType.REACTIVATED,
+        aggregateId: "relation_123",
+        version: 3,
+        timestamp: "2025-01-01T02:00:00Z",
+        payload: {
+          reason: "restored",
+          reactivatedAt: "2025-01-01T02:00:00Z"
+        }
+      };
+
+      const relation = Relation.rehydrate("relation_123", [addedEvent, deactivatedEvent, reactivatedEvent]);
+
+      expect(relation.snapshot.status).toBe("active");
+      expect(relation.snapshot.version).toBe(3);
     });
   });
 });

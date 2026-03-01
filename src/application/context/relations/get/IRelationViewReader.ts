@@ -9,7 +9,7 @@ import { EntityTypeValue } from "../../../../domain/relations/Constants.js";
 export interface RelationListFilter {
   entityType?: EntityTypeValue;
   entityId?: string;
-  status?: "active" | "removed" | "all";
+  status?: "active" | "deactivated" | "removed" | "all";
 }
 
 export interface IRelationViewReader {

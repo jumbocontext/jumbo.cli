@@ -23,6 +23,8 @@ export class SqliteRelationViewReader implements IRelationViewReader {
     // Apply status filter (default to active only)
     if (!filter?.status || filter.status === "active") {
       query += " AND status = 'active'";
+    } else if (filter.status === "deactivated") {
+      query += " AND status = 'deactivated'";
     } else if (filter.status === "removed") {
       query += " AND status = 'removed'";
     }

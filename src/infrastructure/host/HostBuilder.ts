@@ -150,6 +150,8 @@ import { FsValuePropositionUpdatedEventStore } from "../context/value-propositio
 import { FsValuePropositionRemovedEventStore } from "../context/value-propositions/remove/FsValuePropositionRemovedEventStore.js";
 // Relations Event Stores - decomposed by use case
 import { FsRelationAddedEventStore } from "../context/relations/add/FsRelationAddedEventStore.js";
+import { FsRelationDeactivatedEventStore } from "../context/relations/deactivate/FsRelationDeactivatedEventStore.js";
+import { FsRelationReactivatedEventStore } from "../context/relations/reactivate/FsRelationReactivatedEventStore.js";
 import { FsRelationRemovedEventStore } from "../context/relations/remove/FsRelationRemovedEventStore.js";
 
 // Session Projection Stores - decomposed by use case
@@ -218,6 +220,8 @@ import { SqliteInvariantRemovedProjector } from "../context/invariants/remove/Sq
 import { SqliteInvariantViewReader } from "../context/invariants/get/SqliteInvariantViewReader.js";
 // Relations Projection Stores - decomposed by use case
 import { SqliteRelationAddedProjector } from "../context/relations/add/SqliteRelationAddedProjector.js";
+import { SqliteRelationDeactivatedProjector } from "../context/relations/deactivate/SqliteRelationDeactivatedProjector.js";
+import { SqliteRelationReactivatedProjector } from "../context/relations/reactivate/SqliteRelationReactivatedProjector.js";
 import { SqliteRelationRemovedProjector } from "../context/relations/remove/SqliteRelationRemovedProjector.js";
 import { SqliteRelationViewReader } from "../context/relations/get/SqliteRelationViewReader.js";
 // AudiencePain Projection Stores - decomposed by use case
@@ -346,6 +350,10 @@ import { RelationAddedEventHandler } from "../../application/context/relations/a
 import { AddRelationCommandHandler } from "../../application/context/relations/add/AddRelationCommandHandler.js";
 import { LocalAddRelationGateway } from "../../application/context/relations/add/LocalAddRelationGateway.js";
 import { AddRelationController } from "../../application/context/relations/add/AddRelationController.js";
+import { RelationDeactivatedEventHandler } from "../../application/context/relations/deactivate/RelationDeactivatedEventHandler.js";
+import { DeactivateRelationCommandHandler } from "../../application/context/relations/deactivate/DeactivateRelationCommandHandler.js";
+import { RelationReactivatedEventHandler } from "../../application/context/relations/reactivate/RelationReactivatedEventHandler.js";
+import { ReactivateRelationCommandHandler } from "../../application/context/relations/reactivate/ReactivateRelationCommandHandler.js";
 import { RelationRemovedEventHandler } from "../../application/context/relations/remove/RelationRemovedEventHandler.js";
 import { RemoveRelationCommandHandler } from "../../application/context/relations/remove/RemoveRelationCommandHandler.js";
 import { LocalRemoveRelationGateway } from "../../application/context/relations/remove/LocalRemoveRelationGateway.js";
@@ -677,6 +685,8 @@ export class HostBuilder {
 
     // Relations Category - Event Stores - decomposed by use case
     const relationAddedEventStore = new FsRelationAddedEventStore(this.rootDir);
+    const relationDeactivatedEventStore = new FsRelationDeactivatedEventStore(this.rootDir);
+    const relationReactivatedEventStore = new FsRelationReactivatedEventStore(this.rootDir);
     const relationRemovedEventStore = new FsRelationRemovedEventStore(this.rootDir);
 
     // ============================================================
@@ -860,6 +870,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
 
     // Relations Category - Projection Stores - decomposed by use case
     const relationAddedProjector = new SqliteRelationAddedProjector(this.db);
+    const relationDeactivatedProjector = new SqliteRelationDeactivatedProjector(this.db);
+    const relationReactivatedProjector = new SqliteRelationReactivatedProjector(this.db);
     const relationRemovedProjector = new SqliteRelationRemovedProjector(this.db);
     const relationViewReader = new SqliteRelationViewReader(this.db);
 
@@ -1560,6 +1572,18 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       eventBus,
       relationRemovedProjector
     );
+    const deactivateRelationCommandHandler = new DeactivateRelationCommandHandler(
+      relationDeactivatedEventStore,
+      relationDeactivatedEventStore,
+      eventBus,
+      relationDeactivatedProjector
+    );
+    const reactivateRelationCommandHandler = new ReactivateRelationCommandHandler(
+      relationReactivatedEventStore,
+      relationReactivatedEventStore,
+      eventBus,
+      relationReactivatedProjector
+    );
     const removeRelationGateway = new LocalRemoveRelationGateway(
       removeRelationCommandHandler,
       relationRemovedProjector
@@ -1694,6 +1718,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
 
     // Relations Category - Event Handlers - decomposed by use case
     const relationAddedEventHandler = new RelationAddedEventHandler(relationAddedProjector);
+    const relationDeactivatedEventHandler = new RelationDeactivatedEventHandler(relationDeactivatedProjector);
+    const relationReactivatedEventHandler = new RelationReactivatedEventHandler(relationReactivatedProjector);
     const relationRemovedEventHandler = new RelationRemovedEventHandler(relationRemovedProjector);
 
     // Worker Identity - Event Handlers
@@ -1784,6 +1810,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
 
     // Relations Category - Relation events - decomposed by use case
     eventBus.subscribe("RelationAddedEvent", relationAddedEventHandler);
+    eventBus.subscribe("RelationDeactivatedEvent", relationDeactivatedEventHandler);
+    eventBus.subscribe("RelationReactivatedEvent", relationReactivatedEventHandler);
     eventBus.subscribe("RelationRemovedEvent", relationRemovedEventHandler);
 
     // Worker Identity events

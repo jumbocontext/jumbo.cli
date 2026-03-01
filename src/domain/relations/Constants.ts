@@ -29,7 +29,9 @@ export type RelationStrengthValue = typeof RelationStrength[keyof typeof Relatio
 // Relation event types
 export const RelationEventType = {
   ADDED: 'RelationAddedEvent',
-  REMOVED: 'RelationRemovedEvent'
+  REMOVED: 'RelationRemovedEvent',
+  DEACTIVATED: 'RelationDeactivatedEvent',
+  REACTIVATED: 'RelationReactivatedEvent'
 } as const;
 
 export type RelationEventTypeValue = typeof RelationEventType[keyof typeof RelationEventType];
@@ -52,7 +54,9 @@ export const RelationErrorMessages = {
   SELF_REFERENCE: 'Cannot create relation from entity to itself',
   RELATION_ID_REQUIRED: 'Relation ID must be provided',
   RELATION_NOT_FOUND: 'Relation {relationId} does not exist',
-  RELATION_ALREADY_REMOVED: 'Relation {relationId} has already been removed'
+  RELATION_ALREADY_REMOVED: 'Relation {relationId} has already been removed',
+  RELATION_NOT_ACTIVE: 'Relation {relationId} is not active',
+  RELATION_NOT_DEACTIVATED: 'Relation {relationId} is not deactivated'
 } as const;
 
 // Numeric limits

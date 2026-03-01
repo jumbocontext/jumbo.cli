@@ -9,7 +9,7 @@ export interface RelationView {
   relationType: string;
   strength: RelationStrengthValue | null;
   description: string;
-  status: 'active' | 'removed';
+  status: 'active' | 'deactivated' | 'removed';
   version: number;
   createdAt: string;
   updatedAt: string;

@@ -1,26 +1,18 @@
-/**
- * SqliteRelationRemovedProjector - SQLite projector for RelationRemoved event.
- *
- * Implements IRelationRemovedProjector, IRelationRemovedReader, and IRelationReader
- * for projecting relation remove events to the SQLite read model and reading relations.
- */
-
 import { Database } from "better-sqlite3";
-import { IRelationRemovedProjector } from "../../../../application/context/relations/remove/IRelationRemovedProjector.js";
-import { IRelationRemovedReader } from "../../../../application/context/relations/remove/IRelationRemovedReader.js";
+import { IRelationReactivatedProjector } from "../../../../application/context/relations/reactivate/IRelationReactivatedProjector.js";
+import { IRelationReactivatedReader } from "../../../../application/context/relations/reactivate/IRelationReactivatedReader.js";
 import { IRelationReader } from "../../../../application/context/relations/IRelationReader.js";
-import { RelationRemovedEvent } from "../../../../domain/relations/remove/RelationRemovedEvent.js";
+import { RelationReactivatedEvent } from "../../../../domain/relations/reactivate/RelationReactivatedEvent.js";
 import { RelationView } from "../../../../application/context/relations/RelationView.js";
 import { EntityTypeValue, RelationStrengthValue } from "../../../../domain/relations/Constants.js";
 
-export class SqliteRelationRemovedProjector implements IRelationRemovedProjector, IRelationRemovedReader, IRelationReader {
+export class SqliteRelationReactivatedProjector implements IRelationReactivatedProjector, IRelationReactivatedReader, IRelationReader {
   constructor(private db: Database) {}
 
-  async applyRelationRemoved(event: RelationRemovedEvent): Promise<void> {
-    // Soft delete: mark as removed rather than hard delete
+  async applyRelationReactivated(event: RelationReactivatedEvent): Promise<void> {
     const stmt = this.db.prepare(`
       UPDATE relation_views
-      SET status = 'removed',
+      SET status = 'active',
           version = ?,
           updatedAt = ?
       WHERE relationId = ?

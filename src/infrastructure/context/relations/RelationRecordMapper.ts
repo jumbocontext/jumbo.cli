@@ -19,7 +19,7 @@ export class RelationRecordMapper {
       relationType: record.relationType,
       strength: record.strength as RelationStrengthValue | null,
       description: record.description,
-      status: record.status as "active" | "removed",
+      status: record.status as "active" | "deactivated" | "removed",
       version: record.version,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
