@@ -519,6 +519,9 @@ import { UnprimedBrownfieldQualifier } from "../../application/UnprimedBrownfiel
 // Worker Identity
 import { HostSessionKeyResolver } from "./session/HostSessionKeyResolver.js";
 import { SqliteWorkerIdentityRegistry } from "./workers/SqliteWorkerIdentityRegistry.js";
+import { FsWorkerIdentifiedEventStore } from "./workers/identify/FsWorkerIdentifiedEventStore.js";
+import { SqliteWorkerIdentifiedProjector } from "./workers/identify/SqliteWorkerIdentifiedProjector.js";
+import { WorkerIdentifiedEventHandler } from "../../application/host/workers/identify/WorkerIdentifiedEventHandler.js";
 
 // Goal Claims
 import { SqliteGoalClaimStore } from "../context/goals/claims/SqliteGoalClaimStore.js";
@@ -564,9 +567,13 @@ export class HostBuilder {
 
     // Create worker identity components
     const hostSessionKeyResolver = new HostSessionKeyResolver();
+    const workerIdentifiedEventStore = new FsWorkerIdentifiedEventStore(this.rootDir);
+    const workerIdentifiedProjector = new SqliteWorkerIdentifiedProjector(this.db);
     const workerIdentityReader = new SqliteWorkerIdentityRegistry(
       this.db,
-      hostSessionKeyResolver
+      hostSessionKeyResolver,
+      workerIdentifiedEventStore,
+      eventBus
     );
 
     // Create goal claim components
@@ -1689,6 +1696,9 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const relationAddedEventHandler = new RelationAddedEventHandler(relationAddedProjector);
     const relationRemovedEventHandler = new RelationRemovedEventHandler(relationRemovedProjector);
 
+    // Worker Identity - Event Handlers
+    const workerIdentifiedEventHandler = new WorkerIdentifiedEventHandler(workerIdentifiedProjector);
+
     // ============================================================
     // STEP 6: Subscribe Projection Handlers to Events
     // ============================================================
@@ -1775,6 +1785,9 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     // Relations Category - Relation events - decomposed by use case
     eventBus.subscribe("RelationAddedEvent", relationAddedEventHandler);
     eventBus.subscribe("RelationRemovedEvent", relationRemovedEventHandler);
+
+    // Worker Identity events
+    eventBus.subscribe("WorkerIdentifiedEvent", workerIdentifiedEventHandler);
 
     // ============================================================
     // STEP 7: Return Complete Container (No Lifecycle Management)
