@@ -6,5 +6,5 @@
  */
 export interface RejectGoalRequest {
   readonly goalId: string;
-  readonly auditFindings: string;
+  readonly reviewIssues: string;
 }

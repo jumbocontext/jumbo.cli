@@ -4,7 +4,7 @@
  * Implements IGoalRejectedProjector for projecting goal rejected events
  * to the SQLite read model, and IGoalRejectReader for reading goal data.
  * Clears claim fields when rejecting (review complete, claim released).
- * Stores audit findings in the note field for the implementing agent to reference.
+ * Stores review issues in the note field for the implementing agent to reference.
  */
 
 import { Database } from "better-sqlite3";
@@ -37,7 +37,7 @@ export class SqliteGoalRejectedProjector
 
     stmt.run(
       event.payload.status,
-      event.payload.auditFindings,
+      event.payload.reviewIssues,
       event.version,
       event.timestamp,
       event.aggregateId

@@ -83,7 +83,7 @@ describe("RejectGoalCommandHandler", () => {
   it("should reject goal from in-review status and publish GoalRejectedEvent", async () => {
     const command: RejectGoalCommand = {
       goalId: "goal_123",
-      auditFindings: "Missing error handling in API endpoint",
+      reviewIssues: "Missing error handling in API endpoint",
     };
 
     const mockView: GoalView = {
@@ -160,7 +160,7 @@ describe("RejectGoalCommandHandler", () => {
     expect(appendedEvent.aggregateId).toBe("goal_123");
     expect(appendedEvent.version).toBe(4);
     expect(appendedEvent.payload.status).toBe(GoalStatus.REJECTED);
-    expect(appendedEvent.payload.auditFindings).toBe("Missing error handling in API endpoint");
+    expect(appendedEvent.payload.reviewIssues).toBe("Missing error handling in API endpoint");
     expect(appendedEvent.payload.rejectedAt).toBeDefined();
 
     // Verify claim was released
@@ -175,7 +175,7 @@ describe("RejectGoalCommandHandler", () => {
   it("should throw error if goal not found", async () => {
     const command: RejectGoalCommand = {
       goalId: "nonexistent",
-      auditFindings: "Some findings",
+      reviewIssues: "Some findings",
     };
 
     (goalReader.findById as jest.Mock).mockResolvedValue(null);
@@ -188,7 +188,7 @@ describe("RejectGoalCommandHandler", () => {
   it("should throw error when rejecting from to-do status", async () => {
     const command: RejectGoalCommand = {
       goalId: "goal_789",
-      auditFindings: "Some findings",
+      reviewIssues: "Some findings",
     };
 
     const mockView: GoalView = {
@@ -232,7 +232,7 @@ describe("RejectGoalCommandHandler", () => {
   it("should throw error if goal is claimed by another worker", async () => {
     const command: RejectGoalCommand = {
       goalId: "goal_123",
-      auditFindings: "Some findings",
+      reviewIssues: "Some findings",
     };
 
     const mockView: GoalView = {
@@ -269,7 +269,7 @@ describe("RejectGoalCommandHandler", () => {
   it("should propagate errors if event store fails", async () => {
     const command: RejectGoalCommand = {
       goalId: "goal_123",
-      auditFindings: "Some findings",
+      reviewIssues: "Some findings",
     };
 
     const mockView: GoalView = {

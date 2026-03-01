@@ -28,7 +28,7 @@ describe("GoalRejectedEventHandler", () => {
       payload: {
         status: GoalStatus.REJECTED,
         rejectedAt: new Date().toISOString(),
-        auditFindings: "Missing error handling",
+        reviewIssues: "Missing error handling",
       },
     };
 
@@ -47,7 +47,7 @@ describe("GoalRejectedEventHandler", () => {
       payload: {
         status: GoalStatus.REJECTED,
         rejectedAt: new Date().toISOString(),
-        auditFindings: "Missing error handling",
+        reviewIssues: "Missing error handling",
       },
     };
 
