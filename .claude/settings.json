@@ -39,6 +39,22 @@
           }
         ]
       }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "exit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jumbo session end --focus {focus} --summary {summary}"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(jumbo --help)"
     ]
   }
 }
