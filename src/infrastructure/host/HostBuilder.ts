@@ -23,6 +23,7 @@ import { IEventBus } from "../../application/messaging/IEventBus.js";
 import { IClock } from "../../application/time-and-date/IClock.js";
 import { RebuildDatabaseController } from "../../application/maintenance/db/rebuild/RebuildDatabaseController.js";
 import { UpgradeCommandHandler } from "../../application/maintenance/upgrade/UpgradeCommandHandler.js";
+import { MigrateDependenciesCommandHandler } from "../../application/maintenance/migrate-dependencies/MigrateDependenciesCommandHandler.js";
 import { LocalRebuildDatabaseGateway } from "../../application/maintenance/db/rebuild/LocalRebuildDatabaseGateway.js";
 import { RepairController } from "../../application/repair/RepairController.js";
 import { LocalRepairGateway } from "../../application/repair/LocalRepairGateway.js";
@@ -107,6 +108,7 @@ import { RemoveDependencyController } from "../../application/context/dependenci
 import { FsDependencyAddedEventStore } from "../context/dependencies/add/FsDependencyAddedEventStore.js";
 import { FsDependencyUpdatedEventStore } from "../context/dependencies/update/FsDependencyUpdatedEventStore.js";
 import { FsDependencyRemovedEventStore } from "../context/dependencies/remove/FsDependencyRemovedEventStore.js";
+import { SqliteLegacyDependencyReader } from "../context/dependencies/get/SqliteLegacyDependencyReader.js";
 // Guideline Controllers
 import { AddGuidelineCommandHandler } from "../../application/context/guidelines/add/AddGuidelineCommandHandler.js";
 import { LocalAddGuidelineGateway } from "../../application/context/guidelines/add/LocalAddGuidelineGateway.js";
@@ -740,6 +742,9 @@ export class HostBuilder {
 
     // Upgrade command handler
     const upgradeCommandHandler = new UpgradeCommandHandler(eventStore, goalStatusReader);
+
+    // Legacy dependency reader (for migration)
+    const legacyDependencyReader = new SqliteLegacyDependencyReader(this.db);
 
     // Solution Category
     // Architecture Projection Stores - decomposed by use case
@@ -1607,6 +1612,13 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       addRelationGateway
     );
 
+    // Migrate Dependencies command handler
+    const migrateDependenciesCommandHandler = new MigrateDependenciesCommandHandler(
+      legacyDependencyReader,
+      addRelationCommandHandler,
+      removeDependencyCommandHandler
+    );
+
     // RemoveRelation Controller
     const removeRelationCommandHandler = new RemoveRelationCommandHandler(
       relationRemovedEventStore,
@@ -1895,6 +1907,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       rebuildDatabaseController,
       repairController,
       upgradeCommandHandler,
+      migrateDependenciesCommandHandler,
 
       // CLI Version
       cliVersionReader,
