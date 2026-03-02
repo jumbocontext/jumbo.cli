@@ -1,6 +1,6 @@
 ---
 title: Component Commands Reference
-description: Complete reference for tracking software components — add, update, search, deprecate, and remove.
+description: Complete reference for tracking software components — add, update, search, deprecate, undeprecate, and remove.
 sidebar:
   order: 7
 ---
@@ -213,6 +213,31 @@ Mark a component as deprecated.
 ```bash
 > jumbo component deprecate --id comp_abc123
 > jumbo component deprecate --id comp_abc123 --reason "Replaced by AccountService"
+```
+
+---
+
+## jumbo component undeprecate
+
+Restore a deprecated component back to active status.
+
+### Synopsis
+
+```bash
+> jumbo component undeprecate --id <id> --reason <text>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <id>` | ID of the component to undeprecate (required) |
+| `-r, --reason <text>` | Reason for undeprecating the component (required) |
+
+### Examples
+
+```bash
+> jumbo component undeprecate --id comp_abc123 --reason "Still required by active features"
 ```
 
 ---

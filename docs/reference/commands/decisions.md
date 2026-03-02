@@ -7,7 +7,7 @@ sidebar:
 
 # Decision Commands Reference
 
-Record, update, supersede, and reverse architectural decisions (ADRs).
+Record, update, supersede, reverse, and restore architectural decisions (ADRs).
 
 ---
 
@@ -149,4 +149,29 @@ Reverse an architectural decision.
 
 ```bash
 > jumbo decision reverse --id dec_abc123 --reason "Performance benchmarks showed unacceptable latency"
+```
+
+---
+
+## jumbo decision restore
+
+Restore a reversed or superseded architectural decision back to active status.
+
+### Synopsis
+
+```bash
+> jumbo decision restore --id <id> --reason <text>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <id>` | Decision ID to restore (required) |
+| `-r, --reason <text>` | Reason for restoring the decision (required) |
+
+### Examples
+
+```bash
+> jumbo decision restore --id dec_abc123 --reason "The constraints that caused reversal are no longer present"
 ```

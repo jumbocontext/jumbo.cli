@@ -121,6 +121,7 @@ import { ResumeWorkController } from "../context/work/resume/ResumeWorkControlle
 import { AddDecisionController } from "../context/decisions/add/AddDecisionController.js";
 import { GetDecisionsController } from "../context/decisions/get/GetDecisionsController.js";
 import { ReverseDecisionController } from "../context/decisions/reverse/ReverseDecisionController.js";
+import { RestoreDecisionController } from "../context/decisions/restore/RestoreDecisionController.js";
 import { SupersedeDecisionController } from "../context/decisions/supersede/SupersedeDecisionController.js";
 import { UpdateDecisionController } from "../context/decisions/update/UpdateDecisionController.js";
 import { IDecisionAddedProjector } from "../context/decisions/add/IDecisionAddedProjector.js";
@@ -128,6 +129,8 @@ import { IDecisionUpdatedProjector } from "../context/decisions/update/IDecision
 import { IDecisionUpdateReader } from "../context/decisions/update/IDecisionUpdateReader.js";
 import { IDecisionReversedProjector } from "../context/decisions/reverse/IDecisionReversedProjector.js";
 import { IDecisionReverseReader } from "../context/decisions/reverse/IDecisionReverseReader.js";
+import { IDecisionRestoredProjector } from "../context/decisions/restore/IDecisionRestoredProjector.js";
+import { IDecisionRestoreReader } from "../context/decisions/restore/IDecisionRestoreReader.js";
 import { IDecisionSupersededProjector } from "../context/decisions/supersede/IDecisionSupersededProjector.js";
 import { IDecisionSupersedeReader } from "../context/decisions/supersede/IDecisionSupersedeReader.js";
 import { IDecisionViewReader } from "../context/decisions/get/IDecisionViewReader.js";
@@ -149,6 +152,7 @@ import { IComponentUpdateReader } from "../context/components/update/IComponentU
 import { IComponentRenamedProjector } from "../context/components/rename/IComponentRenamedProjector.js";
 import { IComponentRenameReader } from "../context/components/rename/IComponentRenameReader.js";
 import { DeprecateComponentController } from "../context/components/deprecate/DeprecateComponentController.js";
+import { UndeprecateComponentController } from "../context/components/undeprecate/UndeprecateComponentController.js";
 import { RemoveComponentController } from "../context/components/remove/RemoveComponentController.js";
 import { ShowComponentController } from "../context/components/show/ShowComponentController.js";
 import { IComponentRemovedProjector } from "../context/components/remove/IComponentRemovedProjector.js";
@@ -268,6 +272,7 @@ import { IGoalProgressUpdateReader } from "../context/goals/update-progress/IGoa
 import { IDecisionAddedEventWriter } from "../context/decisions/add/IDecisionAddedEventWriter.js";
 import { IDecisionUpdatedEventWriter } from "../context/decisions/update/IDecisionUpdatedEventWriter.js";
 import { IDecisionReversedEventWriter } from "../context/decisions/reverse/IDecisionReversedEventWriter.js";
+import { IDecisionRestoredEventWriter } from "../context/decisions/restore/IDecisionRestoredEventWriter.js";
 import { IDecisionSupersededEventWriter } from "../context/decisions/supersede/IDecisionSupersededEventWriter.js";
 import { IArchitectureDefinedEventWriter } from "../context/architecture/define/IArchitectureDefinedEventWriter.js";
 import { IArchitectureUpdatedEventWriter } from "../context/architecture/update/IArchitectureUpdatedEventWriter.js";
@@ -276,7 +281,10 @@ import { IComponentAddedEventWriter } from "../context/components/add/IComponent
 import { IComponentUpdatedEventWriter } from "../context/components/update/IComponentUpdatedEventWriter.js";
 import { IComponentRenamedEventWriter } from "../context/components/rename/IComponentRenamedEventWriter.js";
 import { IComponentDeprecatedProjector } from "../context/components/deprecate/IComponentDeprecatedProjector.js";
+import { IComponentUndeprecatedProjector } from "../context/components/undeprecate/IComponentUndeprecatedProjector.js";
+import { IComponentUndeprecateReader } from "../context/components/undeprecate/IComponentUndeprecateReader.js";
 import { IComponentRemovedEventWriter } from "../context/components/remove/IComponentRemovedEventWriter.js";
+import { IComponentUndeprecatedEventWriter } from "../context/components/undeprecate/IComponentUndeprecatedEventWriter.js";
 import { IDependencyAddedEventWriter } from "../context/dependencies/add/IDependencyAddedEventWriter.js";
 import { IDependencyUpdatedEventWriter } from "../context/dependencies/update/IDependencyUpdatedEventWriter.js";
 import { IDependencyUpdatedEventReader } from "../context/dependencies/update/IDependencyUpdatedEventReader.js";
@@ -434,6 +442,7 @@ export interface IApplicationContainer {
   addDecisionController: AddDecisionController;
   getDecisionsController: GetDecisionsController;
   reverseDecisionController: ReverseDecisionController;
+  restoreDecisionController: RestoreDecisionController;
   supersedeDecisionController: SupersedeDecisionController;
   updateDecisionController: UpdateDecisionController;
 
@@ -461,6 +470,7 @@ export interface IApplicationContainer {
   searchComponentsController: SearchComponentsController;
   updateComponentController: UpdateComponentController;
   renameComponentController: RenameComponentController;
+  undeprecateComponentController: UndeprecateComponentController;
 
   // Dependency Controllers
   addDependencyController: AddDependencyController;
@@ -480,6 +490,7 @@ export interface IApplicationContainer {
   removeComponentController: RemoveComponentController;
   showComponentController: ShowComponentController;
   componentRemovedEventStore: IComponentRemovedEventWriter;
+  componentUndeprecatedEventStore: IComponentUndeprecatedEventWriter;
   // Dependency Event Stores - decomposed by use case
   dependencyAddedEventStore: IDependencyAddedEventWriter;
   dependencyUpdatedEventStore: IDependencyUpdatedEventWriter & IDependencyUpdatedEventReader;
@@ -488,6 +499,7 @@ export interface IApplicationContainer {
   decisionAddedEventStore: IDecisionAddedEventWriter;
   decisionUpdatedEventStore: IDecisionUpdatedEventWriter;
   decisionReversedEventStore: IDecisionReversedEventWriter;
+  decisionRestoredEventStore: IDecisionRestoredEventWriter;
   decisionSupersededEventStore: IDecisionSupersededEventWriter;
   // Guideline Event Stores - decomposed by use case
   guidelineAddedEventStore: IGuidelineAddedEventWriter;
@@ -508,6 +520,7 @@ export interface IApplicationContainer {
   componentUpdatedProjector: IComponentUpdatedProjector & IComponentUpdateReader;
   componentRenamedProjector: IComponentRenamedProjector & IComponentRenameReader;
   componentDeprecatedProjector: IComponentDeprecatedProjector;
+  componentUndeprecatedProjector: IComponentUndeprecatedProjector & IComponentUndeprecateReader;
   componentRemovedProjector: IComponentRemovedProjector & IComponentRemoveReader;
   componentViewReader: IComponentViewReader;
   componentReader: IComponentReader;
@@ -520,6 +533,7 @@ export interface IApplicationContainer {
   decisionAddedProjector: IDecisionAddedProjector;
   decisionUpdatedProjector: IDecisionUpdatedProjector & IDecisionUpdateReader;
   decisionReversedProjector: IDecisionReversedProjector & IDecisionReverseReader;
+  decisionRestoredProjector: IDecisionRestoredProjector & IDecisionRestoreReader;
   decisionSupersededProjector: IDecisionSupersededProjector & IDecisionSupersedeReader;
   decisionViewReader: IDecisionViewReader;
   // Guideline Projection Stores - decomposed by use case

@@ -8,7 +8,8 @@ export const DecisionEventType = {
   ADDED: 'DecisionAddedEvent',
   UPDATED: 'DecisionUpdatedEvent',
   REVERSED: 'DecisionReversedEvent',
-  SUPERSEDED: 'DecisionSupersededEvent'
+  SUPERSEDED: 'DecisionSupersededEvent',
+  RESTORED: 'DecisionRestoredEvent'
 } as const;
 
 export type DecisionEventTypeValue = typeof DecisionEventType[keyof typeof DecisionEventType];
@@ -35,6 +36,7 @@ export const DecisionErrorMessages = {
   DECISION_NOT_FOUND: 'Decision with ID {id} not found',
   ALREADY_REVERSED: 'Decision is already reversed',
   ALREADY_SUPERSEDED: 'Decision is already superseded',
+  ALREADY_ACTIVE: 'Decision is already active',
   CANNOT_MODIFY_INACTIVE: 'Cannot modify a reversed or superseded decision',
   REASON_REQUIRED: 'Reason for reversal must be provided',
   REASON_TOO_LONG: 'Reversal reason must be less than {max} characters',

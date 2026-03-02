@@ -450,4 +450,47 @@ describe("Component Aggregate", () => {
       expect(event.version).toBe(4);
     });
   });
+
+  describe("undeprecate()", () => {
+    it("should create ComponentUndeprecated event from deprecated status", () => {
+      const component = Component.create("comp_123");
+      component.add("UserController", "service", "Description", "Responsibility", "path");
+      component.deprecate("Deprecated");
+
+      const event = component.undeprecate("Still required");
+
+      expect(event.type).toBe(ComponentEventType.UNDEPRECATED);
+      expect(event.aggregateId).toBe("comp_123");
+      expect(event.version).toBe(3);
+      expect(event.payload.reason).toBe("Still required");
+      expect(event.payload.undeprecatedAt).toBeDefined();
+    });
+
+    it("should throw when component is active", () => {
+      const component = Component.create("comp_123");
+      component.add("UserController", "service", "Description", "Responsibility", "path");
+
+      expect(() => component.undeprecate("Still required")).toThrow("Component is already active");
+    });
+
+    it("should throw when component is removed", () => {
+      const component = Component.create("comp_123");
+      component.add("UserController", "service", "Description", "Responsibility", "path");
+      component.deprecate("Deprecated");
+      component.remove();
+
+      expect(() => component.undeprecate("Still required")).toThrow("Removed components cannot be undeprecated");
+    });
+
+    it("should clear deprecationReason and set status to active", () => {
+      const component = Component.create("comp_123");
+      component.add("UserController", "service", "Description", "Responsibility", "path");
+      component.deprecate("Deprecated");
+      component.undeprecate("Still required");
+
+      const state = (component as any).state;
+      expect(state.status).toBe(ComponentStatus.ACTIVE);
+      expect(state.deprecationReason).toBeNull();
+    });
+  });
 });

@@ -298,4 +298,51 @@ describe("Decision aggregate", () => {
       expect(state.title).toBe("Use JWT");
     });
   });
+
+  describe("restore()", () => {
+    it("should restore a reversed decision to active", () => {
+      const decision = Decision.create("dec_123");
+      decision.add("Use REST API", "Need an API layer");
+      decision.reverse("No longer needed");
+
+      const event = decision.restore("Decision still applies");
+
+      expect(event.type).toBe(DecisionEventType.RESTORED);
+      expect(event.aggregateId).toBe("dec_123");
+      expect(event.version).toBe(3);
+      expect(event.payload.reason).toBe("Decision still applies");
+      expect(event.payload.restoredAt).toBeDefined();
+    });
+
+    it("should restore a superseded decision to active", () => {
+      const decision = Decision.create("dec_123");
+      decision.add("Use REST API", "Need an API layer");
+      decision.supersede("dec_456");
+
+      const event = decision.restore("Superseding decision was invalid");
+
+      expect(event.type).toBe(DecisionEventType.RESTORED);
+      expect(event.version).toBe(3);
+    });
+
+    it("should throw if decision is already active", () => {
+      const decision = Decision.create("dec_123");
+      decision.add("Use REST API", "Need an API layer");
+
+      expect(() => decision.restore("Still active")).toThrow("Decision is already active");
+    });
+
+    it("should clear reversal and supersession fields when restored", () => {
+      const decision = Decision.create("dec_123");
+      decision.add("Use REST API", "Need an API layer");
+      decision.reverse("No longer needed");
+      decision.restore("Still valid");
+
+      const state = (decision as any).state;
+      expect(state.status).toBe(DecisionStatus.ACTIVE);
+      expect(state.reversalReason).toBeNull();
+      expect(state.reversedAt).toBeNull();
+      expect(state.supersededBy).toBeNull();
+    });
+  });
 });

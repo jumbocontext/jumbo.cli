@@ -1,7 +1,7 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID, ISO8601 } from "../BaseEvent.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
-import { DecisionEvent, DecisionAddedEvent, DecisionUpdatedEvent, DecisionReversedEvent, DecisionSupersededEvent } from "./EventIndex.js";
+import { DecisionEvent, DecisionAddedEvent, DecisionUpdatedEvent, DecisionReversedEvent, DecisionSupersededEvent, DecisionRestoredEvent } from "./EventIndex.js";
 import { DecisionEventType, DecisionStatus, DecisionStatusType, DecisionErrorMessages } from "./Constants.js";
 import { TITLE_RULES } from "./rules/TitleRules.js";
 import { CONTEXT_RULES } from "./rules/ContextRules.js";
@@ -70,6 +70,15 @@ export class Decision extends BaseAggregate<DecisionState, DecisionEvent> {
         const e = event as DecisionSupersededEvent;
         state.status = DecisionStatus.SUPERSEDED;
         state.supersededBy = e.payload.supersededBy;
+        state.version = e.version;
+        break;
+      }
+      case DecisionEventType.RESTORED: {
+        const e = event as DecisionRestoredEvent;
+        state.status = DecisionStatus.ACTIVE;
+        state.reversalReason = null;
+        state.reversedAt = null;
+        state.supersededBy = null;
         state.version = e.version;
         break;
       }
@@ -239,5 +248,25 @@ export class Decision extends BaseAggregate<DecisionState, DecisionEvent> {
       { supersededBy },
       Decision.apply
     ) as DecisionSupersededEvent;
+  }
+
+  /**
+   * Restore a reversed or superseded decision back to active status.
+   */
+  restore(reason: string): DecisionRestoredEvent {
+    if (this.state.status === DecisionStatus.ACTIVE) {
+      throw new Error(DecisionErrorMessages.ALREADY_ACTIVE);
+    }
+
+    ValidationRuleSet.ensure(reason, REASON_RULES);
+
+    return this.makeEvent(
+      DecisionEventType.RESTORED,
+      {
+        reason: reason.trim(),
+        restoredAt: new Date().toISOString() as ISO8601
+      },
+      Decision.apply
+    ) as DecisionRestoredEvent;
   }
 }

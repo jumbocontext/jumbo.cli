@@ -4,7 +4,8 @@ export const ComponentEventType = {
   UPDATED: 'ComponentUpdatedEvent',
   DEPRECATED: 'ComponentDeprecatedEvent',
   REMOVED: 'ComponentRemovedEvent',
-  RENAMED: 'ComponentRenamedEvent'
+  RENAMED: 'ComponentRenamedEvent',
+  UNDEPRECATED: 'ComponentUndeprecatedEvent'
 } as const;
 
 export type ComponentEventTypeValue = typeof ComponentEventType[keyof typeof ComponentEventType];
@@ -46,8 +47,12 @@ export const ComponentErrorMessages = {
   PATH_REQUIRED: 'Component path must be provided',
   PATH_TOO_LONG: 'Component path must be less than {max} characters',
   DEPRECATION_REASON_TOO_LONG: 'Deprecation reason must be less than {max} characters',
+  UNDEPRECATION_REASON_REQUIRED: 'Undeprecation reason must be provided',
+  UNDEPRECATION_REASON_TOO_LONG: 'Undeprecation reason must be less than {max} characters',
   ALREADY_DEPRECATED: 'Component is already deprecated',
   ALREADY_REMOVED: 'Component has been removed',
+  ALREADY_ACTIVE: 'Component is already active',
+  CANNOT_UNDEPRECATE_REMOVED: 'Removed components cannot be undeprecated',
   NOT_DEPRECATED: 'Component must be deprecated before removal',
   NO_FIELDS_TO_UPDATE: 'At least one field must be provided to update',
   COMPONENT_NOT_FOUND: 'Component with ID {id} not found',

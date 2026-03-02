@@ -26,9 +26,11 @@ import { componentRemove, metadata as componentRemoveMeta } from '../../commands
 import { componentRename, metadata as componentRenameMeta } from '../../commands/components/rename/component.rename.js';
 import { componentsSearch, metadata as componentsSearchMeta } from '../../commands/components/search/components.search.js';
 import { componentShow, metadata as componentShowMeta } from '../../commands/components/show/component.show.js';
+import { componentUndeprecate, metadata as componentUndeprecateMeta } from '../../commands/components/undeprecate/component.undeprecate.js';
 import { componentUpdate, metadata as componentUpdateMeta } from '../../commands/components/update/component.update.js';
 import { decisionAdd, metadata as decisionAddMeta } from '../../commands/decisions/add/decision.add.js';
 import { decisionsList, metadata as decisionsListMeta } from '../../commands/decisions/list/decisions.list.js';
+import { decisionRestore, metadata as decisionRestoreMeta } from '../../commands/decisions/restore/decision.restore.js';
 import { decisionReverse, metadata as decisionReverseMeta } from '../../commands/decisions/reverse/decision.reverse.js';
 import { decisionSupersede, metadata as decisionSupersedeMeta } from '../../commands/decisions/supersede/decision.supersede.js';
 import { decisionUpdate, metadata as decisionUpdateMeta } from '../../commands/decisions/update/decision.update.js';
@@ -172,6 +174,11 @@ export const commands: RegisteredCommand[] = [
     handler: componentShow
   },
   {
+    path: 'component undeprecate',
+    metadata: componentUndeprecateMeta,
+    handler: componentUndeprecate
+  },
+  {
     path: 'component update',
     metadata: componentUpdateMeta,
     handler: componentUpdate
@@ -185,6 +192,11 @@ export const commands: RegisteredCommand[] = [
     path: 'decisions list',
     metadata: decisionsListMeta,
     handler: decisionsList
+  },
+  {
+    path: 'decision restore',
+    metadata: decisionRestoreMeta,
+    handler: decisionRestore
   },
   {
     path: 'decision reverse',

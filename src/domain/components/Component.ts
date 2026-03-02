@@ -1,5 +1,5 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
-import { UUID } from "../BaseEvent.js";
+import { UUID, ISO8601 } from "../BaseEvent.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import {
   ComponentEvent,
@@ -7,7 +7,8 @@ import {
   ComponentUpdatedEvent,
   ComponentDeprecatedEvent,
   ComponentRemovedEvent,
-  ComponentRenamedEvent
+  ComponentRenamedEvent,
+  ComponentUndeprecatedEvent
 } from "./EventIndex.js";
 import {
   ComponentEventType,
@@ -82,6 +83,13 @@ export class Component extends BaseAggregate<ComponentState, ComponentEvent> {
       case ComponentEventType.RENAMED: {
         const e = event as ComponentRenamedEvent;
         state.name = e.payload.name;
+        state.version = e.version;
+        break;
+      }
+      case ComponentEventType.UNDEPRECATED: {
+        const e = event as ComponentUndeprecatedEvent;
+        state.status = ComponentStatus.ACTIVE;
+        state.deprecationReason = null;
         state.version = e.version;
         break;
       }
@@ -240,6 +248,26 @@ export class Component extends BaseAggregate<ComponentState, ComponentEvent> {
       ComponentEventType.REMOVED,
       {
         status: ComponentStatus.REMOVED
+      },
+      Component.apply
+    );
+  }
+
+  undeprecate(reason: string): ComponentUndeprecatedEvent {
+    if (this.state.status === ComponentStatus.ACTIVE) {
+      throw new Error(ComponentErrorMessages.ALREADY_ACTIVE);
+    }
+    if (this.state.status === ComponentStatus.REMOVED) {
+      throw new Error(ComponentErrorMessages.CANNOT_UNDEPRECATE_REMOVED);
+    }
+
+    ValidationRuleSet.ensure(reason, DEPRECATION_REASON_RULES);
+
+    return this.makeEvent<ComponentUndeprecatedEvent>(
+      ComponentEventType.UNDEPRECATED,
+      {
+        reason: reason.trim(),
+        undeprecatedAt: new Date().toISOString() as ISO8601
       },
       Component.apply
     );
