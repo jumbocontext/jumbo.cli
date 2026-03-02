@@ -150,6 +150,7 @@ describe("TemporarySequentialDatabaseRebuildService", () => {
       createMockEventWriter(),
       createMockEventBus()
     );
+    await workerIdentityReader.initialize();
 
     // Mapping restored by replayed WorkerIdentifiedEvent: same host session key resolves same worker id.
     expect(workerIdentityReader.workerId).toBe(workerId);

@@ -7,7 +7,7 @@
  * Reads from the workers table for resolution.
  *
  * Key Design:
- * - Resolves workerId lazily on first property access and caches it
+ * - Resolves workerId during explicit async initialize() and caches it
  * - Uses IWorkerIdentifiedEventWriter for event persistence
  * - Uses IEventBus for event publication (triggers projection)
  * - Reads from SQLite workers table (populated by projector)
@@ -36,6 +36,7 @@ export class SqliteWorkerIdentityRegistry implements IWorkerIdentityReader, IWor
   private readonly eventBus: IEventBus;
   private readonly mapper: WorkerRecordMapper;
   private resolvedWorkerId: WorkerId | null = null;
+  private initializePromise: Promise<void> | null = null;
 
   constructor(
     db: Database,
@@ -51,15 +52,40 @@ export class SqliteWorkerIdentityRegistry implements IWorkerIdentityReader, IWor
   }
 
   /**
+   * Initializes the worker identity for the current host session.
+   * Must be called before accessing workerId.
+   */
+  async initialize(): Promise<void> {
+    if (this.resolvedWorkerId !== null) {
+      return;
+    }
+
+    if (this.initializePromise) {
+      await this.initializePromise;
+      return;
+    }
+
+    this.initializePromise = (async () => {
+      this.resolvedWorkerId = await this.resolveWorkerId();
+    })();
+
+    try {
+      await this.initializePromise;
+    } finally {
+      this.initializePromise = null;
+    }
+  }
+
+  /**
    * Gets the unique identifier for the current worker.
-   *
-   * Lazily resolves the workerId on first access and caches it.
-   * Subsequent calls return the cached value.
    */
   get workerId(): WorkerId {
     if (this.resolvedWorkerId === null) {
-      this.resolvedWorkerId = this.resolveWorkerId();
+      throw new Error(
+        "SqliteWorkerIdentityRegistry is not initialized. Call await initialize() before accessing workerId."
+      );
     }
+
     return this.resolvedWorkerId;
   }
 
@@ -83,7 +109,7 @@ export class SqliteWorkerIdentityRegistry implements IWorkerIdentityReader, IWor
    * Sets the operating mode of the current worker.
    */
   setMode(mode: WorkerMode): void {
-    // Ensure worker exists by accessing workerId (triggers lazy resolution)
+    // Ensure worker exists before mode updates
     const _ = this.workerId;
     const { key: hostSessionKey } = this.sessionKeyResolver.resolve();
 
@@ -99,7 +125,7 @@ export class SqliteWorkerIdentityRegistry implements IWorkerIdentityReader, IWor
    * by appending a WorkerIdentifiedEvent and publishing it via the event bus.
    * Updates the lastSeenAt timestamp on each access via event.
    */
-  private resolveWorkerId(): WorkerId {
+  private async resolveWorkerId(): Promise<WorkerId> {
     const { key: hostSessionKey } = this.sessionKeyResolver.resolve();
 
     const existingRow = this.db
@@ -118,8 +144,8 @@ export class SqliteWorkerIdentityRegistry implements IWorkerIdentityReader, IWor
           mode: this.mapper.toWorkerMode(existingRow),
         },
       };
-      this.eventWriter.append(event);
-      this.eventBus.publish(event);
+      await this.eventWriter.append(event);
+      await this.eventBus.publish(event);
 
       return this.mapper.toWorkerId(existingRow);
     }
@@ -138,8 +164,8 @@ export class SqliteWorkerIdentityRegistry implements IWorkerIdentityReader, IWor
         mode: null,
       },
     };
-    this.eventWriter.append(event);
-    this.eventBus.publish(event);
+    await this.eventWriter.append(event);
+    await this.eventBus.publish(event);
 
     return this.mapper.toWorkerId({ workerId: newWorkerId, hostSessionKey, mode: null, createdAt: now, lastSeenAt: now });
   }
