@@ -6,6 +6,10 @@
 import { DependencyView } from "../DependencyView.js";
 
 export interface DependencyListFilter {
+  name?: string;
+  ecosystem?: string;
+  packageName?: string;
+  versionConstraint?: string;
   consumer?: string;
   provider?: string;
 }

@@ -228,8 +228,10 @@ describe("SqliteGoalContextAssembler", () => {
 
       const dependency: DependencyView = {
         dependencyId: "dep_1",
-        consumerId: "comp_1",
-        providerId: "comp_2",
+        name: "Express",
+        ecosystem: "npm",
+        packageName: "express",
+        versionConstraint: "^4.18.0",
         endpoint: "/api/users",
         contract: null,
         status: "active",

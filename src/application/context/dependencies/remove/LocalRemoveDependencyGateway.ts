@@ -20,8 +20,9 @@ export class LocalRemoveDependencyGateway implements IRemoveDependencyGateway {
 
     return {
       dependencyId: result.dependencyId,
-      consumer: view?.consumerId || "unknown",
-      provider: view?.providerId || "unknown",
+      name: view?.name || "unknown",
+      ecosystem: view?.ecosystem || "unknown",
+      packageName: view?.packageName || "unknown",
       status: view?.status || "removed",
       reason: request.reason,
     };

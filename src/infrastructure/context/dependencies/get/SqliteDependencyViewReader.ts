@@ -21,6 +21,23 @@ export class SqliteDependencyViewReader implements IDependencyViewReader {
     const conditions: string[] = [];
     const params: string[] = [];
 
+    if (filter?.name) {
+      conditions.push("name = ?");
+      params.push(filter.name);
+    }
+    if (filter?.ecosystem) {
+      conditions.push("ecosystem = ?");
+      params.push(filter.ecosystem);
+    }
+    if (filter?.packageName) {
+      conditions.push("packageName = ?");
+      params.push(filter.packageName);
+    }
+    if (filter?.versionConstraint) {
+      conditions.push("versionConstraint = ?");
+      params.push(filter.versionConstraint);
+    }
+
     if (filter?.consumer) {
       conditions.push("consumerId = ?");
       params.push(filter.consumer);
@@ -52,8 +69,12 @@ export class SqliteDependencyViewReader implements IDependencyViewReader {
   private mapRowToRecord(row: Record<string, unknown>): DependencyRecord {
     return {
       id: row.dependencyId as string,
-      consumerId: row.consumerId as string,
-      providerId: row.providerId as string,
+      name: (row.name as string) ?? null,
+      ecosystem: (row.ecosystem as string) ?? null,
+      packageName: (row.packageName as string) ?? null,
+      versionConstraint: (row.versionConstraint as string) ?? null,
+      consumerId: (row.consumerId as string) ?? null,
+      providerId: (row.providerId as string) ?? null,
       endpoint: (row.endpoint as string) ?? null,
       contract: (row.contract as string) ?? null,
       status: row.status as string,

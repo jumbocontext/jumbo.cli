@@ -8,8 +8,12 @@
 
 export interface DependencyRecord {
   readonly id: string;
-  readonly consumerId: string;
-  readonly providerId: string;
+  readonly name: string | null;
+  readonly ecosystem: string | null;
+  readonly packageName: string | null;
+  readonly versionConstraint: string | null;
+  readonly consumerId: string | null;
+  readonly providerId: string | null;
   readonly endpoint: string | null;
   readonly contract: string | null;
   readonly status: string;

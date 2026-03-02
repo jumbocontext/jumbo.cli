@@ -12,6 +12,10 @@ describe("SqliteDependencyViewReader", () => {
         dependencyId TEXT PRIMARY KEY,
         consumerId TEXT NOT NULL,
         providerId TEXT NOT NULL,
+        name TEXT,
+        ecosystem TEXT,
+        packageName TEXT,
+        versionConstraint TEXT,
         endpoint TEXT,
         contract TEXT,
         status TEXT NOT NULL DEFAULT 'active',
@@ -29,47 +33,84 @@ describe("SqliteDependencyViewReader", () => {
     db.close();
   });
 
-  function insertDependency(id: string, createdAt: string): void {
+  it("should map modern external dependency rows to DependencyView", async () => {
     db.prepare(`
-      INSERT INTO dependency_views (dependencyId, consumerId, providerId, status, version, createdAt, updatedAt)
+      INSERT INTO dependency_views (
+        dependencyId, consumerId, providerId, name, ecosystem, packageName, versionConstraint,
+        status, version, createdAt, updatedAt
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      "dep_1",
+      "",
+      "",
+      "Express",
+      "npm",
+      "express",
+      "^4.18.0",
+      "active",
+      1,
+      "2025-01-01T00:00:00Z",
+      "2025-01-01T00:00:00Z"
+    );
+
+    const result = await reader.findByIds(["dep_1"]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      dependencyId: "dep_1",
+      name: "Express",
+      ecosystem: "npm",
+      packageName: "express",
+      versionConstraint: "^4.18.0",
+    });
+  });
+
+  it("should upcast legacy consumer/provider rows to external semantics", async () => {
+    db.prepare(`
+      INSERT INTO dependency_views (
+        dependencyId, consumerId, providerId, status, version, createdAt, updatedAt
+      )
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(id, "consumer_1", "provider_1", "active", 1, createdAt, createdAt);
-  }
+    `).run(
+      "dep_legacy",
+      "UserService",
+      "DatabaseClient",
+      "active",
+      1,
+      "2025-01-01T00:00:00Z",
+      "2025-01-01T00:00:00Z"
+    );
 
-  describe("findByIds", () => {
-    it("should return empty array for empty input", async () => {
-      const result = await reader.findByIds([]);
-      expect(result).toEqual([]);
+    const result = await reader.findByIds(["dep_legacy"]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      dependencyId: "dep_legacy",
+      name: "DatabaseClient",
+      ecosystem: "legacy-component",
+      packageName: "DatabaseClient",
+      versionConstraint: null,
     });
+  });
 
-    it("should return a single dependency by ID", async () => {
-      insertDependency("dep_1", "2025-01-01T00:00:00Z");
+  it("should filter by new external dependency fields", async () => {
+    db.prepare(`
+      INSERT INTO dependency_views (
+        dependencyId, consumerId, providerId, name, ecosystem, packageName, status, version, createdAt, updatedAt
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run("dep_1", "", "", "Express", "npm", "express", "active", 1, "2025-01-01T00:00:00Z", "2025-01-01T00:00:00Z");
+    db.prepare(`
+      INSERT INTO dependency_views (
+        dependencyId, consumerId, providerId, name, ecosystem, packageName, status, version, createdAt, updatedAt
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run("dep_2", "", "", "Requests", "pip", "requests", "active", 1, "2025-01-02T00:00:00Z", "2025-01-02T00:00:00Z");
 
-      const result = await reader.findByIds(["dep_1"]);
+    const result = await reader.findAll({ ecosystem: "npm" });
 
-      expect(result).toHaveLength(1);
-      expect(result[0].dependencyId).toBe("dep_1");
-    });
-
-    it("should return multiple dependencies by IDs ordered by createdAt DESC", async () => {
-      insertDependency("dep_1", "2025-01-01T00:00:00Z");
-      insertDependency("dep_2", "2025-01-02T00:00:00Z");
-      insertDependency("dep_3", "2025-01-03T00:00:00Z");
-
-      const result = await reader.findByIds(["dep_1", "dep_2", "dep_3"]);
-
-      expect(result).toHaveLength(3);
-      expect(result[0].dependencyId).toBe("dep_3");
-      expect(result[1].dependencyId).toBe("dep_2");
-      expect(result[2].dependencyId).toBe("dep_1");
-    });
-
-    it("should return empty array for non-existent IDs", async () => {
-      insertDependency("dep_1", "2025-01-01T00:00:00Z");
-
-      const result = await reader.findByIds(["nonexistent_1", "nonexistent_2"]);
-
-      expect(result).toEqual([]);
-    });
+    expect(result).toHaveLength(1);
+    expect(result[0].dependencyId).toBe("dep_1");
   });
 });

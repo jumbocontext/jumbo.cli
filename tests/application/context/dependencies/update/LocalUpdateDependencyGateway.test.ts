@@ -29,8 +29,10 @@ describe("LocalUpdateDependencyGateway", () => {
 
     const view: DependencyView = {
       dependencyId,
-      consumerId: "UserService",
-      providerId: "DatabaseClient",
+      name: "Express",
+      ecosystem: "npm",
+      packageName: "express",
+      versionConstraint: "^4.18.0",
       endpoint: "/api/v2/users",
       contract: "IUserRepository",
       status: DependencyStatus.ACTIVE,
@@ -48,8 +50,10 @@ describe("LocalUpdateDependencyGateway", () => {
     });
 
     expect(response.dependencyId).toBe(dependencyId);
-    expect(response.consumerId).toBe("UserService");
-    expect(response.providerId).toBe("DatabaseClient");
+    expect(response.name).toBe("Express");
+    expect(response.ecosystem).toBe("npm");
+    expect(response.packageName).toBe("express");
+    expect(response.versionConstraint).toBe("^4.18.0");
     expect(response.endpoint).toBe("/api/v2/users");
     expect(response.contract).toBe("IUserRepository");
     expect(response.status).toBe(DependencyStatus.ACTIVE);
@@ -75,8 +79,9 @@ describe("LocalUpdateDependencyGateway", () => {
     });
 
     expect(response.dependencyId).toBe(dependencyId);
-    expect(response.consumerId).toBeUndefined();
-    expect(response.providerId).toBeUndefined();
+    expect(response.name).toBeUndefined();
+    expect(response.ecosystem).toBeUndefined();
+    expect(response.packageName).toBeUndefined();
   });
 
   it("should pass all fields to command handler", async () => {

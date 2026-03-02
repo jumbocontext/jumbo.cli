@@ -79,8 +79,10 @@ export async function dependencyUpdate(
     const data: Record<string, string | number> = {
       dependencyId: response.dependencyId,
     };
-    if (response.consumerId) data.consumer = response.consumerId;
-    if (response.providerId) data.provider = response.providerId;
+    if (response.name) data.name = response.name;
+    if (response.ecosystem) data.ecosystem = response.ecosystem;
+    if (response.packageName) data.packageName = response.packageName;
+    if (response.versionConstraint) data.versionConstraint = response.versionConstraint;
     if (response.endpoint) data.endpoint = response.endpoint;
     if (response.contract) data.contract = response.contract;
     if (response.status) data.status = response.status;

@@ -27,8 +27,10 @@ export class LocalUpdateDependencyGateway implements IUpdateDependencyGateway {
     if (view) {
       return {
         ...response,
-        consumerId: view.consumerId,
-        providerId: view.providerId,
+        name: view.name,
+        ecosystem: view.ecosystem,
+        packageName: view.packageName,
+        versionConstraint: view.versionConstraint,
         endpoint: view.endpoint,
         contract: view.contract,
         status: view.status,

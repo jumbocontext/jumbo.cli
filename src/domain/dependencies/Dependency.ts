@@ -4,12 +4,16 @@ import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import {
   DependencyEvent,
   DependencyAddedEvent,
+  ExternalDependencyPayload,
+  LegacyComponentDependencyPayload,
   DependencyUpdatedEvent,
   DependencyRemovedEvent
 } from "./EventIndex.js";
 import { DependencyEventType, DependencyStatus, DependencyStatusType, DependencyErrorMessages } from "./Constants.js";
-import { CONSUMER_ID_RULES } from "./rules/ConsumerIdRules.js";
-import { PROVIDER_ID_RULES } from "./rules/ProviderIdRules.js";
+import { NAME_RULES } from "./rules/NameRules.js";
+import { ECOSYSTEM_RULES } from "./rules/EcosystemRules.js";
+import { PACKAGE_NAME_RULES } from "./rules/PackageNameRules.js";
+import { VERSION_CONSTRAINT_RULES } from "./rules/VersionConstraintRules.js";
 import { ENDPOINT_RULES } from "./rules/EndpointRules.js";
 import { CONTRACT_RULES } from "./rules/ContractRules.js";
 import { STATUS_RULES } from "./rules/StatusRules.js";
@@ -17,8 +21,10 @@ import { STATUS_RULES } from "./rules/StatusRules.js";
 // Domain state: business properties + aggregate metadata
 export interface DependencyState extends AggregateState {
   id: UUID;
-  consumerId: string;
-  providerId: string;
+  name: string;
+  ecosystem: string;
+  packageName: string;
+  versionConstraint: string | null;
   endpoint: string | null;
   contract: string | null;
   status: DependencyStatusType;
@@ -38,8 +44,11 @@ export class Dependency extends BaseAggregate<DependencyState, DependencyEvent> 
     switch (event.type) {
       case DependencyEventType.ADDED: {
         const e = event as DependencyAddedEvent;
-        state.consumerId = e.payload.consumerId;
-        state.providerId = e.payload.providerId;
+        const upcasted = Dependency.upcastAddedPayload(e.payload);
+        state.name = upcasted.name;
+        state.ecosystem = upcasted.ecosystem;
+        state.packageName = upcasted.packageName;
+        state.versionConstraint = upcasted.versionConstraint;
         state.endpoint = e.payload.endpoint;
         state.contract = e.payload.contract;
         state.status = DependencyStatus.ACTIVE;
@@ -65,8 +74,10 @@ export class Dependency extends BaseAggregate<DependencyState, DependencyEvent> 
   static create(id: UUID): Dependency {
     const state: DependencyState = {
       id,
-      consumerId: "",
-      providerId: "",
+      name: "",
+      ecosystem: "",
+      packageName: "",
+      versionConstraint: null,
       endpoint: null,
       contract: null,
       status: DependencyStatus.ACTIVE,
@@ -82,8 +93,10 @@ export class Dependency extends BaseAggregate<DependencyState, DependencyEvent> 
   static rehydrate(id: UUID, history: DependencyEvent[]): Dependency {
     const state: DependencyState = {
       id,
-      consumerId: "",
-      providerId: "",
+      name: "",
+      ecosystem: "",
+      packageName: "",
+      versionConstraint: null,
       endpoint: null,
       contract: null,
       status: DependencyStatus.ACTIVE,
@@ -98,14 +111,18 @@ export class Dependency extends BaseAggregate<DependencyState, DependencyEvent> 
   }
 
   add(
-    consumerId: string,
-    providerId: string,
+    name: string,
+    ecosystem: string,
+    packageName: string,
+    versionConstraint?: string | null,
     endpoint?: string,
     contract?: string
   ): DependencyAddedEvent {
     // Validation using rule pattern
-    ValidationRuleSet.ensure(consumerId, CONSUMER_ID_RULES);
-    ValidationRuleSet.ensure(providerId, PROVIDER_ID_RULES);
+    ValidationRuleSet.ensure(name, NAME_RULES);
+    ValidationRuleSet.ensure(ecosystem, ECOSYSTEM_RULES);
+    ValidationRuleSet.ensure(packageName, PACKAGE_NAME_RULES);
+    if (versionConstraint) ValidationRuleSet.ensure(versionConstraint, VERSION_CONSTRAINT_RULES);
     if (endpoint) ValidationRuleSet.ensure(endpoint, ENDPOINT_RULES);
     if (contract) ValidationRuleSet.ensure(contract, CONTRACT_RULES);
 
@@ -113,8 +130,10 @@ export class Dependency extends BaseAggregate<DependencyState, DependencyEvent> 
     return this.makeEvent<DependencyAddedEvent>(
       DependencyEventType.ADDED,
       {
-        consumerId,
-        providerId,
+        name,
+        ecosystem,
+        packageName,
+        versionConstraint: versionConstraint || null,
         endpoint: endpoint || null,
         contract: contract || null,
       },
@@ -166,5 +185,23 @@ export class Dependency extends BaseAggregate<DependencyState, DependencyEvent> 
       },
       Dependency.apply
     );
+  }
+
+  private static upcastAddedPayload(
+    payload: ExternalDependencyPayload | LegacyComponentDependencyPayload
+  ): ExternalDependencyPayload {
+    if ("name" in payload && "ecosystem" in payload && "packageName" in payload) {
+      return payload;
+    }
+
+    const legacyPayload = payload as LegacyComponentDependencyPayload;
+    return {
+      name: legacyPayload.providerId,
+      ecosystem: "legacy-component",
+      packageName: legacyPayload.providerId,
+      versionConstraint: null,
+      endpoint: legacyPayload.endpoint,
+      contract: legacyPayload.contract,
+    };
   }
 }

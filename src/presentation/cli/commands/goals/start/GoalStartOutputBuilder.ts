@@ -112,8 +112,9 @@ export class GoalStartOutputBuilder {
     if (context.dependencies.length > 0) {
       const dependenciesText = context.dependencies
         .map(d => {
-          const purpose = d.entity.contract || d.entity.endpoint || 'Dependency relationship';
-          return `- ${d.entity.consumerId} → ${d.entity.providerId}: ${purpose}`;
+          const version = d.entity.versionConstraint ? `@${d.entity.versionConstraint}` : "";
+          const purpose = d.entity.contract || d.entity.endpoint || "External dependency";
+          return `- ${d.entity.ecosystem}:${d.entity.packageName}${version} (${d.entity.name}): ${purpose}`;
         })
         .join('\n');
       this.builder.addPrompt(

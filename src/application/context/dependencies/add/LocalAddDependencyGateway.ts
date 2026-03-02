@@ -10,6 +10,10 @@ export class LocalAddDependencyGateway implements IAddDependencyGateway {
 
   async addDependency(request: AddDependencyRequest): Promise<AddDependencyResponse> {
     const result = await this.commandHandler.execute({
+      name: request.name,
+      ecosystem: request.ecosystem,
+      packageName: request.packageName,
+      versionConstraint: request.versionConstraint,
       consumerId: request.consumerId,
       providerId: request.providerId,
       endpoint: request.endpoint,

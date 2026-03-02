@@ -153,8 +153,9 @@ export class GoalShowOutputBuilder {
     if (context.dependencies.length > 0) {
       let dependenciesOutput = Colors.gradientA("\n=== Related Dependencies ===\n");
       for (const dependency of context.dependencies) {
-        const purpose = dependency.entity.contract || dependency.entity.endpoint || 'Dependency relationship';
-        dependenciesOutput += "\n- " + Colors.gradientB(`${dependency.entity.consumerId} → ${dependency.entity.providerId}:`) + " \n\t" + Colors.gradientC(purpose);
+        const version = dependency.entity.versionConstraint ? `@${dependency.entity.versionConstraint}` : "";
+        const purpose = dependency.entity.contract || dependency.entity.endpoint || "External dependency";
+        dependenciesOutput += "\n- " + Colors.gradientB(`${dependency.entity.ecosystem}:${dependency.entity.packageName}${version} (${dependency.entity.name}):`) + " \n\t" + Colors.gradientC(purpose);
       }
       this.builder.addPrompt(dependenciesOutput);
     }

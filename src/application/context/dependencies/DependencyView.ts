@@ -9,8 +9,10 @@ import { DependencyStatusType } from "../../../domain/dependencies/Constants.js"
 
 export interface DependencyView {
   dependencyId: string;
-  consumerId: string;
-  providerId: string;
+  name: string;
+  ecosystem: string;
+  packageName: string;
+  versionConstraint: string | null;
   endpoint: string | null;
   contract: string | null;
   status: DependencyStatusType;

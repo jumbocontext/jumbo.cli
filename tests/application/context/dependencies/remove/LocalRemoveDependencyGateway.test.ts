@@ -27,8 +27,10 @@ describe("LocalRemoveDependencyGateway", () => {
     mockCommandHandler.execute.mockResolvedValue({ dependencyId });
     mockReader.findById.mockResolvedValue({
       dependencyId,
-      consumerId: "UserService",
-      providerId: "DatabaseClient",
+      name: "Express",
+      ecosystem: "npm",
+      packageName: "express",
+      versionConstraint: "^4.18.0",
       endpoint: "/api/users",
       contract: "IUserRepository",
       status: DependencyStatus.REMOVED,
@@ -45,8 +47,9 @@ describe("LocalRemoveDependencyGateway", () => {
     });
 
     expect(response.dependencyId).toBe(dependencyId);
-    expect(response.consumer).toBe("UserService");
-    expect(response.provider).toBe("DatabaseClient");
+    expect(response.name).toBe("Express");
+    expect(response.ecosystem).toBe("npm");
+    expect(response.packageName).toBe("express");
     expect(response.status).toBe(DependencyStatus.REMOVED);
     expect(response.reason).toBe("Migrated to MongoDB");
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({
@@ -65,8 +68,9 @@ describe("LocalRemoveDependencyGateway", () => {
     const response = await gateway.removeDependency({ dependencyId });
 
     expect(response.dependencyId).toBe(dependencyId);
-    expect(response.consumer).toBe("unknown");
-    expect(response.provider).toBe("unknown");
+    expect(response.name).toBe("unknown");
+    expect(response.ecosystem).toBe("unknown");
+    expect(response.packageName).toBe("unknown");
     expect(response.status).toBe("removed");
   });
 });

@@ -1,7 +1,7 @@
 /**
  * CLI Command: jumbo dependency add
  *
- * Adds a dependency relationship between two components in the system.
+ * Registers an external dependency used by the project.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
@@ -13,19 +13,33 @@ import { Renderer } from "../../../rendering/Renderer.js";
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "Add a dependency relationship between components",
+  description: "Register an external dependency",
   category: "solution",
-  requiredOptions: [
+  options: [
+    {
+      flags: "--name <name>",
+      description: "Dependency display name"
+    },
+    {
+      flags: "--ecosystem <ecosystem>",
+      description: "Dependency ecosystem (e.g., npm, pip, maven)"
+    },
+    {
+      flags: "--package-name <packageName>",
+      description: "Package identifier in the ecosystem"
+    },
+    {
+      flags: "--version-constraint <constraint>",
+      description: "Optional version constraint (e.g., ^4.18.0)"
+    },
     {
       flags: "--consumer-id <consumerId>",
-      description: "Component that depends on another"
+      description: "Legacy: component that depends on another"
     },
     {
       flags: "--provider-id <providerId>",
-      description: "Component being depended upon"
-    }
-  ],
-  options: [
+      description: "Legacy: component being depended upon"
+    },
     {
       flags: "--endpoint <endpoint>",
       description: "Connection point (e.g., '/api/users', 'IUserRepository')"
@@ -37,8 +51,8 @@ export const metadata: CommandMetadata = {
   ],
   examples: [
     {
-      command: "jumbo dependency add --consumer-id UserService --provider-id DatabaseClient",
-      description: "Add a basic dependency relationship"
+      command: "jumbo dependency add --name Express --ecosystem npm --package-name express --version-constraint ^4.18.0",
+      description: "Register an external dependency"
     },
     {
       command: "jumbo dependency add --consumer-id UserController --provider-id AuthMiddleware --endpoint /api/auth/verify --contract IAuthVerifier",
@@ -54,8 +68,12 @@ export const metadata: CommandMetadata = {
  */
 export async function dependencyAdd(
   options: {
-    consumerId: string;
-    providerId: string;
+    name?: string;
+    ecosystem?: string;
+    packageName?: string;
+    versionConstraint?: string;
+    consumerId?: string;
+    providerId?: string;
     endpoint?: string;
     contract?: string;
   },
@@ -65,6 +83,10 @@ export async function dependencyAdd(
 
   try {
     const request: AddDependencyRequest = {
+      name: options.name,
+      ecosystem: options.ecosystem,
+      packageName: options.packageName,
+      versionConstraint: options.versionConstraint,
       consumerId: options.consumerId,
       providerId: options.providerId,
       endpoint: options.endpoint,
@@ -76,13 +98,20 @@ export async function dependencyAdd(
     // Success output
     const data: Record<string, string | number> = {
       dependencyId: response.dependencyId,
-      consumer: options.consumerId,
-      provider: options.providerId,
     };
+    if (options.name) data.name = options.name;
+    if (options.ecosystem) data.ecosystem = options.ecosystem;
+    if (options.packageName) data.packageName = options.packageName;
+    if (options.versionConstraint) data.versionConstraint = options.versionConstraint;
+    if (options.consumerId) data.consumer = options.consumerId;
+    if (options.providerId) data.provider = options.providerId;
     if (options.endpoint) data.endpoint = options.endpoint;
     if (options.contract) data.contract = options.contract;
 
-    renderer.success(`Dependency '${options.consumerId} → ${options.providerId}' added`, data);
+    const dependencyLabel = options.name && options.ecosystem && options.packageName
+      ? `${options.ecosystem}:${options.packageName} (${options.name})`
+      : `${options.consumerId} → ${options.providerId}`;
+    renderer.success(`Dependency '${dependencyLabel}' added`, data);
   } catch (error) {
     renderer.error("Failed to add dependency", error instanceof Error ? error : String(error));
     process.exit(1);

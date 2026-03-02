@@ -10,8 +10,12 @@ import { IDependencyUpdatedProjector } from "../../../../application/context/dep
 import { IDependencyUpdateReader } from "../../../../application/context/dependencies/update/IDependencyUpdateReader.js";
 import { DependencyUpdatedEvent } from "../../../../domain/dependencies/update/DependencyUpdatedEvent.js";
 import { DependencyView } from "../../../../application/context/dependencies/DependencyView.js";
+import { DependencyRecordMapper } from "../DependencyRecordMapper.js";
+import { DependencyRecord } from "../DependencyRecord.js";
 
 export class SqliteDependencyUpdatedProjector implements IDependencyUpdatedProjector, IDependencyUpdateReader {
+  private readonly mapper = new DependencyRecordMapper();
+
   constructor(private db: Database) {}
 
   async applyDependencyUpdated(event: DependencyUpdatedEvent): Promise<void> {
@@ -52,13 +56,21 @@ export class SqliteDependencyUpdatedProjector implements IDependencyUpdatedProje
   }
 
   private mapRowToView(row: Record<string, unknown>): DependencyView {
+    return this.mapper.toView(this.mapRowToRecord(row));
+  }
+
+  private mapRowToRecord(row: Record<string, unknown>): DependencyRecord {
     return {
-      dependencyId: row.dependencyId as string,
-      consumerId: row.consumerId as string,
-      providerId: row.providerId as string,
+      id: row.dependencyId as string,
+      name: (row.name as string) ?? null,
+      ecosystem: (row.ecosystem as string) ?? null,
+      packageName: (row.packageName as string) ?? null,
+      versionConstraint: (row.versionConstraint as string) ?? null,
+      consumerId: (row.consumerId as string) ?? null,
+      providerId: (row.providerId as string) ?? null,
       endpoint: (row.endpoint as string) ?? null,
       contract: (row.contract as string) ?? null,
-      status: row.status as DependencyView['status'],
+      status: row.status as string,
       version: row.version as number,
       createdAt: row.createdAt as string,
       updatedAt: row.updatedAt as string,

@@ -64,13 +64,14 @@ export async function dependencyRemove(
     // Success output
     const data: Record<string, string | number> = {
       dependencyId: response.dependencyId,
-      consumer: response.consumer,
-      provider: response.provider,
+      name: response.name,
+      ecosystem: response.ecosystem,
+      packageName: response.packageName,
       status: response.status,
     };
     if (response.reason) data.reason = response.reason;
 
-    renderer.success(`Dependency '${response.consumer} → ${response.provider}' removed`, data);
+    renderer.success(`Dependency '${response.ecosystem}:${response.packageName} (${response.name})' removed`, data);
   } catch (error) {
     renderer.error("Failed to remove dependency", error instanceof Error ? error : String(error));
     process.exit(1);

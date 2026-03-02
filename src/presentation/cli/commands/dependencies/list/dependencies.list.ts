@@ -1,7 +1,7 @@
 /**
  * CLI Command: jumbo dependencies list
  *
- * Lists all component dependencies with optional filtering.
+ * Lists all registered dependencies with optional filtering.
  *
  * Usage:
  *   jumbo dependencies list
@@ -18,16 +18,28 @@ import { DependencyView } from "../../../../../application/context/dependencies/
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "List all component dependencies",
+  description: "List dependencies",
   category: "solution",
   options: [
     {
+      flags: "--name <name>",
+      description: "Filter by dependency display name",
+    },
+    {
+      flags: "--ecosystem <ecosystem>",
+      description: "Filter by ecosystem",
+    },
+    {
+      flags: "--package-name <packageName>",
+      description: "Filter by package name",
+    },
+    {
       flags: "--consumer <componentId>",
-      description: "Filter by consumer component ID",
+      description: "Legacy filter by consumer component ID",
     },
     {
       flags: "--provider <componentId>",
-      description: "Filter by provider component ID",
+      description: "Legacy filter by provider component ID",
     },
   ],
   examples: [
@@ -62,7 +74,8 @@ function formatStatus(status: string): string {
  * Format dependency for text output
  */
 function formatDependencyText(dep: DependencyView): void {
-  console.log(`${formatStatus(dep.status)} ${dep.consumerId} -> ${dep.providerId}`);
+  const version = dep.versionConstraint ? `@${dep.versionConstraint}` : "";
+  console.log(`${formatStatus(dep.status)} ${dep.ecosystem}:${dep.packageName}${version} (${dep.name})`);
   if (dep.endpoint) {
     console.log(`  Endpoint: ${dep.endpoint}`);
   }
@@ -81,7 +94,7 @@ function formatDependencyText(dep: DependencyView): void {
  * Called by Commander with parsed options
  */
 export async function dependenciesList(
-  options: { consumer?: string; provider?: string },
+  options: { name?: string; ecosystem?: string; packageName?: string; consumer?: string; provider?: string },
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
@@ -89,6 +102,9 @@ export async function dependenciesList(
   try {
     // Build filter from options
     const filter = {
+      name: options.name,
+      ecosystem: options.ecosystem,
+      packageName: options.packageName,
       consumer: options.consumer,
       provider: options.provider,
     };
@@ -98,6 +114,9 @@ export async function dependenciesList(
 
     if (dependencies.length === 0) {
       const filterParts: string[] = [];
+      if (filter.name) filterParts.push(`name '${filter.name}'`);
+      if (filter.ecosystem) filterParts.push(`ecosystem '${filter.ecosystem}'`);
+      if (filter.packageName) filterParts.push(`package '${filter.packageName}'`);
       if (filter.consumer) filterParts.push(`consumer '${filter.consumer}'`);
       if (filter.provider) filterParts.push(`provider '${filter.provider}'`);
       const filterMsg = filterParts.length > 0 ? ` for ${filterParts.join(" and ")}` : "";
@@ -111,6 +130,9 @@ export async function dependenciesList(
     if (config.format === "text") {
       // Text format: human-readable output
       const filterParts: string[] = [];
+      if (filter.name) filterParts.push(`name: ${filter.name}`);
+      if (filter.ecosystem) filterParts.push(`ecosystem: ${filter.ecosystem}`);
+      if (filter.packageName) filterParts.push(`packageName: ${filter.packageName}`);
       if (filter.consumer) filterParts.push(`consumer: ${filter.consumer}`);
       if (filter.provider) filterParts.push(`provider: ${filter.provider}`);
       const filterLabel = filterParts.length > 0 ? ` (${filterParts.join(", ")})` : "";
@@ -123,13 +145,18 @@ export async function dependenciesList(
       const data = {
         count: dependencies.length,
         filter: {
+          name: filter.name ?? null,
+          ecosystem: filter.ecosystem ?? null,
+          packageName: filter.packageName ?? null,
           consumer: filter.consumer ?? null,
           provider: filter.provider ?? null,
         },
         dependencies: dependencies.map((d) => ({
           dependencyId: d.dependencyId,
-          consumerId: d.consumerId,
-          providerId: d.providerId,
+          name: d.name,
+          ecosystem: d.ecosystem,
+          packageName: d.packageName,
+          versionConstraint: d.versionConstraint,
           endpoint: d.endpoint,
           contract: d.contract,
           status: d.status,

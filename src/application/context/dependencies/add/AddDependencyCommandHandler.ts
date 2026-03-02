@@ -16,8 +16,8 @@ export class AddDependencyCommandHandler {
   ) {}
 
   async execute(command: AddDependencyCommand): Promise<{ dependencyId: string }> {
-    // Generate deterministic ID based on consumer and provider
-    const dependencyId = `dep_${command.consumerId}_${command.providerId}`.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    const identity = this.resolveIdentity(command);
+    const dependencyId = `dep_${identity.ecosystem}_${identity.packageName}`.toLowerCase().replace(/[^a-z0-9_]/g, '_');
 
     // Check if dependency already exists (idempotent behavior)
     const existingDependency = await this.dependencyReader.findById(dependencyId);
@@ -31,8 +31,10 @@ export class AddDependencyCommandHandler {
 
     // 2. Domain logic produces event
     const event = dependency.add(
-      command.consumerId,
-      command.providerId,
+      identity.name,
+      identity.ecosystem,
+      identity.packageName,
+      identity.versionConstraint,
       command.endpoint,
       command.contract
     );
@@ -44,5 +46,32 @@ export class AddDependencyCommandHandler {
     await this.eventBus.publish(event);
 
     return { dependencyId };
+  }
+
+  private resolveIdentity(command: AddDependencyCommand): {
+    name: string;
+    ecosystem: string;
+    packageName: string;
+    versionConstraint: string | null;
+  } {
+    if (command.name && command.ecosystem && command.packageName) {
+      return {
+        name: command.name,
+        ecosystem: command.ecosystem,
+        packageName: command.packageName,
+        versionConstraint: command.versionConstraint ?? null,
+      };
+    }
+
+    if (command.consumerId && command.providerId) {
+      return {
+        name: command.providerId,
+        ecosystem: "legacy-component",
+        packageName: command.providerId,
+        versionConstraint: null,
+      };
+    }
+
+    throw new Error("Dependency identity is required. Provide name/ecosystem/packageName.");
   }
 }

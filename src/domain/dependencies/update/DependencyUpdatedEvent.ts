@@ -6,10 +6,10 @@
  */
 
 import { BaseEvent } from "../../BaseEvent.js";
-import { DependencyStatusType } from "../Constants.js";
+import { DependencyEventType, DependencyStatusType } from "../Constants.js";
 
 export interface DependencyUpdatedEvent extends BaseEvent {
-  readonly type: "DependencyUpdatedEvent";
+  readonly type: typeof DependencyEventType.UPDATED;
   readonly payload: {
     readonly endpoint?: string | null;
     readonly contract?: string | null;

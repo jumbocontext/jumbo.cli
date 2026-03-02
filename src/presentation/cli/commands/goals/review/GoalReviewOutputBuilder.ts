@@ -109,8 +109,9 @@ export class GoalReviewOutputBuilder {
     if (context.dependencies.length > 0) {
       output += "\n\n## Relevant Dependencies:\n";
       context.dependencies.forEach((d) => {
-        const purpose = d.entity.contract || d.entity.endpoint || 'Dependency relationship';
-        output += `- ${d.entity.consumerId} → ${d.entity.providerId}: ${purpose}\n`;
+        const version = d.entity.versionConstraint ? `@${d.entity.versionConstraint}` : "";
+        const purpose = d.entity.contract || d.entity.endpoint || "External dependency";
+        output += `- ${d.entity.ecosystem}:${d.entity.packageName}${version} (${d.entity.name}): ${purpose}\n`;
       });
       output += "\nVERIFY: These dependencies are considered in the implementation.\n" +
                 `INSTRUCTION: If any dependencies were not considered, then note the issues for goal rejection.`;
