@@ -14,8 +14,6 @@ export class LocalAddDependencyGateway implements IAddDependencyGateway {
       ecosystem: request.ecosystem,
       packageName: request.packageName,
       versionConstraint: request.versionConstraint,
-      consumerId: request.consumerId,
-      providerId: request.providerId,
       endpoint: request.endpoint,
       contract: request.contract,
     });

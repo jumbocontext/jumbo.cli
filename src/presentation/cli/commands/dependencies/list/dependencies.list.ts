@@ -5,8 +5,8 @@
  *
  * Usage:
  *   jumbo dependencies list
- *   jumbo dependencies list --consumer UserService
- *   jumbo dependencies list --provider DatabaseService --format json
+ *   jumbo dependencies list --ecosystem npm
+ *   jumbo dependencies list --package-name express --format json
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
@@ -35,11 +35,11 @@ export const metadata: CommandMetadata = {
     },
     {
       flags: "--consumer <componentId>",
-      description: "Legacy filter by consumer component ID",
+      description: "Legacy filter (compatibility): former consumer component ID",
     },
     {
       flags: "--provider <componentId>",
-      description: "Legacy filter by provider component ID",
+      description: "Legacy filter (compatibility): former provider component ID",
     },
   ],
   examples: [
@@ -48,12 +48,12 @@ export const metadata: CommandMetadata = {
       description: "List all dependencies",
     },
     {
-      command: "jumbo dependencies list --consumer comp_123",
-      description: "List dependencies where comp_123 is the consumer",
+      command: "jumbo dependencies list --ecosystem npm",
+      description: "List external dependencies from npm",
     },
     {
-      command: "jumbo dependencies list --provider comp_456 --format json",
-      description: "List dependencies where comp_456 is the provider as JSON",
+      command: "jumbo dependencies list --consumer comp_123 --provider comp_456 --format json",
+      description: "Legacy compatibility filter for historical coupling records",
     },
   ],
   related: ["dependency add", "dependency update", "dependency remove"],

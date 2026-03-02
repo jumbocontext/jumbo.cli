@@ -54,24 +54,15 @@ export class AddDependencyCommandHandler {
     packageName: string;
     versionConstraint: string | null;
   } {
-    if (command.name && command.ecosystem && command.packageName) {
-      return {
-        name: command.name,
-        ecosystem: command.ecosystem,
-        packageName: command.packageName,
-        versionConstraint: command.versionConstraint ?? null,
-      };
+    if (!command.name || !command.ecosystem || !command.packageName) {
+      throw new Error("Dependency identity is required. Provide name/ecosystem/packageName.");
     }
 
-    if (command.consumerId && command.providerId) {
-      return {
-        name: command.providerId,
-        ecosystem: "legacy-component",
-        packageName: command.providerId,
-        versionConstraint: null,
-      };
-    }
-
-    throw new Error("Dependency identity is required. Provide name/ecosystem/packageName.");
+    return {
+      name: command.name,
+      ecosystem: command.ecosystem,
+      packageName: command.packageName,
+      versionConstraint: command.versionConstraint ?? null,
+    };
   }
 }

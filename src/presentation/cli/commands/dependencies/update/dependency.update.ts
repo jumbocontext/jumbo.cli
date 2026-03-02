@@ -13,7 +13,7 @@ import { Renderer } from "../../../rendering/Renderer.js";
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "Update an existing dependency with new endpoint, contract, or status",
+  description: "Update an external dependency with new endpoint, contract, or status",
   category: "solution",
   requiredOptions: [
     {
@@ -38,7 +38,7 @@ export const metadata: CommandMetadata = {
   examples: [
     {
       command: "jumbo dependency update --id dep_123 --endpoint '/api/v2/users'",
-      description: "Update dependency endpoint"
+      description: "Update external dependency endpoint"
     },
     {
       command: "jumbo dependency update --id dep_123 --status deprecated",
@@ -47,9 +47,13 @@ export const metadata: CommandMetadata = {
     {
       command: "jumbo dependency update --id dep_123 --contract 'REST API' --status active",
       description: "Update multiple fields"
+    },
+    {
+      command: "jumbo relation add --from-type component --from-id UserController --to-type component --to-id AuthMiddleware --type depends_on --description 'UserController depends on AuthMiddleware'",
+      description: "Legacy component coupling now belongs in relations"
     }
   ],
-  related: ["dependency add", "dependency remove", "component update"]
+  related: ["dependency add", "dependency remove", "relation add"]
 };
 
 /**

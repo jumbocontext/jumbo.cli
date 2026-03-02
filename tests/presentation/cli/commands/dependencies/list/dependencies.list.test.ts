@@ -37,8 +37,10 @@ describe("dependencies.list command", () => {
     const mockDependencies: DependencyView[] = [
       {
         dependencyId: "dep_123",
-        consumerId: "comp_user",
-        providerId: "comp_db",
+        name: "Express",
+        ecosystem: "npm",
+        packageName: "express",
+        versionConstraint: "^4.18.0",
         endpoint: "/api",
         contract: "REST",
         status: "active",
@@ -54,16 +56,32 @@ describe("dependencies.list command", () => {
 
     await dependenciesList({}, mockContainer as IApplicationContainer);
 
-    expect(mockController.handle).toHaveBeenCalledWith({ filter: { consumer: undefined, provider: undefined } });
+    expect(mockController.handle).toHaveBeenCalledWith({
+      filter: {
+        name: undefined,
+        ecosystem: undefined,
+        packageName: undefined,
+        consumer: undefined,
+        provider: undefined,
+      },
+    });
     expect(consoleSpy).toHaveBeenCalled();
   });
 
-  it("should filter by consumer when specified", async () => {
+  it("should filter by ecosystem when specified", async () => {
     mockController.handle.mockResolvedValue({ dependencies: [] });
 
-    await dependenciesList({ consumer: "comp_user" }, mockContainer as IApplicationContainer);
+    await dependenciesList({ ecosystem: "npm" }, mockContainer as IApplicationContainer);
 
-    expect(mockController.handle).toHaveBeenCalledWith({ filter: { consumer: "comp_user", provider: undefined } });
+    expect(mockController.handle).toHaveBeenCalledWith({
+      filter: {
+        name: undefined,
+        ecosystem: "npm",
+        packageName: undefined,
+        consumer: undefined,
+        provider: undefined,
+      },
+    });
   });
 
   it("should show info message when no dependencies exist", async () => {

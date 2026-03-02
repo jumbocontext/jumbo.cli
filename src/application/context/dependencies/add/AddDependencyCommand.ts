@@ -3,8 +3,6 @@ export interface AddDependencyCommand {
   ecosystem?: string;
   packageName?: string;
   versionConstraint?: string | null;
-  consumerId?: string;
-  providerId?: string;
   endpoint?: string;
   contract?: string;
 }

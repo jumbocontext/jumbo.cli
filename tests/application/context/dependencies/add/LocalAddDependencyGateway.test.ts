@@ -15,40 +15,47 @@ describe("LocalAddDependencyGateway", () => {
   });
 
   it("should execute command and return dependency id", async () => {
-    const dependencyId = "dep_userservice_databaseclient";
+    const dependencyId = "dep_npm_express";
 
     mockCommandHandler.execute.mockResolvedValue({ dependencyId });
 
     const response = await gateway.addDependency({
-      consumerId: "UserService",
-      providerId: "DatabaseClient",
+      name: "Express",
+      ecosystem: "npm",
+      packageName: "express",
+      versionConstraint: "^4.18.0",
       endpoint: "/api/users",
       contract: "IUserRepository",
     });
 
     expect(response.dependencyId).toBe(dependencyId);
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({
-      consumerId: "UserService",
-      providerId: "DatabaseClient",
+      name: "Express",
+      ecosystem: "npm",
+      packageName: "express",
+      versionConstraint: "^4.18.0",
       endpoint: "/api/users",
       contract: "IUserRepository",
     });
   });
 
   it("should handle request with only required fields", async () => {
-    const dependencyId = "dep_authcontroller_authmiddleware";
+    const dependencyId = "dep_pip_fastapi";
 
     mockCommandHandler.execute.mockResolvedValue({ dependencyId });
 
     const response = await gateway.addDependency({
-      consumerId: "AuthController",
-      providerId: "AuthMiddleware",
+      name: "FastAPI",
+      ecosystem: "pip",
+      packageName: "fastapi",
     });
 
     expect(response.dependencyId).toBe(dependencyId);
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({
-      consumerId: "AuthController",
-      providerId: "AuthMiddleware",
+      name: "FastAPI",
+      ecosystem: "pip",
+      packageName: "fastapi",
+      versionConstraint: undefined,
       endpoint: undefined,
       contract: undefined,
     });
