@@ -90,4 +90,56 @@ describe("DeactivateRelationCommandHandler", () => {
     expect(eventWriter.append).not.toHaveBeenCalled();
     expect(eventBus.publish).not.toHaveBeenCalled();
   });
+
+  it("silently skips when relation is already deactivated", async () => {
+    (reader.findById as jest.Mock).mockResolvedValue({
+      relationId: "relation_123",
+      fromEntityType: EntityType.GOAL,
+      fromEntityId: "goal-1",
+      toEntityType: EntityType.COMPONENT,
+      toEntityId: "component-1",
+      relationType: "involves",
+      strength: null,
+      description: "Goal requires component",
+      status: "deactivated",
+      version: 2,
+      createdAt: "2026-03-01T00:00:00.000Z",
+      updatedAt: "2026-03-01T01:00:00.000Z",
+    });
+
+    await handler.execute({
+      relationId: "relation_123",
+      reason: "Decision reversed",
+    });
+
+    expect(eventReader.readStream).not.toHaveBeenCalled();
+    expect(eventWriter.append).not.toHaveBeenCalled();
+    expect(eventBus.publish).not.toHaveBeenCalled();
+  });
+
+  it("silently skips when relation is already removed", async () => {
+    (reader.findById as jest.Mock).mockResolvedValue({
+      relationId: "relation_123",
+      fromEntityType: EntityType.GOAL,
+      fromEntityId: "goal-1",
+      toEntityType: EntityType.COMPONENT,
+      toEntityId: "component-1",
+      relationType: "involves",
+      strength: null,
+      description: "Goal requires component",
+      status: "removed",
+      version: 3,
+      createdAt: "2026-03-01T00:00:00.000Z",
+      updatedAt: "2026-03-01T02:00:00.000Z",
+    });
+
+    await handler.execute({
+      relationId: "relation_123",
+      reason: "Decision reversed",
+    });
+
+    expect(eventReader.readStream).not.toHaveBeenCalled();
+    expect(eventWriter.append).not.toHaveBeenCalled();
+    expect(eventBus.publish).not.toHaveBeenCalled();
+  });
 });

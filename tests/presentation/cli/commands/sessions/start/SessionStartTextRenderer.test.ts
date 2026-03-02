@@ -48,6 +48,7 @@ describe("SessionStartTextRenderer", () => {
         pausedGoals: [],
         plannedGoals: [],
         recentDecisions: [],
+        deactivatedRelations: { count: 0, summary: "No deactivated relations." },
         ...contextOverrides,
       },
       instructions,
@@ -170,6 +171,24 @@ describe("SessionStartTextRenderer", () => {
       const result = renderer.renderSessionSummary(context);
 
       expect(result).toContain("status: active");
+    });
+  });
+
+  describe("deactivated relations warning", () => {
+    it("should include warning and summary when deactivated relations exist", () => {
+      const context = createContext({
+        deactivatedRelations: {
+          count: 2,
+          summary: "decision:dec_1 -> component:comp_1; goal:goal_1 -> decision:dec_1",
+        },
+      });
+
+      const result = renderer.renderSessionSummary(context);
+
+      expect(result).toContain("deactivatedRelations:");
+      expect(result).toContain("count: 2");
+      expect(result).toContain("warning:");
+      expect(result).toContain("Deactivated relations detected");
     });
   });
 

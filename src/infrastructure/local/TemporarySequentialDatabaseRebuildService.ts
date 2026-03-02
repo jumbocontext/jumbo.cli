@@ -88,7 +88,9 @@ import { SqliteValuePropositionAddedProjector } from "../context/value-propositi
 import { SqliteValuePropositionUpdatedProjector } from "../context/value-propositions/update/SqliteValuePropositionUpdatedProjector.js";
 import { SqliteValuePropositionRemovedProjector } from "../context/value-propositions/remove/SqliteValuePropositionRemovedProjector.js";
 import { SqliteRelationAddedProjector } from "../context/relations/add/SqliteRelationAddedProjector.js";
+import { FsRelationDeactivatedEventStore } from "../context/relations/deactivate/FsRelationDeactivatedEventStore.js";
 import { SqliteRelationDeactivatedProjector } from "../context/relations/deactivate/SqliteRelationDeactivatedProjector.js";
+import { SqliteRelationViewReader } from "../context/relations/get/SqliteRelationViewReader.js";
 import { SqliteRelationReactivatedProjector } from "../context/relations/reactivate/SqliteRelationReactivatedProjector.js";
 import { SqliteRelationRemovedProjector } from "../context/relations/remove/SqliteRelationRemovedProjector.js";
 import { SqliteGoalRejectedProjector } from "../context/goals/reject/SqliteGoalRejectedProjector.js";
@@ -148,6 +150,8 @@ import { ValuePropositionAddedEventHandler } from "../../application/context/val
 import { ValuePropositionUpdatedEventHandler } from "../../application/context/value-propositions/update/ValuePropositionUpdatedEventHandler.js";
 import { ValuePropositionRemovedEventHandler } from "../../application/context/value-propositions/remove/ValuePropositionRemovedEventHandler.js";
 import { RelationAddedEventHandler } from "../../application/context/relations/add/RelationAddedEventHandler.js";
+import { DeactivateRelationCommandHandler } from "../../application/context/relations/deactivate/DeactivateRelationCommandHandler.js";
+import { RelationDeactivationCascade } from "../../application/context/relations/deactivate/RelationDeactivationCascade.js";
 import { RelationDeactivatedEventHandler } from "../../application/context/relations/deactivate/RelationDeactivatedEventHandler.js";
 import { RelationReactivatedEventHandler } from "../../application/context/relations/reactivate/RelationReactivatedEventHandler.js";
 import { RelationRemovedEventHandler } from "../../application/context/relations/remove/RelationRemovedEventHandler.js";
@@ -251,6 +255,7 @@ const audienceAddedProjector = new SqliteAudienceAddedProjector(newDb);
     const valuePropositionRemovedProjector = new SqliteValuePropositionRemovedProjector(newDb);
     const relationAddedProjector = new SqliteRelationAddedProjector(newDb);
     const relationDeactivatedProjector = new SqliteRelationDeactivatedProjector(newDb);
+    const relationViewReader = new SqliteRelationViewReader(newDb);
     const relationReactivatedProjector = new SqliteRelationReactivatedProjector(newDb);
     const relationRemovedProjector = new SqliteRelationRemovedProjector(newDb);
     const goalRejectedProjector = new SqliteGoalRejectedProjector(newDb);
@@ -260,6 +265,17 @@ const audienceAddedProjector = new SqliteAudienceAddedProjector(newDb);
     const goalApprovedProjector = new SqliteGoalApprovedProjector(newDb);
     const goalStatusMigratedProjector = new SqliteGoalStatusMigratedProjector(newDb);
     const componentRenamedProjector = new SqliteComponentRenamedProjector(newDb);
+    const relationDeactivatedEventStore = new FsRelationDeactivatedEventStore(this.rootDir);
+    const deactivateRelationCommandHandler = new DeactivateRelationCommandHandler(
+      relationDeactivatedEventStore,
+      relationDeactivatedEventStore,
+      sequentialEventBus,
+      relationDeactivatedProjector
+    );
+    const relationDeactivationCascade = new RelationDeactivationCascade(
+      relationViewReader,
+      deactivateRelationCommandHandler
+    );
 
     // Step 6: Create all handlers
     const sessionStartedEventHandler = new SessionStartedEventHandler(sessionStartedProjector);
@@ -284,15 +300,15 @@ const audienceAddedProjector = new SqliteAudienceAddedProjector(newDb);
     const architectureUpdatedEventHandler = new ArchitectureUpdatedEventHandler(architectureUpdatedProjector);
     const componentAddedEventHandler = new ComponentAddedEventHandler(componentAddedProjector);
     const componentUpdatedEventHandler = new ComponentUpdatedEventHandler(componentUpdatedProjector);
-    const componentDeprecatedEventHandler = new ComponentDeprecatedEventHandler(componentDeprecatedProjector);
-    const componentRemovedEventHandler = new ComponentRemovedEventHandler(componentRemovedProjector);
+    const componentDeprecatedEventHandler = new ComponentDeprecatedEventHandler(componentDeprecatedProjector, relationDeactivationCascade);
+    const componentRemovedEventHandler = new ComponentRemovedEventHandler(componentRemovedProjector, relationDeactivationCascade);
     const dependencyAddedEventHandler = new DependencyAddedEventHandler(dependencyAddedProjector);
     const dependencyUpdatedEventHandler = new DependencyUpdatedEventHandler(dependencyUpdatedProjector);
     const dependencyRemovedEventHandler = new DependencyRemovedEventHandler(dependencyRemovedProjector);
     const decisionAddedEventHandler = new DecisionAddedEventHandler(decisionAddedProjector);
     const decisionUpdatedEventHandler = new DecisionUpdatedEventHandler(decisionUpdatedProjector);
-    const decisionReversedEventHandler = new DecisionReversedEventHandler(decisionReversedProjector);
-    const decisionSupersededEventHandler = new DecisionSupersededEventHandler(decisionSupersededProjector);
+    const decisionReversedEventHandler = new DecisionReversedEventHandler(decisionReversedProjector, relationDeactivationCascade);
+    const decisionSupersededEventHandler = new DecisionSupersededEventHandler(decisionSupersededProjector, relationDeactivationCascade);
     const guidelineAddedEventHandler = new GuidelineAddedEventHandler(guidelineAddedProjector);
     const guidelineUpdatedEventHandler = new GuidelineUpdatedEventHandler(guidelineUpdatedProjector);
     const guidelineRemovedEventHandler = new GuidelineRemovedEventHandler(guidelineRemovedProjector);

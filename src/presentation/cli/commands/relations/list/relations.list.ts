@@ -25,13 +25,14 @@ export const metadata: CommandMetadata = {
     },
     {
       flags: "-s, --status <status>",
-      description: "Filter by status: active (default), removed, or all",
+      description: "Filter by status: active (default), deactivated, removed, or all",
     },
   ],
   examples: [
     { command: "jumbo relations list", description: "List all active relations" },
     { command: "jumbo relations list --entity-type goal", description: "List relations involving goals" },
     { command: "jumbo relations list --entity-type component --entity-id comp_123", description: "List relations for a specific component" },
+    { command: "jumbo relations list --status deactivated", description: "List only deactivated relations" },
     { command: "jumbo relations list --status all", description: "List all relations including removed" },
     { command: "jumbo relations list --format json", description: "List relations as JSON" },
   ],
@@ -58,7 +59,7 @@ export async function relationsList(
     const request: GetRelationsRequest = {
       entityType: options.entityType as EntityTypeValue | undefined,
       entityId: options.entityId,
-      status: (options.status as "active" | "removed" | "all") ?? "active",
+      status: (options.status as "active" | "deactivated" | "removed" | "all") ?? "active",
     };
     const { relations } = await container.getRelationsController.handle(request);
 

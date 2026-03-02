@@ -352,6 +352,7 @@ import { LocalAddRelationGateway } from "../../application/context/relations/add
 import { AddRelationController } from "../../application/context/relations/add/AddRelationController.js";
 import { RelationDeactivatedEventHandler } from "../../application/context/relations/deactivate/RelationDeactivatedEventHandler.js";
 import { DeactivateRelationCommandHandler } from "../../application/context/relations/deactivate/DeactivateRelationCommandHandler.js";
+import { RelationDeactivationCascade } from "../../application/context/relations/deactivate/RelationDeactivationCascade.js";
 import { RelationReactivatedEventHandler } from "../../application/context/relations/reactivate/RelationReactivatedEventHandler.js";
 import { ReactivateRelationCommandHandler } from "../../application/context/relations/reactivate/ReactivateRelationCommandHandler.js";
 import { RelationRemovedEventHandler } from "../../application/context/relations/remove/RelationRemovedEventHandler.js";
@@ -912,6 +913,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       sessionViewReader,
       goalStatusReader,
       decisionViewReader,
+      relationViewReader,
       projectContextReader,
       audienceContextReader,
       audiencePainContextReader
@@ -1578,6 +1580,10 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       eventBus,
       relationDeactivatedProjector
     );
+    const relationDeactivationCascade = new RelationDeactivationCascade(
+      relationViewReader,
+      deactivateRelationCommandHandler
+    );
     const reactivateRelationCommandHandler = new ReactivateRelationCommandHandler(
       relationReactivatedEventStore,
       relationReactivatedEventStore,
@@ -1637,8 +1643,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     // Component Event Handlers - decomposed by use case
     const componentAddedEventHandler = new ComponentAddedEventHandler(componentAddedProjector);
     const componentUpdatedEventHandler = new ComponentUpdatedEventHandler(componentUpdatedProjector);
-    const componentDeprecatedEventHandler = new ComponentDeprecatedEventHandler(componentDeprecatedProjector);
-    const componentRemovedEventHandler = new ComponentRemovedEventHandler(componentRemovedProjector);
+    const componentDeprecatedEventHandler = new ComponentDeprecatedEventHandler(componentDeprecatedProjector, relationDeactivationCascade);
+    const componentRemovedEventHandler = new ComponentRemovedEventHandler(componentRemovedProjector, relationDeactivationCascade);
     const componentRenamedEventHandler = new ComponentRenamedEventHandler(componentRenamedProjector);
     // Dependency Event Handlers - decomposed by use case
     const dependencyAddedEventHandler = new DependencyAddedEventHandler(dependencyAddedProjector);
@@ -1647,8 +1653,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     // Decision Event Handlers - decomposed by use case
     const decisionAddedEventHandler = new DecisionAddedEventHandler(decisionAddedProjector);
     const decisionUpdatedEventHandler = new DecisionUpdatedEventHandler(decisionUpdatedProjector);
-    const decisionReversedEventHandler = new DecisionReversedEventHandler(decisionReversedProjector);
-    const decisionSupersededEventHandler = new DecisionSupersededEventHandler(decisionSupersededProjector);
+    const decisionReversedEventHandler = new DecisionReversedEventHandler(decisionReversedProjector, relationDeactivationCascade);
+    const decisionSupersededEventHandler = new DecisionSupersededEventHandler(decisionSupersededProjector, relationDeactivationCascade);
     // Guideline Event Handlers - decomposed by use case
     const guidelineAddedEventHandler = new GuidelineAddedEventHandler(guidelineAddedProjector);
     const guidelineUpdatedEventHandler = new GuidelineUpdatedEventHandler(guidelineUpdatedProjector);

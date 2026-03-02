@@ -256,6 +256,15 @@ export class SessionStartTextRenderer {
       }));
     }
 
+    if (context.context.deactivatedRelations.count > 0) {
+      sessionCtx.deactivatedRelations = {
+        count: context.context.deactivatedRelations.count,
+        summary: context.context.deactivatedRelations.summary,
+      };
+      sessionCtx.warning =
+        "Deactivated relations detected. Review them before relying on architecture links.";
+    }
+
     const llmInstruction =
       context.context.pausedGoals.length > 0
         ? "\n\n@LLM: Goals were paused. To resume a paused goal, run:\n  jumbo goal resume --id <goal-id>"

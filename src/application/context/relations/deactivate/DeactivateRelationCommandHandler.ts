@@ -29,6 +29,10 @@ export class DeactivateRelationCommandHandler {
       );
     }
 
+    if (existingRelation.status === "deactivated" || existingRelation.status === "removed") {
+      return;
+    }
+
     const history = await this.eventReader.readStream(command.relationId);
     const relation = Relation.rehydrate(command.relationId, history as RelationEvent[]);
     const event = relation.deactivate(command.reason);

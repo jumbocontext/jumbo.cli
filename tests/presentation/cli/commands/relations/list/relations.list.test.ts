@@ -133,4 +133,14 @@ describe("relations.list command", () => {
       expect.objectContaining({ status: "all" })
     );
   });
+
+  it("should support deactivated status filter", async () => {
+    mockController.handle.mockResolvedValue({ relations: [] });
+
+    await relationsList({ status: "deactivated" }, mockContainer as IApplicationContainer);
+
+    expect(mockController.handle).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "deactivated" })
+    );
+  });
 });
