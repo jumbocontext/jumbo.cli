@@ -593,12 +593,13 @@ export class HostBuilder {
     const hostSessionKeyResolver = new HostSessionKeyResolver();
     const workerIdentifiedEventStore = new FsWorkerIdentifiedEventStore(this.rootDir);
     const workerIdentifiedProjector = new SqliteWorkerIdentifiedProjector(this.db);
-    const workerIdentityReader = new SqliteWorkerIdentityRegistry(
+    const workerIdentityRegistry = new SqliteWorkerIdentityRegistry(
       this.db,
       hostSessionKeyResolver,
       workerIdentifiedEventStore,
       eventBus
     );
+    const workerIdentityReader = workerIdentityRegistry;
 
     // Create goal claim components
     const goalClaimStore = new SqliteGoalClaimStore(this.db);
@@ -1882,6 +1883,9 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
 
     // Worker Identity events
     eventBus.subscribe("WorkerIdentifiedEvent", workerIdentifiedEventHandler);
+
+    // Worker identity must resolve through event persistence + projection before handlers use it.
+    await workerIdentityRegistry.initialize();
 
     // ============================================================
     // STEP 7: Return Complete Container (No Lifecycle Management)

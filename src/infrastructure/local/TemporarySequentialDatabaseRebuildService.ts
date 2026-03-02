@@ -102,6 +102,7 @@ import { SqliteGoalClosedProjector } from "../context/goals/close/SqliteGoalClos
 import { SqliteGoalApprovedProjector } from "../context/goals/approve/SqliteGoalApprovedProjector.js";
 import { SqliteGoalStatusMigratedProjector } from "../context/goals/migrate/SqliteGoalStatusMigratedProjector.js";
 import { SqliteComponentRenamedProjector } from "../context/components/rename/SqliteComponentRenamedProjector.js";
+import { SqliteWorkerIdentifiedProjector } from "../host/workers/identify/SqliteWorkerIdentifiedProjector.js";
 
 // Handlers
 import { SessionStartedEventHandler } from "../../application/context/sessions/start/SessionStartedEventHandler.js";
@@ -169,6 +170,7 @@ import { GoalClosedEventHandler } from "../../application/context/goals/close/Go
 import { GoalApprovedEventHandler } from "../../application/context/goals/approve/GoalApprovedEventHandler.js";
 import { GoalStatusMigratedEventHandler } from "../../application/context/goals/migrate/GoalStatusMigratedEventHandler.js";
 import { ComponentRenamedEventHandler } from "../../application/context/components/rename/ComponentRenamedEventHandler.js";
+import { WorkerIdentifiedEventHandler } from "../../application/host/workers/identify/WorkerIdentifiedEventHandler.js";
 
 export class TemporarySequentialDatabaseRebuildService implements IDatabaseRebuildService {
   constructor(
@@ -274,6 +276,7 @@ const audienceAddedProjector = new SqliteAudienceAddedProjector(newDb);
     const goalApprovedProjector = new SqliteGoalApprovedProjector(newDb);
     const goalStatusMigratedProjector = new SqliteGoalStatusMigratedProjector(newDb);
     const componentRenamedProjector = new SqliteComponentRenamedProjector(newDb);
+    const workerIdentifiedProjector = new SqliteWorkerIdentifiedProjector(newDb);
     const relationDeactivatedEventStore = new FsRelationDeactivatedEventStore(this.rootDir);
     const relationReactivatedEventStore = new FsRelationReactivatedEventStore(this.rootDir);
     const deactivateRelationCommandHandler = new DeactivateRelationCommandHandler(
@@ -358,6 +361,7 @@ const audienceAddedEventHandler = new AudienceAddedEventHandler(audienceAddedPro
     const goalApprovedEventHandler = new GoalApprovedEventHandler(goalApprovedProjector);
     const goalStatusMigratedEventHandler = new GoalStatusMigratedEventHandler(goalStatusMigratedProjector);
     const componentRenamedEventHandler = new ComponentRenamedEventHandler(componentRenamedProjector);
+    const workerIdentifiedEventHandler = new WorkerIdentifiedEventHandler(workerIdentifiedProjector);
 
     // Step 7: Register all handlers to sequential bus
     sequentialEventBus.subscribe("SessionStartedEvent", sessionStartedEventHandler);
@@ -420,6 +424,7 @@ sequentialEventBus.subscribe("AudienceAddedEvent", audienceAddedEventHandler);
     sequentialEventBus.subscribe("GoalApprovedEvent", goalApprovedEventHandler);
     sequentialEventBus.subscribe("GoalStatusMigratedEvent", goalStatusMigratedEventHandler);
     sequentialEventBus.subscribe("ComponentRenamedEvent", componentRenamedEventHandler);
+    sequentialEventBus.subscribe("WorkerIdentifiedEvent", workerIdentifiedEventHandler);
 
     // Step 8: Get all events from event store (file-based, still intact)
     const events = await this.eventStore.getAllEvents();
