@@ -12,6 +12,7 @@ import { GoalView } from "../../../../../src/application/context/goals/GoalView"
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { ILogger } from "../../../../../src/application/logging/ILogger";
 import { ContextualSessionView } from "../../../../../src/application/context/sessions/get/ContextualSessionView";
+import { ContextualGoalView } from "../../../../../src/application/context/goals/get/ContextualGoalView";
 
 describe("LocalResumeWorkGateway", () => {
   let workerIdentityReader: IWorkerIdentityReader;
@@ -22,6 +23,29 @@ describe("LocalResumeWorkGateway", () => {
   let gateway: LocalResumeWorkGateway;
 
   const workerId = createWorkerId("worker_123");
+  const resumedGoalContextView: ContextualGoalView = {
+    goal: {
+      goalId: "goal_123",
+      objective: "Implement feature",
+      successCriteria: ["Feature works"],
+      scopeIn: [],
+      scopeOut: [],
+      status: GoalStatus.DOING,
+      version: 4,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-02T00:00:00Z",
+      claimedBy: workerId,
+      progress: ["Investigated issue"],
+    },
+    context: {
+      components: [],
+      dependencies: [],
+      decisions: [],
+      invariants: [],
+      guidelines: [],
+      architecture: null,
+    },
+  };
 
   const baseContextualSessionView: ContextualSessionView = {
     session: null,
@@ -61,17 +85,7 @@ describe("LocalResumeWorkGateway", () => {
     };
 
     resumeGoalCommandHandler = {
-      execute: jest.fn().mockResolvedValue({
-        goal: { goalId: "goal_123", objective: "Implement feature", status: GoalStatus.DOING },
-        context: {
-          components: [],
-          dependencies: [],
-          decisions: [],
-          invariants: [],
-          guidelines: [],
-          architecture: null,
-        },
-      }),
+      execute: jest.fn().mockResolvedValue(resumedGoalContextView),
     };
 
     sessionContextQueryHandler = {
@@ -103,6 +117,7 @@ describe("LocalResumeWorkGateway", () => {
 
     expect(result.goalId).toBe("goal_123");
     expect(result.objective).toBe("Implement feature");
+    expect(result.goalContextView).toEqual(resumedGoalContextView);
     expect(goalStatusReader.findByStatus).toHaveBeenCalledWith(GoalStatus.PAUSED);
     expect(resumeGoalCommandHandler.execute).toHaveBeenCalledWith({ goalId: "goal_123" });
   });
@@ -116,6 +131,22 @@ describe("LocalResumeWorkGateway", () => {
     expect(result.context).toBeDefined();
     expect(result.context.scope).toBe("work-resume");
     expect(result.context.instructions).toContain("resume-continuation-prompt");
+  });
+
+  it("should use objective from resumed contextual goal view", async () => {
+    const pausedGoal = createPausedGoal({ objective: "Stale paused objective" });
+    (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([pausedGoal]);
+    (resumeGoalCommandHandler.execute as jest.Mock).mockResolvedValue({
+      ...resumedGoalContextView,
+      goal: {
+        ...resumedGoalContextView.goal,
+        objective: "Fresh objective from goal context",
+      },
+    });
+
+    const result = await gateway.resumeWork({});
+
+    expect(result.objective).toBe("Fresh objective from goal context");
   });
 
   it("should include paused-goals-context instruction when paused goals exist in session context", async () => {
@@ -180,6 +211,14 @@ describe("LocalResumeWorkGateway", () => {
     });
 
     (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([otherWorkerGoal, myGoal]);
+    (resumeGoalCommandHandler.execute as jest.Mock).mockResolvedValue({
+      ...resumedGoalContextView,
+      goal: {
+        ...resumedGoalContextView.goal,
+        goalId: "goal_mine",
+        objective: "My paused goal",
+      },
+    });
 
     const result = await gateway.resumeWork({});
 

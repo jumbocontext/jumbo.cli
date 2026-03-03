@@ -47,7 +47,9 @@ export class LocalResumeWorkGateway implements IResumeWorkGateway {
     });
 
     // 4. Delegate goal state transition to atomic command handler
-    await this.resumeGoalCommandHandler.execute({ goalId: pausedGoal.goalId });
+    const goalContextView = await this.resumeGoalCommandHandler.execute({
+      goalId: pausedGoal.goalId,
+    });
 
     // 5. Assemble base session context
     const baseContext = await this.sessionContextQueryHandler.execute();
@@ -58,7 +60,8 @@ export class LocalResumeWorkGateway implements IResumeWorkGateway {
     // 7. Return enriched response
     return {
       goalId: pausedGoal.goalId,
-      objective: pausedGoal.objective,
+      objective: goalContextView.goal.objective,
+      goalContextView,
       context: {
         ...baseContext,
         instructions,

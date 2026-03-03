@@ -1,4 +1,5 @@
 import { EnrichedSessionContext } from "../../sessions/get/EnrichedSessionContext.js";
+import { ContextualGoalView } from "../../goals/get/ContextualGoalView.js";
 
 /**
  * ResumeWorkResponse - Result of resuming work.
@@ -9,5 +10,6 @@ import { EnrichedSessionContext } from "../../sessions/get/EnrichedSessionContex
 export interface ResumeWorkResponse {
   readonly goalId: string;
   readonly objective: string;
+  readonly goalContextView: ContextualGoalView;
   readonly context: EnrichedSessionContext;
 }

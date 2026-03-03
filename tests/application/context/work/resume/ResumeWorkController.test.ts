@@ -5,6 +5,7 @@
 import { ResumeWorkController } from "../../../../../src/application/context/work/resume/ResumeWorkController";
 import { IResumeWorkGateway } from "../../../../../src/application/context/work/resume/IResumeWorkGateway";
 import { ResumeWorkResponse } from "../../../../../src/application/context/work/resume/ResumeWorkResponse";
+import { GoalStatus } from "../../../../../src/domain/goals/Constants";
 
 describe("ResumeWorkController", () => {
   let gateway: jest.Mocked<IResumeWorkGateway>;
@@ -13,6 +14,29 @@ describe("ResumeWorkController", () => {
   const mockResponse: ResumeWorkResponse = {
     goalId: "goal_123",
     objective: "Implement feature",
+    goalContextView: {
+      goal: {
+        goalId: "goal_123",
+        objective: "Implement feature",
+        successCriteria: ["Feature works"],
+        scopeIn: [],
+        scopeOut: [],
+        status: GoalStatus.DOING,
+        version: 3,
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+        claimedBy: "worker_123",
+        progress: [],
+      },
+      context: {
+        components: [],
+        dependencies: [],
+        decisions: [],
+        invariants: [],
+        guidelines: [],
+        architecture: null,
+      },
+    },
     context: {
       session: null,
       context: {

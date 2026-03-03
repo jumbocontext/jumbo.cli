@@ -12,6 +12,7 @@ import { Renderer } from "../../../rendering/Renderer.js";
 import { ResumeWorkResponse } from "../../../../../application/context/work/resume/ResumeWorkResponse.js";
 import { SessionStartTextRenderer } from "../../sessions/start/SessionStartTextRenderer.js";
 import { EnrichedSessionContext } from "../../../../../application/context/sessions/get/EnrichedSessionContext.js";
+import { GoalStartOutputBuilder } from "../../goals/start/GoalStartOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -60,6 +61,10 @@ export async function workResume(
     if (isTextOutput) {
       const textRenderer = new SessionStartTextRenderer();
       const textOutput = textRenderer.render(result.context);
+      const goalStartOutputBuilder = new GoalStartOutputBuilder();
+      const goalInstructions = goalStartOutputBuilder
+        .build(result.goalContextView)
+        .toHumanReadable();
 
       for (const block of textOutput.blocks) {
         if (block) {
@@ -69,6 +74,7 @@ export async function workResume(
 
       renderer.info("---\n");
       renderer.info(renderResumeInstruction(result.context));
+      renderer.info(goalInstructions);
     }
 
     // 3. OUTPUT: Render success
@@ -136,5 +142,6 @@ function buildStructuredResumeOutput(result: ResumeWorkResponse) {
       objective: result.objective,
       status: "doing",
     },
+    resumedGoalContext: result.goalContextView,
   };
 }

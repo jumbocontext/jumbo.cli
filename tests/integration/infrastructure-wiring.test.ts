@@ -138,6 +138,9 @@ describe("Infrastructure Wiring Integration", () => {
   });
 
   it("getAllEvents returns events from all streams", async () => {
+    // Capture baseline: worker identity initialization appends events during build()
+    const baselineEvents = await container.eventStore.getAllEvents();
+
     // Explicit append (command handler pattern)
     await container.eventStore.append({
       type: "Event1",
@@ -154,9 +157,15 @@ describe("Infrastructure Wiring Integration", () => {
     });
 
     const allEvents = await container.eventStore.getAllEvents();
-    expect(allEvents).toHaveLength(2);
+    expect(allEvents).toHaveLength(baselineEvents.length + 2);
+
+    // Filter to only test-appended events for ordering assertion
+    const testEvents = allEvents.filter(
+      (e) => e.type === "Event1" || e.type === "Event2"
+    );
+    expect(testEvents).toHaveLength(2);
     // Should be sorted by timestamp
-    expect(allEvents[0].timestamp).toBe("2025-01-01T00:00:00.000Z");
-    expect(allEvents[1].timestamp).toBe("2025-01-01T01:00:00.000Z");
+    expect(testEvents[0].timestamp).toBe("2025-01-01T00:00:00.000Z");
+    expect(testEvents[1].timestamp).toBe("2025-01-01T01:00:00.000Z");
   });
 });
