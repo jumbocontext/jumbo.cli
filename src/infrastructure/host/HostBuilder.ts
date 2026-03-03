@@ -1263,10 +1263,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const pauseWorkCommandHandler = new PauseWorkCommandHandler(
       workerIdentityReader,
       goalStatusReader,
-      goalPausedEventStore,
-      goalPausedEventStore,
-      goalPausedProjector,
-      eventBus,
+      pauseGoalCommandHandler,
       logger
     );
     const pauseWorkGateway = new LocalPauseWorkGateway(pauseWorkCommandHandler);

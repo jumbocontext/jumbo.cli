@@ -1,10 +1,6 @@
 import { PauseWorkCommand } from "./PauseWorkCommand.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
 import { IGoalStatusReader } from "../../goals/IGoalStatusReader.js";
-import { IGoalPausedEventWriter } from "../../goals/pause/IGoalPausedEventWriter.js";
-import { IGoalPausedEventReader } from "../../goals/pause/IGoalPausedEventReader.js";
-import { IGoalReader } from "../../goals/pause/IGoalReader.js";
-import { IEventBus } from "../../../messaging/IEventBus.js";
 import { PauseGoalCommandHandler } from "../../goals/pause/PauseGoalCommandHandler.js";
 import { PauseGoalCommand } from "../../goals/pause/PauseGoalCommand.js";
 import { GoalPausedReasons } from "../../../../domain/goals/GoalPausedReasons.js";
@@ -29,10 +25,7 @@ export class PauseWorkCommandHandler {
   constructor(
     private readonly workerIdentityReader: IWorkerIdentityReader,
     private readonly goalStatusReader: IGoalStatusReader,
-    private readonly goalPausedEventWriter: IGoalPausedEventWriter,
-    private readonly goalPausedEventReader: IGoalPausedEventReader,
-    private readonly goalReader: IGoalReader,
-    private readonly eventBus: IEventBus,
+    private readonly pauseGoalCommandHandler: PauseGoalCommandHandler,
     private readonly logger: ILogger
   ) {}
 
@@ -62,16 +55,7 @@ export class PauseWorkCommandHandler {
         allClaimedBy: doingGoals.map(g => g.claimedBy)
       };
 
-      // Log to file
       this.logger.error("[PauseWorkCommandHandler] No active goal found for worker", undefined, errorContext);
-
-      // Write to stderr as JSON
-      console.error(JSON.stringify({
-        level: "ERROR",
-        timestamp: new Date().toISOString(),
-        message: "[PauseWorkCommandHandler] No active goal found for worker",
-        context: errorContext
-      }));
 
       throw new Error("No active goal found for current worker");
     }
@@ -81,21 +65,13 @@ export class PauseWorkCommandHandler {
       objective: activeGoal.objective
     });
 
-    // 4. Create PauseGoalCommandHandler with atomic dependencies
-    const pauseGoalCommandHandler = new PauseGoalCommandHandler(
-      this.goalPausedEventWriter,
-      this.goalPausedEventReader,
-      this.goalReader,
-      this.eventBus
-    );
-
-    // 5. Create and execute PauseGoalCommand
+    // 4. Create and execute PauseGoalCommand
     const pauseCommand: PauseGoalCommand = {
       goalId: activeGoal.goalId,
       reason: GoalPausedReasons.WorkPaused
     };
 
-    await pauseGoalCommandHandler.execute(pauseCommand);
+    await this.pauseGoalCommandHandler.execute(pauseCommand);
 
     return {
       goalId: activeGoal.goalId,

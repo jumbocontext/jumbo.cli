@@ -5,11 +5,8 @@
 import { PauseWorkCommandHandler } from "../../../../../src/application/context/work/pause/PauseWorkCommandHandler";
 import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
 import { IGoalStatusReader } from "../../../../../src/application/context/goals/IGoalStatusReader";
-import { IGoalPausedEventWriter } from "../../../../../src/application/context/goals/pause/IGoalPausedEventWriter";
-import { IGoalPausedEventReader } from "../../../../../src/application/context/goals/pause/IGoalPausedEventReader";
-import { IGoalReader } from "../../../../../src/application/context/goals/pause/IGoalReader";
-import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
-import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { PauseGoalCommandHandler } from "../../../../../src/application/context/goals/pause/PauseGoalCommandHandler";
+import { GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalPausedReasons } from "../../../../../src/domain/goals/GoalPausedReasons";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
@@ -18,10 +15,7 @@ import { ILogger } from "../../../../../src/application/logging/ILogger";
 describe("PauseWorkCommandHandler", () => {
   let workerIdentityReader: IWorkerIdentityReader;
   let goalStatusReader: IGoalStatusReader;
-  let goalPausedEventWriter: IGoalPausedEventWriter;
-  let goalPausedEventReader: IGoalPausedEventReader;
-  let goalReader: IGoalReader;
-  let eventBus: IEventBus;
+  let pauseGoalCommandHandler: PauseGoalCommandHandler;
   let logger: ILogger;
   let handler: PauseWorkCommandHandler;
 
@@ -39,26 +33,10 @@ describe("PauseWorkCommandHandler", () => {
       findAll: jest.fn(),
     };
 
-    // Mock event writer
-    goalPausedEventWriter = {
-      append: jest.fn().mockResolvedValue({ nextSeq: 3 }),
-    };
-
-    // Mock event reader
-    goalPausedEventReader = {
-      readStream: jest.fn(),
-    };
-
-    // Mock goal reader
-    goalReader = {
-      findById: jest.fn(),
-    };
-
-    // Mock event bus
-    eventBus = {
-      subscribe: jest.fn(),
-      publish: jest.fn().mockResolvedValue(undefined),
-    };
+    // Mock pause-goal handler
+    pauseGoalCommandHandler = {
+      execute: jest.fn().mockResolvedValue(undefined),
+    } as unknown as PauseGoalCommandHandler;
 
     // Mock logger
     logger = {
@@ -72,10 +50,7 @@ describe("PauseWorkCommandHandler", () => {
     handler = new PauseWorkCommandHandler(
       workerIdentityReader,
       goalStatusReader,
-      goalPausedEventWriter,
-      goalPausedEventReader,
-      goalReader,
-      eventBus,
+      pauseGoalCommandHandler,
       logger
     );
   });
@@ -98,35 +73,6 @@ describe("PauseWorkCommandHandler", () => {
     };
 
     (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([activeGoal]);
-    (goalReader.findById as jest.Mock).mockResolvedValue(activeGoal);
-
-    // Mock event history for PauseGoalCommandHandler
-    const mockHistory = [
-      {
-        type: GoalEventType.ADDED,
-        aggregateId: "goal_123",
-        version: 1,
-        timestamp: "2025-01-01T00:00:00Z",
-        payload: {
-          objective: "Implement feature",
-          successCriteria: ["Feature works"],
-          scopeIn: [],
-          scopeOut: [],
-          
-          status: GoalStatus.TODO,
-        },
-      },
-      {
-        type: GoalEventType.STARTED,
-        aggregateId: "goal_123",
-        version: 2,
-        timestamp: "2025-01-01T01:00:00Z",
-        payload: {
-          status: GoalStatus.DOING,
-        },
-      },
-    ];
-    (goalPausedEventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
 
     // Act
     const result = await handler.execute({});
@@ -135,11 +81,10 @@ describe("PauseWorkCommandHandler", () => {
     expect(result.goalId).toBe("goal_123");
     expect(result.objective).toBe("Implement feature");
     expect(goalStatusReader.findByStatus).toHaveBeenCalledWith(GoalStatus.DOING);
-
-    // Verify pause event was created with WorkPaused reason
-    const appendedEvent = (goalPausedEventWriter.append as jest.Mock).mock.calls[0][0];
-    expect(appendedEvent.type).toBe(GoalEventType.PAUSED);
-    expect(appendedEvent.payload.reason).toBe(GoalPausedReasons.WorkPaused);
+    expect(pauseGoalCommandHandler.execute).toHaveBeenCalledWith({
+      goalId: "goal_123",
+      reason: GoalPausedReasons.WorkPaused,
+    });
   });
 
   it("should throw error when no active goal found for worker", async () => {
@@ -149,6 +94,15 @@ describe("PauseWorkCommandHandler", () => {
     // Act & Assert
     await expect(handler.execute({})).rejects.toThrow(
       "No active goal found for current worker"
+    );
+    expect(logger.error).toHaveBeenCalledWith(
+      "[PauseWorkCommandHandler] No active goal found for worker",
+      undefined,
+      {
+        workerId,
+        doingGoalsCount: 0,
+        allClaimedBy: [],
+      }
     );
   });
 
@@ -174,6 +128,15 @@ describe("PauseWorkCommandHandler", () => {
     // Act & Assert
     await expect(handler.execute({})).rejects.toThrow(
       "No active goal found for current worker"
+    );
+    expect(logger.error).toHaveBeenCalledWith(
+      "[PauseWorkCommandHandler] No active goal found for worker",
+      undefined,
+      {
+        workerId,
+        doingGoalsCount: 1,
+        allClaimedBy: ["other_worker_id"],
+      }
     );
   });
 
@@ -210,35 +173,6 @@ describe("PauseWorkCommandHandler", () => {
     };
 
     (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([otherWorkerGoal, myGoal]);
-    (goalReader.findById as jest.Mock).mockResolvedValue(myGoal);
-
-    // Mock event history
-    const mockHistory = [
-      {
-        type: GoalEventType.ADDED,
-        aggregateId: "goal_mine",
-        version: 1,
-        timestamp: "2025-01-01T00:00:00Z",
-        payload: {
-          objective: "My active goal",
-          successCriteria: ["Criterion"],
-          scopeIn: [],
-          scopeOut: [],
-          
-          status: GoalStatus.TODO,
-        },
-      },
-      {
-        type: GoalEventType.STARTED,
-        aggregateId: "goal_mine",
-        version: 2,
-        timestamp: "2025-01-01T01:00:00Z",
-        payload: {
-          status: GoalStatus.DOING,
-        },
-      },
-    ];
-    (goalPausedEventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
 
     // Act
     const result = await handler.execute({});
@@ -266,38 +200,7 @@ describe("PauseWorkCommandHandler", () => {
     };
 
     (goalStatusReader.findByStatus as jest.Mock).mockResolvedValue([activeGoal]);
-    (goalReader.findById as jest.Mock).mockResolvedValue(activeGoal);
-
-    // Mock event history
-    const mockHistory = [
-      {
-        type: GoalEventType.ADDED,
-        aggregateId: "goal_123",
-        version: 1,
-        timestamp: "2025-01-01T00:00:00Z",
-        payload: {
-          objective: "Test goal",
-          successCriteria: ["Criterion"],
-          scopeIn: [],
-          scopeOut: [],
-          
-          status: GoalStatus.TODO,
-        },
-      },
-      {
-        type: GoalEventType.STARTED,
-        aggregateId: "goal_123",
-        version: 2,
-        timestamp: "2025-01-01T01:00:00Z",
-        payload: {
-          status: GoalStatus.DOING,
-        },
-      },
-    ];
-    (goalPausedEventReader.readStream as jest.Mock).mockResolvedValue(mockHistory);
-
-    // Mock event store failure
-    (goalPausedEventWriter.append as jest.Mock).mockRejectedValue(
+    (pauseGoalCommandHandler.execute as jest.Mock).mockRejectedValue(
       new Error("Event store failure")
     );
 
