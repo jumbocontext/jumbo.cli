@@ -36,7 +36,7 @@ export interface IAgentFileProtocol {
    *
    * Orchestrates configuration for all supported agents by delegating
    * to each agent's dedicated Configurer class and by distributing
-   * all template-managed skills from templates/skills/ into each
+   * all template-managed skills from assets/skills/ into each
    * configured platform skill directory.
    *
    * Behavior:
@@ -66,7 +66,7 @@ export interface IAgentFileProtocol {
    *
    * Orchestrates repair for all supported agents by delegating to each
    * agent's dedicated Configurer class, then overwrites all
-   * template-managed skills from templates/skills/ for each configured
+   * template-managed skills from assets/skills/ for each configured
    * platform directory. Uses repair() if available, otherwise falls
    * back to configure().
    *

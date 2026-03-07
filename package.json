@@ -33,7 +33,7 @@
   },
   "files": [
     "dist",
-    "templates"
+    "assets"
   ],
   "scripts": {
     "generate:commands": "node build/generate-command-registry.mjs",

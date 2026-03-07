@@ -111,6 +111,7 @@ During entity exploration, you may discover:
 - Risk of scope creep
 - Success criteria that need updating
 - Applicable refactoring skills to reference in criteria (prefix with `skill:`)
+- Registered goals that should be added as prerequisites or follow-ups
 
 Update the goal accordingly:
 
@@ -120,7 +121,8 @@ jumbo goal update --id <goal-id> \
   --scope-in "additional/file/path.ts" \
   --scope-out "namespace/" "a/file/to-not-touch.ts" \
   --previous-goal <previous-goal-id> \
-  --next-goal <next-goal-id>
+  --next-goal <next-goal-id> \
+  --prerequisite-goals <goalIds...>
 ```
 
 ### 6. Verify Completeness
