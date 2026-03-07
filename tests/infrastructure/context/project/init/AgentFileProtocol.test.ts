@@ -16,7 +16,7 @@ describe("AgentFileProtocol", () => {
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-agent-files-"));
-    protocol = new AgentFileProtocol(path.join(tmpDir, "templates", "skills"));
+    protocol = new AgentFileProtocol(path.join(tmpDir, "assets", "skills"));
   });
 
   afterEach(async () => {
@@ -143,7 +143,7 @@ describe("AgentFileProtocol", () => {
 
     it("should install template-managed skills to all configured platform skill directories", async () => {
       // Arrange
-      const templateSkillPath = path.join(tmpDir, "templates", "skills", "my-skill");
+      const templateSkillPath = path.join(tmpDir, "assets", "skills", "my-skill");
       await fs.ensureDir(templateSkillPath);
       await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# My Skill\n\nFrom template.\n", "utf-8");
 
@@ -160,7 +160,7 @@ describe("AgentFileProtocol", () => {
 
     it("should keep user-created skills and avoid overwriting managed skills during additive install", async () => {
       // Arrange
-      const templateSkillPath = path.join(tmpDir, "templates", "skills", "managed-skill");
+      const templateSkillPath = path.join(tmpDir, "assets", "skills", "managed-skill");
       await fs.ensureDir(templateSkillPath);
       await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# Managed\n\nTemplate version.\n", "utf-8");
 
@@ -459,7 +459,7 @@ describe("AgentFileProtocol", () => {
     describe("repairAgentConfigurations()", () => {
       it("should overwrite template-managed skills and preserve user-created skills", async () => {
         // Arrange
-        const templateSkillPath = path.join(tmpDir, "templates", "skills", "managed-skill");
+        const templateSkillPath = path.join(tmpDir, "assets", "skills", "managed-skill");
         await fs.ensureDir(templateSkillPath);
         await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# Managed\n\nTemplate current version.\n", "utf-8");
 
@@ -604,9 +604,9 @@ describe("AgentFileProtocol", () => {
   });
 
   describe("getPlannedFileChanges()", () => {
-    it("should include planned skill sync changes when templates are present", async () => {
+    it("should include planned skill sync changes when assets are present", async () => {
       // Arrange
-      const templateSkillPath = path.join(tmpDir, "templates", "skills", "my-skill");
+      const templateSkillPath = path.join(tmpDir, "assets", "skills", "my-skill");
       await fs.ensureDir(templateSkillPath);
       await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# My Skill\n", "utf-8");
 
@@ -618,19 +618,19 @@ describe("AgentFileProtocol", () => {
         expect.arrayContaining([
           expect.objectContaining({
             path: ".agents/skills/my-skill",
-            description: expect.stringContaining("templates/skills"),
+            description: expect.stringContaining("assets/skills"),
           }),
           expect.objectContaining({
             path: ".claude/skills/my-skill",
-            description: expect.stringContaining("templates/skills"),
+            description: expect.stringContaining("assets/skills"),
           }),
           expect.objectContaining({
             path: ".gemini/skills/my-skill",
-            description: expect.stringContaining("templates/skills"),
+            description: expect.stringContaining("assets/skills"),
           }),
           expect.objectContaining({
             path: ".vibe/skills/my-skill",
-            description: expect.stringContaining("templates/skills"),
+            description: expect.stringContaining("assets/skills"),
           }),
         ])
       );

@@ -36,7 +36,7 @@ const DEFAULT_TEMPLATE_SKILLS_ROOT = path.resolve(
   "..",
   "..",
   "..",
-  "templates",
+  "assets",
   "skills"
 );
 
@@ -261,7 +261,7 @@ export class AgentFileProtocol implements IAgentFileProtocol {
             .replace(/\\/g, "/"),
           action: exists ? "modify" : "create",
           description:
-            "Sync Jumbo-managed skill from templates/skills (user-created skills are preserved)",
+            "Sync Jumbo-managed skill from assets/skills (user-created skills are preserved)",
         });
       }
     }

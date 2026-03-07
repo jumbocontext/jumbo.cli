@@ -7,8 +7,8 @@
  * template skills, and settings files up to date.
  *
  * Skill ownership boundary:
- * - Skills from templates/skills/ are Jumbo-managed and may be overwritten on repair
- * - User-created skills (directories not in templates/skills/) are preserved
+ * - Skills from assets/skills/ are Jumbo-managed and may be overwritten on repair
+ * - User-created skills (directories not in assets/skills/) are preserved
  */
 
 import { CommandMetadata } from "../registry/CommandMetadata.js";
