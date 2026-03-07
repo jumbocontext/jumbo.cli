@@ -11,6 +11,20 @@ Complete reference for all Jumbo CLI commands.
 
 | Command Group | Description |
 |---------------|-------------|
-| [Goal Commands](goal.md) | add, start, complete, block, unblock, reset, resume, show, update, remove |
-| [Session Commands](session.md) | start, end |
+| [Goal Commands](goal.md) | add, refine, commit, start, pause, resume, block, unblock, submit, review, approve, reject, codify, close, qualify, reset, update, update-progress, show, remove, list |
+| [Session Commands](session.md) | start, end, list, compact |
 | [Project Commands](project.md) | init, update |
+| [Architecture Commands](architecture.md) | define, update, view |
+| [Component Commands](components.md) | add, show, update, rename, search, list, deprecate, undeprecate, remove |
+| [Decision Commands](decisions.md) | add, list, update, supersede, reverse, restore |
+| [Dependency Commands](dependencies.md) | add, list, update, remove |
+| [Guideline Commands](guidelines.md) | add, list, update, remove |
+| [Invariant Commands](invariants.md) | add, list, update, remove |
+| [Audience Commands](audiences.md) | add, list, update, remove |
+| [Audience Pain Commands](audience-pains.md) | add, list, update |
+| [Value Proposition Commands](value-propositions.md) | add, list, update, remove |
+| [Relation Commands](relations.md) | add, list, remove |
+| [Work Commands](work.md) | pause, resume |
+| [Maintenance Commands](maintenance.md) | heal, evolve |
+| [Telemetry Commands](telemetry.md) | status, enable, disable |
+| [Worker Commands](worker.md) | view |

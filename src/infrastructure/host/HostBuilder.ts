@@ -25,8 +25,8 @@ import { RebuildDatabaseController } from "../../application/maintenance/db/rebu
 import { UpgradeCommandHandler } from "../../application/maintenance/upgrade/UpgradeCommandHandler.js";
 import { MigrateDependenciesCommandHandler } from "../../application/maintenance/migrate-dependencies/MigrateDependenciesCommandHandler.js";
 import { LocalRebuildDatabaseGateway } from "../../application/maintenance/db/rebuild/LocalRebuildDatabaseGateway.js";
-import { RepairController } from "../../application/repair/RepairController.js";
-import { LocalRepairGateway } from "../../application/repair/LocalRepairGateway.js";
+import { EvolveController } from "../../application/evolve/EvolveController.js";
+import { ITelemetryClient } from "../../application/telemetry/ITelemetryClient.js";
 
 // Infrastructure implementations
 import { ProjectRootResolver } from "../context/project/ProjectRootResolver.js";
@@ -39,6 +39,8 @@ import * as path from "path";
 // TEMPORARY: Use sequential rebuild service to avoid race conditions
 // TODO: Swap back to LocalDatabaseRebuildService when Epic/Feature/Task redesign is complete
 import { TemporarySequentialDatabaseRebuildService } from "../local/TemporarySequentialDatabaseRebuildService.js";
+import { MigrationRunner } from "../persistence/MigrationRunner.js";
+import { getNamespaceMigrations } from "../persistence/migrations.config.js";
 
 // Session Event Stores - decomposed by use case
 import { FsSessionStartedEventStore } from "../context/sessions/start/FsSessionStartedEventStore.js";
@@ -269,6 +271,9 @@ import { SqliteSolutionContextReader } from "../SqliteSolutionContextReader.js";
 // Settings Infrastructure
 import { FsSettingsReader } from "../settings/FsSettingsReader.js";
 import { FsSettingsInitializer } from "../settings/FsSettingsInitializer.js";
+import { ProcessTelemetryEnvironmentReader } from "../telemetry/ProcessTelemetryEnvironmentReader.js";
+import { NoOpTelemetryClient } from "../telemetry/NoOpTelemetryClient.js";
+import { PostHogTelemetryClient } from "../telemetry/PostHogTelemetryClient.js";
 
 // Event Handlers (Projection Handlers)
 import { SessionStartedEventHandler } from "../../application/context/sessions/start/SessionStartedEventHandler.js";
@@ -468,6 +473,12 @@ import { LocalShowGoalGateway } from "../../application/context/goals/get/LocalS
 
 // Session Controllers
 import { SessionStartController } from "../../application/context/sessions/start/SessionStartController.js";
+import { GetTelemetryStatusController } from "../../application/context/telemetry/get/GetTelemetryStatusController.js";
+import { LocalGetTelemetryStatusGateway } from "../../application/context/telemetry/get/LocalGetTelemetryStatusGateway.js";
+import { TelemetryConsentStatusResolver } from "../../application/context/telemetry/TelemetryConsentStatusResolver.js";
+import { UpdateTelemetryConsentCommandHandler } from "../../application/context/telemetry/update/UpdateTelemetryConsentCommandHandler.js";
+import { LocalUpdateTelemetryConsentGateway } from "../../application/context/telemetry/update/LocalUpdateTelemetryConsentGateway.js";
+import { UpdateTelemetryConsentController } from "../../application/context/telemetry/update/UpdateTelemetryConsentController.js";
 import { LocalStartSessionGateway } from "../../application/context/sessions/start/LocalStartSessionGateway.js";
 import { EndSessionController } from "../../application/context/sessions/end/EndSessionController.js";
 import { LocalEndSessionGateway } from "../../application/context/sessions/end/LocalEndSessionGateway.js";
@@ -554,10 +565,18 @@ import { GoalClaimPolicy } from "../../application/context/goals/claims/GoalClai
 export class HostBuilder {
   private readonly rootDir: string;
   private readonly db: Database.Database;
+  private readonly registerTelemetryClient:
+    | ((telemetryClient: ITelemetryClient) => void)
+    | undefined;
 
-  constructor(rootDir: string, db: Database.Database) {
+  constructor(
+    rootDir: string,
+    db: Database.Database,
+    registerTelemetryClient?: (telemetryClient: ITelemetryClient) => void
+  ) {
     this.rootDir = rootDir;
     this.db = db;
+    this.registerTelemetryClient = registerTelemetryClient;
   }
 
   /**
@@ -574,7 +593,6 @@ export class HostBuilder {
     // ============================================================
 
     const projectRootResolver = new ProjectRootResolver();
-    const eventStore = new FsEventStore(this.rootDir);
     const eventBus = new InProcessEventBus();
     const clock = new SystemClock();
     const cliVersionReader = new CliVersionReader();
@@ -583,15 +601,35 @@ export class HostBuilder {
     const logFilePath = path.join(this.rootDir, "logs", "jumbo.log");
     const logger = new FileLogger(logFilePath, LogLevel.DEBUG);
 
+    const eventStore = new FsEventStore(this.rootDir, logger);
+
     // Initialize settings file if it doesn't exist
     const settingsInitializer = new FsSettingsInitializer(this.rootDir);
     await settingsInitializer.ensureSettingsFileExists();
 
     const settingsReader = new FsSettingsReader(this.rootDir);
+    const telemetryEnvironmentReader = new ProcessTelemetryEnvironmentReader();
+    const telemetryConsentStatusResolver = new TelemetryConsentStatusResolver();
+    const settings = await settingsReader.read();
+    const telemetryConfigured = await settingsReader.hasTelemetryConfiguration();
+    const telemetryStatus = telemetryConsentStatusResolver.resolve(
+      settings,
+      telemetryConfigured,
+      {
+        ciDetected: telemetryEnvironmentReader.isCiEnvironment(),
+        environmentDisabled:
+          telemetryEnvironmentReader.isTelemetryDisabledByEnvironment(),
+      }
+    );
+    const telemetryClient: ITelemetryClient =
+      telemetryStatus.effectiveEnabled && telemetryStatus.anonymousId !== null
+        ? new PostHogTelemetryClient(telemetryStatus.anonymousId)
+        : new NoOpTelemetryClient();
+    this.registerTelemetryClient?.(telemetryClient);
 
     // Create worker identity components
     const hostSessionKeyResolver = new HostSessionKeyResolver();
-    const workerIdentifiedEventStore = new FsWorkerIdentifiedEventStore(this.rootDir);
+    const workerIdentifiedEventStore = new FsWorkerIdentifiedEventStore(this.rootDir, logger);
     const workerIdentifiedProjector = new SqliteWorkerIdentifiedProjector(this.db);
     const workerIdentityRegistry = new SqliteWorkerIdentityRegistry(
       this.db,
@@ -611,7 +649,8 @@ export class HostBuilder {
     const databaseRebuildService = new TemporarySequentialDatabaseRebuildService(
       this.rootDir,
       this.db,
-      eventStore
+      eventStore,
+      logger
     );
     const rebuildDatabaseGateway = new LocalRebuildDatabaseGateway(databaseRebuildService);
     const rebuildDatabaseController = new RebuildDatabaseController(rebuildDatabaseGateway);
@@ -624,89 +663,82 @@ export class HostBuilder {
     // ============================================================
 
     // Work Category - Session Event Stores - decomposed by use case
-    const sessionStartedEventStore = new FsSessionStartedEventStore(this.rootDir);
-    const sessionEndedEventStore = new FsSessionEndedEventStore(this.rootDir);
+    const sessionStartedEventStore = new FsSessionStartedEventStore(this.rootDir, logger);
+    const sessionEndedEventStore = new FsSessionEndedEventStore(this.rootDir, logger);
     // Goal Event Stores - decomposed by use case
-    const goalAddedEventStore = new FsGoalAddedEventStore(this.rootDir);
-    const goalStartedEventStore = new FsGoalStartedEventStore(this.rootDir);
-    const goalUpdatedEventStore = new FsGoalUpdatedEventStore(this.rootDir);
-    const goalBlockedEventStore = new FsGoalBlockedEventStore(this.rootDir);
-    const goalUnblockedEventStore = new FsGoalUnblockedEventStore(this.rootDir);
-    const goalPausedEventStore = new FsGoalPausedEventStore(this.rootDir);
-    const goalResumedEventStore = new FsGoalResumedEventStore(this.rootDir);
-    const goalCompletedEventStore = new FsGoalCompletedEventStore(this.rootDir);
-    const goalRefinedEventStore = new FsGoalRefinedEventStore(this.rootDir);
-    const goalResetEventStore = new FsGoalResetEventStore(this.rootDir);
-    const goalRemovedEventStore = new FsGoalRemovedEventStore(this.rootDir);
-    const goalProgressUpdatedEventStore = new FsGoalProgressUpdatedEventStore(this.rootDir);
-    const goalSubmittedForReviewEventStore = new FsGoalSubmittedForReviewEventStore(this.rootDir);
-    const goalQualifiedEventStore = new FsGoalQualifiedEventStore(this.rootDir);
-    const goalCommittedEventStore = new FsGoalCommittedEventStore(this.rootDir);
-    const goalRejectedEventStore = new FsGoalRejectedEventStore(this.rootDir);
-    const goalSubmittedEventStore = new FsGoalSubmittedEventStore(this.rootDir);
-    const goalCodifyingStartedEventStore = new FsGoalCodifyingStartedEventStore(this.rootDir);
-    const goalClosedEventStore = new FsGoalClosedEventStore(this.rootDir);
+    const goalAddedEventStore = new FsGoalAddedEventStore(this.rootDir, logger);
+    const goalStartedEventStore = new FsGoalStartedEventStore(this.rootDir, logger);
+    const goalUpdatedEventStore = new FsGoalUpdatedEventStore(this.rootDir, logger);
+    const goalBlockedEventStore = new FsGoalBlockedEventStore(this.rootDir, logger);
+    const goalUnblockedEventStore = new FsGoalUnblockedEventStore(this.rootDir, logger);
+    const goalPausedEventStore = new FsGoalPausedEventStore(this.rootDir, logger);
+    const goalResumedEventStore = new FsGoalResumedEventStore(this.rootDir, logger);
+    const goalCompletedEventStore = new FsGoalCompletedEventStore(this.rootDir, logger);
+    const goalRefinedEventStore = new FsGoalRefinedEventStore(this.rootDir, logger);
+    const goalResetEventStore = new FsGoalResetEventStore(this.rootDir, logger);
+    const goalRemovedEventStore = new FsGoalRemovedEventStore(this.rootDir, logger);
+    const goalProgressUpdatedEventStore = new FsGoalProgressUpdatedEventStore(this.rootDir, logger);
+    const goalSubmittedForReviewEventStore = new FsGoalSubmittedForReviewEventStore(this.rootDir, logger);
+    const goalQualifiedEventStore = new FsGoalQualifiedEventStore(this.rootDir, logger);
+    const goalCommittedEventStore = new FsGoalCommittedEventStore(this.rootDir, logger);
+    const goalRejectedEventStore = new FsGoalRejectedEventStore(this.rootDir, logger);
+    const goalSubmittedEventStore = new FsGoalSubmittedEventStore(this.rootDir, logger);
+    const goalCodifyingStartedEventStore = new FsGoalCodifyingStartedEventStore(this.rootDir, logger);
+    const goalClosedEventStore = new FsGoalClosedEventStore(this.rootDir, logger);
 
     // Solution Category
     // Architecture Event Stores - decomposed by use case
-    const architectureDefinedEventStore = new FsArchitectureDefinedEventStore(this.rootDir);
-    const architectureUpdatedEventStore = new FsArchitectureUpdatedEventStore(this.rootDir);
+    const architectureDefinedEventStore = new FsArchitectureDefinedEventStore(this.rootDir, logger);
+    const architectureUpdatedEventStore = new FsArchitectureUpdatedEventStore(this.rootDir, logger);
     // Component Event Stores - decomposed by use case
-    const componentAddedEventStore = new FsComponentAddedEventStore(this.rootDir);
-    const componentUpdatedEventStore = new FsComponentUpdatedEventStore(this.rootDir);
-    const componentDeprecatedEventStore = new FsComponentDeprecatedEventStore(this.rootDir);
-    const componentUndeprecatedEventStore = new FsComponentUndeprecatedEventStore(this.rootDir);
-    const componentRemovedEventStore = new FsComponentRemovedEventStore(this.rootDir);
-    const componentRenamedEventStore = new FsComponentRenamedEventStore(this.rootDir);
+    const componentAddedEventStore = new FsComponentAddedEventStore(this.rootDir, logger);
+    const componentUpdatedEventStore = new FsComponentUpdatedEventStore(this.rootDir, logger);
+    const componentDeprecatedEventStore = new FsComponentDeprecatedEventStore(this.rootDir, logger);
+    const componentUndeprecatedEventStore = new FsComponentUndeprecatedEventStore(this.rootDir, logger);
+    const componentRemovedEventStore = new FsComponentRemovedEventStore(this.rootDir, logger);
+    const componentRenamedEventStore = new FsComponentRenamedEventStore(this.rootDir, logger);
     // Dependency Event Stores - decomposed by use case
-    const dependencyAddedEventStore = new FsDependencyAddedEventStore(this.rootDir);
-    const dependencyUpdatedEventStore = new FsDependencyUpdatedEventStore(this.rootDir);
-    const dependencyRemovedEventStore = new FsDependencyRemovedEventStore(this.rootDir);
+    const dependencyAddedEventStore = new FsDependencyAddedEventStore(this.rootDir, logger);
+    const dependencyUpdatedEventStore = new FsDependencyUpdatedEventStore(this.rootDir, logger);
+    const dependencyRemovedEventStore = new FsDependencyRemovedEventStore(this.rootDir, logger);
     // Decision Event Stores - decomposed by use case
-    const decisionAddedEventStore = new FsDecisionAddedEventStore(this.rootDir);
-    const decisionUpdatedEventStore = new FsDecisionUpdatedEventStore(this.rootDir);
-    const decisionReversedEventStore = new FsDecisionReversedEventStore(this.rootDir);
-    const decisionRestoredEventStore = new FsDecisionRestoredEventStore(this.rootDir);
-    const decisionSupersededEventStore = new FsDecisionSupersededEventStore(this.rootDir);
+    const decisionAddedEventStore = new FsDecisionAddedEventStore(this.rootDir, logger);
+    const decisionUpdatedEventStore = new FsDecisionUpdatedEventStore(this.rootDir, logger);
+    const decisionReversedEventStore = new FsDecisionReversedEventStore(this.rootDir, logger);
+    const decisionRestoredEventStore = new FsDecisionRestoredEventStore(this.rootDir, logger);
+    const decisionSupersededEventStore = new FsDecisionSupersededEventStore(this.rootDir, logger);
     // Guideline Event Stores - decomposed by use case
-    const guidelineAddedEventStore = new FsGuidelineAddedEventStore(this.rootDir);
-    const guidelineUpdatedEventStore = new FsGuidelineUpdatedEventStore(this.rootDir);
-    const guidelineRemovedEventStore = new FsGuidelineRemovedEventStore(this.rootDir);
+    const guidelineAddedEventStore = new FsGuidelineAddedEventStore(this.rootDir, logger);
+    const guidelineUpdatedEventStore = new FsGuidelineUpdatedEventStore(this.rootDir, logger);
+    const guidelineRemovedEventStore = new FsGuidelineRemovedEventStore(this.rootDir, logger);
     // Invariant Event Stores - decomposed by use case
-    const invariantAddedEventStore = new FsInvariantAddedEventStore(this.rootDir);
-    const invariantUpdatedEventStore = new FsInvariantUpdatedEventStore(this.rootDir);
-    const invariantRemovedEventStore = new FsInvariantRemovedEventStore(this.rootDir);
+    const invariantAddedEventStore = new FsInvariantAddedEventStore(this.rootDir, logger);
+    const invariantUpdatedEventStore = new FsInvariantUpdatedEventStore(this.rootDir, logger);
+    const invariantRemovedEventStore = new FsInvariantRemovedEventStore(this.rootDir, logger);
 
     // Project Knowledge Category
     // Project Event Stores - decomposed by use case
-    const projectInitializedEventStore = new FsProjectInitializedEventStore(this.rootDir);
-    const projectUpdatedEventStore = new FsProjectUpdatedEventStore(this.rootDir);
+    const projectInitializedEventStore = new FsProjectInitializedEventStore(this.rootDir, logger);
+    const projectUpdatedEventStore = new FsProjectUpdatedEventStore(this.rootDir, logger);
     // Project Services
     const agentFileProtocol = new AgentFileProtocol();
-    const repairGateway = new LocalRepairGateway(
-      projectRootResolver,
-      agentFileProtocol,
-      settingsInitializer,
-      databaseRebuildService
-    );
-    const repairController = new RepairController(repairGateway);
     // Audience Event Stores - decomposed by use case
-    const audienceAddedEventStore = new FsAudienceAddedEventStore(this.rootDir);
-    const audienceUpdatedEventStore = new FsAudienceUpdatedEventStore(this.rootDir);
-    const audienceRemovedEventStore = new FsAudienceRemovedEventStore(this.rootDir);
+    const audienceAddedEventStore = new FsAudienceAddedEventStore(this.rootDir, logger);
+    const audienceUpdatedEventStore = new FsAudienceUpdatedEventStore(this.rootDir, logger);
+    const audienceRemovedEventStore = new FsAudienceRemovedEventStore(this.rootDir, logger);
     // AudiencePain Event Stores - decomposed by use case
-    const audiencePainAddedEventStore = new FsAudiencePainAddedEventStore(this.rootDir);
-    const audiencePainUpdatedEventStore = new FsAudiencePainUpdatedEventStore(this.rootDir);
+    const audiencePainAddedEventStore = new FsAudiencePainAddedEventStore(this.rootDir, logger);
+    const audiencePainUpdatedEventStore = new FsAudiencePainUpdatedEventStore(this.rootDir, logger);
 // ValueProposition Event Stores - decomposed by use case
-    const valuePropositionAddedEventStore = new FsValuePropositionAddedEventStore(this.rootDir);
-    const valuePropositionUpdatedEventStore = new FsValuePropositionUpdatedEventStore(this.rootDir);
-    const valuePropositionRemovedEventStore = new FsValuePropositionRemovedEventStore(this.rootDir);
+    const valuePropositionAddedEventStore = new FsValuePropositionAddedEventStore(this.rootDir, logger);
+    const valuePropositionUpdatedEventStore = new FsValuePropositionUpdatedEventStore(this.rootDir, logger);
+    const valuePropositionRemovedEventStore = new FsValuePropositionRemovedEventStore(this.rootDir, logger);
 
     // Relations Category - Event Stores - decomposed by use case
-    const relationAddedEventStore = new FsRelationAddedEventStore(this.rootDir);
-    const relationDeactivatedEventStore = new FsRelationDeactivatedEventStore(this.rootDir);
-    const relationReactivatedEventStore = new FsRelationReactivatedEventStore(this.rootDir);
-    const relationRemovedEventStore = new FsRelationRemovedEventStore(this.rootDir);
+    const relationAddedEventStore = new FsRelationAddedEventStore(this.rootDir, logger);
+    const relationDeactivatedEventStore = new FsRelationDeactivatedEventStore(this.rootDir, logger);
+    const relationReactivatedEventStore = new FsRelationReactivatedEventStore(this.rootDir, logger);
+    const relationRemovedEventStore = new FsRelationRemovedEventStore(this.rootDir, logger);
 
     // ============================================================
     // STEP 3: Create Projection Stores (Read Models)
@@ -953,6 +985,23 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const sessionStartController = new SessionStartController(
       startSessionGateway
     );
+    const getTelemetryStatusGateway = new LocalGetTelemetryStatusGateway(
+      settingsReader,
+      telemetryEnvironmentReader,
+      telemetryConsentStatusResolver
+    );
+    const getTelemetryStatusController = new GetTelemetryStatusController(
+      getTelemetryStatusGateway
+    );
+    const updateTelemetryConsentCommandHandler =
+      new UpdateTelemetryConsentCommandHandler(settingsReader);
+    const updateTelemetryConsentGateway =
+      new LocalUpdateTelemetryConsentGateway(
+        updateTelemetryConsentCommandHandler,
+        telemetryEnvironmentReader
+      );
+    const updateTelemetryConsentController =
+      new UpdateTelemetryConsentController(updateTelemetryConsentGateway);
     const getSessionsGateway = new LocalGetSessionsGateway(sessionViewReader);
     const getSessionsController = new GetSessionsController(
       getSessionsGateway
@@ -1616,6 +1665,18 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       addRelationCommandHandler,
       removeDependencyCommandHandler
     );
+    const infrastructureDir = path.resolve(__dirname, "..");
+    const evolveMigrationRunner = new MigrationRunner(this.db);
+    const evolveController = new EvolveController(
+      () => evolveMigrationRunner.runNamespaceMigrations(getNamespaceMigrations(infrastructureDir)),
+      upgradeCommandHandler,
+      migrateDependenciesCommandHandler,
+      projectRootResolver,
+      agentFileProtocol,
+      settingsInitializer,
+      databaseRebuildService,
+      logger
+    );
 
     // RemoveRelation Controller
     const removeRelationCommandHandler = new RemoveRelationCommandHandler(
@@ -1897,6 +1958,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       logger,
       settingsReader,
       settingsInitializer,
+      telemetryClient,
 
       // Worker Identity
       workerIdentityReader,
@@ -1906,7 +1968,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
 
       // Maintenance Controllers
       rebuildDatabaseController,
-      repairController,
+      evolveController,
       upgradeCommandHandler,
       migrateDependenciesCommandHandler,
 
@@ -1964,6 +2026,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       sessionStartController,
       endSessionController,
       getSessionsController,
+      getTelemetryStatusController,
+      updateTelemetryConsentController,
       // Worker Controllers
       viewWorkerController,
       // Goal Controllers

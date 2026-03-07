@@ -12,4 +12,18 @@ export interface ISettingsReader {
    * @throws Error if file exists but contains invalid JSON
    */
   read(): Promise<Settings>;
+
+  /**
+   * Persist updated settings to .jumbo/settings.jsonc.
+   *
+   * @param settings - The full settings object to persist
+   */
+  write(settings: Settings): Promise<void>;
+
+  /**
+   * Check whether telemetry consent has already been configured in settings.
+   *
+   * Returns false when the telemetry section has never been written.
+   */
+  hasTelemetryConfiguration(): Promise<boolean>;
 }

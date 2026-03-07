@@ -9,12 +9,13 @@
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IGoalCodifyingStartedEventWriter } from "../../../../application/context/goals/codify/IGoalCodifyingStartedEventWriter.js";
 import { IGoalCodifyingStartedEventReader } from "../../../../application/context/goals/codify/IGoalCodifyingStartedEventReader.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsGoalCodifyingStartedEventStore
   extends FsEventStore
   implements IGoalCodifyingStartedEventWriter, IGoalCodifyingStartedEventReader
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

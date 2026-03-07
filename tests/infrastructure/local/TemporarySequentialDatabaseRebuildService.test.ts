@@ -1,6 +1,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import Database from "better-sqlite3";
+import { ILogger } from "../../../src/application/logging/ILogger";
 import { TemporarySequentialDatabaseRebuildService } from "../../../src/infrastructure/local/TemporarySequentialDatabaseRebuildService";
 import { FsEventStore } from "../../../src/infrastructure/persistence/FsEventStore";
 import { GoalEventType, GoalStatus } from "../../../src/domain/goals/Constants";
@@ -55,7 +56,8 @@ describe("TemporarySequentialDatabaseRebuildService", () => {
     dbPath = path.join(tmpDir, "jumbo.db");
     initialDb = new Database(dbPath);
     initialDb.pragma("journal_mode = WAL");
-    eventStore = new FsEventStore(tmpDir);
+    const mockLogger: ILogger = { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() };
+    eventStore = new FsEventStore(tmpDir, mockLogger);
   });
 
   afterEach(async () => {
@@ -77,7 +79,7 @@ describe("TemporarySequentialDatabaseRebuildService", () => {
       },
     });
 
-    const service = new TemporarySequentialDatabaseRebuildService(tmpDir, initialDb, eventStore);
+    const service = new TemporarySequentialDatabaseRebuildService(tmpDir, initialDb, eventStore, { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() } as ILogger);
     const result = await service.rebuild();
 
     expect(result.success).toBe(true);
@@ -136,7 +138,7 @@ describe("TemporarySequentialDatabaseRebuildService", () => {
       },
     });
 
-    const service = new TemporarySequentialDatabaseRebuildService(tmpDir, initialDb, eventStore);
+    const service = new TemporarySequentialDatabaseRebuildService(tmpDir, initialDb, eventStore, { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() } as ILogger);
     const result = await service.rebuild();
 
     expect(result.success).toBe(true);

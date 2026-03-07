@@ -7,12 +7,13 @@
 
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IDependencyAddedEventWriter } from "../../../../application/context/dependencies/add/IDependencyAddedEventWriter.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsDependencyAddedEventStore
   extends FsEventStore
   implements IDependencyAddedEventWriter
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

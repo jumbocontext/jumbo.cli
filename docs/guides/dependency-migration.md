@@ -32,10 +32,10 @@ When `--consumer-id` and `--provider-id` are passed to `jumbo dependency add`:
 
 ## Migration checklist
 
-1. Upgrade your database schema/event mappings:
+1. Run the installation evolution workflow:
 
 ```bash
-> jumbo db upgrade --from v1 --to v2
+> jumbo evolve --yes
 ```
 
 2. Identify automation/scripts still using legacy dependency coupling flags:
@@ -64,7 +64,7 @@ When `--consumer-id` and `--provider-id` are passed to `jumbo dependency add`:
 
 ## Idempotency expectations
 
-- `jumbo db upgrade --from v1 --to v2` is idempotent. Re-running after successful migration applies zero additional status migrations.
+- `jumbo evolve --yes` is idempotent for the embedded goal-status and legacy dependency migration steps. Re-running after a successful evolve does not create duplicate migration events or duplicate relations.
 - Legacy compatibility mapping should be treated as transitional behavior only; move scripts to relation commands to avoid ambiguity and future breakage.
 - Third-party dependency registration is intended to be stable and repeat-safe under the application handler contract.
 
@@ -73,8 +73,8 @@ When `--consumer-id` and `--provider-id` are passed to `jumbo dependency add`:
 ## Rollback and safety notes
 
 - Before migration, create a backup copy of your `.jumbo/` directory.
-- If a migration run is interrupted, restore `.jumbo/` from backup, then re-run `jumbo db upgrade --from v1 --to v2`.
-- Use `jumbo db rebuild --yes` after restore/upgrade when projections need rehydration from the event store.
+- If a migration run is interrupted, restore `.jumbo/` from backup, then re-run `jumbo evolve --yes`.
+- Use `jumbo heal --yes` only when projections need rehydration without the full evolve workflow.
 
 ---
 

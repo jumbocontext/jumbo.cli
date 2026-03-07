@@ -77,7 +77,13 @@ describe("CodifyGoalCommandHandler", () => {
 
     // Mock settings reader
     settingsReader = {
-      read: jest.fn().mockResolvedValue({ claims: { claimDurationMinutes: 120 } }),
+      read: jest.fn().mockResolvedValue({
+        qa: { defaultTurnLimit: 3 },
+        claims: { claimDurationMinutes: 120 },
+        telemetry: { enabled: false, anonymousId: null },
+      }),
+      write: jest.fn(),
+      hasTelemetryConfiguration: jest.fn(),
     };
 
     // Mock goal context query handler

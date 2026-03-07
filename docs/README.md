@@ -31,6 +31,8 @@ Deep-dive tutorials for common workflows.
 | [Goal Management](guides/goal-management.md) | Track and complete work with goals |
 | [Project Initialization](guides/project-initialization.md) | Configure Jumbo for your project |
 | [Session Management](guides/session-management.md) | Manage work sessions effectively |
+| [Dependency Migration](guides/dependency-migration.md) | Migrate legacy coupling dependencies into relations |
+| [Advanced Workflows](guides/advanced-workflows.md) | Command chaining, multi-agent sessions, and efficiency patterns |
 
 ---
 
@@ -40,7 +42,7 @@ Complete command documentation.
 
 | Commands | Description |
 |----------|-------------|
-| [Goal Commands](reference/commands/goal.md) | add, refine, commit, start, pause, resume, block, unblock, submit, review, approve, reject, codify, close, complete, reset, update, update-progress, show, remove, list |
+| [Goal Commands](reference/commands/goal.md) | add, refine, commit, start, pause, resume, block, unblock, submit, review, approve, reject, codify, close, qualify, reset, update, update-progress, show, remove, list |
 | [Session Commands](reference/commands/session.md) | start, end, list, compact |
 | [Project Commands](reference/commands/project.md) | init, update |
 | [Architecture Commands](reference/commands/architecture.md) | define, update, view |
@@ -54,8 +56,20 @@ Complete command documentation.
 | [Value Proposition Commands](reference/commands/value-propositions.md) | add, list, update, remove |
 | [Relation Commands](reference/commands/relations.md) | add, list, remove |
 | [Work Commands](reference/commands/work.md) | pause, resume |
-| [Maintenance Commands](reference/commands/maintenance.md) | db rebuild, db upgrade, repair |
+| [Maintenance Commands](reference/commands/maintenance.md) | heal, evolve |
 | [Worker Commands](reference/commands/worker.md) | view |
+
+See [Reference index](reference/index.md) and [Commands index](reference/commands/index.md) for section landing pages.
+
+---
+
+## Documentation internals
+
+| Page | Description |
+|------|-------------|
+| [Docs Contributing Guide](CONTRIBUTING-DOCS.md) | Frontmatter schema, ordering conventions, and docs structure standards |
+| [Guides Index](guides/index.md) | Landing page for guide content |
+| [Getting Started Index](getting-started/index.md) | Landing page for onboarding content |
 
 ---
 

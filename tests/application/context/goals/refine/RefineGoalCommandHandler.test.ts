@@ -25,7 +25,11 @@ describe("RefineGoalCommandHandler", () => {
     releaseClaim: jest.Mock;
   };
   let workerIdentityReader: { workerId: string };
-  let settingsReader: { read: jest.Mock };
+  let settingsReader: {
+    read: jest.Mock;
+    write: jest.Mock;
+    hasTelemetryConfiguration: jest.Mock;
+  };
   let goalContextQueryHandler: GoalContextQueryHandler;
   let handler: RefineGoalCommandHandler;
 
@@ -78,7 +82,13 @@ describe("RefineGoalCommandHandler", () => {
 
     // Mock settings reader
     settingsReader = {
-      read: jest.fn().mockResolvedValue({ claims: { claimDurationMinutes: 60 } }),
+      read: jest.fn().mockResolvedValue({
+        qa: { defaultTurnLimit: 3 },
+        claims: { claimDurationMinutes: 60 },
+        telemetry: { enabled: false, anonymousId: null },
+      }),
+      write: jest.fn(),
+      hasTelemetryConfiguration: jest.fn(),
     };
 
     // Mock goal context query handler

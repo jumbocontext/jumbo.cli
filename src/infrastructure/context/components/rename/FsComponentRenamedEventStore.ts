@@ -7,12 +7,13 @@
 
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IComponentRenamedEventWriter } from "../../../../application/context/components/rename/IComponentRenamedEventWriter.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsComponentRenamedEventStore
   extends FsEventStore
   implements IComponentRenamedEventWriter
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

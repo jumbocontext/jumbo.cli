@@ -9,12 +9,13 @@
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IRelationRemovedEventWriter } from "../../../../application/context/relations/remove/IRelationRemovedEventWriter.js";
 import { IRelationRemovedEventReader } from "../../../../application/context/relations/remove/IRelationRemovedEventReader.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsRelationRemovedEventStore
   extends FsEventStore
   implements IRelationRemovedEventWriter, IRelationRemovedEventReader
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

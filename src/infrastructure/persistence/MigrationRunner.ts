@@ -10,6 +10,22 @@ interface MigrationRecord {
   path: string;
 }
 
+function hasErrorMessage(error: unknown): error is { message: string } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string"
+  );
+}
+
+function isMissingSchemaMigrationsTableError(error: unknown): boolean {
+  return (
+    hasErrorMessage(error) &&
+    error.message.includes("no such table: schema_migrations")
+  );
+}
+
 /**
  * Manages database schema migrations with namespace-based version tracking.
  *
@@ -24,9 +40,7 @@ interface MigrationRecord {
  * @see docs/work/phase-3/migration-strategy.md
  */
 export class MigrationRunner {
-  constructor(private readonly db: Database) {
-    this.ensureMigrationsTable();
-  }
+  constructor(private readonly db: Database) {}
 
   /**
    * Create schema_migrations table if it doesn't exist.
@@ -54,6 +68,26 @@ export class MigrationRunner {
       .prepare("SELECT namespace, version FROM schema_migrations")
       .all() as Array<{ namespace: string; version: number }>;
     return new Set(rows.map((r) => `${r.namespace}:${r.version}`));
+  }
+
+  /**
+   * Get count of applied migrations without loading every row.
+   *
+   * A missing schema_migrations table means nothing has been applied yet.
+   */
+  private getAppliedMigrationCount(): number {
+    try {
+      const row = this.db
+        .prepare("SELECT COUNT(*) as count FROM schema_migrations")
+        .get() as { count: number };
+      return row.count;
+    } catch (error) {
+      if (isMissingSchemaMigrationsTableError(error)) {
+        return 0;
+      }
+
+      throw error;
+    }
   }
 
   /**
@@ -105,14 +139,20 @@ export class MigrationRunner {
   runNamespaceMigrations(
     namespaceDirs: Array<{ namespace: string; path: string }>
   ): void {
-    const applied = this.getAppliedMigrations();
-
     // Collect all migrations from all namespaces
     const allMigrations: MigrationRecord[] = [];
     for (const { namespace, path: dirPath } of namespaceDirs) {
       const migrations = this.getMigrationsFromDirectory(dirPath, namespace);
       allMigrations.push(...migrations);
     }
+
+    const appliedCount = this.getAppliedMigrationCount();
+    if (appliedCount === allMigrations.length) {
+      return;
+    }
+
+    this.ensureMigrationsTable();
+    const applied = this.getAppliedMigrations();
 
     // Filter to pending migrations
     const pending = allMigrations.filter(
@@ -124,10 +164,10 @@ export class MigrationRunner {
       return;
     }
 
-    console.log(`Running ${pending.length} pending migrations...`);
+    console.error(`Running ${pending.length} pending migrations...`);
 
     for (const migration of pending) {
-      console.log(
+      console.error(
         `  Applying migration ${migration.namespace}:${migration.version} (${migration.name})`
       );
 
@@ -154,12 +194,12 @@ export class MigrationRunner {
           );
       })();
 
-      console.log(
+      console.error(
         `  ✓ Migration ${migration.namespace}:${migration.version} applied successfully`
       );
     }
 
-    console.log("All migrations applied successfully");
+    console.error("All migrations applied successfully");
   }
 
   /**
@@ -168,16 +208,31 @@ export class MigrationRunner {
   verifyNamespaceMigrations(
     namespaceDirs: Array<{ namespace: string; path: string }>
   ): boolean {
-    const applied = this.db
-      .prepare(
-        "SELECT namespace, version, name, checksum FROM schema_migrations ORDER BY namespace, version"
-      )
-      .all() as Array<{
+    let applied: Array<{
       namespace: string;
       version: number;
       name: string;
       checksum: string;
     }>;
+
+    try {
+      applied = this.db
+        .prepare(
+          "SELECT namespace, version, name, checksum FROM schema_migrations ORDER BY namespace, version"
+        )
+        .all() as Array<{
+        namespace: string;
+        version: number;
+        name: string;
+        checksum: string;
+      }>;
+    } catch (error) {
+      if (isMissingSchemaMigrationsTableError(error)) {
+        return true;
+      }
+
+      throw error;
+    }
 
     // Build a map of available migrations by namespace:version
     const availableMap = new Map<string, MigrationRecord>();

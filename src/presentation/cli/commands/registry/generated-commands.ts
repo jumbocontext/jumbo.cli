@@ -38,6 +38,7 @@ import { dependencyAdd, metadata as dependencyAddMeta } from '../../commands/dep
 import { dependenciesList, metadata as dependenciesListMeta } from '../../commands/dependencies/list/dependencies.list.js';
 import { dependencyRemove, metadata as dependencyRemoveMeta } from '../../commands/dependencies/remove/dependency.remove.js';
 import { dependencyUpdate, metadata as dependencyUpdateMeta } from '../../commands/dependencies/update/dependency.update.js';
+import { evolve, metadata as evolveMeta } from '../../commands/evolve/evolve.js';
 import { goalAdd, metadata as goalAddMeta } from '../../commands/goals/add/goal.add.js';
 import { goalApprove, metadata as goalApproveMeta } from '../../commands/goals/approve/goal.approve.js';
 import { goalBlock, metadata as goalBlockMeta } from '../../commands/goals/block/goal.block.js';
@@ -63,24 +64,24 @@ import { guidelineAdd, metadata as guidelineAddMeta } from '../../commands/guide
 import { guidelinesList, metadata as guidelinesListMeta } from '../../commands/guidelines/list/guidelines.list.js';
 import { guidelineRemove, metadata as guidelineRemoveMeta } from '../../commands/guidelines/remove/guideline.remove.js';
 import { guidelineUpdate, metadata as guidelineUpdateMeta } from '../../commands/guidelines/update/guideline.update.js';
+import { heal, metadata as healMeta } from '../../commands/heal/heal.js';
 import { workerView, metadata as workerViewMeta } from '../../commands/host/workers/worker.view.js';
 import { invariantAdd, metadata as invariantAddMeta } from '../../commands/invariants/add/invariant.add.js';
 import { invariantsList, metadata as invariantsListMeta } from '../../commands/invariants/list/invariants.list.js';
 import { invariantRemove, metadata as invariantRemoveMeta } from '../../commands/invariants/remove/invariant.remove.js';
 import { invariantUpdate, metadata as invariantUpdateMeta } from '../../commands/invariants/update/invariant.update.js';
-import { dbRebuild, metadata as dbRebuildMeta } from '../../commands/maintenance/db/rebuild/db.rebuild.js';
-import { dependencyMigrate, metadata as dependencyMigrateMeta } from '../../commands/maintenance/migrate-dependencies/dependency.migrate.js';
-import { dbUpgrade, metadata as dbUpgradeMeta } from '../../commands/maintenance/upgrade/db.upgrade.js';
 import { projectInit, metadata as projectInitMeta } from '../../commands/project/init/project.init.js';
 import { projectUpdate, metadata as projectUpdateMeta } from '../../commands/project/update/project.update.js';
 import { relationAdd, metadata as relationAddMeta } from '../../commands/relations/add/relation.add.js';
 import { relationsList, metadata as relationsListMeta } from '../../commands/relations/list/relations.list.js';
 import { relationRemove, metadata as relationRemoveMeta } from '../../commands/relations/remove/relation.remove.js';
-import { repair, metadata as repairMeta } from '../../commands/repair/repair.js';
 import { sessionCompact, metadata as sessionCompactMeta } from '../../commands/sessions/compact/session.compact.js';
 import { sessionEnd, metadata as sessionEndMeta } from '../../commands/sessions/end/session.end.js';
 import { sessionsList, metadata as sessionsListMeta } from '../../commands/sessions/list/sessions.list.js';
 import { sessionStart, metadata as sessionStartMeta } from '../../commands/sessions/start/session.start.js';
+import { telemetryDisable, metadata as telemetryDisableMeta } from '../../commands/telemetry/disable/telemetry.disable.js';
+import { telemetryEnable, metadata as telemetryEnableMeta } from '../../commands/telemetry/enable/telemetry.enable.js';
+import { telemetryStatus, metadata as telemetryStatusMeta } from '../../commands/telemetry/status/telemetry.status.js';
 import { valueAdd, metadata as valueAddMeta } from '../../commands/value-propositions/add/value.add.js';
 import { valuesList, metadata as valuesListMeta } from '../../commands/value-propositions/list/values.list.js';
 import { valueRemove, metadata as valueRemoveMeta } from '../../commands/value-propositions/remove/value.remove.js';
@@ -235,6 +236,11 @@ export const commands: RegisteredCommand[] = [
     handler: dependencyUpdate
   },
   {
+    path: 'evolve',
+    metadata: evolveMeta,
+    handler: evolve
+  },
+  {
     path: 'goal add',
     metadata: goalAddMeta,
     handler: goalAdd
@@ -360,6 +366,11 @@ export const commands: RegisteredCommand[] = [
     handler: guidelineUpdate
   },
   {
+    path: 'heal',
+    metadata: healMeta,
+    handler: heal
+  },
+  {
     path: 'worker view',
     metadata: workerViewMeta,
     handler: workerView
@@ -383,21 +394,6 @@ export const commands: RegisteredCommand[] = [
     path: 'invariant update',
     metadata: invariantUpdateMeta,
     handler: invariantUpdate
-  },
-  {
-    path: 'db rebuild',
-    metadata: dbRebuildMeta,
-    handler: dbRebuild
-  },
-  {
-    path: 'dependency migrate',
-    metadata: dependencyMigrateMeta,
-    handler: dependencyMigrate
-  },
-  {
-    path: 'db upgrade',
-    metadata: dbUpgradeMeta,
-    handler: dbUpgrade
   },
   {
     path: 'project init',
@@ -425,11 +421,6 @@ export const commands: RegisteredCommand[] = [
     handler: relationRemove
   },
   {
-    path: 'repair',
-    metadata: repairMeta,
-    handler: repair
-  },
-  {
     path: 'session compact',
     metadata: sessionCompactMeta,
     handler: sessionCompact
@@ -448,6 +439,21 @@ export const commands: RegisteredCommand[] = [
     path: 'session start',
     metadata: sessionStartMeta,
     handler: sessionStart
+  },
+  {
+    path: 'telemetry disable',
+    metadata: telemetryDisableMeta,
+    handler: telemetryDisable
+  },
+  {
+    path: 'telemetry enable',
+    metadata: telemetryEnableMeta,
+    handler: telemetryEnable
+  },
+  {
+    path: 'telemetry status',
+    metadata: telemetryStatusMeta,
+    handler: telemetryStatus
   },
   {
     path: 'value add',

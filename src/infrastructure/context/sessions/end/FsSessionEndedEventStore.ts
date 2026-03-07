@@ -9,12 +9,13 @@
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { ISessionEndedEventWriter } from "../../../../application/context/sessions/end/ISessionEndedEventWriter.js";
 import { ISessionEndedEventReader } from "../../../../application/context/sessions/end/ISessionEndedEventReader.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsSessionEndedEventStore
   extends FsEventStore
   implements ISessionEndedEventWriter, ISessionEndedEventReader
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

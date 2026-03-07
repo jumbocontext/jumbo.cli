@@ -7,12 +7,13 @@
 
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IDecisionUpdatedEventWriter } from "../../../../application/context/decisions/update/IDecisionUpdatedEventWriter.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsDecisionUpdatedEventStore
   extends FsEventStore
   implements IDecisionUpdatedEventWriter
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

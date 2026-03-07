@@ -142,6 +142,7 @@ Remove a third-party dependency.
 
 - `--consumer-id` / `--provider-id` are compatibility flags only.
 - Planned removal window: these legacy flags are supported during `v2.x` and removed in `v3.0.0`.
+- Use `jumbo evolve --yes` to migrate legacy coupling-style dependency records into relations during installation updates.
 - For component coupling, use relation commands:
 
 ```bash

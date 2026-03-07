@@ -9,12 +9,13 @@
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IGoalProgressUpdatedEventWriter } from "../../../../application/context/goals/update-progress/IGoalProgressUpdatedEventWriter.js";
 import { IGoalProgressUpdatedEventReader } from "../../../../application/context/goals/update-progress/IGoalProgressUpdatedEventReader.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsGoalProgressUpdatedEventStore
   extends FsEventStore
   implements IGoalProgressUpdatedEventWriter, IGoalProgressUpdatedEventReader
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

@@ -9,12 +9,13 @@
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IDependencyUpdatedEventWriter } from "../../../../application/context/dependencies/update/IDependencyUpdatedEventWriter.js";
 import { IDependencyUpdatedEventReader } from "../../../../application/context/dependencies/update/IDependencyUpdatedEventReader.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsDependencyUpdatedEventStore
   extends FsEventStore
   implements IDependencyUpdatedEventWriter, IDependencyUpdatedEventReader
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

@@ -7,12 +7,13 @@
 
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IAudienceRemovedEventWriter } from "../../../../application/context/audiences/remove/IAudienceRemovedEventWriter.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsAudienceRemovedEventStore
   extends FsEventStore
   implements IAudienceRemovedEventWriter
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

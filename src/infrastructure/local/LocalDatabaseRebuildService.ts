@@ -14,6 +14,7 @@
 import fs from "fs-extra";
 import path from "path";
 import Database from "better-sqlite3";
+import { ILogger } from "../../application/logging/ILogger.js";
 import {
   IDatabaseRebuildService,
   DatabaseRebuildResult,
@@ -22,18 +23,23 @@ import { IEventStore } from "../../application/persistence/IEventStore.js";
 import { IEventBus } from "../../application/messaging/IEventBus.js";
 
 export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
+  private readonly tag = "[DatabaseRebuild]";
+
   constructor(
     private readonly rootDir: string,
     private readonly db: Database.Database,
     private readonly eventStore: IEventStore,
     private readonly eventBus: IEventBus,
-    private readonly reinitialize: () => { db: Database.Database; eventBus: IEventBus }
+    private readonly reinitialize: () => { db: Database.Database; eventBus: IEventBus },
+    private readonly logger: ILogger
   ) {}
 
   async rebuild(): Promise<DatabaseRebuildResult> {
+    this.logger.info(`${this.tag} Starting database rebuild`);
     const dbPath = path.join(this.rootDir, "jumbo.db");
 
     // Step 1: Close existing database connection
+    this.logger.debug(`${this.tag} Closing existing database connection`);
     if (this.db && this.db.open) {
       this.db.pragma("wal_checkpoint(TRUNCATE)");
       this.db.close();
@@ -41,6 +47,7 @@ export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
 
     // Step 2: Delete the database file
     if (await fs.pathExists(dbPath)) {
+      this.logger.debug(`${this.tag} Deleting existing database file`, { dbPath });
       await fs.remove(dbPath);
     }
 
@@ -55,17 +62,31 @@ export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
     }
 
     // Step 3: Reinitialize database (creates new connection with migrations)
+    this.logger.debug(`${this.tag} Reinitializing database with migrations`);
     const { eventBus: newEventBus } = this.reinitialize();
 
     // Step 4: Get all events from event store (file-based, still intact)
+    this.logger.debug(`${this.tag} Loading events from event store`);
     const events = await this.eventStore.getAllEvents();
+    this.logger.info(`${this.tag} Loaded events for replay`, { eventCount: events.length });
 
     // Step 5: Replay each event through the new event bus
     let processedCount = 0;
     for (const event of events) {
-      await newEventBus.publish(event);
-      processedCount++;
+      try {
+        await newEventBus.publish(event);
+        processedCount++;
+      } catch (error) {
+        this.logger.error(`${this.tag} Failed to replay event`, error instanceof Error ? error : undefined, {
+          eventType: event.type,
+          aggregateId: event.aggregateId,
+          processedSoFar: processedCount,
+        });
+        throw error;
+      }
     }
+
+    this.logger.info(`${this.tag} Database rebuild complete`, { eventsReplayed: processedCount });
 
     return {
       eventsReplayed: processedCount,

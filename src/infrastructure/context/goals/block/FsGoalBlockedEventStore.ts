@@ -9,12 +9,13 @@
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IGoalBlockedEventWriter } from "../../../../application/context/goals/block/IGoalBlockedEventWriter.js";
 import { IGoalBlockedEventReader } from "../../../../application/context/goals/block/IGoalBlockedEventReader.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsGoalBlockedEventStore
   extends FsEventStore
   implements IGoalBlockedEventWriter, IGoalBlockedEventReader
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

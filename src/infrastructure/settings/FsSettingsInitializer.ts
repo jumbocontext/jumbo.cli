@@ -28,6 +28,21 @@ export class FsSettingsInitializer implements ISettingsInitializer {
     // Default turn limit for QA iterations on goal completion
     // When this limit is reached, the goal is automatically completed
     "defaultTurnLimit": 3
+  },
+
+  // Claim settings for goal ownership and concurrency control
+  "claims": {
+    // Duration in minutes that a goal claim remains valid
+    // After this duration, the claim expires and another worker can claim the goal
+    "claimDurationMinutes": 30
+  },
+
+  // Telemetry consent and anonymous identity settings
+  "telemetry": {
+    // Whether anonymous usage telemetry is enabled
+    "enabled": false,
+    // Anonymous identifier used after telemetry opt-in
+    "anonymousId": null
   }
 }
 `;

@@ -144,7 +144,6 @@ vite.config.ts.timestamp-*
 # Claude (local)
 .claude/*
 !.claude/settings.json
-!.claude/skills/release
 
 # Github
 .github/*
@@ -156,3 +155,12 @@ nul
 # Planning files
 /planning
 2026-01-*
+
+# Gemini
+.gemini/*
+
+# Mistral Vibe
+.vibe/*
+
+# Agents
+.agents/*

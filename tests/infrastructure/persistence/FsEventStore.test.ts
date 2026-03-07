@@ -2,6 +2,14 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { FsEventStore } from "../../../src/infrastructure/persistence/FsEventStore";
 import { BaseEvent } from "../../../src/domain/BaseEvent";
+import { ILogger } from "../../../src/application/logging/ILogger";
+
+const mockLogger: ILogger = {
+  error: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
+  debug: jest.fn(),
+};
 
 describe("FsEventStore", () => {
   let tmpDir: string;
@@ -9,7 +17,7 @@ describe("FsEventStore", () => {
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-events-"));
-    store = new FsEventStore(tmpDir);
+    store = new FsEventStore(tmpDir, mockLogger);
   });
 
   afterEach(async () => {

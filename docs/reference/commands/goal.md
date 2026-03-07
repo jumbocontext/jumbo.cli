@@ -309,6 +309,30 @@ Approve a goal after successful QA review — transitions from `in-review` to `a
 
 ---
 
+## jumbo goal qualify
+
+Qualify a goal after successful QA review. This command is deprecated and retained for compatibility. Prefer `jumbo goal approve`.
+
+### Synopsis
+
+```bash
+> jumbo goal qualify --id <goalId>
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <goalId>` | ID of the goal to qualify (required) |
+
+### Examples
+
+```bash
+> jumbo goal qualify --id goal_abc123
+```
+
+---
+
 ## jumbo goal reject
 
 Reject a goal after failed QA review — transitions from `in-review` back to `doing`.
@@ -378,30 +402,6 @@ Close a goal after codification is complete — transitions from `codifying` to 
 
 ```bash
 > jumbo goal close --id goal_abc123
-```
-
----
-
-## jumbo goal complete
-
-Mark a goal as completed (shortcut that skips review/codification phases).
-
-### Synopsis
-
-```bash
-> jumbo goal complete --id <goalId>
-```
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `-i, --id <goalId>` | ID of the goal to complete (required) |
-
-### Examples
-
-```bash
-> jumbo goal complete --id goal_abc123
 ```
 
 ---

@@ -46,9 +46,9 @@ Each section has a reserved `sidebar.order` range. **Leave gaps** between values
 
 | Section | Order range | Current assignments |
 |---------|-------------|---------------------|
-| `docs/getting-started/` | 1 -- 10 | 1: Installation, 2: Quickstart, 3: Concepts |
-| `docs/guides/` | 1 -- 10 | 1: Project Initialization, 2: Goal Management, 3: Session Management |
-| `docs/reference/commands/` | 1 -- 20 | 1: Goal, 3: Project, 5: Session |
+| `docs/getting-started/` | 1 -- 10 | 1: Installation, 2: Quickstart, 3: Concepts, 4: What Jumbo Creates |
+| `docs/guides/` | 1 -- 10 | 1: Project Initialization, 2: Goal Management, 3: Session Management, 4: Dependency Migration, 5: Advanced Workflows, 6: Telemetry |
+| `docs/reference/commands/` | 1 -- 20 | 1: Goal, 2: Session, 3: Project, 4: Architecture, 5: Components, 6: Decisions, 7: Dependencies, 8: Guidelines, 9: Invariants, 10: Audiences, 11: Audience Pains, 12: Value Propositions, 13: Relations, 14: Work, 15: Maintenance, 16: Worker, 17: Telemetry |
 
 ### Why gaps?
 
@@ -95,17 +95,35 @@ docs/
 │   ├── index.md                       # Section landing page
 │   ├── installation.md
 │   ├── quickstart.md
-│   └── concepts.md
+│   ├── concepts.md
+│   └── what-jumbo-creates.md
 ├── guides/
 │   ├── index.md                       # Section landing page
 │   ├── project-initialization.md
 │   ├── goal-management.md
-│   └── session-management.md
+│   ├── session-management.md
+│   ├── dependency-migration.md
+│   ├── telemetry.md
+│   └── advanced-workflows.md
 └── reference/
     ├── index.md                       # Section landing page
     └── commands/
         ├── index.md                   # Section landing page
+        ├── architecture.md
+        ├── audience-pains.md
+        ├── audiences.md
+        ├── components.md
+        ├── decisions.md
+        ├── dependencies.md
         ├── goal.md
+        ├── guidelines.md
+        ├── invariants.md
+        ├── maintenance.md
         ├── project.md
-        └── session.md
+        ├── relations.md
+        ├── session.md
+        ├── value-propositions.md
+        ├── telemetry.md
+        ├── work.md
+        └── worker.md
 ```

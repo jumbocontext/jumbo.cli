@@ -7,12 +7,13 @@
 
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IValuePropositionRemovedEventWriter } from "../../../../application/context/value-propositions/remove/IValuePropositionRemovedEventWriter.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsValuePropositionRemovedEventStore
   extends FsEventStore
   implements IValuePropositionRemovedEventWriter
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

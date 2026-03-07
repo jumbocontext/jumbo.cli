@@ -9,12 +9,13 @@
 import { FsEventStore } from "../../../persistence/FsEventStore.js";
 import { IGoalCommitEventWriter } from "../../../../application/context/goals/commit/IGoalCommitEventWriter.js";
 import { IGoalCommitEventReader } from "../../../../application/context/goals/commit/IGoalCommitEventReader.js";
+import { ILogger } from "../../../../application/logging/ILogger.js";
 
 export class FsGoalCommittedEventStore
   extends FsEventStore
   implements IGoalCommitEventWriter, IGoalCommitEventReader
 {
-  constructor(rootDir: string) {
-    super(rootDir);
+  constructor(rootDir: string, logger: ILogger) {
+    super(rootDir, logger);
   }
 }

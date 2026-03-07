@@ -161,8 +161,12 @@ Spread some ❤️ and sponsor the projects or buy them a cup of coffee. I have.
 | [Quickstart](docs/getting-started/quickstart.md) | Get running in 5 minutes |
 | [Installation](docs/getting-started/installation.md) | Prerequisites and setup |
 | [Concepts](docs/getting-started/concepts.md) | Understand sessions, goals, and context |
+| [What Jumbo Creates](docs/getting-started/what-jumbo-creates.md) | Generated files, folders, and local state |
 | [Goal Management](docs/guides/goal-management.md) | Complete guide to tracking work |
+| [Project Initialization](docs/guides/project-initialization.md) | Configure Jumbo for your project |
+| [Session Management](docs/guides/session-management.md) | Manage pause, resume, and session continuity |
 | [Dependency Migration](docs/guides/dependency-migration.md) | Migrate legacy coupling flags to relations |
+| [Advanced Workflows](docs/guides/advanced-workflows.md) | Command chaining and multi-agent collaboration patterns |
 | [Command Reference](docs/reference/) | Full command documentation |
 
 

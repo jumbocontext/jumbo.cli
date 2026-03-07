@@ -33,6 +33,34 @@ import { CLI_FLAGS, ARGV } from "./Constants.js";
  */
 type InvocationType = "banner" | "help" | "version" | "command";
 
+const CLI_COMMAND_EXECUTED_EVENT = "cli_command_executed";
+const PROCESS_EXIT_ERROR_TYPE = "ProcessExit";
+const SUCCESS_EXIT_CODE = 0;
+const FAILURE_EXIT_CODE = 1;
+
+class ProcessExitSignal {
+  readonly exitCode: number;
+
+  constructor(code?: string | number | null) {
+    this.exitCode = ProcessExitSignal.normalizeExitCode(code);
+  }
+
+  private static normalizeExitCode(code?: string | number | null): number {
+    if (typeof code === "number" && Number.isFinite(code)) {
+      return code;
+    }
+
+    if (typeof code === "string") {
+      const parsed = Number.parseInt(code, 10);
+      if (!Number.isNaN(parsed)) {
+        return parsed;
+      }
+    }
+
+    return SUCCESS_EXIT_CODE;
+  }
+}
+
 /**
  * Classifies the CLI invocation type from process arguments.
  *
@@ -146,26 +174,125 @@ export class AppRunner {
         renderer.error(
           "No Jumbo project found. Run `jumbo project init` from your project root."
         );
-        process.exit(1);
+        process.exit(FAILURE_EXIT_CODE);
       }
     }
 
-    try {
-      // Apply commands WITH container
+    const commandName = this.resolveTelemetryCommandName(
+      argv,
+      classification.commandPath
+    );
+
+    await this.executeCommandWithTelemetry(commandName, async () => {
       const applicator = new CommanderApplicator();
       applicator.apply(program, commands, this.container ?? undefined);
-
-      // Parse and execute command
       await program.parseAsync(argv);
+    });
+  }
+
+  private async executeCommandWithTelemetry(
+    commandName: string,
+    execute: () => Promise<void>
+  ): Promise<void> {
+    const startedAt = process.hrtime.bigint();
+    const originalProcessExit = process.exit.bind(process);
+    process.exit = ((code?: string | number | null): never => {
+      throw new ProcessExitSignal(code);
+    }) as typeof process.exit;
+
+    try {
+      await execute();
+      this.trackCommandTelemetry(commandName, startedAt, true);
     } catch (error) {
+      if (error instanceof ProcessExitSignal) {
+        this.trackCommandTelemetry(
+          commandName,
+          startedAt,
+          error.exitCode === SUCCESS_EXIT_CODE,
+          error.exitCode === SUCCESS_EXIT_CODE ? undefined : PROCESS_EXIT_ERROR_TYPE
+        );
+
+        await this.shutdownTelemetryClient();
+        originalProcessExit(error.exitCode);
+      }
+
+      this.trackCommandTelemetry(
+        commandName,
+        startedAt,
+        false,
+        this.resolveErrorType(error)
+      );
+
       const renderer = Renderer.getInstance();
       renderer.error(
         "Command failed",
         error instanceof Error ? error : String(error)
       );
-      process.exit(1);
+
+      await this.shutdownTelemetryClient();
+      originalProcessExit(FAILURE_EXIT_CODE);
+    } finally {
+      process.exit = originalProcessExit as typeof process.exit;
     }
-    // Note: No finally block needed for cleanup.
-    // Host handles resource disposal via process signal handlers.
+  }
+
+  private resolveTelemetryCommandName(
+    argv: string[],
+    classifiedCommandPath: string | null
+  ): string {
+    if (classifiedCommandPath !== null) {
+      return classifiedCommandPath;
+    }
+
+    const positionalArgs = argv
+      .slice(ARGV.COMMAND_START_INDEX)
+      .filter((arg) => !arg.startsWith(CLI_FLAGS.FLAG_PREFIX));
+
+    return positionalArgs.slice(0, 2).join(" ") || "unknown";
+  }
+
+  private trackCommandTelemetry(
+    commandName: string,
+    startedAt: bigint,
+    success: boolean,
+    errorType?: string
+  ): void {
+    if (!this.container) {
+      return;
+    }
+    const durationMs = Number(
+      (process.hrtime.bigint() - startedAt) / BigInt(1_000_000)
+    );
+
+    this.container.telemetryClient.track(CLI_COMMAND_EXECUTED_EVENT, {
+      commandName,
+      cliVersion: this.version,
+      nodeVersion: process.version,
+      osPlatform: process.platform,
+      osArch: process.arch,
+      success,
+      durationMs,
+      ...(errorType ? { errorType } : {}),
+    });
+  }
+
+  private resolveErrorType(error: unknown): string {
+    if (error instanceof Error && error.name.length > 0) {
+      return error.name;
+    }
+
+    return "UnknownError";
+  }
+
+  private async shutdownTelemetryClient(): Promise<void> {
+    if (!this.container) {
+      return;
+    }
+
+    try {
+      await this.container.telemetryClient.shutdown();
+    } catch {
+      // Telemetry must never affect command termination.
+    }
   }
 }

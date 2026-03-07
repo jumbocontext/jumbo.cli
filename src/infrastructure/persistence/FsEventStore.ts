@@ -1,5 +1,7 @@
 import fs from "fs-extra";
+import os from "os";
 import path from "path";
+import { ILogger } from "../../application/logging/ILogger.js";
 import { IEventStore, AppendResult } from "../../application/persistence/IEventStore";
 import { BaseEvent } from "../../domain/BaseEvent";
 
@@ -12,7 +14,12 @@ type StoredEvent = BaseEvent & {
 };
 
 export class FsEventStore implements IEventStore {
-  constructor(private readonly rootDir: string) {}
+  private readonly tag = "[FsEventStore]";
+
+  constructor(
+    private readonly rootDir: string,
+    private readonly logger: ILogger
+  ) {}
 
   async append(e: BaseEvent & Record<string, any>): Promise<AppendResult> {
     const streamDir = this.streamDir(e.aggregateId);
@@ -25,7 +32,11 @@ export class FsEventStore implements IEventStore {
     const filename = `${String(nextSeq).padStart(6, "0")}.${e.type}.json`;
     const filepath = path.join(streamDir, filename);
 
-    await fs.writeFile(filepath, JSON.stringify(storedEvent, null, 2));
+    // Atomic write: write to temp file then rename to prevent corruption
+    // from concurrent processes or interrupted writes.
+    const tmpPath = path.join(os.tmpdir(), `jumbo-event-${Date.now()}-${Math.random().toString(36).slice(2)}.tmp`);
+    await fs.writeFile(tmpPath, JSON.stringify(storedEvent, null, 2));
+    await fs.move(tmpPath, filepath, { overwrite: true });
 
     return { nextSeq };
   }
@@ -42,11 +53,20 @@ export class FsEventStore implements IEventStore {
 
     for (const file of files.sort()) {
       const filepath = path.join(streamDir, file);
-      const content = await fs.readFile(filepath, "utf-8");
-      const storedEvent: StoredEvent = JSON.parse(content);
-      // Strip infrastructure metadata before returning domain event
-      const { seq: _seq, ...domainEvent } = storedEvent;
-      events.push(domainEvent as BaseEvent);
+      try {
+        const content = await fs.readFile(filepath, "utf-8");
+        if (!content.trim()) {
+          this.logger.warn(`${this.tag} Skipping empty event file`, { filepath });
+          continue;
+        }
+        const storedEvent: StoredEvent = JSON.parse(content);
+        // Strip infrastructure metadata before returning domain event
+        const { seq: _seq, ...domainEvent } = storedEvent;
+        events.push(domainEvent as BaseEvent);
+      } catch (error) {
+        this.logger.error(`${this.tag} Skipping corrupt event file`, error instanceof Error ? error : undefined, { filepath });
+        continue;
+      }
     }
 
     return events;
@@ -56,10 +76,12 @@ export class FsEventStore implements IEventStore {
     const eventsRoot = path.join(this.rootDir, "events");
 
     if (!(await fs.pathExists(eventsRoot))) {
+      this.logger.debug(`${this.tag} No events directory found`, { eventsRoot });
       return [];
     }
 
     const aggregateDirs = await fs.readdir(eventsRoot);
+    this.logger.debug(`${this.tag} Loading events from all streams`, { streamCount: aggregateDirs.length });
     const allEvents: BaseEvent[] = [];
 
     for (const aggregateId of aggregateDirs) {
@@ -67,6 +89,7 @@ export class FsEventStore implements IEventStore {
       allEvents.push(...streamEvents);
     }
 
+    this.logger.info(`${this.tag} Loaded all events`, { totalEvents: allEvents.length });
     // readStream already strips seq, so these are pure domain events
     return allEvents.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
   }
