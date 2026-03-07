@@ -24,6 +24,29 @@ import { GeminiConfigurer } from "./GeminiConfigurer.js";
 import { CopilotConfigurer } from "./CopilotConfigurer.js";
 import { GitHubHooksConfigurer } from "./GitHubHooksConfigurer.js";
 
+interface SkillPlatformConfiguration {
+  readonly platformId: string;
+  readonly skillsDirectoryRelativePath: string;
+}
+
+const DEFAULT_TEMPLATE_SKILLS_ROOT = path.resolve(
+  __dirname,
+  "..",
+  "..",
+  "..",
+  "..",
+  "..",
+  "templates",
+  "skills"
+);
+
+const SKILL_PLATFORM_CONFIGURATIONS: SkillPlatformConfiguration[] = [
+  { platformId: "agents", skillsDirectoryRelativePath: path.join(".agents", "skills") },
+  { platformId: "claude", skillsDirectoryRelativePath: path.join(".claude", "skills") },
+  { platformId: "gemini", skillsDirectoryRelativePath: path.join(".gemini", "skills") },
+  { platformId: "vibe", skillsDirectoryRelativePath: path.join(".vibe", "skills") },
+];
+
 export class AgentFileProtocol implements IAgentFileProtocol {
   private readonly configurers: IConfigurer[] = [
     new ClaudeConfigurer(),
@@ -31,6 +54,8 @@ export class AgentFileProtocol implements IAgentFileProtocol {
     new CopilotConfigurer(),
     new GitHubHooksConfigurer(),
   ];
+
+  constructor(private readonly templateSkillsRoot: string = DEFAULT_TEMPLATE_SKILLS_ROOT) {}
 
   /**
    * Ensure AGENTS.md exists with Jumbo instructions
@@ -72,6 +97,8 @@ export class AgentFileProtocol implements IAgentFileProtocol {
     for (const configurer of this.configurers) {
       await configurer.configure(projectRoot);
     }
+
+    await this.installSkillsFromTemplates(projectRoot);
   }
 
   /**
@@ -116,6 +143,8 @@ export class AgentFileProtocol implements IAgentFileProtocol {
         await configurer.configure(projectRoot);
       }
     }
+
+    await this.repairSkillsFromTemplates(projectRoot);
   }
 
   /**
@@ -138,6 +167,118 @@ export class AgentFileProtocol implements IAgentFileProtocol {
       changes.push(...configurerChanges);
     }
 
+    const skillChanges = await this.getSkillPlannedFileChanges(projectRoot);
+    changes.push(...skillChanges);
+
     return changes;
+  }
+
+  private async installSkillsFromTemplates(projectRoot: string): Promise<void> {
+    const templateSkillNames = await this.getTemplateSkillNames();
+    if (templateSkillNames.length === 0) {
+      return;
+    }
+
+    for (const platformConfiguration of SKILL_PLATFORM_CONFIGURATIONS) {
+      const platformSkillsRoot = path.join(
+        projectRoot,
+        platformConfiguration.skillsDirectoryRelativePath
+      );
+      await fs.ensureDir(platformSkillsRoot);
+
+      for (const skillName of templateSkillNames) {
+        const sourceSkillDirectory = path.join(this.templateSkillsRoot, skillName);
+        const destinationSkillDirectory = path.join(platformSkillsRoot, skillName);
+
+        try {
+          await fs.copy(sourceSkillDirectory, destinationSkillDirectory, {
+            overwrite: false,
+            errorOnExist: false,
+          });
+        } catch (error) {
+          console.warn(
+            `Warning: Failed to install template skill '${skillName}' for ${platformConfiguration.platformId}: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          );
+        }
+      }
+    }
+  }
+
+  private async repairSkillsFromTemplates(projectRoot: string): Promise<void> {
+    const templateSkillNames = await this.getTemplateSkillNames();
+    if (templateSkillNames.length === 0) {
+      return;
+    }
+
+    for (const platformConfiguration of SKILL_PLATFORM_CONFIGURATIONS) {
+      const platformSkillsRoot = path.join(
+        projectRoot,
+        platformConfiguration.skillsDirectoryRelativePath
+      );
+      await fs.ensureDir(platformSkillsRoot);
+
+      for (const skillName of templateSkillNames) {
+        const sourceSkillDirectory = path.join(this.templateSkillsRoot, skillName);
+        const destinationSkillDirectory = path.join(platformSkillsRoot, skillName);
+
+        try {
+          await fs.remove(destinationSkillDirectory);
+          await fs.copy(sourceSkillDirectory, destinationSkillDirectory, {
+            overwrite: true,
+            errorOnExist: false,
+          });
+        } catch (error) {
+          console.warn(
+            `Warning: Failed to repair template skill '${skillName}' for ${platformConfiguration.platformId}: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          );
+        }
+      }
+    }
+  }
+
+  private async getSkillPlannedFileChanges(projectRoot: string): Promise<PlannedFileChange[]> {
+    const templateSkillNames = await this.getTemplateSkillNames();
+    if (templateSkillNames.length === 0) {
+      return [];
+    }
+
+    const changes: PlannedFileChange[] = [];
+    for (const platformConfiguration of SKILL_PLATFORM_CONFIGURATIONS) {
+      for (const skillName of templateSkillNames) {
+        const destinationSkillDirectory = path.join(
+          projectRoot,
+          platformConfiguration.skillsDirectoryRelativePath,
+          skillName
+        );
+        const exists = await fs.pathExists(destinationSkillDirectory);
+        changes.push({
+          path: path
+            .join(platformConfiguration.skillsDirectoryRelativePath, skillName)
+            .replace(/\\/g, "/"),
+          action: exists ? "modify" : "create",
+          description:
+            "Sync Jumbo-managed skill from templates/skills (user-created skills are preserved)",
+        });
+      }
+    }
+
+    return changes;
+  }
+
+  private async getTemplateSkillNames(): Promise<string[]> {
+    const exists = await fs.pathExists(this.templateSkillsRoot);
+    if (!exists) {
+      return [];
+    }
+
+    const entries = await fs.readdir(this.templateSkillsRoot, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort((left, right) => left.localeCompare(right));
   }
 }

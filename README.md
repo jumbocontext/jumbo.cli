@@ -2,160 +2,162 @@
   <img src="jumbo-logo.svg" alt="Jumbo" width="200">
 </p>
 
-<h1 align="center">Jumbo - Memory for Coding Agents</h1>
+# Jumbo
+**Goal-driven development workflows for coding agents**
 
-<p align="center">
-  Use Jumbo. <br>
-  Focus on goals, not context.
-</p>
+Jumbo is a CLI tool that gives your coding agents persistent memory and structured project context, turning them from makers of workable prototypes into builders of production-quality software.
 
-<p align="center">
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#faqs">FAQs</a>
-</p>
+_An elephant never forgets. Neither should <img src="assets/claude-logo.svg" alt="Claude Code" height="16"> <img src="assets/codex-logo.svg" alt="Codex" height="16"> <img src="assets/gemini-logo.svg" alt="Gemini" height="16"> <img src="assets/github-copilot-logo.svg" alt="Copilot CLI" height="16"> <img src="assets/mistral-logo.svg" alt="Mistral Vibe CLI" height="16"> <img src="assets/cursor-logo.svg" alt="Cursor" height="16"> <img src="assets/vscode-logo.svg" alt="VS Code" height="16"> <img src="assets/amp-logo.svg" alt="Amp" height="16"> <img src="assets/warp-logo.svg" alt="Warp" height="16">_
 
----
 
 ## Can we address the elephant in the room?
+<sub style="color:#898989">(a.k.a. What problems does this solve?)</sub>
 
-Face it, working with coding agents is not ALL fun.  
-One step back for every two forward is not a productivity boost.  
-It's a hassle.
+Working with coding agents is amazing. But let's be honest, it' not without frustration. Here are the common issues:
 
-Context engineering alleviates the pain, but has you focused on the wrong things.
+- **Agent Amnesia**: It's a thing. Every session that came before is forgotten. You spend time and energy getting the agent caught up before you even start thinking about your goals.
 
+- **Slop**: AI without guardrails can produce code that *kind of* works, but it’s rarely production-ready. Worse, it can leave behind a mess that takes hours to untangle. That’s not a productivity boost — it’s a hassle.
+
+- **Vendor lock-in**: If an agent harness holds your memory, switching tools means losing that context. With new models and tools shipping every week, switching is inevitable. Your context should move with you.
 
 ## How does Jumbo help?
 
-Jumbo is a CLI tool that gives your coding agent memory like an... well, <span style="font-size: 1.5rem;">🐘</span>. <br>
-It keeps your agent on track, and you focused on what you want to build.
+Jumbo was created to address these frustrations and unlock the full joy of coding with agents.
 
-### Seen in Action
+- **Memory:** Details about your project are saved, so your agents always have the correct context. Agent Amnesia is, well...forgotten. 
 
-**Before Jumbo:**
+- **Quality:** Your coding agents write shippable code on the first shot. You save time and tokens.  
+  
+- **Interoperability:** Jumbo is harness- and model-agnostic.   
 
-```
-Monday - Claude Code CLI:
-You: 
-   "I'm building an Event Driven distributed system..."
-Claude: 
-   *helps for 2 hours*
+- **Portability:** Switch to new models when they're released. Your context stays with you.
 
-Tuesday - New chat:
-You: 
-   "Continue working on my Event Driven distributed system"
-Claude: 
-   "What Event Driven distributed system? Can you describe your project?"
-You: 
-   *spends 20 minutes re-explaining everything*
-```
+- **Orchestration:** Run different agents in parallel. Optimize for capability and cost. Jumbo keeps everything in sync.
 
-**After Jumbo:**
+Those solve the core problems. These make Jumbo pleasant to use:
 
-```
-Monday - Claude Code CLI:
-You: 
-   "I'm building an Event Driven distributed system..."
-Claude: 
-   *helps for 2 hours*
+- **Extended context windows**: Run agents longer without context rot.<sup>*</sup>
 
-Tuesday - New chat (or different AI tool):
-You: 
-   "Hi"  
-Claude:
-   "Hi! I can see we have 2 planned goals ready to work on:
+- **Automatic**: Hooks into your agent session and orchestrates the flow. It just works.
 
-     - Model the Auth domain
-     - Implement Auth abstractions
+- **Full control**: Jumbo's memories are yours. Stay in control and manage your data directly from the terminal.
 
-    Would you like to start with one of these goals, or did you have something else in mind?"
-```
+- **Private**: All data stays local. Nothing leaves your machine.
 
-### Seen in Benefits
-- **Tracks project details**  
-Important aspects of you project are stored, retrievable, and mutable.  
-<sub>(see below)</sub>
+- **Fast**: No network calls. No lag. Everything runs locally.
 
-- **Delivers optimized context**  
-Agents receive the context they need to work aligned with YOUR criteria.
+<sup>*</sup> <sub>Only works for harnesses that support hooks.</sub>
 
-- **Portable**  
-Switch models, or move from CLI to IDE, without interruption. Jumbo stays with you project and knows exactly where you left off.
-
-- **Extends context windows**  
-Optimal context delivery lets agents work longer.
-
-- **Automatic**  
-Hooks into your agent session and orchestrates the flow. It just works.
-
-- **Full control**  
-Jumbo's memories are yours. Stay in control and manage your data directly from the terminal.
-
-- **Private**  
-All data stays local. Nothing leaves your machine.
-
-- **Fast**  
-No network calls. No lag. Works instantaneously.  
-
-
-## What's in the trunk?
-Jumbo models memories as the following aggregates:
-
-- **Project**
-What you are building and who it's for.
-- **Architecture**
-Your solution design, structure and patterns applied.
-- **Components**
-The parts comprising your solution and their roles.
-- **Dependencies**
-Third-party packages and external services your project relies on (for example `better-sqlite3`, Stripe API).  
-Component-to-component coupling belongs in **Relations**.
-- **Decisions**
-A history of why you chose what you chose.
-- **Guidelines**
-The preferences, best practices, and the standards you adhere to.
-- **Invariants**
-The rules you simply won't compromise on.
-- **Audiences**
-Who uses your product and their priorities.
-- **Audience Pains**
-The problems your audiences face that you aim to solve.
-- **Value Propositions**
-How your product addresses each audience pain.
-- **Relations**
-Connections between goals and knowledge entities for targeted context delivery.
-- **Goals**
-What you're working on—a 13-state lifecycle with refinement, review, and codification phases.
-- **Sessions**
-Manage work continuity with pause, resume, compact, and multi-agent support.
-- **Maintenance**
-Repair agent configuration and rebuild projections when needed.
-- **Context Packets**
-Optimized context packets delivered to your AI agents.
-
-
----
 
 ## Quick Start
 
-```bash
-# Install globally
-npm install -g jumbo-cli
+Install Jumbo:
 
-# Initialize in your project
-jumbo init
-```
+`npm install -g jumbo-cli`
 
-That's it. Jumbo will guide you through the rest. Fire up your coding agent next and they'll use Jumbo automatically.
+Initialize it in your project:
 
----
+`jumbo init`
+
+Then start your coding agent as usual. Jumbo will automatically orient the agent about your project and available goals.
+
+See the [Quickstart](docs/getting-started/quickstart.md) guide for the full workflow.
+
+## Compatibility
+Jumbo seamlessly integrates with all frontier harnesses and models. Use them interchangeably or in parallel. 
+
+It also works with any agent that supports [AGENTS.md](https://agents.md) and truly excels with harnesses that support [open agent skills](https://agentskills.io). 
+
+Use Jumbo in a harness that supports hooks and you'll never think about context windows again.
+
+## How does it work?
+It's simple. You just define your goals — describe your objective, criteria, and scope. Then run your agents and Jumbo guides them through the workflow:
+
+1. **Refine:** Your agent collaborates with Jumbo to couple all relevant memories to your goal and build a context packet ready for the agent to implement.
+2. **Implement:** Jumbo serves a curated context packet to your agent when it starts work on your goal.
+3. **Review:** Your agent reviews the goal against criteria and project specification. Non-passing goals are rejected and queued for reimplementation.
+4. **Codify:** Agents update documentation, change logs, and register any missing details that need to be preserved for future goals.
+
+You don't have to remember all these steps. Jumbo hooks into your agent sessions and guides the entire flow.
+
+Every time you start Claude Code (or similar) Jumbo will orient the agent about the state of your project. The agent will prompt you with an overview of planned work and ask what you want to work on. Just point at a goal and watch the magic happen.
+
+
+## What's in the trunk?
+Jumbo remembers:
+
+Your domain:
+- **Project**: What you are building and who it's for. 
+- **Relations**: The connections between all Jumbo's memories.
+- **Audiences**: Who uses your project and their priorities.
+- **Audience Pains**: The problems your audiences face that you aim to solve.
+- **Value Propositions**: How your product addresses each audience pain. 
+
+Your solution:
+- **Architecture**: Your solution design, structure, and patterns applied.
+- **Components**: The parts comprising your solution and their roles.
+- **Dependencies**: Third-party packages and external services your project relies on. 
+- **Decisions**: History of why you chose what you chose.
+- **Guidelines**: Preferences, best practices, and the standards you adhere to.
+- **Invariants**: Rules you simply won't compromise on.  
+- **Relations**: The graph that ties it all together.  
+
+Your operations:
+- **Goals**: The specifics - objective, criteria, scope, boundaries, and contextual relations.
+- **Sessions**: Manage work continuity with pause, resume, compact, and multi-agent support.
+
+## Architecture
+
+Jumbo follows **Clean Screaming Architecture** — four layers, strict dependency rules, and file names that tell you exactly what they do.
+
+- **Domain**: Aggregates, events, and policies. Zero dependencies on anything outside.
+- **Application**: Command handlers, controllers, and gateway abstractions. Orchestrates the workflows.
+- **Infrastructure**: Event store, SQLite projections, and gateway implementations. The concrete stuff.
+- **Presentation**: CLI commands and output builders. Parses input, formats output, stays in its lane.
+
+Dependencies always point inward. Swap out the infrastructure and nothing else notices.
+
+Core patterns:
+
+- **Event Sourcing**: Every state change is a domain event, appended to an immutable JSONL log. Full history, full replay.
+- **CQRS**: Writes produce events through command handlers. Reads come from SQLite views. Each side is optimized independently.
+- **DDD**: One aggregate per bounded context. Domain events live next to their entity. Business rules stay pure.
+- **Gateway Pattern**: Controllers talk to abstractions. Infrastructure provides the implementations. Wired up at startup via Inversify.
+
+Data lives in two stores:
+
+- **Event store**: Append-only JSONL files. Human-readable. The source of truth.
+- **SQLite**: Fast read views projected from the event stream. Rebuildable anytime with `jumbo db rebuild`.
+
+When your agent starts a goal, Jumbo assembles a context packet on the fly — pulling in the components, decisions, guidelines, invariants, and architecture linked to that goal through relations. No stale caches. Always current.
+
+### Built with
+
+- **Core Libraries:**
+  - [`better-sqlite3`](https://github.com/WiseLibs/better-sqlite3) : Read-model projections
+  - [`commander`](https://github.com/tj/commander.js) : CLI framework
+  - [`inversify`](https://github.com/inversify/monorepo) + [`reflect-metadata`](https://github.com/rbuckton/reflect-metadata) : Dependency injection
+  - [`yaml`](https://github.com/eemeli/yaml) : Context serialization
+- **Terminal UI:**
+  - [`ink`](https://github.com/vadimdemedes/ink) + [`react`](https://github.com/facebook/react) : Interactive terminal UI
+  - [`inquirer`](https://github.com/SBoudrias/Inquirer.js) : CLI prompts
+  - [`chalk`](https://github.com/chalk/chalk) : Terminal styling
+  - [`boxen`](https://github.com/sindresorhus/boxen) : Terminal boxes
+- **Utilities:**
+  - [`date-fns`](https://github.com/date-fns/date-fns) : Date formatting
+  - [`fast-glob`](https://github.com/mrmlnc/fast-glob) : File pattern matching
+  - [`fs-extra`](https://github.com/jprichardson/node-fs-extra) : File system utilities
+  - [`jsonc-parser`](https://github.com/microsoft/node-jsonc-parser) : JSON with comments parsing
+  - [`ulid`](https://github.com/ulid/javascript) : Time-sortable unique IDs
+  - [`uuid`](https://github.com/uuidjs/uuid) : Unique identifiers
+
+Spread some ❤️ and sponsor the projects or buy them a cup of coffee. I have.
 
 ## Documentation
 
 | Resource | Description |
-|----------|-------------|
+| --- | --- |
 | [Quickstart](docs/getting-started/quickstart.md) | Get running in 5 minutes |
 | [Installation](docs/getting-started/installation.md) | Prerequisites and setup |
 | [Concepts](docs/getting-started/concepts.md) | Understand sessions, goals, and context |
@@ -163,75 +165,71 @@ That's it. Jumbo will guide you through the rest. Fire up your coding agent next
 | [Dependency Migration](docs/guides/dependency-migration.md) | Migrate legacy coupling flags to relations |
 | [Command Reference](docs/reference/) | Full command documentation |
 
----
-
-## Dependencies
-
-Jumbo is built with:
-
-| Package | Purpose |
-|---------|---------|
-| better-sqlite3 | Local event store and projections |
-| commander | CLI framework |
-| chalk | Terminal styling |
-| yaml | Context serialization |
-| inversify | Dependency injection |
-| ulid | Time-sortable unique IDs |
-
----
 
 ## FAQs
 
-**How does jumbo integrate with my AI agent?**
+<details>
+<summary>How does jumbo integrate with my AI agent?</summary>
 
-Through hooks. Your agent calls `jumbo session start` at the beginning of a session, and `jumbo` injects relevant project context. A richer context packet is delivered to the agent when it starts work on a goal. New insights are captured in the natural flow of your agent conversations.
+Through hooks, with fallback to AGENTS.md. Your agent calls `jumbo session start` at the beginning of a session, and Jumbo injects relevant project context. A richer context packet is delivered to the agent when it starts work on a goal. New insights are captured in the natural flow of your agent conversations.
+</details>
 
-**What if I change agents or models?**
+<details>
+<summary>What if I change agents or models?</summary>
 
-Change agents and models at will. `jumbo` just picks up where you left off.
+Change agents and models at will. Jumbo just picks up where you left off.
+</details>
 
-**What coding agents does jumbo work with?**
+<details>
+<summary>What coding agents does jumbo work with?</summary>
 
-`jumbo` has been battle tested with Claude Code, GitHub Copilot, and Gemini. More to be verified soon...
+Jumbo has been battle-tested with Claude Code, GitHub Copilot, and Gemini. More are to be verified soon...
+</details>
 
-**What IDEs are supported?**
+<details>
+<summary>What IDEs are supported?</summary>
 
-Theoretically, any IDE with an integrated coding agent should work. VS Code running GitHub Copilot has been tested and works well with all supported models. Cursor to be verified soon...
+Theoretically, any IDE with an integrated coding agent that supports hooks or AGENTS.md should work. VS Code running GitHub Copilot has been tested and works well with all supported models. Cursor is to be verified soon...
+</details>
 
-**Where is data stored?**
+<details>
+<summary>Where is data stored?</summary>
 
-Locally, in `.jumbo/` within your project. Nothing leaves your machine unless you want it to.
+Locally, in `.jumbo/` in your project. Nothing leaves your machine unless you want it to.
+</details>
 
-**Can I control what data Jumbo captures?**  
+<details>
+<summary>Can I control what data Jumbo captures?</summary>
 
-Absolutely. You control how you want your agent to interact with Jumbo. Stay in-the-loop by approving each command, or run with pre-approved Jumbo commands for an automated experience.
+Absolutely. You can manage Jumbo directly from the CLI. You control how you want your agent to interact with Jumbo. Stay in the loop by approving each command, or run with pre-approved Jumbo commands for an automated experience.
+</details>
 
-**Is Jumbo going to hijack my agent?**  
+<details>
+<summary>Is Jumbo going to hijack my agent?</summary> 
 
 Not at all. Jumbo prescribes an opinionated workflow that you can always bypass. It works alongside your agent to enhance its capabilities.  
+</details>
 
-**Why not just use markdown files?**  
+<details>
+<summary>Why not just use markdown files?</summary>  
 
 Jumbo goes beyond static markdown files. It's an immutable event stream—capturing your entire project history, always current and auditable. You stay in your flow, never repeat yourself—only add new information when you need to. Markdown is a snapshot in time, Jumbo is your project's living memory.
+</details>
 
-**Can I share context across a team?**
+<details>
+<summary>Can I share context across a team?</summary>
 
-Not yet. A teams version is coming soon.
+Jumbo adds the `.jumbo/` folder to your `.gitignore` by default. Jumbo employs the event sourcing pattern under the hood, and it is likely to result in conflicts if shared between the team.
 
-If you're feeling bold, you can try committing `.jumbo/` directory to your repository—not recommended though. Without very tight coordination you're bound to encounter problems. `jumbo` uses Event Sourcing under the hood, working asynchronously will definitely result in out-of-sequence events. 
+Love Jumbo and want to use it in your team? A cloud version is coming soon. Sign up to get notified when it's launched [here](https://jumbocontext.com/herd).
+</details>
 
-<!-- **Why not just use comments or docs?**
-
-You can do that, but the amount of context window consumed while your agent crawls your repo for background information leaves little context budget for executing the task precisely. You risk auto-compression and the agent going awry. gure out how to execute a given task, leaves little   They also don't capture vital lessons learned in the context of your 'conversations'  Jumbo is dynamic—it knows what you're working on *right now* and surfaces relevant context automatically. Jumbo let's you focus on what you want to achieve, the background just comes automatically.
-
----
 
 ## License
 
 [AGPL-3.0](LICENSE)
 
----
 
 <p align="center">
-  Built with 🪄 in Copenhagen for devs who are tired of repeating themselves, by devs who are tired of the same.
+  Built in Copenhagen for devs who are tired of repeating themselves, by a dev who was tired of the same.
 </p>

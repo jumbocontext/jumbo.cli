@@ -34,7 +34,7 @@ export class LocalRepairGateway implements IRepairGateway {
       steps.push({ name: "AGENTS.md", status: "skipped" });
     }
 
-    // Step 2: Repair agent configurations (CLAUDE.md, GEMINI.md, copilot, hooks, settings)
+    // Step 2: Repair agent configurations (CLAUDE.md, GEMINI.md, copilot, hooks, managed skills, settings)
     if (request.doAgents) {
       try {
         await this.agentFileProtocol.repairAgentConfigurations(projectRoot);

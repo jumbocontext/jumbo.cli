@@ -12,10 +12,11 @@ import { CopilotInstructionsContent } from "../../../../../src/domain/project/Co
 describe("AgentFileProtocol", () => {
   let tmpDir: string;
   let protocol: AgentFileProtocol;
+  const skillPlatforms = [".agents/skills", ".claude/skills", ".gemini/skills", ".vibe/skills"];
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-agent-files-"));
-    protocol = new AgentFileProtocol();
+    protocol = new AgentFileProtocol(path.join(tmpDir, "templates", "skills"));
   });
 
   afterEach(async () => {
@@ -119,6 +120,70 @@ describe("AgentFileProtocol", () => {
   });
 
   describe("ensureAgentConfigurations()", () => {
+    it("should install skills from template root outside project root", async () => {
+      // Arrange
+      const externalTemplateRoot = await fs.mkdtemp(path.join(process.cwd(), "external-template-skills-"));
+      protocol = new AgentFileProtocol(externalTemplateRoot);
+
+      const externalSkillPath = path.join(externalTemplateRoot, "external-skill");
+      await fs.ensureDir(externalSkillPath);
+      await fs.writeFile(path.join(externalSkillPath, "SKILL.md"), "# External Skill\n", "utf-8");
+
+      // Act
+      await protocol.ensureAgentConfigurations(tmpDir);
+
+      // Assert
+      for (const platformSkillRoot of skillPlatforms) {
+        const installedSkillPath = path.join(tmpDir, platformSkillRoot, "external-skill", "SKILL.md");
+        expect(await fs.pathExists(installedSkillPath)).toBe(true);
+      }
+
+      await fs.remove(externalTemplateRoot);
+    });
+
+    it("should install template-managed skills to all configured platform skill directories", async () => {
+      // Arrange
+      const templateSkillPath = path.join(tmpDir, "templates", "skills", "my-skill");
+      await fs.ensureDir(templateSkillPath);
+      await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# My Skill\n\nFrom template.\n", "utf-8");
+
+      // Act
+      await protocol.ensureAgentConfigurations(tmpDir);
+
+      // Assert
+      for (const platformSkillRoot of skillPlatforms) {
+        const installedSkillPath = path.join(tmpDir, platformSkillRoot, "my-skill", "SKILL.md");
+        expect(await fs.pathExists(installedSkillPath)).toBe(true);
+        expect(await fs.readFile(installedSkillPath, "utf-8")).toContain("From template.");
+      }
+    });
+
+    it("should keep user-created skills and avoid overwriting managed skills during additive install", async () => {
+      // Arrange
+      const templateSkillPath = path.join(tmpDir, "templates", "skills", "managed-skill");
+      await fs.ensureDir(templateSkillPath);
+      await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# Managed\n\nTemplate version.\n", "utf-8");
+
+      const userSkillPath = path.join(tmpDir, ".claude", "skills", "my-custom-skill");
+      await fs.ensureDir(userSkillPath);
+      await fs.writeFile(path.join(userSkillPath, "SKILL.md"), "# User\n\nKeep me.\n", "utf-8");
+
+      const managedSkillPath = path.join(tmpDir, ".claude", "skills", "managed-skill");
+      await fs.ensureDir(managedSkillPath);
+      await fs.writeFile(path.join(managedSkillPath, "SKILL.md"), "# Managed\n\nLocal customization.\n", "utf-8");
+
+      // Act
+      await protocol.ensureAgentConfigurations(tmpDir);
+
+      // Assert
+      const userSkillContent = await fs.readFile(path.join(userSkillPath, "SKILL.md"), "utf-8");
+      expect(userSkillContent).toContain("Keep me.");
+
+      const managedSkillContent = await fs.readFile(path.join(managedSkillPath, "SKILL.md"), "utf-8");
+      expect(managedSkillContent).toContain("Local customization.");
+      expect(managedSkillContent).not.toContain("Template version.");
+    });
+
     it("should create CLAUDE.md with AGENTS.md reference", async () => {
       // Act
       await protocol.ensureAgentConfigurations(tmpDir);
@@ -392,6 +457,32 @@ describe("AgentFileProtocol", () => {
     });
 
     describe("repairAgentConfigurations()", () => {
+      it("should overwrite template-managed skills and preserve user-created skills", async () => {
+        // Arrange
+        const templateSkillPath = path.join(tmpDir, "templates", "skills", "managed-skill");
+        await fs.ensureDir(templateSkillPath);
+        await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# Managed\n\nTemplate current version.\n", "utf-8");
+
+        const managedSkillPath = path.join(tmpDir, ".agents", "skills", "managed-skill");
+        await fs.ensureDir(managedSkillPath);
+        await fs.writeFile(path.join(managedSkillPath, "SKILL.md"), "# Managed\n\nOutdated version.\n", "utf-8");
+
+        const userSkillPath = path.join(tmpDir, ".agents", "skills", "my-custom-skill");
+        await fs.ensureDir(userSkillPath);
+        await fs.writeFile(path.join(userSkillPath, "SKILL.md"), "# User\n\nKeep me.\n", "utf-8");
+
+        // Act
+        await protocol.repairAgentConfigurations(tmpDir);
+
+        // Assert
+        const repairedManagedContent = await fs.readFile(path.join(managedSkillPath, "SKILL.md"), "utf-8");
+        expect(repairedManagedContent).toContain("Template current version.");
+        expect(repairedManagedContent).not.toContain("Outdated version.");
+
+        const preservedUserContent = await fs.readFile(path.join(userSkillPath, "SKILL.md"), "utf-8");
+        expect(preservedUserContent).toContain("Keep me.");
+      });
+
       it("should call repair on each configurer", async () => {
         // Act
         await protocol.repairAgentConfigurations(tmpDir);
@@ -509,6 +600,40 @@ describe("AgentFileProtocol", () => {
       expect(claudeSettings.hooks.SessionStart.length).toBe(2);
       expect(claudeSettings.hooks.SessionStart[0].hooks.length).toBe(1);
       expect(claudeSettings.hooks.SessionStart[1].hooks.length).toBe(1);
+    });
+  });
+
+  describe("getPlannedFileChanges()", () => {
+    it("should include planned skill sync changes when templates are present", async () => {
+      // Arrange
+      const templateSkillPath = path.join(tmpDir, "templates", "skills", "my-skill");
+      await fs.ensureDir(templateSkillPath);
+      await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# My Skill\n", "utf-8");
+
+      // Act
+      const changes = await protocol.getPlannedFileChanges(tmpDir);
+
+      // Assert
+      expect(changes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: ".agents/skills/my-skill",
+            description: expect.stringContaining("templates/skills"),
+          }),
+          expect.objectContaining({
+            path: ".claude/skills/my-skill",
+            description: expect.stringContaining("templates/skills"),
+          }),
+          expect.objectContaining({
+            path: ".gemini/skills/my-skill",
+            description: expect.stringContaining("templates/skills"),
+          }),
+          expect.objectContaining({
+            path: ".vibe/skills/my-skill",
+            description: expect.stringContaining("templates/skills"),
+          }),
+        ])
+      );
     });
   });
 });

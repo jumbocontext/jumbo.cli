@@ -3,8 +3,12 @@
  *
  * Re-injects current-version agent configuration files and optionally
  * rebuilds the database. Use after upgrading Jumbo CLI to bring
- * AGENTS.md, CLAUDE.md, GEMINI.md, copilot-instructions.md, and
- * settings files up to date.
+ * AGENTS.md, CLAUDE.md, GEMINI.md, copilot-instructions.md, managed
+ * template skills, and settings files up to date.
+ *
+ * Skill ownership boundary:
+ * - Skills from templates/skills/ are Jumbo-managed and may be overwritten on repair
+ * - User-created skills (directories not in templates/skills/) are preserved
  */
 
 import { CommandMetadata } from "../registry/CommandMetadata.js";
@@ -24,7 +28,8 @@ export const metadata: CommandMetadata = {
     },
     {
       flags: "--no-agents",
-      description: "Skip agent file repair (AGENTS.md, CLAUDE.md, GEMINI.md, etc.)",
+      description:
+        "Skip agent file repair (AGENTS.md, CLAUDE.md, GEMINI.md, managed template skills, etc.)",
     },
     {
       flags: "--no-settings",

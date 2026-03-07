@@ -8,7 +8,7 @@
  * 4. Persists event to event store
  * 5. Publishes event to event bus for projection updates
  * 6. Creates/updates AGENTS.md with Jumbo instructions
- * 7. Configures all supported agents (markdown files, settings, hooks)
+ * 7. Configures all supported agents (markdown files, settings, hooks, template-managed skills)
  * 8. Ensures .gitignore excludes Jumbo internal state
  */
 

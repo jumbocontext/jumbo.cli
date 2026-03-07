@@ -48,7 +48,8 @@ export class RepairOutputBuilder {
   buildConfirmationRequired(): TerminalOutput {
     this.builder.reset();
     this.builder.addPrompt(
-      "⚠️  This will update agent configuration files and optionally rebuild the database.\n" +
+      "⚠️  This will update agent configuration files (including template-managed skills) and optionally rebuild the database.\n" +
+      "Template-managed skills may be overwritten to the latest template version; user-created skills are preserved.\n" +
       "Use --yes flag to proceed."
     );
     return this.builder.build();

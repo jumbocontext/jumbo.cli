@@ -35,11 +35,13 @@ export interface IAgentFileProtocol {
    * Ensure all supported agents are configured for Jumbo.
    *
    * Orchestrates configuration for all supported agents by delegating
-   * to each agent's dedicated Configurer class, which encapsulates
-   * all knowledge about that agent's requirements.
+   * to each agent's dedicated Configurer class and by distributing
+   * all template-managed skills from templates/skills/ into each
+   * configured platform skill directory.
    *
    * Behavior:
    * - Delegates to each agent's Configurer
+   * - Installs template-managed skills additively for each platform
    * - Each Configurer handles its own error recovery
    * - Failures in one agent don't affect others
    *
@@ -63,8 +65,10 @@ export interface IAgentFileProtocol {
    * Repair all supported agent configurations.
    *
    * Orchestrates repair for all supported agents by delegating to each
-   * agent's dedicated Configurer class. Uses repair() if available,
-   * otherwise falls back to configure().
+   * agent's dedicated Configurer class, then overwrites all
+   * template-managed skills from templates/skills/ for each configured
+   * platform directory. Uses repair() if available, otherwise falls
+   * back to configure().
    *
    * @param projectRoot Absolute path to project root directory
    */
