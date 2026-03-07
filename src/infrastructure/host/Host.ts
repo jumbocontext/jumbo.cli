@@ -22,6 +22,7 @@
 
 import Database from "better-sqlite3";
 import path from "path";
+import { ITelemetryClient } from "../../application/telemetry/ITelemetryClient.js";
 import { HostBuilder } from "./HostBuilder.js";
 import { MigrationRunner } from "../persistence/MigrationRunner.js";
 import { getNamespaceMigrations } from "../persistence/migrations.config.js";
@@ -29,6 +30,8 @@ import { getNamespaceMigrations } from "../persistence/migrations.config.js";
 export class Host {
   private readonly rootDir: string;
   private db: Database.Database | null = null;
+  private telemetryClient: ITelemetryClient | null = null;
+  private telemetryShutdownPromise: Promise<void> | null = null;
   private disposed = false;
   private signalHandlersRegistered = false;
 
@@ -68,7 +71,9 @@ export class Host {
     const migrationRunner = new MigrationRunner(this.db);
     migrationRunner.runNamespaceMigrations(migrations);
 
-    return new HostBuilder(this.rootDir, this.db);
+    return new HostBuilder(this.rootDir, this.db, (telemetryClient) => {
+      this.telemetryClient = telemetryClient;
+    });
   }
 
   /**
@@ -88,21 +93,29 @@ export class Host {
     }
 
     const cleanup = () => {
-      this.cleanup();
+      this.cleanupSync();
     };
+
+    const cleanupAsync = async () => {
+      await this.cleanupAsync();
+    };
+
+    process.on("beforeExit", () => {
+      void cleanupAsync();
+    });
 
     // Handle normal exit
     process.on("exit", cleanup);
 
     // Handle Ctrl+C
-    process.on("SIGINT", () => {
-      cleanup();
+    process.on("SIGINT", async () => {
+      await cleanupAsync();
       process.exit(130); // Standard exit code for SIGINT
     });
 
     // Handle kill command
-    process.on("SIGTERM", () => {
-      cleanup();
+    process.on("SIGTERM", async () => {
+      await cleanupAsync();
       process.exit(143); // Standard exit code for SIGTERM
     });
 
@@ -115,17 +128,60 @@ export class Host {
    * This method is idempotent and safe to call multiple times.
    * It is called automatically by signal handlers.
    */
-  private cleanup(): void {
+  private cleanupSync(): void {
     if (this.disposed) {
       return;
     }
 
-    if (this.db && this.db.open) {
-      this.db.pragma("wal_checkpoint(TRUNCATE)");
-      this.db.close();
+    this.disposed = true;
+    void this.shutdownTelemetry();
+    this.closeDatabase();
+  }
+
+  private async cleanupAsync(): Promise<void> {
+    if (this.disposed) {
+      await this.awaitTelemetryShutdown();
+      return;
     }
 
     this.disposed = true;
+    await this.shutdownTelemetry();
+    this.closeDatabase();
+  }
+
+  private async shutdownTelemetry(): Promise<void> {
+    if (this.telemetryShutdownPromise !== null) {
+      await this.telemetryShutdownPromise;
+      return;
+    }
+
+    if (this.telemetryClient === null) {
+      return;
+    }
+
+    this.telemetryShutdownPromise = this.telemetryClient.shutdown()
+      .catch(() => {
+        // Telemetry must never affect host shutdown.
+      })
+      .finally(() => {
+        this.telemetryClient = null;
+      });
+
+    await this.telemetryShutdownPromise;
+  }
+
+  private async awaitTelemetryShutdown(): Promise<void> {
+    if (this.telemetryShutdownPromise !== null) {
+      await this.telemetryShutdownPromise;
+    }
+  }
+
+  private closeDatabase(): void {
+    if (this.db && this.db.open) {
+      this.db.pragma("wal_checkpoint(TRUNCATE)");
+      this.db.close();
+      this.db = null;
+    }
   }
 
   /**
@@ -138,6 +194,6 @@ export class Host {
    * Safe to call multiple times (idempotent).
    */
   dispose(): void {
-    this.cleanup();
+    this.cleanupSync();
   }
 }

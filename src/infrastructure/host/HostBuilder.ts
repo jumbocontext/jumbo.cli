@@ -273,6 +273,7 @@ import { FsSettingsReader } from "../settings/FsSettingsReader.js";
 import { FsSettingsInitializer } from "../settings/FsSettingsInitializer.js";
 import { ProcessTelemetryEnvironmentReader } from "../telemetry/ProcessTelemetryEnvironmentReader.js";
 import { NoOpTelemetryClient } from "../telemetry/NoOpTelemetryClient.js";
+import { PostHogTelemetryClient } from "../telemetry/PostHogTelemetryClient.js";
 
 // Event Handlers (Projection Handlers)
 import { SessionStartedEventHandler } from "../../application/context/sessions/start/SessionStartedEventHandler.js";
@@ -564,10 +565,18 @@ import { GoalClaimPolicy } from "../../application/context/goals/claims/GoalClai
 export class HostBuilder {
   private readonly rootDir: string;
   private readonly db: Database.Database;
+  private readonly registerTelemetryClient:
+    | ((telemetryClient: ITelemetryClient) => void)
+    | undefined;
 
-  constructor(rootDir: string, db: Database.Database) {
+  constructor(
+    rootDir: string,
+    db: Database.Database,
+    registerTelemetryClient?: (telemetryClient: ITelemetryClient) => void
+  ) {
     this.rootDir = rootDir;
     this.db = db;
+    this.registerTelemetryClient = registerTelemetryClient;
   }
 
   /**
@@ -600,7 +609,22 @@ export class HostBuilder {
     const settingsReader = new FsSettingsReader(this.rootDir);
     const telemetryEnvironmentReader = new ProcessTelemetryEnvironmentReader();
     const telemetryConsentStatusResolver = new TelemetryConsentStatusResolver();
-    const telemetryClient: ITelemetryClient = new NoOpTelemetryClient();
+    const settings = await settingsReader.read();
+    const telemetryConfigured = await settingsReader.hasTelemetryConfiguration();
+    const telemetryStatus = telemetryConsentStatusResolver.resolve(
+      settings,
+      telemetryConfigured,
+      {
+        ciDetected: telemetryEnvironmentReader.isCiEnvironment(),
+        environmentDisabled:
+          telemetryEnvironmentReader.isTelemetryDisabledByEnvironment(),
+      }
+    );
+    const telemetryClient: ITelemetryClient =
+      telemetryStatus.effectiveEnabled && telemetryStatus.anonymousId !== null
+        ? new PostHogTelemetryClient(telemetryStatus.anonymousId)
+        : new NoOpTelemetryClient();
+    this.registerTelemetryClient?.(telemetryClient);
 
     // Create worker identity components
     const hostSessionKeyResolver = new HostSessionKeyResolver();
