@@ -54,7 +54,7 @@ export const metadata: CommandMetadata = {
       description: "Only rebuild the database",
     },
   ],
-  related: ["db rebuild", "project init"],
+  related: ["heal", "project init"],
 };
 
 interface RepairOptions {

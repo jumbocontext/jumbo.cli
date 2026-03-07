@@ -63,12 +63,12 @@ import { guidelineAdd, metadata as guidelineAddMeta } from '../../commands/guide
 import { guidelinesList, metadata as guidelinesListMeta } from '../../commands/guidelines/list/guidelines.list.js';
 import { guidelineRemove, metadata as guidelineRemoveMeta } from '../../commands/guidelines/remove/guideline.remove.js';
 import { guidelineUpdate, metadata as guidelineUpdateMeta } from '../../commands/guidelines/update/guideline.update.js';
+import { heal, metadata as healMeta } from '../../commands/heal/heal.js';
 import { workerView, metadata as workerViewMeta } from '../../commands/host/workers/worker.view.js';
 import { invariantAdd, metadata as invariantAddMeta } from '../../commands/invariants/add/invariant.add.js';
 import { invariantsList, metadata as invariantsListMeta } from '../../commands/invariants/list/invariants.list.js';
 import { invariantRemove, metadata as invariantRemoveMeta } from '../../commands/invariants/remove/invariant.remove.js';
 import { invariantUpdate, metadata as invariantUpdateMeta } from '../../commands/invariants/update/invariant.update.js';
-import { dbRebuild, metadata as dbRebuildMeta } from '../../commands/maintenance/db/rebuild/db.rebuild.js';
 import { dependencyMigrate, metadata as dependencyMigrateMeta } from '../../commands/maintenance/migrate-dependencies/dependency.migrate.js';
 import { dbUpgrade, metadata as dbUpgradeMeta } from '../../commands/maintenance/upgrade/db.upgrade.js';
 import { projectInit, metadata as projectInitMeta } from '../../commands/project/init/project.init.js';
@@ -363,6 +363,11 @@ export const commands: RegisteredCommand[] = [
     handler: guidelineUpdate
   },
   {
+    path: 'heal',
+    metadata: healMeta,
+    handler: heal
+  },
+  {
     path: 'worker view',
     metadata: workerViewMeta,
     handler: workerView
@@ -386,11 +391,6 @@ export const commands: RegisteredCommand[] = [
     path: 'invariant update',
     metadata: invariantUpdateMeta,
     handler: invariantUpdate
-  },
-  {
-    path: 'db rebuild',
-    metadata: dbRebuildMeta,
-    handler: dbRebuild
   },
   {
     path: 'dependency migrate',

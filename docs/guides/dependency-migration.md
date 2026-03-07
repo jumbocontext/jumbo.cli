@@ -74,7 +74,7 @@ When `--consumer-id` and `--provider-id` are passed to `jumbo dependency add`:
 
 - Before migration, create a backup copy of your `.jumbo/` directory.
 - If a migration run is interrupted, restore `.jumbo/` from backup, then re-run `jumbo db upgrade --from v1 --to v2`.
-- Use `jumbo db rebuild --yes` after restore/upgrade when projections need rehydration from the event store.
+- Use `jumbo heal --yes` after restore/upgrade when projections need rehydration from the event store.
 
 ---
 

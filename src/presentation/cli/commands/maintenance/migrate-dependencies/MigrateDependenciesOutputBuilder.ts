@@ -51,7 +51,7 @@ export class MigrateDependenciesOutputBuilder {
     }
 
     if (!response.dryRun) {
-      output += "\nNext step: Run 'jumbo db rebuild --yes' to rebuild projections.";
+      output += "\nNext step: Run 'jumbo heal --yes' to rebuild projections.";
     }
 
     this.builder.addPrompt(output);

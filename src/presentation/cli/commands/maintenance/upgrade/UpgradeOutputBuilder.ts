@@ -22,14 +22,14 @@ export class UpgradeOutputBuilder {
     if (response.migratedGoals === 0) {
       this.builder.addPrompt(
         "No goals require migration. All statuses are already up to date.\n\n" +
-        "Next step: Run 'jumbo db rebuild --yes' to rebuild projections."
+        "Next step: Run 'jumbo heal --yes' to rebuild projections."
       );
     } else {
       this.builder.addPrompt(
         `Migration complete.\n\n` +
         `  Goals migrated:   ${response.migratedGoals}\n` +
         `  Events appended:  ${response.eventsAppended}\n\n` +
-        "Next step: Run 'jumbo db rebuild --yes' to rebuild projections."
+        "Next step: Run 'jumbo heal --yes' to rebuild projections."
       );
     }
 

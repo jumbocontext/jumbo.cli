@@ -49,7 +49,7 @@ describe("MigrateDependenciesOutputBuilder", () => {
       expect(text).toContain("Skipped:                    0");
       expect(text).toContain("UserController → AuthService");
       expect(text).toContain("relation_abc");
-      expect(text).toContain("jumbo db rebuild --yes");
+      expect(text).toContain("jumbo heal --yes");
     });
 
     it("renders skipped records with reasons", () => {
@@ -90,7 +90,7 @@ describe("MigrateDependenciesOutputBuilder", () => {
       const text = output.toHumanReadable();
 
       expect(text).toContain("[DRY RUN]");
-      expect(text).not.toContain("jumbo db rebuild");
+      expect(text).not.toContain("jumbo heal");
     });
 
     it("renders mixed converted and skipped", () => {

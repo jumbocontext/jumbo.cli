@@ -34,7 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Migration**: Run `jumbo repair --yes` after upgrading to rebuild the database with V2 projections
   - Migration docs: [`docs/reference/commands/maintenance.md`](docs/reference/commands/maintenance.md)
 
+- **Command replaced**: `jumbo db rebuild` has been replaced by `jumbo heal --yes`. The heal command replays all events from the event store to reconstruct materialized view projections. The underlying `RebuildDatabaseCommandHandler` is preserved as internal infrastructure.
+  - Old command: `jumbo db rebuild --yes` (no longer available)
+  - New command: `jumbo heal --yes`
+  - Migration docs: [`docs/reference/commands/maintenance.md`](docs/reference/commands/maintenance.md)
+
 ### Added
+
+- **Heal command**: `jumbo heal --yes` rebuilds database projections by replaying all events from the event store. Replaces `jumbo db rebuild` as the user-facing corruption recovery command.
 
 - **Goal review workflow**: New two-step quality assurance workflow for goals before completion:
   - `jumbo goal review --id <id>` - Submit a goal for review (transitions from `doing` to `in-review`)

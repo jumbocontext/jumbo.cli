@@ -26,5 +26,5 @@ Complete command documentation.
 | [Value Proposition Commands](commands/value-propositions.md) | add, list, update, remove |
 | [Relation Commands](commands/relations.md) | add, list, remove |
 | [Work Commands](commands/work.md) | pause, resume |
-| [Maintenance Commands](commands/maintenance.md) | db rebuild, db upgrade, repair |
+| [Maintenance Commands](commands/maintenance.md) | heal, db upgrade, repair |
 | [Worker Commands](commands/worker.md) | view |

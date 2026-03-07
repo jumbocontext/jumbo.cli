@@ -25,5 +25,5 @@ Complete reference for all Jumbo CLI commands.
 | [Value Proposition Commands](value-propositions.md) | add, list, update, remove |
 | [Relation Commands](relations.md) | add, list, remove |
 | [Work Commands](work.md) | pause, resume |
-| [Maintenance Commands](maintenance.md) | db rebuild, db upgrade, repair |
+| [Maintenance Commands](maintenance.md) | heal, db upgrade, repair |
 | [Worker Commands](worker.md) | view |

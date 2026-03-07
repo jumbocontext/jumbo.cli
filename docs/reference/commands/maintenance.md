@@ -1,24 +1,24 @@
 ---
 title: Maintenance Commands Reference
-description: Complete reference for database rebuild, schema upgrades, migration utilities, and repair commands.
+description: Complete reference for projection healing, schema upgrades, migration utilities, and repair commands.
 sidebar:
   order: 15
 ---
 
 # Maintenance Commands Reference
 
-Complete reference for database rebuild, upgrade, migration, and repair commands.
+Complete reference for projection healing, upgrade, migration, and repair commands.
 
 ---
 
-## jumbo db rebuild
+## jumbo heal
 
-Rebuild the database from the event store.
+Rebuild database projections from the event store.
 
 ### Synopsis
 
 ```bash
-> jumbo db rebuild [--yes]
+> jumbo heal [--yes]
 ```
 
 ### Options
@@ -29,7 +29,7 @@ Rebuild the database from the event store.
 
 ### Behavior
 
-Replays all events from the event store through the event bus, allowing registered projection handlers to reconstruct materialized read model views. Use this when read models have become inconsistent with the underlying event store.
+Replays all events from the event store through the event bus, allowing registered projection handlers to reconstruct materialized read model views. Use this when projections have become inconsistent with the underlying event store.
 
 A confirmation prompt is shown unless `--yes` is provided.
 
@@ -38,13 +38,13 @@ A confirmation prompt is shown unless `--yes` is provided.
 Rebuild with confirmation prompt:
 
 ```bash
-> jumbo db rebuild
+> jumbo heal
 ```
 
 Rebuild without confirmation:
 
 ```bash
-> jumbo db rebuild --yes
+> jumbo heal --yes
 ```
 
 ---

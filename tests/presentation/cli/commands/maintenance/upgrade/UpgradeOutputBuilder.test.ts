@@ -18,7 +18,7 @@ describe("UpgradeOutputBuilder", () => {
     expect(text).toContain("Migration complete");
     expect(text).toContain("Goals migrated:   3");
     expect(text).toContain("Events appended:  3");
-    expect(text).toContain("jumbo db rebuild --yes");
+    expect(text).toContain("jumbo heal --yes");
   });
 
   it("should render success with zero migrations", () => {
@@ -30,7 +30,7 @@ describe("UpgradeOutputBuilder", () => {
 
     const text = output.toHumanReadable();
     expect(text).toContain("No goals require migration");
-    expect(text).toContain("jumbo db rebuild --yes");
+    expect(text).toContain("jumbo heal --yes");
   });
 
   it("should render failure error", () => {

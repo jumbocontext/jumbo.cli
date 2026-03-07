@@ -38,7 +38,7 @@ export const metadata: CommandMetadata = {
       description: "Migrate goal statuses to v2 naming"
     }
   ],
-  related: ["db rebuild"],
+  related: ["heal"],
   topLevelAliases: ["upgrade"],
 };
 

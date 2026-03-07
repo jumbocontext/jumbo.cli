@@ -35,7 +35,7 @@ export const metadata: CommandMetadata = {
       description: "Preview what would be migrated without making changes"
     }
   ],
-  related: ["dependency list", "relation add", "db rebuild"],
+  related: ["dependency list", "relation add", "heal"],
 };
 
 /**
