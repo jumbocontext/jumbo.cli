@@ -26,4 +26,5 @@ Complete reference for all Jumbo CLI commands.
 | [Relation Commands](relations.md) | add, list, remove |
 | [Work Commands](work.md) | pause, resume |
 | [Maintenance Commands](maintenance.md) | heal, evolve |
+| [Telemetry Commands](telemetry.md) | status, enable, disable |
 | [Worker Commands](worker.md) | view |
