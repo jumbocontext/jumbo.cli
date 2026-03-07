@@ -27,6 +27,7 @@ import { MigrateDependenciesCommandHandler } from "../../application/maintenance
 import { LocalRebuildDatabaseGateway } from "../../application/maintenance/db/rebuild/LocalRebuildDatabaseGateway.js";
 import { RepairController } from "../../application/repair/RepairController.js";
 import { LocalRepairGateway } from "../../application/repair/LocalRepairGateway.js";
+import { ITelemetryClient } from "../../application/telemetry/ITelemetryClient.js";
 
 // Infrastructure implementations
 import { ProjectRootResolver } from "../context/project/ProjectRootResolver.js";
@@ -269,6 +270,8 @@ import { SqliteSolutionContextReader } from "../SqliteSolutionContextReader.js";
 // Settings Infrastructure
 import { FsSettingsReader } from "../settings/FsSettingsReader.js";
 import { FsSettingsInitializer } from "../settings/FsSettingsInitializer.js";
+import { ProcessTelemetryEnvironmentReader } from "../telemetry/ProcessTelemetryEnvironmentReader.js";
+import { NoOpTelemetryClient } from "../telemetry/NoOpTelemetryClient.js";
 
 // Event Handlers (Projection Handlers)
 import { SessionStartedEventHandler } from "../../application/context/sessions/start/SessionStartedEventHandler.js";
@@ -468,6 +471,12 @@ import { LocalShowGoalGateway } from "../../application/context/goals/get/LocalS
 
 // Session Controllers
 import { SessionStartController } from "../../application/context/sessions/start/SessionStartController.js";
+import { GetTelemetryStatusController } from "../../application/context/telemetry/get/GetTelemetryStatusController.js";
+import { LocalGetTelemetryStatusGateway } from "../../application/context/telemetry/get/LocalGetTelemetryStatusGateway.js";
+import { TelemetryConsentStatusResolver } from "../../application/context/telemetry/TelemetryConsentStatusResolver.js";
+import { UpdateTelemetryConsentCommandHandler } from "../../application/context/telemetry/update/UpdateTelemetryConsentCommandHandler.js";
+import { LocalUpdateTelemetryConsentGateway } from "../../application/context/telemetry/update/LocalUpdateTelemetryConsentGateway.js";
+import { UpdateTelemetryConsentController } from "../../application/context/telemetry/update/UpdateTelemetryConsentController.js";
 import { LocalStartSessionGateway } from "../../application/context/sessions/start/LocalStartSessionGateway.js";
 import { EndSessionController } from "../../application/context/sessions/end/EndSessionController.js";
 import { LocalEndSessionGateway } from "../../application/context/sessions/end/LocalEndSessionGateway.js";
@@ -588,6 +597,9 @@ export class HostBuilder {
     await settingsInitializer.ensureSettingsFileExists();
 
     const settingsReader = new FsSettingsReader(this.rootDir);
+    const telemetryEnvironmentReader = new ProcessTelemetryEnvironmentReader();
+    const telemetryConsentStatusResolver = new TelemetryConsentStatusResolver();
+    const telemetryClient: ITelemetryClient = new NoOpTelemetryClient();
 
     // Create worker identity components
     const hostSessionKeyResolver = new HostSessionKeyResolver();
@@ -953,6 +965,23 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const sessionStartController = new SessionStartController(
       startSessionGateway
     );
+    const getTelemetryStatusGateway = new LocalGetTelemetryStatusGateway(
+      settingsReader,
+      telemetryEnvironmentReader,
+      telemetryConsentStatusResolver
+    );
+    const getTelemetryStatusController = new GetTelemetryStatusController(
+      getTelemetryStatusGateway
+    );
+    const updateTelemetryConsentCommandHandler =
+      new UpdateTelemetryConsentCommandHandler(settingsReader);
+    const updateTelemetryConsentGateway =
+      new LocalUpdateTelemetryConsentGateway(
+        updateTelemetryConsentCommandHandler,
+        telemetryEnvironmentReader
+      );
+    const updateTelemetryConsentController =
+      new UpdateTelemetryConsentController(updateTelemetryConsentGateway);
     const getSessionsGateway = new LocalGetSessionsGateway(sessionViewReader);
     const getSessionsController = new GetSessionsController(
       getSessionsGateway
@@ -1897,6 +1926,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       logger,
       settingsReader,
       settingsInitializer,
+      telemetryClient,
 
       // Worker Identity
       workerIdentityReader,
@@ -1964,6 +1994,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       sessionStartController,
       endSessionController,
       getSessionsController,
+      getTelemetryStatusController,
+      updateTelemetryConsentController,
       // Worker Controllers
       viewWorkerController,
       // Goal Controllers

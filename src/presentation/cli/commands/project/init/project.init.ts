@@ -113,6 +113,10 @@ interface ProjectInitOptions {
   purpose?: string;
 }
 
+interface TelemetryConsentPromptAnswer {
+  enabled: boolean;
+}
+
 /**
  * Prompts the user interactively for project initialization values.
  * Each field includes explanatory text to guide the user.
@@ -152,6 +156,38 @@ async function promptForProjectDetails(): Promise<ProjectInitOptions> {
     name: answers.name.trim(),
     purpose: answers.purpose?.trim() || undefined,
   };
+}
+
+async function promptForTelemetryConsentIfNeeded(
+  container: IApplicationContainer,
+  interactive: boolean
+): Promise<void> {
+  if (!interactive || !process.stdout.isTTY) {
+    return;
+  }
+
+  const status = await container.getTelemetryStatusController.handle({});
+
+  if (
+    status.configured
+    || status.disabledByCi
+    || status.disabledByEnvironment
+  ) {
+    return;
+  }
+
+  const answers = await inquirer.prompt<TelemetryConsentPromptAnswer>([
+    {
+      type: "confirm",
+      name: "enabled",
+      message: "Allow anonymous telemetry to help improve Jumbo?",
+      default: false,
+    },
+  ]);
+
+  await container.updateTelemetryConsentController.handle({
+    enabled: answers.enabled === true,
+  });
 }
 
 /**
@@ -195,6 +231,8 @@ export async function projectInit(
     renderer.info("Let's set up your Jumbo project. Press Enter to skip optional fields.\n");
     projectDetails = await promptForProjectDetails();
   }
+
+  await promptForTelemetryConsentIfNeeded(container, !options.nonInteractive);
 
   // Get planned changes from application layer (single source of truth)
   const projectRoot = process.cwd();

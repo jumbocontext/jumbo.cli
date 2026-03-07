@@ -48,6 +48,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Goal progress tracking**: Track progress notes on goals with `jumbo goal update-progress --id <id> --progress <text>`
 
+- **Telemetry consent management**: Opt-in anonymous telemetry infrastructure with user control:
+  - `jumbo telemetry status` - Show current consent state, effective runtime status, and anonymous ID
+  - `jumbo telemetry enable` - Opt into anonymous telemetry (generates anonymous UUID on first enable)
+  - `jumbo telemetry disable` - Opt out of anonymous telemetry
+  - Telemetry auto-disables in CI environments (CI, GITHUB_ACTIONS, GITLAB_CI, JENKINS_URL, CIRCLECI, TRAVIS, BUILDKITE)
+  - Environment variable override: `JUMBO_TELEMETRY_DISABLED=1` disables telemetry regardless of settings
+  - First-run consent prompt during `jumbo project init`
+  - Settings persisted in `.jumbo/settings.jsonc` under `telemetry` section
+
 - **Worker identification**: The system now tracks which worker (agent/user) is working on each goal, enabling proper claim management across sessions
 
 - **Architecture view command**: New `jumbo architecture view` command to display the current architecture definition

@@ -33,6 +33,20 @@ export interface ClaimSettings {
   claimDurationMinutes: number;
 }
 
+export interface TelemetrySettings {
+  /**
+   * Whether the user has opted into telemetry collection.
+   * Default: false
+   */
+  enabled: boolean;
+
+  /**
+   * Anonymous identifier used for telemetry events after opt-in.
+   * Null until telemetry is enabled for the first time.
+   */
+  anonymousId: string | null;
+}
+
 export interface Settings {
   /**
    * QA (Quality Assurance) settings for goal completion
@@ -43,4 +57,9 @@ export interface Settings {
    * Claim settings for goal ownership and concurrency control
    */
   claims: ClaimSettings;
+
+  /**
+   * Telemetry consent and identity settings
+   */
+  telemetry: TelemetrySettings;
 }

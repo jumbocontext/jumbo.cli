@@ -26,6 +26,7 @@ import { IProjectRootResolver } from "../context/project/IProjectRootResolver.js
 // Settings
 import { ISettingsReader } from "../settings/ISettingsReader.js";
 import { ISettingsInitializer } from "../settings/ISettingsInitializer.js";
+import { ITelemetryClient } from "../telemetry/ITelemetryClient.js";
 
 // CLI Version
 import { ICliVersionReader } from "../cli-metadata/query/ICliMetadataReader.js";
@@ -61,6 +62,8 @@ import { SessionStartController } from "../context/sessions/start/SessionStartCo
 import { EndSessionController } from "../context/sessions/end/EndSessionController.js";
 import { GetSessionsController } from "../context/sessions/get/GetSessionsController.js";
 import { ViewWorkerController } from "../context/host/workers/view/ViewWorkerController.js";
+import { GetTelemetryStatusController } from "../context/telemetry/get/GetTelemetryStatusController.js";
+import { UpdateTelemetryConsentController } from "../context/telemetry/update/UpdateTelemetryConsentController.js";
 
 // Goal Controllers
 import { AddGoalController } from "../context/goals/add/AddGoalController.js";
@@ -346,6 +349,7 @@ export interface IApplicationContainer {
   logger: ILogger;
   settingsReader: ISettingsReader;
   settingsInitializer: ISettingsInitializer;
+  telemetryClient: ITelemetryClient;
 
   // Worker Identity
   workerIdentityReader: IWorkerIdentityReader;
@@ -414,6 +418,8 @@ export interface IApplicationContainer {
   sessionStartController: SessionStartController;
   endSessionController: EndSessionController;
   getSessionsController: GetSessionsController;
+  getTelemetryStatusController: GetTelemetryStatusController;
+  updateTelemetryConsentController: UpdateTelemetryConsentController;
 
   // Worker Controllers
   viewWorkerController: ViewWorkerController;

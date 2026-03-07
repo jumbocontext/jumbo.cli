@@ -80,7 +80,10 @@ describe("ResumeGoalCommandHandler", () => {
       read: jest.fn().mockResolvedValue({
         qa: { defaultTurnLimit: 3 },
         claims: { claimDurationMinutes: 30 },
+        telemetry: { enabled: false, anonymousId: null },
       }),
+      write: jest.fn(),
+      hasTelemetryConfiguration: jest.fn(),
     };
 
     // Mock goal context query handler - will be customized per test

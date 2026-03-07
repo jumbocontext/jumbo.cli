@@ -16,6 +16,8 @@ describe("LocalViewWorkerGateway", () => {
 
     mockSettingsReader = {
       read: jest.fn(),
+      write: jest.fn(),
+      hasTelemetryConfiguration: jest.fn(),
     } as jest.Mocked<ISettingsReader>;
 
     gateway = new LocalViewWorkerGateway(
@@ -28,6 +30,7 @@ describe("LocalViewWorkerGateway", () => {
     mockSettingsReader.read.mockResolvedValue({
       qa: { defaultTurnLimit: 3 },
       claims: { claimDurationMinutes: 45 },
+      telemetry: { enabled: false, anonymousId: null },
     });
 
     const response = await gateway.viewWorker({});
@@ -42,6 +45,7 @@ describe("LocalViewWorkerGateway", () => {
     mockSettingsReader.read.mockResolvedValue({
       qa: { defaultTurnLimit: 3 },
       claims: { claimDurationMinutes: 30 },
+      telemetry: { enabled: false, anonymousId: null },
     });
 
     await gateway.viewWorker({});

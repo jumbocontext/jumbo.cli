@@ -81,6 +81,9 @@ import { sessionCompact, metadata as sessionCompactMeta } from '../../commands/s
 import { sessionEnd, metadata as sessionEndMeta } from '../../commands/sessions/end/session.end.js';
 import { sessionsList, metadata as sessionsListMeta } from '../../commands/sessions/list/sessions.list.js';
 import { sessionStart, metadata as sessionStartMeta } from '../../commands/sessions/start/session.start.js';
+import { telemetryDisable, metadata as telemetryDisableMeta } from '../../commands/telemetry/disable/telemetry.disable.js';
+import { telemetryEnable, metadata as telemetryEnableMeta } from '../../commands/telemetry/enable/telemetry.enable.js';
+import { telemetryStatus, metadata as telemetryStatusMeta } from '../../commands/telemetry/status/telemetry.status.js';
 import { valueAdd, metadata as valueAddMeta } from '../../commands/value-propositions/add/value.add.js';
 import { valuesList, metadata as valuesListMeta } from '../../commands/value-propositions/list/values.list.js';
 import { valueRemove, metadata as valueRemoveMeta } from '../../commands/value-propositions/remove/value.remove.js';
@@ -448,6 +451,21 @@ export const commands: RegisteredCommand[] = [
     path: 'session start',
     metadata: sessionStartMeta,
     handler: sessionStart
+  },
+  {
+    path: 'telemetry disable',
+    metadata: telemetryDisableMeta,
+    handler: telemetryDisable
+  },
+  {
+    path: 'telemetry enable',
+    metadata: telemetryEnableMeta,
+    handler: telemetryEnable
+  },
+  {
+    path: 'telemetry status',
+    metadata: telemetryStatusMeta,
+    handler: telemetryStatus
   },
   {
     path: 'value add',
