@@ -5,8 +5,6 @@ sidebar:
   order: 5
 ---
 
-# Audience Commands Reference
-
 Define and manage the target audiences for your project.
 
 ---

@@ -5,8 +5,6 @@ sidebar:
   order: 12
 ---
 
-# Relation Commands Reference
-
 Add, list, and remove relationships between entities in the knowledge graph — linking goals, components, decisions, and other entities.
 
 ---

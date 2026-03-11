@@ -5,8 +5,6 @@ sidebar:
   order: 1
 ---
 
-# Goal Commands Reference
-
 Complete reference for all goal-related commands.
 
 ---

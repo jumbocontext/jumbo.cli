@@ -5,8 +5,6 @@ sidebar:
   order: 17
 ---
 
-# Telemetry Commands Reference
-
 Manage anonymous usage telemetry consent and view telemetry status.
 
 ---

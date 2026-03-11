@@ -5,22 +5,11 @@ sidebar:
   order: 4
 ---
 
-# What Jumbo Creates
-
-When you run `jumbo init`, Jumbo creates files in two locations: a `.jumbo/` directory for its own data, and agent configuration files at your project root. This page documents the full footprint so you know exactly what changes in your project.
+Understand every file and directory Jumbo adds to your project.
 
 ---
 
-## Prerequisites
-
-- **Node.js 18.18.0 or higher** — [Download Node.js](https://nodejs.org/)
-- **npm** — Included with Node.js
-
----
-
-## What `jumbo init` creates
-
-### The `.jumbo/` directory
+## The `.jumbo/` directory
 
 The `.jumbo/` directory is Jumbo's local project memory. Everything Jumbo knows about your project lives here.
 
@@ -34,8 +23,6 @@ The `.jumbo/` directory is Jumbo's local project memory. Everything Jumbo knows 
 │   └── ...
 ├── jumbo.db               # SQLite read projection
 ├── settings.jsonc         # Project-level configuration
-├── workers.json           # Worker process registry
-├── claims.json            # Goal ownership claims
 └── logs/
     └── jumbo.log          # Runtime log
 ```
@@ -44,14 +31,12 @@ The `.jumbo/` directory is Jumbo's local project memory. Everything Jumbo knows 
 |---|---|
 | `events/` | Append-only event store organized by aggregate UUID |
 | `jumbo.db` | SQLite database used as a CQRS read projection |
-| `settings.jsonc` | Project configuration (QA turn limits, claim duration) |
-| `workers.json` | Tracks active worker processes |
-| `claims.json` | Tracks goal ownership for concurrency control |
+| `settings.jsonc` | User settings (QA turn limits, claim duration) |
 | `logs/jumbo.log` | Runtime log output |
 
 ---
 
-### Agent hook files
+## Agent hook files
 
 Jumbo creates or updates several files outside `.jumbo/` to integrate with AI coding agents. All writes are idempotent — if the file already exists, Jumbo appends its section without overwriting your content.
 
@@ -98,15 +83,13 @@ The SQLite database (`jumbo.db`) is a **CQRS read projection** — a denormalize
 
 ## Version control guidance
 
-The `.jumbo/` directory is **local project memory**. It is not yet designed for sharing across team members.
-
-Recommended `.gitignore` entries:
+The following entry will be added to your `.gitignore`.
 
 ```
 .jumbo/
 ```
 
-The agent hook files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.claude/`, `.gemini/`, `.github/copilot-instructions.md`, `.github/hooks/`) should be committed so that all team members get the same agent integration.
+The `.jumbo/` directory is **local project memory**. It is not yet designed for sharing across team members.
 
 ---
 
@@ -138,3 +121,10 @@ Default contents:
 |---|---|---|
 | `qa.defaultTurnLimit` | `3` | Maximum QA review iterations before auto-completing a goal |
 | `claims.claimDurationMinutes` | `30` | How long a goal claim stays valid before expiring |
+
+---
+
+## What's next?
+
+- [Core Concepts](concepts.md) — Understand sessions, goals, context packets, and project knowledge
+- [Goal Management](../guides/goal-management.md) — Learn the full goal lifecycle

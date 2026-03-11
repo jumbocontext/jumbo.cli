@@ -5,8 +5,6 @@ sidebar:
   order: 5
 ---
 
-# Advanced Workflows
-
 Use these patterns when you want faster execution, reliable context handoff, and clean multi-agent collaboration.
 
 ## Chain the full goal lifecycle

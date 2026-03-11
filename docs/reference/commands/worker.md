@@ -5,8 +5,6 @@ sidebar:
   order: 7
 ---
 
-# Worker Commands Reference
-
 Complete reference for worker identity commands.
 
 ---

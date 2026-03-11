@@ -5,8 +5,6 @@ sidebar:
   order: 8
 ---
 
-# Decision Commands Reference
-
 Record, update, supersede, reverse, and restore architectural decisions (ADRs).
 
 ---

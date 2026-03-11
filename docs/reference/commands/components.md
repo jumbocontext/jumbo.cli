@@ -5,8 +5,6 @@ sidebar:
   order: 7
 ---
 
-# Component Commands Reference
-
 Track the software components in your system — services, libraries, APIs, databases, and more.
 
 ---

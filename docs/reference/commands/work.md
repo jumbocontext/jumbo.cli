@@ -5,8 +5,6 @@ sidebar:
   order: 6
 ---
 
-# Work Commands Reference
-
 Complete reference for work lifecycle commands that operate on the current worker's goal.
 
 ---

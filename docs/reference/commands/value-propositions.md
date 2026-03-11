@@ -5,8 +5,6 @@ sidebar:
   order: 13
 ---
 
-# Value Proposition Commands Reference
-
 Define and manage the value propositions that articulate why the project matters.
 
 ---

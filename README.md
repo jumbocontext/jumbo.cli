@@ -3,7 +3,7 @@
 </p>
 
 # Jumbo
-**Goal-driven development workflows for coding agents**
+**Memory and context orchestration for coding agents**
 
 Jumbo is a CLI tool that gives your coding agents persistent memory and structured project context, turning them from makers of workable prototypes into builders of production-quality software.
 
@@ -52,17 +52,17 @@ Those solve the core problems. These make Jumbo pleasant to use:
 
 ## Quick Start
 
-Install Jumbo:
+<p style="background: #000000; padding: 15px 15px 15px 15px; font-size:16px; color: #eeeeee; font-family: 'Courier New', Courier, monospace; font-weight:bold">
+> <span style="color: #f9c741;">npm</span> <span style="color: #ababab;">-g</span> jumbo-cli
+<br>
+> <span style="color: #f9c741;">jumbo</span> init
+<br>
+> <span style="color: #f9c741;">claude</span>
+<p>
 
-`npm install -g jumbo-cli`
+Jumbo will automatically orient the agent about your project and available goals.
 
-Initialize it in your project:
-
-`jumbo init`
-
-Then start your coding agent as usual. Jumbo will automatically orient the agent about your project and available goals.
-
-See the [Quickstart](docs/getting-started/quickstart.md) guide for the full workflow.
+See the [Getting started](docs/getting-started/quickstart.md) guide for the full workflow.
 
 ## Compatibility
 Jumbo seamlessly integrates with all frontier harnesses and models. Use them interchangeably or in parallel. 

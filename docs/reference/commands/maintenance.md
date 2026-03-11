@@ -5,8 +5,6 @@ sidebar:
   order: 15
 ---
 
-# Maintenance Commands Reference
-
 Complete reference for projection healing and full installation evolution commands.
 
 ---

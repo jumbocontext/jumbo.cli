@@ -2,10 +2,9 @@
 title: Commands
 description: Complete reference for all Jumbo CLI commands.
 sidebar:
+  label: Overview
   order: 1
 ---
-
-# Commands
 
 Complete reference for all Jumbo CLI commands.
 

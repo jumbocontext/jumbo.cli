@@ -1,13 +1,11 @@
 ---
 title: Jumbo Documentation
-description: Memory for coding agents. Keep your AI assistant on track with persistent, transferable context management.
+description: Memory and context orchestration for coding agents.
 sidebar:
   order: 1
 ---
 
-# Jumbo Documentation
-
-Memory for coding agents. Keep your AI assistant on track.
+Memory and context orchestration for coding agents.
 
 ---
 
@@ -16,7 +14,7 @@ Memory for coding agents. Keep your AI assistant on track.
 | Goal | Resource |
 |------|----------|
 | Install Jumbo | [Installation](getting-started/installation.md) |
-| Get running in 5 minutes | [Quickstart](getting-started/quickstart.md) |
+| Get set up and complete your first goal | [First Run](getting-started/first-run.md) |
 | Understand core concepts | [Concepts](getting-started/concepts.md) |
 | See what Jumbo adds to your project | [What Jumbo Creates](getting-started/what-jumbo-creates.md) |
 
@@ -24,21 +22,23 @@ Memory for coding agents. Keep your AI assistant on track.
 
 ## Guides
 
-Deep-dive tutorials for common workflows.
+| Guide | Description |
+|-------|-------------|
+| [Goal Management](guides/goal-management.md) | Essential knowledge for using Jumbo |
+| [Project Initialization](guides/project-initialization.md) | Understand what happens during `jumbo init` |
+| [Advanced Workflows](guides/advanced-workflows.md) | Goal chaining, running concurrent agents, and other productivity tips |
+
+---
+
+## Upgrading
 
 | Guide | Description |
 |-------|-------------|
-| [Goal Management](guides/goal-management.md) | Track and complete work with goals |
-| [Project Initialization](guides/project-initialization.md) | Configure Jumbo for your project |
-| [Session Management](guides/session-management.md) | Manage work sessions effectively |
-| [Dependency Migration](guides/dependency-migration.md) | Migrate legacy coupling dependencies into relations |
-| [Advanced Workflows](guides/advanced-workflows.md) | Command chaining, multi-agent sessions, and efficiency patterns |
+| [Upgrading to v2](upgrading/v2.md) | Migrate your project from v1 to v2 |
 
 ---
 
 ## Reference
-
-Complete command documentation.
 
 | Commands | Description |
 |----------|-------------|
@@ -58,18 +58,6 @@ Complete command documentation.
 | [Work Commands](reference/commands/work.md) | pause, resume |
 | [Maintenance Commands](reference/commands/maintenance.md) | heal, evolve |
 | [Worker Commands](reference/commands/worker.md) | view |
-
-See [Reference index](reference/index.md) and [Commands index](reference/commands/index.md) for section landing pages.
-
----
-
-## Documentation internals
-
-| Page | Description |
-|------|-------------|
-| [Docs Contributing Guide](CONTRIBUTING-DOCS.md) | Frontmatter schema, ordering conventions, and docs structure standards |
-| [Guides Index](guides/index.md) | Landing page for guide content |
-| [Getting Started Index](getting-started/index.md) | Landing page for onboarding content |
 
 ---
 

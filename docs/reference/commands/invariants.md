@@ -5,8 +5,6 @@ sidebar:
   order: 11
 ---
 
-# Invariant Commands Reference
-
 Define non-negotiable requirements that must always hold true across the project.
 
 ---

@@ -5,8 +5,6 @@ sidebar:
   order: 4
 ---
 
-# Architecture Commands Reference
-
 Manage the project's architectural definition — organization style, patterns, principles, data stores, and technology stack.
 
 ---

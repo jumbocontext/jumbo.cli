@@ -5,8 +5,6 @@ sidebar:
   order: 3
 ---
 
-# Project Commands Reference
-
 Complete reference for all project-related commands.
 
 ---

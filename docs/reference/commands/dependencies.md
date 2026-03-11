@@ -5,8 +5,6 @@ sidebar:
   order: 9
 ---
 
-# Dependency Commands Reference
-
 Register third-party dependencies your project relies on, such as packages (`better-sqlite3`) and external services (for example Stripe API).
 
 Component-to-component coupling is tracked with `jumbo relation add --type depends_on`, not dependency commands.
@@ -49,7 +47,7 @@ Add a third-party dependency.
 > jumbo dependency add --consumer-id comp_abc --provider-id comp_def --endpoint "IUserRepository" --contract "UserRepository interface"
 ```
 
-Legacy flags emit a deprecation warning and are mapped to a component relation (`depends_on`). For migration details, see [Dependency Migration Guide](../../guides/dependency-migration.md).
+Legacy flags emit a deprecation warning and are mapped to a component relation (`depends_on`). For migration details, see [Upgrading to v2](../../upgrading/v2.md).
 
 ---
 

@@ -5,8 +5,6 @@ sidebar:
   order: 5
 ---
 
-# Session Commands Reference
-
 Complete reference for all session-related commands.
 
 ---

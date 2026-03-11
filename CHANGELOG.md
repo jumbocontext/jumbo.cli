@@ -121,7 +121,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking risk now**: Low. Existing scripts continue to run in `v2.x`, but emit deprecation warnings.
 - **Breaking risk at v3.0.0**: High for unattended scripts that still use legacy coupling flags. Migrate these scripts to `jumbo relation add --type depends_on` before adopting `v3.0.0`.
-- Migration docs: [`docs/guides/dependency-migration.md`](docs/guides/dependency-migration.md), [`docs/reference/commands/dependencies.md`](docs/reference/commands/dependencies.md), [`docs/reference/commands/relations.md`](docs/reference/commands/relations.md)
+- Migration docs: [`docs/upgrading/v2.md`](docs/upgrading/v2.md), [`docs/reference/commands/dependencies.md`](docs/reference/commands/dependencies.md), [`docs/reference/commands/relations.md`](docs/reference/commands/relations.md)
 
 ## [1.0.1] - 2026-01-10
 

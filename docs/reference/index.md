@@ -2,10 +2,9 @@
 title: Reference
 description: Complete command documentation for the Jumbo CLI.
 sidebar:
+  label: Overview
   order: 3
 ---
-
-# Reference
 
 Complete command documentation.
 

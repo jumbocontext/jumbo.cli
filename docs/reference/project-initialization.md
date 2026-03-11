@@ -5,8 +5,6 @@ sidebar:
   order: 1
 ---
 
-# Project Initialization
-
 Configure Jumbo for your project.
 
 ---
@@ -125,6 +123,5 @@ All previous project memory will be lost.
 
 ## Next steps
 
-- [Start your first session](session-management.md)
 - [Create your first goal](goal-management.md)
 - [Project command reference](../reference/commands/project.md)

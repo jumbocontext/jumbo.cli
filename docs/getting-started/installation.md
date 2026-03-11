@@ -5,8 +5,6 @@ sidebar:
   order: 1
 ---
 
-# Install Jumbo
-
 Install Jumbo globally to use it across all your projects.
 
 ---
@@ -35,7 +33,7 @@ npm install -g jumbo-cli
 ## Verify installation
 
 ```bash
-> jumbo --version
+jumbo --version
 ```
 
 Expected output:
@@ -46,20 +44,14 @@ jumbo-cli/1.0.1
 
 You can also run `jumbo` without arguments to see the quick start instructions.
 
----
-
-### Command not found
-
-If `jumbo` is not recognized after installation:
-
-1. Check that npm's global bin directory is in your PATH
-2. Run `npm bin -g` to find the directory
-3. Add it to your PATH if missing
+:::tip[Command not found?]
+If `jumbo` is not recognized after installation, check that npm's global bin directory is in your PATH. Run `npm bin -g` to find the directory and add it to your PATH if missing.
+:::
 
 ---
 
-## Next steps
+## What's next?
 
-- [Initialize your first project](quickstart.md)
+- [First Run](first-run.md)
 - [What Jumbo creates](what-jumbo-creates.md) — Understand every file Jumbo adds to your project
 - [Understand core concepts](concepts.md)

@@ -5,8 +5,6 @@ sidebar:
   order: 6
 ---
 
-# Audience Pain Commands Reference
-
 Track the pain points your target audiences experience that the project aims to solve.
 
 ---

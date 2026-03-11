@@ -5,8 +5,6 @@ sidebar:
   order: 10
 ---
 
-# Guideline Commands Reference
-
 Define execution guidelines that govern how work is done — coding style, testing practices, process rules, and more.
 
 ---
