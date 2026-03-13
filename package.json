@@ -1,7 +1,7 @@
 {
   "name": "jumbo-cli",
-  "version": "2.0.0",
-  "description": "Memory for Coding Agents",
+  "version": "2.0.1",
+  "description": "Memory and Context Orchestration for Coding Agents",
   "keywords": [
     "cli",
     "command-line",
@@ -17,16 +17,16 @@
     "context-engineering",
     "developer-tools"
   ],
-  "homepage": "https://github.com/jumbo-dot-tech/jumbo.cli#readme",
+  "homepage": "https://jumbocontext.com",
   "bugs": {
-    "url": "https://github.com/jumbo-dot-tech/jumbo.cli/issues"
+    "url": "https://github.com/jumbocontext/jumbo.cli/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jumbo-dot-tech/jumbo.cli.git"
+    "url": "git+https://github.com/jumbocontext/jumbo.cli.git"
   },
   "license": "AGPL-3.0",
-  "author": "Josh Wheelock <josh@jumbo.tech.com> (https://jumbo.tech)",
+  "author": "Josh Wheelock <hello@jumbocontext.com> (https://jumbocontext.com)",
   "main": "dist/index.js",
   "bin": {
     "jumbo": "dist/cli.js"

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-03-13
+
 ### Changed
 
 - **Telemetry opt-out by default**: `jumbo init` now prompts for telemetry consent during interactive initialization with opt-out framing (default: enabled). Non-interactive mode enables telemetry automatically. Users can opt out during init, or later via `jumbo telemetry disable` or `JUMBO_TELEMETRY_DISABLED=1`. Default telemetry setting changed from `false` to `true`.
