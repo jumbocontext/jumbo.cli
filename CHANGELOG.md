@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-03-14
+
+### Changed
+
+- **Initialization guidance**: Improved post-init copy to guide users toward creating their first goal instead of starting a session directly. Includes example `goal add` command with all key flags.
+- **README**: Fixed npm install command syntax in Quick Start section.
+
+### Added
+
+- **Automated npm publishing**: Added GitHub Actions workflow (`publish.yml`) that publishes to npm via OIDC trusted publisher when a GitHub release is created.
+
 ## [2.0.1] - 2026-03-13
 
 ### Changed
