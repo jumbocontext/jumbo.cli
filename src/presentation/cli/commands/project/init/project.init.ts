@@ -283,5 +283,8 @@ export async function projectInit(
 
   renderer.success("Welcome to Jumbo! Project initialized successfully.", data);
   renderer.info("");
-  renderer.info("Next steps: Start a session with 'jumbo session start --focus \"<your focus>\"'");
+  renderer.info("Next steps: Create your first goal then start your coding agent.");
+  renderer.info("Jumbo will guide you, then your agent, through everything.");
+  renderer.info("Run 'jumbo goal add --help' to see available options for creating your first goal.");
+  renderer.info("Example: 'jumbo goal add --title \"Set up database\" --objective \"Install PostgreSQL and create initial schema\" --criteria \"Database installed\" \"Initial schema created\" \"Migrations set up\"'");
 }
