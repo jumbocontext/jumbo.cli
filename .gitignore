@@ -146,8 +146,8 @@ vite.config.ts.timestamp-*
 !.claude/settings.json
 
 # Github
-.github/*
-!.github/copilot-instructions.md
+.github/hooks/
+.github/copilot-instructions.md
 
 # Agent generated files
 nul
