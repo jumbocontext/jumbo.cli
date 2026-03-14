@@ -8,7 +8,7 @@ import {
   POSTHOG_SHUTDOWN_TIMEOUT_MS,
 } from "../../../src/infrastructure/telemetry/PostHogTelemetryConstants.js";
 import { PostHogTelemetryClient } from "../../../src/infrastructure/telemetry/PostHogTelemetryClient.js";
-import { TELEMETRY_DISABLED_ENVIRONMENT_VARIABLE } from "../../../src/infrastructure/telemetry/TelemetryEnvironmentVariables.js";
+import { CI_ENVIRONMENT_VARIABLE_NAMES, TELEMETRY_DISABLED_ENVIRONMENT_VARIABLE } from "../../../src/infrastructure/telemetry/TelemetryEnvironmentVariables.js";
 
 describe("PostHogTelemetryClient", () => {
   afterEach(() => {
@@ -67,6 +67,11 @@ describe("PostHogTelemetryClient", () => {
   it("wires PostHogTelemetryClient when telemetry is effectively enabled", async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "jumbo-telemetry-"));
     const host = new Host(tempDir);
+    const savedCiVars: Record<string, string | undefined> = {};
+    for (const name of CI_ENVIRONMENT_VARIABLE_NAMES) {
+      savedCiVars[name] = process.env[name];
+      delete process.env[name];
+    }
 
     try {
       await fs.writeFile(
@@ -86,6 +91,10 @@ describe("PostHogTelemetryClient", () => {
 
       expect(container.telemetryClient).toBeInstanceOf(PostHogTelemetryClient);
     } finally {
+      for (const [name, value] of Object.entries(savedCiVars)) {
+        if (value !== undefined) process.env[name] = value;
+        else delete process.env[name];
+      }
       host.dispose();
       await fs.remove(tempDir);
     }
