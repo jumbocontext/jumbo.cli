@@ -17,7 +17,14 @@ interface IPostHogSdkClient {
   shutdown(shutdownTimeoutMs?: number): void | Promise<void>;
 }
 
-type PostHogClientFactory = () => IPostHogSdkClient;
+type PostHogClientFactory = () => IPostHogSdkClient | null;
+
+function createDefaultPostHogClient(): IPostHogSdkClient | null {
+  if (!POSTHOG_API_KEY) {
+    return null;
+  }
+  return new PostHog(POSTHOG_API_KEY, { host: POSTHOG_HOST });
+}
 
 export class PostHogTelemetryClient implements ITelemetryClient {
   private readonly anonymousId: string;
@@ -25,8 +32,7 @@ export class PostHogTelemetryClient implements ITelemetryClient {
 
   constructor(
     anonymousId: string,
-    postHogClientFactory: PostHogClientFactory = () =>
-      new PostHog(POSTHOG_API_KEY, { host: POSTHOG_HOST })
+    postHogClientFactory: PostHogClientFactory = createDefaultPostHogClient
   ) {
     this.anonymousId = anonymousId;
 

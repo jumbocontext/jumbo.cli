@@ -64,7 +64,7 @@ describe("PostHogTelemetryClient", () => {
     await expect(client.shutdown()).resolves.toBeUndefined();
   });
 
-  it("wires PostHogTelemetryClient when telemetry is effectively enabled", async () => {
+  it("wires PostHogTelemetryClient when telemetry is effectively enabled (no-ops without API key)", async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "jumbo-telemetry-"));
     const host = new Host(tempDir);
     const savedCiVars: Record<string, string | undefined> = {};
@@ -89,6 +89,10 @@ describe("PostHogTelemetryClient", () => {
 
       const container = await host.createBuilder().build();
 
+      // HostBuilder wires PostHogTelemetryClient when consent is given.
+      // Without POSTHOG_API_KEY in the environment the client silently
+      // no-ops (postHogClient is null), which is the expected local/test
+      // behavior. The published npm package has the key baked in at build time.
       expect(container.telemetryClient).toBeInstanceOf(PostHogTelemetryClient);
     } finally {
       for (const [name, value] of Object.entries(savedCiVars)) {
