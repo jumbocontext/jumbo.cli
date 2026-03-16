@@ -18,7 +18,7 @@ export const metadata: CommandMetadata = {
   requiredOptions: [
     {
       flags: "-i, --id <id>",
-      description: "[required]ID of the goal to start"
+      description: "ID of the goal to start"
     }
   ],
   examples: [

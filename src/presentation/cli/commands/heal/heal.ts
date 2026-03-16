@@ -8,7 +8,7 @@ export const metadata: CommandMetadata = {
   options: [
     {
       flags: "--yes",
-      description: "Skip confirmation prompt",
+      description: "Skip confirmation prompt (required for non-interactive use)",
     },
   ],
   examples: [

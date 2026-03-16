@@ -15,7 +15,7 @@ import { Renderer } from "../../../rendering/Renderer.js";
 export const metadata: CommandMetadata = {
   description: "Update project metadata",
   category: "project-knowledge",
-  options: [
+  requiredOptions: [
     {
       flags: "--purpose <purpose>",
       description: "Updated project purpose"
@@ -35,17 +35,11 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function projectUpdate(options: {
-  purpose?: string | null;
+  purpose: string;
 }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
 
   try {
-    // Check if any fields provided
-    if (options.purpose === undefined) {
-      renderer.error("No fields provided. Specify --purpose");
-      process.exit(1);
-    }
-
     const request: UpdateProjectRequest = {
       purpose: options.purpose,
     };

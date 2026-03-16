@@ -24,11 +24,11 @@ export const metadata: CommandMetadata = {
   options: [
     {
       flags: "-t, --title <title>",
-      description: "Updated pain title",
+      description: "Updated pain title (at least one field required)",
     },
     {
       flags: "-d, --description <description>",
-      description: "Updated pain description",
+      description: "Updated pain description (at least one field required)",
     },
   ],
   examples: [
