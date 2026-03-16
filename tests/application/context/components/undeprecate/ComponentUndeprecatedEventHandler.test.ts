@@ -3,10 +3,12 @@ import { IComponentUndeprecatedProjector } from "../../../../../src/application/
 import { ComponentUndeprecatedEvent } from "../../../../../src/domain/components/undeprecate/ComponentUndeprecatedEvent.js";
 import { ComponentEventType } from "../../../../../src/domain/components/Constants.js";
 import { RelationReactivationCascade } from "../../../../../src/application/context/relations/reactivate/RelationReactivationCascade.js";
+import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
 
 describe("ComponentUndeprecatedEventHandler", () => {
   let projector: jest.Mocked<IComponentUndeprecatedProjector>;
   let relationReactivationCascade: jest.Mocked<RelationReactivationCascade>;
+  let relationMaintenanceGoalRegistrar: jest.Mocked<IRelationMaintenanceGoalRegistrar>;
   let handler: ComponentUndeprecatedEventHandler;
 
   beforeEach(() => {
@@ -16,7 +18,10 @@ describe("ComponentUndeprecatedEventHandler", () => {
     relationReactivationCascade = {
       execute: jest.fn().mockResolvedValue(0),
     } as unknown as jest.Mocked<RelationReactivationCascade>;
-    handler = new ComponentUndeprecatedEventHandler(projector, relationReactivationCascade);
+    relationMaintenanceGoalRegistrar = {
+      execute: jest.fn().mockResolvedValue(null),
+    };
+    handler = new ComponentUndeprecatedEventHandler(projector, relationReactivationCascade, relationMaintenanceGoalRegistrar);
   });
 
   it("projects undeprecation and cascades relation reactivation", async () => {
@@ -38,6 +43,11 @@ describe("ComponentUndeprecatedEventHandler", () => {
       "component",
       "comp_123",
       "Automatically reactivated because component comp_123 was undeprecated: Component still needed"
+    );
+    expect(relationMaintenanceGoalRegistrar.execute).toHaveBeenCalledWith(
+      "component",
+      "comp_123",
+      "component was undeprecated: Component still needed"
     );
   });
 });

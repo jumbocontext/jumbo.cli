@@ -3,10 +3,12 @@ import { IDecisionSupersededProjector } from "../../../../../src/application/con
 import { DecisionSupersededEvent } from "../../../../../src/domain/decisions/supersede/DecisionSupersededEvent.js";
 import { DecisionEventType } from "../../../../../src/domain/decisions/Constants.js";
 import { RelationDeactivationCascade } from "../../../../../src/application/context/relations/deactivate/RelationDeactivationCascade.js";
+import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
 
 describe("DecisionSupersededEventHandler", () => {
   let projector: jest.Mocked<IDecisionSupersededProjector>;
   let relationDeactivationCascade: jest.Mocked<RelationDeactivationCascade>;
+  let relationMaintenanceGoalRegistrar: jest.Mocked<IRelationMaintenanceGoalRegistrar>;
   let handler: DecisionSupersededEventHandler;
 
   beforeEach(() => {
@@ -16,7 +18,10 @@ describe("DecisionSupersededEventHandler", () => {
     relationDeactivationCascade = {
       execute: jest.fn().mockResolvedValue(0),
     } as unknown as jest.Mocked<RelationDeactivationCascade>;
-    handler = new DecisionSupersededEventHandler(projector, relationDeactivationCascade);
+    relationMaintenanceGoalRegistrar = {
+      execute: jest.fn().mockResolvedValue(null),
+    };
+    handler = new DecisionSupersededEventHandler(projector, relationDeactivationCascade, relationMaintenanceGoalRegistrar);
   });
 
   it("projects supersession and cascades relation deactivation", async () => {
@@ -33,6 +38,11 @@ describe("DecisionSupersededEventHandler", () => {
     await handler.handle(event);
 
     expect(projector.applyDecisionSuperseded).toHaveBeenCalledWith(event);
+    expect(relationMaintenanceGoalRegistrar.execute).toHaveBeenCalledWith(
+      "decision",
+      "dec_123",
+      "decision was superseded by decision dec_456"
+    );
     expect(relationDeactivationCascade.execute).toHaveBeenCalledWith(
       "decision",
       "dec_123",

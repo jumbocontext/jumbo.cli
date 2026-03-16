@@ -372,6 +372,7 @@ import { RelationDeactivationCascade } from "../../application/context/relations
 import { RelationReactivatedEventHandler } from "../../application/context/relations/reactivate/RelationReactivatedEventHandler.js";
 import { ReactivateRelationCommandHandler } from "../../application/context/relations/reactivate/ReactivateRelationCommandHandler.js";
 import { RelationReactivationCascade } from "../../application/context/relations/reactivate/RelationReactivationCascade.js";
+import { RelationMaintenanceGoalRegistrar } from "../../application/context/relations/maintain/RelationMaintenanceGoalRegistrar.js";
 import { RelationRemovedEventHandler } from "../../application/context/relations/remove/RelationRemovedEventHandler.js";
 import { RemoveRelationCommandHandler } from "../../application/context/relations/remove/RemoveRelationCommandHandler.js";
 import { LocalRemoveRelationGateway } from "../../application/context/relations/remove/LocalRemoveRelationGateway.js";
@@ -1705,6 +1706,10 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       relationViewReader,
       reactivateRelationCommandHandler
     );
+    const relationMaintenanceGoalRegistrar = new RelationMaintenanceGoalRegistrar(
+      relationViewReader,
+      addGoalCommandHandler
+    );
     const removeRelationGateway = new LocalRemoveRelationGateway(
       removeRelationCommandHandler,
       relationRemovedProjector
@@ -1730,7 +1735,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const sessionEndedEventHandler = new SessionEndedEventHandler(sessionEndedProjector);
     const goalAddedEventHandler = new GoalAddedEventHandler(goalAddedProjector);
     const goalStartedEventHandler = new GoalStartedEventHandler(goalStartedProjector);
-    const goalUpdatedEventHandler = new GoalUpdatedEventHandler(goalUpdatedProjector);
+    const goalUpdatedEventHandler = new GoalUpdatedEventHandler(goalUpdatedProjector, relationMaintenanceGoalRegistrar);
     const goalBlockedEventHandler = new GoalBlockedEventHandler(goalBlockedProjector);
     const goalUnblockedEventHandler = new GoalUnblockedEventHandler(goalUnblockedProjector);
     const goalPausedEventHandler = new GoalPausedEventHandler(goalPausedProjector);
@@ -1738,7 +1743,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const goalCompletedEventHandler = new GoalCompletedEventHandler(goalCompletedProjector);
     const goalRefinedEventHandler = new GoalRefinedEventHandler(goalRefinedProjector);
     const goalResetEventHandler = new GoalResetEventHandler(goalResetProjector);
-    const goalRemovedEventHandler = new GoalRemovedEventHandler(goalRemovedProjector);
+    const goalRemovedEventHandler = new GoalRemovedEventHandler(goalRemovedProjector, relationMaintenanceGoalRegistrar);
     const goalProgressUpdatedEventHandler = new GoalProgressUpdatedEventHandler(goalProgressUpdatedProjector);
     const goalSubmittedForReviewEventHandler = new GoalSubmittedForReviewEventHandler(goalSubmittedForReviewProjector);
     const goalQualifiedEventHandler = new GoalQualifiedEventHandler(goalQualifiedProjector);
@@ -1754,44 +1759,44 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     // Solution Category
     // Architecture Event Handlers - decomposed by use case
     const architectureDefinedEventHandler = new ArchitectureDefinedEventHandler(architectureDefinedProjector);
-    const architectureUpdatedEventHandler = new ArchitectureUpdatedEventHandler(architectureUpdatedProjector);
+    const architectureUpdatedEventHandler = new ArchitectureUpdatedEventHandler(architectureUpdatedProjector, relationMaintenanceGoalRegistrar);
     // Component Event Handlers - decomposed by use case
     const componentAddedEventHandler = new ComponentAddedEventHandler(componentAddedProjector);
-    const componentUpdatedEventHandler = new ComponentUpdatedEventHandler(componentUpdatedProjector);
-    const componentDeprecatedEventHandler = new ComponentDeprecatedEventHandler(componentDeprecatedProjector, relationDeactivationCascade);
-    const componentUndeprecatedEventHandler = new ComponentUndeprecatedEventHandler(componentUndeprecatedProjector, relationReactivationCascade);
-    const componentRemovedEventHandler = new ComponentRemovedEventHandler(componentRemovedProjector, relationDeactivationCascade);
+    const componentUpdatedEventHandler = new ComponentUpdatedEventHandler(componentUpdatedProjector, relationMaintenanceGoalRegistrar);
+    const componentDeprecatedEventHandler = new ComponentDeprecatedEventHandler(componentDeprecatedProjector, relationDeactivationCascade, relationMaintenanceGoalRegistrar);
+    const componentUndeprecatedEventHandler = new ComponentUndeprecatedEventHandler(componentUndeprecatedProjector, relationReactivationCascade, relationMaintenanceGoalRegistrar);
+    const componentRemovedEventHandler = new ComponentRemovedEventHandler(componentRemovedProjector, relationDeactivationCascade, relationMaintenanceGoalRegistrar);
     const componentRenamedEventHandler = new ComponentRenamedEventHandler(componentRenamedProjector);
     // Dependency Event Handlers - decomposed by use case
     const dependencyAddedEventHandler = new DependencyAddedEventHandler(dependencyAddedProjector);
-    const dependencyUpdatedEventHandler = new DependencyUpdatedEventHandler(dependencyUpdatedProjector);
-    const dependencyRemovedEventHandler = new DependencyRemovedEventHandler(dependencyRemovedProjector);
+    const dependencyUpdatedEventHandler = new DependencyUpdatedEventHandler(dependencyUpdatedProjector, relationMaintenanceGoalRegistrar);
+    const dependencyRemovedEventHandler = new DependencyRemovedEventHandler(dependencyRemovedProjector, relationMaintenanceGoalRegistrar);
     // Decision Event Handlers - decomposed by use case
     const decisionAddedEventHandler = new DecisionAddedEventHandler(decisionAddedProjector);
-    const decisionUpdatedEventHandler = new DecisionUpdatedEventHandler(decisionUpdatedProjector);
+    const decisionUpdatedEventHandler = new DecisionUpdatedEventHandler(decisionUpdatedProjector, relationMaintenanceGoalRegistrar);
     const decisionReversedEventHandler = new DecisionReversedEventHandler(decisionReversedProjector, relationDeactivationCascade);
-    const decisionRestoredEventHandler = new DecisionRestoredEventHandler(decisionRestoredProjector, relationReactivationCascade);
-    const decisionSupersededEventHandler = new DecisionSupersededEventHandler(decisionSupersededProjector, relationDeactivationCascade);
+    const decisionRestoredEventHandler = new DecisionRestoredEventHandler(decisionRestoredProjector, relationReactivationCascade, relationMaintenanceGoalRegistrar);
+    const decisionSupersededEventHandler = new DecisionSupersededEventHandler(decisionSupersededProjector, relationDeactivationCascade, relationMaintenanceGoalRegistrar);
     // Guideline Event Handlers - decomposed by use case
     const guidelineAddedEventHandler = new GuidelineAddedEventHandler(guidelineAddedProjector);
-    const guidelineUpdatedEventHandler = new GuidelineUpdatedEventHandler(guidelineUpdatedProjector);
-    const guidelineRemovedEventHandler = new GuidelineRemovedEventHandler(guidelineRemovedProjector);
+    const guidelineUpdatedEventHandler = new GuidelineUpdatedEventHandler(guidelineUpdatedProjector, relationMaintenanceGoalRegistrar);
+    const guidelineRemovedEventHandler = new GuidelineRemovedEventHandler(guidelineRemovedProjector, relationMaintenanceGoalRegistrar);
     // Invariant Event Handlers - decomposed by use case
     const invariantAddedEventHandler = new InvariantAddedEventHandler(invariantAddedProjector);
-    const invariantUpdatedEventHandler = new InvariantUpdatedEventHandler(invariantUpdatedProjector);
-    const invariantRemovedEventHandler = new InvariantRemovedEventHandler(invariantRemovedProjector);
+    const invariantUpdatedEventHandler = new InvariantUpdatedEventHandler(invariantUpdatedProjector, relationMaintenanceGoalRegistrar);
+    const invariantRemovedEventHandler = new InvariantRemovedEventHandler(invariantRemovedProjector, relationMaintenanceGoalRegistrar);
 
     // Project Knowledge Category
     // Project Event Handlers - decomposed by use case
     const projectInitializedEventHandler = new ProjectInitializedEventHandler(projectInitializedProjector);
-    const projectUpdatedEventHandler = new ProjectUpdatedEventHandler(projectUpdatedProjector);
+    const projectUpdatedEventHandler = new ProjectUpdatedEventHandler(projectUpdatedProjector, relationMaintenanceGoalRegistrar);
     // AudiencePain Event Handlers - decomposed by use case
     const audiencePainAddedEventHandler = new AudiencePainAddedEventHandler(audiencePainAddedProjector);
-    const audiencePainUpdatedEventHandler = new AudiencePainUpdatedEventHandler(audiencePainUpdatedProjector);
+    const audiencePainUpdatedEventHandler = new AudiencePainUpdatedEventHandler(audiencePainUpdatedProjector, relationMaintenanceGoalRegistrar);
 // Audience Event Handlers - decomposed by use case
     const audienceAddedEventHandler = new AudienceAddedEventHandler(audienceAddedProjector);
-    const audienceUpdatedEventHandler = new AudienceUpdatedEventHandler(audienceUpdatedProjector);
-    const audienceRemovedEventHandler = new AudienceRemovedEventHandler(audienceRemovedProjector);
+    const audienceUpdatedEventHandler = new AudienceUpdatedEventHandler(audienceUpdatedProjector, relationMaintenanceGoalRegistrar);
+    const audienceRemovedEventHandler = new AudienceRemovedEventHandler(audienceRemovedProjector, relationMaintenanceGoalRegistrar);
     // ValueProposition Controllers
     const addValuePropositionCommandHandler = new AddValuePropositionCommandHandler(
       valuePropositionAddedEventStore,
@@ -1836,8 +1841,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     );
     // ValueProposition Event Handlers - decomposed by use case
     const valuePropositionAddedEventHandler = new ValuePropositionAddedEventHandler(valuePropositionAddedProjector);
-    const valuePropositionUpdatedEventHandler = new ValuePropositionUpdatedEventHandler(valuePropositionUpdatedProjector);
-    const valuePropositionRemovedEventHandler = new ValuePropositionRemovedEventHandler(valuePropositionRemovedProjector);
+    const valuePropositionUpdatedEventHandler = new ValuePropositionUpdatedEventHandler(valuePropositionUpdatedProjector, relationMaintenanceGoalRegistrar);
+    const valuePropositionRemovedEventHandler = new ValuePropositionRemovedEventHandler(valuePropositionRemovedProjector, relationMaintenanceGoalRegistrar);
 
     // Relations Category - Event Handlers - decomposed by use case
     const relationAddedEventHandler = new RelationAddedEventHandler(relationAddedProjector);
