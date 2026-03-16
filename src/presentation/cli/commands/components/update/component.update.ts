@@ -24,19 +24,19 @@ export const metadata: CommandMetadata = {
   options: [
     {
       flags: "-d, --description <text>",
-      description: "Updated description"
+      description: "Updated description (at least one field required)"
     },
     {
       flags: "--responsibility <text>",
-      description: "Updated responsibility"
+      description: "Updated responsibility (at least one field required)"
     },
     {
       flags: "--path <path>",
-      description: "Updated file path"
+      description: "Updated file path (at least one field required)"
     },
     {
       flags: "-T, --type <type>",
-      description: "Updated component type (api, service, db, queue, ui, lib, worker, cache, storage)"
+      description: "Updated component type (api, service, db, queue, ui, lib, worker, cache, storage) (at least one field required)"
     }
   ],
   examples: [

@@ -24,23 +24,23 @@ export const metadata: CommandMetadata = {
   options: [
     {
       flags: "-t, --title <title>",
-      description: "Updated title (max 100 chars)",
+      description: "Updated title, max 100 chars (at least one field required)",
     },
     {
       flags: "-d, --description <description>",
-      description: "Updated description (max 1000 chars)",
+      description: "Updated description, max 1000 chars (at least one field required)",
     },
     {
       flags: "--benefit <benefit>",
-      description: "Updated benefit (max 500 chars)",
+      description: "Updated benefit, max 500 chars (at least one field required)",
     },
     {
       flags: "--measurable-outcome <measurableOutcome>",
-      description: "Updated measurable outcome (max 500 chars)",
+      description: "Updated measurable outcome, max 500 chars (at least one field required)",
     },
     {
       flags: "--clear-measurable-outcome",
-      description: "Clear the measurable outcome field",
+      description: "Clear the measurable outcome field (at least one field required)",
     },
   ],
   examples: [

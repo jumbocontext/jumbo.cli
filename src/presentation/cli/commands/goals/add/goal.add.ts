@@ -30,7 +30,7 @@ export const metadata: CommandMetadata = {
     },
     {
       flags: "-t, --title <title>",
-      description: "Short title for the goal (max 60 characters)"
+      description: "Short title for the goal, max 60 characters (required unless --interactive)"
     },
     {
       flags: "--objective <objective>",
@@ -38,7 +38,7 @@ export const metadata: CommandMetadata = {
     },
     {
       flags: "--criteria <criteria...>",
-      description: "Success criteria for the goal"
+      description: "Success criteria for the goal (required unless --interactive)"
     },
     {
       flags: "--scope-in <components...>",
@@ -200,17 +200,27 @@ export async function goalAdd(
       return;
     }
 
-    // Non-interactive mode: objective is required
+    // Non-interactive mode: title, objective, and criteria are required
+    if (!options.title) {
+      renderer.error("--title is required (or use --interactive for guided creation)");
+      process.exit(1);
+    }
+
     if (!options.objective) {
       const output = outputBuilder.buildMissingObjectiveError();
       renderer.info(output.toHumanReadable());
       process.exit(1);
     }
 
+    if (!options.criteria || options.criteria.length === 0) {
+      renderer.error("--criteria is required (or use --interactive for guided creation)");
+      process.exit(1);
+    }
+
     const request: AddGoalRequest = {
-      title: options.title || '',
+      title: options.title,
       objective: options.objective,
-      successCriteria: options.criteria || [],
+      successCriteria: options.criteria,
       scopeIn: options.scopeIn,
       scopeOut: options.scopeOut,
       nextGoalId: options.nextGoal,
@@ -221,7 +231,7 @@ export async function goalAdd(
     const response = await container.addGoalController.handle(request);
 
     // Build and render success output
-    const output = outputBuilder.buildSuccess(response.goalId, options.title || '', options.objective);
+    const output = outputBuilder.buildSuccess(response.goalId, options.title, options.objective);
     renderer.info(output.toHumanReadable());
   } catch (error) {
     const output = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
