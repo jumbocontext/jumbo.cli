@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-03-16
+
+### Added
+
+- **Automatic relation maintenance goals**: When an entity with active relations is changed (updated, removed, deprecated, superseded, restored, or undeprecated), a maintenance goal is now automatically registered to review and restore symmetry between the entity and its relations.
+
+### Fixed
+
+- **Required flag validation**: Covered gaps in required flag demarcation across CLI commands.
+
 ## [2.0.3] - 2026-03-15
 
 ### Changed
