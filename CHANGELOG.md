@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-03-18
+
+### Changed
+
+- **Centralized agent instructions in JUMBO.md**: `jumbo init` and `jumbo evolve` now produce a centralized JUMBO.md containing all agent onboarding instructions. AGENTS.md, CLAUDE.md, GEMINI.md, and .github/copilot-instructions.md become thin reference files pointing to JUMBO.md, eliminating content duplication across agent instruction files.
+
 ## [2.1.0] - 2026-03-16
 
 ### Added
