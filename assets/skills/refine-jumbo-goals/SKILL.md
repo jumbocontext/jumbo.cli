@@ -143,7 +143,7 @@ Before approving, verify ALL of the following:
 Only after completing all verification checks:
 
 ```bash
-jumbo goal refine --id <goal-id> --approve
+jumbo goal commit --id <goal-id>
 ```
 
 ## Rules
