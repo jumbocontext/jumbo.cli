@@ -81,7 +81,7 @@ export class SessionContextQueryHandler {
     // Limit to 10 most recent decisions, sorted by creation date (newest first)
     const recentDecisions = activeDecisions
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 10);
+      .slice(0, 3);
     const deactivatedRelationsSummary =
       deactivatedRelations.length === 0
         ? {
