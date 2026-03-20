@@ -3,7 +3,8 @@
  *
  * Verifies the top-level session start output composition:
  * - Human-readable output includes all context and goal sections
- * - Structured output contains all expected fields
+ * - Goals are grouped by status (not split into inProgress/planned)
+ * - Structured output contains per-state grouping with hints
  * - @LLM prompts are preserved in both modes
  */
 
@@ -64,19 +65,22 @@ describe("SessionStartOutputBuilder", () => {
       expect(text).toContain("status: active");
     });
 
-    it("should include in-progress and planned goals", () => {
+    it("should group goals by status from all sources", () => {
       const context = createContext({
-        activeGoals: [{ goalId: "g1", objective: "Active task", status: "doing" } as GoalView],
-        plannedGoals: [{ goalId: "g2", objective: "Planned task", status: "defined" } as GoalView],
+        activeGoals: [{ goalId: "g_active", objective: "Active task", status: "doing" } as GoalView],
+        pausedGoals: [{ goalId: "g_paused", objective: "Paused task", status: "paused", updatedAt: "2025-01-01T11:00:00Z" } as GoalView],
+        plannedGoals: [{ goalId: "g_planned", objective: "Planned task", status: "defined" } as GoalView],
       });
 
       const output = builder.buildSessionStartOutput(context);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("inProgressGoals:");
-      expect(text).toContain("goalId: g1");
-      expect(text).toContain("plannedGoals:");
-      expect(text).toContain("goalId: g2");
+      expect(text).toContain("doing:");
+      expect(text).toContain("goalId: g_active");
+      expect(text).toContain("paused:");
+      expect(text).toContain("goalId: g_paused");
+      expect(text).toContain("defined:");
+      expect(text).toContain("goalId: g_planned");
     });
 
     it("should include @LLM goal start instruction", () => {
@@ -85,7 +89,6 @@ describe("SessionStartOutputBuilder", () => {
       const text = output.toHumanReadable();
 
       expect(text).toContain("@LLM:");
-      expect(text).toContain("jumbo goal start --id");
     });
 
     it("should include paused goals resume prompt when goals are paused", () => {
@@ -109,31 +112,32 @@ describe("SessionStartOutputBuilder", () => {
 
       expect(text).toContain("BROWNFIELD PROJECT");
     });
-
-    it("should combine active and paused goals as in-progress", () => {
-      const context = createContext({
-        activeGoals: [{ goalId: "g_active", objective: "Active", status: "doing" } as GoalView],
-        pausedGoals: [{ goalId: "g_paused", objective: "Paused", status: "paused", updatedAt: "2025-01-01T11:00:00Z" } as GoalView],
-      });
-
-      const output = builder.buildSessionStartOutput(context);
-      const text = output.toHumanReadable();
-
-      expect(text).toContain("count: 2");
-      expect(text).toContain("goalId: g_active");
-      expect(text).toContain("goalId: g_paused");
-    });
   });
 
   describe("buildStructuredOutput", () => {
+    it("should include per-state grouped goals instead of inProgress/planned split", () => {
+      const context = createContext({
+        activeGoals: [{ goalId: "g1", objective: "Active", status: "doing", createdAt: "2025-01-01T10:00:00Z" } as GoalView],
+        plannedGoals: [{ goalId: "g2", objective: "Planned", status: "defined", createdAt: "2025-01-01T10:00:00Z" } as GoalView],
+      });
+
+      const result = builder.buildStructuredOutput(context, "session-123");
+
+      expect(result).toHaveProperty("goals");
+      expect(result).not.toHaveProperty("inProgressGoals");
+      expect(result).not.toHaveProperty("plannedGoals");
+      expect(result.goals).toHaveProperty("doing");
+      expect(result.goals).toHaveProperty("defined");
+      expect(result.goals.doing.hint).toBe("jumbo goal submit --id <id>");
+    });
+
     it("should include all expected top-level fields", () => {
       const context = createContext();
       const result = builder.buildStructuredOutput(context, "session-123");
 
       expect(result).toHaveProperty("projectContext");
       expect(result).toHaveProperty("sessionContext");
-      expect(result).toHaveProperty("inProgressGoals");
-      expect(result).toHaveProperty("plannedGoals");
+      expect(result).toHaveProperty("goals");
       expect(result).toHaveProperty("llmInstructions");
       expect(result).toHaveProperty("sessionStart");
     });
@@ -153,18 +157,16 @@ describe("SessionStartOutputBuilder", () => {
       });
 
       const result = builder.buildStructuredOutput(context, "session-789");
-      const llm = result.llmInstructions as Record<string, unknown>;
 
-      expect(llm.sessionContext).toContain("Goals were paused");
-      expect(llm.goalStart).toContain("@LLM:");
+      expect(result.llmInstructions.sessionContext).toContain("Goals were paused");
+      expect(result.llmInstructions.goalStart).toContain("@LLM:");
     });
 
     it("should have null sessionContext instruction when no paused goals", () => {
       const context = createContext();
       const result = builder.buildStructuredOutput(context, "session-000");
-      const llm = result.llmInstructions as Record<string, unknown>;
 
-      expect(llm.sessionContext).toBeNull();
+      expect(result.llmInstructions.sessionContext).toBeNull();
     });
   });
 });

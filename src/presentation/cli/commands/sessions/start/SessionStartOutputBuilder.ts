@@ -3,7 +3,6 @@ import { TerminalOutput } from "../../../output/TerminalOutput.js";
 import { EnrichedSessionContext } from "../../../../../application/context/sessions/get/EnrichedSessionContext.js";
 import { SessionContextOutputBuilder } from "./SessionContextOutputBuilder.js";
 import { SessionGoalsOutputBuilder } from "./SessionGoalsOutputBuilder.js";
-
 /**
  * SessionStartOutputBuilder - Top-level output builder for session start command.
  *
@@ -37,11 +36,12 @@ export class SessionStartOutputBuilder {
       }
     }
 
-    const inProgressGoals = context.context.activeGoals.concat(context.context.pausedGoals);
-    const goalsOutput = this.sessionGoalsOutputBuilder.buildGoalsOutput(
-      inProgressGoals,
-      context.context.plannedGoals
-    );
+    const allGoals = [
+      ...context.context.activeGoals,
+      ...context.context.pausedGoals,
+      ...context.context.plannedGoals,
+    ];
+    const goalsOutput = this.sessionGoalsOutputBuilder.buildGoalsOutput(allGoals);
     for (const section of goalsOutput.getSections()) {
       if (section.type === "prompt" && section.content) {
         this.builder.addPrompt(section.content as string);
@@ -55,19 +55,19 @@ export class SessionStartOutputBuilder {
    * Build structured JSON output for session start command.
    */
   buildStructuredOutput(context: EnrichedSessionContext, sessionId: string): Record<string, unknown> {
-    const inProgressGoals = context.context.activeGoals.concat(context.context.pausedGoals);
+    const allGoals = [
+      ...context.context.activeGoals,
+      ...context.context.pausedGoals,
+      ...context.context.plannedGoals,
+    ];
 
     const contextData = this.sessionContextOutputBuilder.buildStructuredSessionContext(context);
-    const goalsData = this.sessionGoalsOutputBuilder.buildStructuredGoals(
-      inProgressGoals,
-      context.context.plannedGoals
-    );
+    const goalsData = this.sessionGoalsOutputBuilder.buildStructuredGoals(allGoals);
 
     return {
       projectContext: contextData.projectContext,
       sessionContext: contextData.sessionContext,
-      inProgressGoals: goalsData.inProgressGoals,
-      plannedGoals: goalsData.plannedGoals,
+      goals: goalsData.goals,
       llmInstructions: {
         sessionContext: contextData.llmSessionContextInstruction,
         goalStart: goalsData.llmGoalStartInstruction,

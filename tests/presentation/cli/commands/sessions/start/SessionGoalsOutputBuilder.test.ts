@@ -2,11 +2,11 @@
  * Tests for SessionGoalsOutputBuilder
  *
  * Verifies output for session start goal sections including:
- * - In-progress goals rendering
- * - Planned goals rendering
- * - Goal start @LLM instruction
- * - Empty goal lists
- * - Structured output for JSON mode
+ * - Per-state grouping with hints
+ * - Status ordering matching GoalListOutputBuilder's STATUS_ORDER
+ * - Empty group omission
+ * - @LLM goal start instruction
+ * - Structured output shape
  */
 
 import { describe, it, expect, beforeEach } from "@jest/globals";
@@ -20,100 +20,182 @@ describe("SessionGoalsOutputBuilder", () => {
     builder = new SessionGoalsOutputBuilder();
   });
 
+  function makeGoal(overrides: Partial<GoalView>): GoalView {
+    return {
+      goalId: "g-default",
+      objective: "Default objective",
+      status: "defined",
+      createdAt: "2025-01-01T10:00:00Z",
+      ...overrides,
+    } as GoalView;
+  }
+
   describe("buildGoalsOutput", () => {
-    it("should render in-progress goals", () => {
-      const inProgress: GoalView[] = [
-        { goalId: "g1", objective: "Active task", status: "doing", createdAt: "2025-01-01T10:00:00Z" } as GoalView,
+    it("should group goals by status", () => {
+      const goals = [
+        makeGoal({ goalId: "g1", status: "doing" }),
+        makeGoal({ goalId: "g2", status: "refined" }),
+        makeGoal({ goalId: "g3", status: "doing" }),
       ];
 
-      const output = builder.buildGoalsOutput(inProgress, []);
+      const output = builder.buildGoalsOutput(goals);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("inProgressGoals:");
+      expect(text).toContain("doing:");
+      expect(text).toContain("refined:");
       expect(text).toContain("goalId: g1");
-      expect(text).toContain("objective: Active task");
-      expect(text).toContain("count: 1");
+      expect(text).toContain("goalId: g3");
+      expect(text).toContain("goalId: g2");
     });
 
-    it("should render planned goals", () => {
-      const planned: GoalView[] = [
-        { goalId: "g2", objective: "Planned task", status: "defined", createdAt: "2025-01-01T10:00:00Z" } as GoalView,
+    it("should include hint per status group", () => {
+      const goals = [
+        makeGoal({ goalId: "g1", status: "defined" }),
+        makeGoal({ goalId: "g2", status: "paused" }),
       ];
 
-      const output = builder.buildGoalsOutput([], planned);
+      const output = builder.buildGoalsOutput(goals);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("plannedGoals:");
-      expect(text).toContain("goalId: g2");
-      expect(text).toContain("objective: Planned task");
+      expect(text).toContain("hint: jumbo goal refine --id <id>");
+      expect(text).toContain("hint: jumbo goal resume --id <id>");
     });
 
-    it("should show empty message when no in-progress goals", () => {
-      const output = builder.buildGoalsOutput([], []);
+    it("should omit empty groups", () => {
+      const goals = [makeGoal({ goalId: "g1", status: "doing" })];
+
+      const output = builder.buildGoalsOutput(goals);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("No goals currently in progress");
+      expect(text).toContain("doing:");
+      expect(text).not.toContain("defined:");
+      expect(text).not.toContain("refined:");
+      expect(text).not.toContain("paused:");
     });
 
-    it("should show empty message when no planned goals", () => {
-      const output = builder.buildGoalsOutput([], []);
+    it("should order groups by STATUS_ORDER (most progressed first)", () => {
+      const goals = [
+        makeGoal({ goalId: "g-defined", status: "defined" }),
+        makeGoal({ goalId: "g-approved", status: "approved" }),
+        makeGoal({ goalId: "g-doing", status: "doing" }),
+      ];
+
+      const output = builder.buildGoalsOutput(goals);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("No planned goals available");
+      const approvedIdx = text.indexOf("approved:");
+      const doingIdx = text.indexOf("doing:");
+      const definedIdx = text.indexOf("defined:");
+
+      expect(approvedIdx).toBeLessThan(doingIdx);
+      expect(doingIdx).toBeLessThan(definedIdx);
+    });
+
+    it("should render goals with no goals as empty goals object", () => {
+      const output = builder.buildGoalsOutput([]);
+      const text = output.toHumanReadable();
+
+      expect(text).toContain("goals:");
+      expect(text).toContain("@LLM:");
     });
 
     it("should include separator and goal start instruction", () => {
-      const output = builder.buildGoalsOutput([], []);
+      const output = builder.buildGoalsOutput([]);
       const text = output.toHumanReadable();
 
       expect(text).toContain("---");
       expect(text).toContain("@LLM:");
-      expect(text).toContain("jumbo goal start --id");
+    });
+
+    it("should include count per group", () => {
+      const goals = [
+        makeGoal({ goalId: "g1", status: "doing" }),
+        makeGoal({ goalId: "g2", status: "doing" }),
+      ];
+
+      const output = builder.buildGoalsOutput(goals);
+      const text = output.toHumanReadable();
+
+      expect(text).toContain("count: 2");
     });
   });
 
   describe("renderGoalStartInstruction", () => {
-    it("should contain verbatim @LLM goal start prompt", () => {
+    it("should instruct LLM to prompt user for goal selection", () => {
       const instruction = builder.renderGoalStartInstruction();
 
-      expect(instruction).toContain("@LLM: Prompt the user for input about what goal to start.");
-      expect(instruction).toContain("IMPORTANT: Run 'jumbo goal start --id <id>' before doing any work!");
+      expect(instruction).toContain("@LLM: Prompt the user for input about what goal to work on.");
+    });
+
+    it("should reference per-state hints", () => {
+      const instruction = builder.renderGoalStartInstruction();
+
+      expect(instruction).toContain("hint with the suggested next-step command");
+    });
+
+    it("should instruct LLM to run suggested command before doing work", () => {
+      const instruction = builder.renderGoalStartInstruction();
+
+      expect(instruction).toContain("IMPORTANT: Run the suggested command for the chosen goal before doing any work!");
     });
   });
 
   describe("buildStructuredGoals", () => {
-    it("should return structured data for in-progress and planned goals", () => {
-      const inProgress: GoalView[] = [
-        { goalId: "g1", objective: "Active", status: "doing", createdAt: "2025-01-01T10:00:00Z" } as GoalView,
-      ];
-      const planned: GoalView[] = [
-        { goalId: "g2", objective: "Planned", status: "defined", createdAt: "2025-01-01T10:00:00Z" } as GoalView,
+    it("should return per-state grouped goals with hints", () => {
+      const goals = [
+        makeGoal({ goalId: "g1", objective: "Active", status: "doing", createdAt: "2025-01-01T10:00:00Z" }),
+        makeGoal({ goalId: "g2", objective: "Planned", status: "defined", createdAt: "2025-01-01T10:00:00Z" }),
       ];
 
-      const result = builder.buildStructuredGoals(inProgress, planned);
+      const result = builder.buildStructuredGoals(goals);
 
-      expect(result.inProgressGoals).toEqual({
+      expect(result.goals).toHaveProperty("doing");
+      expect(result.goals).toHaveProperty("defined");
+      expect(result.goals.doing).toEqual({
+        hint: "jumbo goal submit --id <id>",
         count: 1,
-        goals: [{ goalId: "g1", objective: "Active", status: "doing", createdAt: "2025-01-01T10:00:00Z" }],
+        goals: [{ goalId: "g1", objective: "Active", createdAt: "2025-01-01T10:00:00Z" }],
       });
-      expect(result.plannedGoals).toEqual({
+      expect(result.goals.defined).toEqual({
+        hint: "jumbo goal refine --id <id>",
         count: 1,
-        goals: [{ goalId: "g2", objective: "Planned", status: "defined", createdAt: "2025-01-01T10:00:00Z" }],
+        goals: [{ goalId: "g2", objective: "Planned", createdAt: "2025-01-01T10:00:00Z" }],
       });
       expect(result.llmGoalStartInstruction).toContain("@LLM:");
     });
 
-    it("should return empty messages when no goals exist", () => {
-      const result = builder.buildStructuredGoals([], []);
+    it("should return empty goals object when no goals exist", () => {
+      const result = builder.buildStructuredGoals([]);
 
-      expect(result.inProgressGoals).toEqual({
-        count: 0,
-        message: "No goals currently in progress. Use 'jumbo goal start --id <id>' to begin working on a goal.",
-      });
-      expect(result.plannedGoals).toEqual({
-        count: 0,
-        message: "No planned goals available. Use 'jumbo goal add' to create a new goal to work on.",
-      });
+      expect(result.goals).toEqual({});
+    });
+
+    it("should include correct hints for all statuses", () => {
+      const statuses = ["defined", "refined", "doing", "paused", "blocked", "unblocked", "in-review", "approved", "rejected", "submitted", "in-refinement", "codifying"] as const;
+      const expectedHints: Record<string, string> = {
+        "defined": "jumbo goal refine --id <id>",
+        "refined": "jumbo goal start --id <id>",
+        "doing": "jumbo goal submit --id <id>",
+        "paused": "jumbo goal resume --id <id>",
+        "blocked": "jumbo goal unblock --id <id>",
+        "unblocked": "jumbo goal start --id <id>",
+        "in-review": "Awaiting QA review",
+        "approved": "jumbo goal codify --id <id>",
+        "rejected": "jumbo goal start --id <id>",
+        "submitted": "jumbo goal review --id <id>",
+        "in-refinement": "Awaiting refinement completion",
+        "codifying": "Awaiting codification completion",
+      };
+
+      const goals = statuses.map((status, i) =>
+        makeGoal({ goalId: `g${i}`, status })
+      );
+
+      const result = builder.buildStructuredGoals(goals);
+
+      for (const status of statuses) {
+        expect(result.goals[status]?.hint).toBe(expectedHints[status]);
+      }
     });
   });
 });

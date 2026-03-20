@@ -10,8 +10,7 @@ export interface SessionStartTextRenderResult {
 export interface SessionStartStructuredContext {
   readonly projectContext: Record<string, unknown> | null;
   readonly sessionContext: Record<string, unknown>;
-  readonly inProgressGoals: Record<string, unknown>;
-  readonly plannedGoals: Record<string, unknown>;
+  readonly goals: Record<string, unknown>;
   readonly llmInstructions: {
     readonly sessionContext: string | null;
     readonly goalStart: string;
@@ -59,8 +58,7 @@ export class SessionStartTextRenderer {
     return {
       projectContext: structured.projectContext as Record<string, unknown> | null,
       sessionContext: structured.sessionContext as Record<string, unknown>,
-      inProgressGoals: structured.inProgressGoals as Record<string, unknown>,
-      plannedGoals: structured.plannedGoals as Record<string, unknown>,
+      goals: structured.goals as Record<string, unknown>,
       llmInstructions: structured.llmInstructions as {
         sessionContext: string | null;
         goalStart: string;
