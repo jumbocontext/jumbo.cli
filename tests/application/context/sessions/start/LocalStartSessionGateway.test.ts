@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach } from "@jest/globals";
 import { LocalStartSessionGateway } from "../../../../../src/application/context/sessions/start/LocalStartSessionGateway.js";
 import { SessionContextQueryHandler } from "../../../../../src/application/context/sessions/get/SessionContextQueryHandler.js";
 import { StartSessionCommandHandler } from "../../../../../src/application/context/sessions/start/StartSessionCommandHandler.js";
-import { UnprimedBrownfieldQualifier } from "../../../../../src/application/UnprimedBrownfieldQualifier.js";
+import { IBrownfieldStatusReader } from "../../../../../src/application/context/sessions/start/IBrownfieldStatusReader.js";
 import { ContextualSessionView } from "../../../../../src/application/context/sessions/get/ContextualSessionView.js";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
 
 describe("LocalStartSessionGateway", () => {
   let sessionContextQueryHandler: jest.Mocked<SessionContextQueryHandler>;
   let startSessionCommandHandler: jest.Mocked<StartSessionCommandHandler>;
-  let unprimedBrownfieldQualifier: jest.Mocked<UnprimedBrownfieldQualifier>;
+  let brownfieldStatusReader: jest.Mocked<IBrownfieldStatusReader>;
   let gateway: LocalStartSessionGateway;
 
   function createBaseContextView(
@@ -38,14 +38,14 @@ describe("LocalStartSessionGateway", () => {
       execute: jest.fn().mockResolvedValue({ sessionId: "session_test-123" }),
     } as unknown as jest.Mocked<StartSessionCommandHandler>;
 
-    unprimedBrownfieldQualifier = {
+    brownfieldStatusReader = {
       isUnprimed: jest.fn().mockResolvedValue(false),
-    } as unknown as jest.Mocked<UnprimedBrownfieldQualifier>;
+    } as jest.Mocked<IBrownfieldStatusReader>;
 
     gateway = new LocalStartSessionGateway(
       sessionContextQueryHandler,
       startSessionCommandHandler,
-      unprimedBrownfieldQualifier
+      brownfieldStatusReader
     );
   });
 
@@ -73,7 +73,7 @@ describe("LocalStartSessionGateway", () => {
   it("should check brownfield status via qualifier", async () => {
     await gateway.startSession({});
 
-    expect(unprimedBrownfieldQualifier.isUnprimed).toHaveBeenCalledTimes(1);
+    expect(brownfieldStatusReader.isUnprimed).toHaveBeenCalledTimes(1);
   });
 
   describe("instruction building", () => {
@@ -84,7 +84,7 @@ describe("LocalStartSessionGateway", () => {
     });
 
     it("should include brownfield-onboarding when project is unprimed", async () => {
-      unprimedBrownfieldQualifier.isUnprimed.mockResolvedValue(true);
+      brownfieldStatusReader.isUnprimed.mockResolvedValue(true);
 
       const result = await gateway.startSession({});
 
@@ -92,7 +92,7 @@ describe("LocalStartSessionGateway", () => {
     });
 
     it("should not include brownfield-onboarding when project is primed", async () => {
-      unprimedBrownfieldQualifier.isUnprimed.mockResolvedValue(false);
+      brownfieldStatusReader.isUnprimed.mockResolvedValue(false);
 
       const result = await gateway.startSession({});
 
@@ -124,7 +124,7 @@ describe("LocalStartSessionGateway", () => {
     });
 
     it("should include all instructions when brownfield with paused goals", async () => {
-      unprimedBrownfieldQualifier.isUnprimed.mockResolvedValue(true);
+      brownfieldStatusReader.isUnprimed.mockResolvedValue(true);
       const contextView = createBaseContextView({
         context: {
           projectContext: null,

@@ -233,9 +233,8 @@ import { UpdateProjectController } from "../context/project/update/UpdateProject
 import { IAudienceContextReader } from "../context/audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../context/audience-pains/query/IAudiencePainContextReader.js";
 import { IValuePropositionContextReader } from "../context/value-propositions/query/IValuePropositionContextReader.js";
-// Solution Context
-import { ISolutionContextReader } from "../ISolutionContextReader.js";
-import { UnprimedBrownfieldQualifier } from "../UnprimedBrownfieldQualifier.js";
+// Brownfield Status
+import { IBrownfieldStatusReader } from "../context/sessions/start/IBrownfieldStatusReader.js";
 
 // Worker Identity
 import { IWorkerIdentityReader } from "./workers/IWorkerIdentityReader.js";
@@ -564,9 +563,8 @@ export interface IApplicationContainer {
   updateInvariantController: UpdateInvariantController;
   removeInvariantController: RemoveInvariantController;
   getInvariantsController: GetInvariantsController;
-  // Solution Context - cross-cutting reader and qualifier
-  solutionContextReader: ISolutionContextReader;
-  unprimedBrownfieldQualifier: UnprimedBrownfieldQualifier;
+  // Brownfield Status
+  brownfieldStatusReader: IBrownfieldStatusReader;
 
   // Project Knowledge Category - Event Stores
   // Project Event Stores - decomposed by use case
