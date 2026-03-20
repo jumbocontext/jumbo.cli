@@ -143,7 +143,7 @@ vite.config.ts.timestamp-*
 
 # Claude (local)
 .claude/*
-!.claude/settings.json
+CLAUDE.md
 
 # Github
 .github/hooks/
@@ -158,9 +158,16 @@ nul
 
 # Gemini
 .gemini/*
+GEMINI.md
 
 # Mistral Vibe
 .vibe/*
 
 # Agents
 .agents/*
+
+# Codex
+.codex/*
+
+# VSCode
+.vscode/*
