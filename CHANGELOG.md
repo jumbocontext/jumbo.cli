@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-03-20
+
+### Changed
+
+- **Goals grouped by state**: `goal list` and `session start` now display goals grouped by lifecycle state with bracket-style headings (e.g., `[DOING]`, `[APPROVED]`) and contextual hints describing available actions for each state.
+- **Session start output refactored**: Session start rendering decomposed into composable output builders (`SessionContextOutputBuilder`, `SessionGoalsOutputBuilder`, `SessionStartOutputBuilder`) for maintainability.
+- **Recent decisions limit reduced**: Session context now includes the 3 most recent decisions (previously 10) to keep context concise.
+
+### Fixed
+
+- **Deprecated command reference in refine skill**: Updated `refine-jumbo-goals` skill to use `jumbo goal commit` instead of the removed `jumbo goal refine --approve`.
+
 ## [2.2.0] - 2026-03-18
 
 ### Changed
