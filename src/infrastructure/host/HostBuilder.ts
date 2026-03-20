@@ -266,8 +266,8 @@ import { SqliteAudiencePainContextReader } from "../context/audience-pains/query
 import { SqliteValuePropositionContextReader } from "../context/value-propositions/query/SqliteValuePropositionContextReader.js";
 // CLI Version Reader
 import { CliVersionReader } from "../cli-metadata/query/CliVersionReader.js";
-// Solution Context Reader
-import { SqliteSolutionContextReader } from "../SqliteSolutionContextReader.js";
+// Brownfield Status Reader
+import { SqliteBrownfieldStatusReader } from "../context/sessions/start/SqliteBrownfieldStatusReader.js";
 // Settings Infrastructure
 import { FsSettingsReader } from "../settings/FsSettingsReader.js";
 import { FsSettingsInitializer } from "../settings/FsSettingsInitializer.js";
@@ -549,8 +549,6 @@ import { RemoveAudienceCommandHandler } from "../../application/context/audience
 import { LocalRemoveAudienceGateway } from "../../application/context/audiences/remove/LocalRemoveAudienceGateway.js";
 import { RemoveAudienceController } from "../../application/context/audiences/remove/RemoveAudienceController.js";
 
-// Solution Context
-import { UnprimedBrownfieldQualifier } from "../../application/UnprimedBrownfieldQualifier.js";
 
 // Worker Identity
 import { HostSessionKeyResolver } from "./session/HostSessionKeyResolver.js";
@@ -901,9 +899,8 @@ export class HostBuilder {
     const getInvariantsGateway = new LocalGetInvariantsGateway(invariantViewReader);
     const getInvariantsController = new GetInvariantsController(getInvariantsGateway);
 
-    // Solution Context - cross-cutting reader and qualifier
-    const solutionContextReader = new SqliteSolutionContextReader(this.db);
-    const unprimedBrownfieldQualifier = new UnprimedBrownfieldQualifier(solutionContextReader);
+    // Brownfield Status
+    const brownfieldStatusReader = new SqliteBrownfieldStatusReader(this.db);
 
     // Project Knowledge Category
     // Project Projection Stores - decomposed by use case
@@ -981,7 +978,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const startSessionGateway = new LocalStartSessionGateway(
       sessionContextQueryHandler,
       startSessionCommandHandler,
-      unprimedBrownfieldQualifier
+      brownfieldStatusReader
     );
     const sessionStartController = new SessionStartController(
       startSessionGateway
@@ -2174,9 +2171,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       updateInvariantController,
       removeInvariantController,
       getInvariantsController,
-      // Solution Context - cross-cutting reader and qualifier
-      solutionContextReader,
-      unprimedBrownfieldQualifier,
+      // Brownfield Status
+      brownfieldStatusReader,
 
       // Project Knowledge Category
       // Project Event Stores - decomposed by use case

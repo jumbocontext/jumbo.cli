@@ -3,14 +3,14 @@ import { SessionStartRequest } from "./SessionStartRequest.js";
 import { SessionStartResponse } from "./SessionStartResponse.js";
 import { StartSessionCommandHandler } from "./StartSessionCommandHandler.js";
 import { SessionContextQueryHandler } from "../get/SessionContextQueryHandler.js";
-import { UnprimedBrownfieldQualifier } from "../../../UnprimedBrownfieldQualifier.js";
+import { IBrownfieldStatusReader } from "./IBrownfieldStatusReader.js";
 import { ContextualSessionView } from "../get/ContextualSessionView.js";
 
 export class LocalStartSessionGateway implements IStartSessionGateway {
   constructor(
     private readonly sessionContextQueryHandler: SessionContextQueryHandler,
     private readonly startSessionCommandHandler: StartSessionCommandHandler,
-    private readonly unprimedBrownfieldQualifier: UnprimedBrownfieldQualifier
+    private readonly brownfieldStatusReader: IBrownfieldStatusReader
   ) {}
 
   async startSession(request: SessionStartRequest): Promise<SessionStartResponse> {
@@ -18,7 +18,7 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
     const contextualSessionView = await this.sessionContextQueryHandler.execute();
 
     // 2. Check brownfield status
-    const isUnprimed = await this.unprimedBrownfieldQualifier.isUnprimed();
+    const isUnprimed = await this.brownfieldStatusReader.isUnprimed();
 
     // 3. Build start-specific instructions
     const instructions = this.buildStartInstructions(contextualSessionView, isUnprimed);
