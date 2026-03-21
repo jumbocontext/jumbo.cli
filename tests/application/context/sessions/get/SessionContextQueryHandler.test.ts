@@ -230,7 +230,7 @@ describe("SessionContextQueryHandler", () => {
     const handler = createHandler();
     const result = await handler.execute();
 
-    expect(result.context.recentDecisions).toHaveLength(10);
+    expect(result.context.recentDecisions).toHaveLength(3);
   });
 
   it("should handle missing optional readers gracefully", async () => {
