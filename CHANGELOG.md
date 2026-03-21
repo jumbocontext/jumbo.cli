@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-03-21
+
+### Changed
+
+- **Internal**: Replaced orphaned `SolutionContext` cluster (`ISolutionContextReader`, `SolutionContextView`, `UnprimedBrownfieldQualifier`, `SqliteSolutionContextReader`) with focused `IBrownfieldStatusReader` and `SqliteBrownfieldStatusReader`.
+- **Internal**: Removed tracked files that should have been gitignored (`.claude/settings.json`, `.vscode/settings.json`, `.codex/rules/`, agent instruction stubs).
+
+### Fixed
+
+- **Broken test**: Fixed failing test in `SessionContextQueryHandler`.
+- **README**: Documentation refinements and fixes.
+
 ## [2.3.0] - 2026-03-20
 
 ### Changed
