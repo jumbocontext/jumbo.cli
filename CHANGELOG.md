@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-03-22
+
 ### Added
 
 - **Activity mirror**: `session start` now surfaces a brief summary of proactive context maintenance actions from recent sessions (entities registered, decisions recorded, relations added, goals added), reinforcing productive LLM behavior.
+
+### Changed
+
+- **Context maintenance instructions**: Replaced generic "be proactive" guidance in JUMBO.md and JumboMdContent with specific, actionable instructions for when and how to register entities during refinement, implementation, and user corrections.
+- **Prerequisite discovery during refinement**: Goal refine output now prompts agents to register prerequisite goals immediately when discovered, rather than deferring.
+- **Real-time context capture during implementation**: Goal start output now includes specific commands for registering decisions, components, relations, and corrections as they happen.
+- **Skills updated**: Define, refine, and start goal skills updated with context maintenance instructions aligned to the new approach.
+- **Brownfield onboarding copy**: Improved clarity of brownfield onboarding and paused goals resume prompts in session start output.
 
 ## [2.3.1] - 2026-03-21
 
