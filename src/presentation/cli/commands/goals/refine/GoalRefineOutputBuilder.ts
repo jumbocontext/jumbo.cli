@@ -176,14 +176,17 @@ export class GoalRefineOutputBuilder {
       "  implements   - Implementation applies or realizes this architectural decision"
     );
 
-    // Guidance on what to register
+    // Guidance on what to register — split by evaluation strategy
     this.builder.addPrompt(
-      "\nWhat to register:\n" +
-      "  - Invariants: Architectural constraints the implementation must adhere to\n" +
-      "  - Guidelines: Coding standards, testing requirements the implementation must follow\n" +
-      "  - Decisions: Architectural patterns the implementation will apply\n" +
-      "  - Components: Existing code this implementation will modify or depend on\n" +
-      "  - Dependencies: External libraries the implementation will integrate\n" +
+      "\nRELATION STRATEGY:\n" +
+      "\nINVARIANTS & GUIDELINES — evaluate by exclusion:\n" +
+      "  Run 'jumbo invariants list' and 'jumbo guidelines list'.\n" +
+      "  Review every entry against the goal. For each, ask: 'Can I confidently say\n" +
+      "  the implementing agent will never need this?' Only exclude those where the\n" +
+      "  answer is clearly yes. A missed constraint causes QA rejections.\n" +
+      "\nCOMPONENTS, DECISIONS & DEPENDENCIES — evaluate by inclusion:\n" +
+      "  Use targeted searches to find entities the implementation will modify, use, or depend on.\n" +
+      "  Relate entities with direct, actionable relevance to the goal.\n" +
       "\nAfter registering relations, commit the refinement:\n" +
       `  jumbo goal commit --id ${goal.goalId}`
     );

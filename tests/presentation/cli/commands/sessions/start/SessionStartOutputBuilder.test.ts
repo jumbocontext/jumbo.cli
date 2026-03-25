@@ -16,6 +16,7 @@ import { GoalView } from "../../../../../../src/application/context/goals/GoalVi
 import { DecisionView } from "../../../../../../src/application/context/decisions/DecisionView.js";
 import { SessionView } from "../../../../../../src/application/context/sessions/SessionView.js";
 import { ActivityMirror } from "../../../../../../src/application/context/sessions/start/ActivityMirrorAssembler.js";
+import { SessionInstructionSignal } from "../../../../../../src/application/context/sessions/SessionInstructionSignal.js";
 
 describe("SessionStartOutputBuilder", () => {
   let builder: SessionStartOutputBuilder;
@@ -107,7 +108,7 @@ describe("SessionStartOutputBuilder", () => {
     });
 
     it("should include brownfield instruction when brownfield-onboarding present", () => {
-      const context = createContext({}, defaultSession, ["brownfield-onboarding"]);
+      const context = createContext({}, defaultSession, [SessionInstructionSignal.BROWNFIELD_ONBOARDING]);
       const output = builder.buildSessionStartOutput(context);
       const text = output.toHumanReadable();
 

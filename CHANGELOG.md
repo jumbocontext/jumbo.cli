@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Extended init flow**: `jumbo init` now prompts for target audiences, audience pain points, and value propositions after collecting project name and purpose. Each section is gated by a confirm prompt and supports multiple entries via an "Add another?" loop. Non-interactive mode supports new CLI flags: `--audience-name`, `--audience-description`, `--audience-priority`, `--pain-title`, `--pain-description`, `--value-title`, `--value-description`, `--value-benefit`, `--value-measurable-outcome`.
+
 ## [2.4.0] - 2026-03-22
 
 ### Added

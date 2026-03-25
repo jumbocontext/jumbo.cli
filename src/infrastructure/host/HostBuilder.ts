@@ -970,7 +970,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       relationViewReader,
       projectContextReader,
       audienceContextReader,
-      audiencePainContextReader
+      audiencePainContextReader,
+      valuePropositionContextReader
     );
     const startSessionCommandHandler = new StartSessionCommandHandler(
       sessionStartedEventStore,

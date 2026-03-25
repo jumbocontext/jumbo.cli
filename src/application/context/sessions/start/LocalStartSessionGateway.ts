@@ -6,6 +6,7 @@ import { SessionContextQueryHandler } from "../get/SessionContextQueryHandler.js
 import { IBrownfieldStatusReader } from "./IBrownfieldStatusReader.js";
 import { ContextualSessionView } from "../get/ContextualSessionView.js";
 import { ActivityMirrorAssembler } from "./ActivityMirrorAssembler.js";
+import { SessionInstructionSignal } from "../SessionInstructionSignal.js";
 
 export class LocalStartSessionGateway implements IStartSessionGateway {
   constructor(
@@ -50,15 +51,32 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
     const instructions: string[] = [];
 
     if (isUnprimed) {
-      instructions.push("brownfield-onboarding");
+      instructions.push(SessionInstructionSignal.BROWNFIELD_ONBOARDING);
+    }
+
+    if (!isUnprimed && this.hasPrimitiveGaps(view)) {
+      instructions.push(SessionInstructionSignal.PRIMITIVE_GAPS_DETECTED);
     }
 
     if (view.context.pausedGoals.length > 0) {
-      instructions.push("paused-goals-resume");
+      instructions.push(SessionInstructionSignal.PAUSED_GOALS_RESUME);
     }
 
-    instructions.push("goal-selection-prompt");
+    instructions.push(SessionInstructionSignal.GOAL_SELECTION_PROMPT);
 
     return instructions;
+  }
+
+  private hasPrimitiveGaps(view: ContextualSessionView): boolean {
+    const projectContext = view.context.projectContext;
+    if (!projectContext) {
+      return false;
+    }
+
+    return (
+      projectContext.audiences.length === 0 ||
+      projectContext.audiencePains.length === 0 ||
+      projectContext.valuePropositions.length === 0
+    );
   }
 }

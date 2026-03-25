@@ -15,6 +15,7 @@ import { SessionContext } from "../../../../../../src/application/context/sessio
 import { GoalView } from "../../../../../../src/application/context/goals/GoalView.js";
 import { DecisionView } from "../../../../../../src/application/context/decisions/DecisionView.js";
 import { SessionView } from "../../../../../../src/application/context/sessions/SessionView.js";
+import { SessionInstructionSignal } from "../../../../../../src/application/context/sessions/SessionInstructionSignal.js";
 
 describe("SessionStartTextRenderer", () => {
   let renderer: SessionStartTextRenderer;
@@ -194,7 +195,7 @@ describe("SessionStartTextRenderer", () => {
 
   describe("brownfield project handling", () => {
     it("should return brownfield instructions when brownfield-onboarding instruction is present", () => {
-      const context = createContext({}, defaultSession, ["brownfield-onboarding"]);
+      const context = createContext({}, defaultSession, [SessionInstructionSignal.BROWNFIELD_ONBOARDING]);
 
       const result = renderer.renderSessionSummary(context);
 

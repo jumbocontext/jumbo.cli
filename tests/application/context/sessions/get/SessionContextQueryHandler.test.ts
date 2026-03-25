@@ -7,6 +7,7 @@ import { IProjectContextReader } from "../../../../../src/application/context/pr
 import { IAudienceContextReader } from "../../../../../src/application/context/audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../../../../src/application/context/audience-pains/query/IAudiencePainContextReader.js";
 import { IRelationViewReader } from "../../../../../src/application/context/relations/get/IRelationViewReader.js";
+import { IValuePropositionContextReader } from "../../../../../src/application/context/value-propositions/query/IValuePropositionContextReader.js";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants.js";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
 import { SessionView } from "../../../../../src/application/context/sessions/SessionView.js";
@@ -19,6 +20,7 @@ describe("SessionContextQueryHandler", () => {
   let projectContextReader: jest.Mocked<IProjectContextReader>;
   let audienceContextReader: jest.Mocked<IAudienceContextReader>;
   let audiencePainContextReader: jest.Mocked<IAudiencePainContextReader>;
+  let valuePropositionContextReader: jest.Mocked<IValuePropositionContextReader>;
 
   beforeEach(() => {
     sessionViewReader = {
@@ -50,6 +52,10 @@ describe("SessionContextQueryHandler", () => {
     audiencePainContextReader = {
       findAllActive: jest.fn().mockResolvedValue([]),
     } as unknown as jest.Mocked<IAudiencePainContextReader>;
+
+    valuePropositionContextReader = {
+      findAllActive: jest.fn().mockResolvedValue([]),
+    } as unknown as jest.Mocked<IValuePropositionContextReader>;
   });
 
   function createHandler(): SessionContextQueryHandler {
@@ -60,7 +66,8 @@ describe("SessionContextQueryHandler", () => {
       relationViewReader,
       projectContextReader,
       audienceContextReader,
-      audiencePainContextReader
+      audiencePainContextReader,
+      valuePropositionContextReader
     );
   }
 
@@ -106,14 +113,16 @@ describe("SessionContextQueryHandler", () => {
     });
   });
 
-  it("should assemble projectContext with audiences and pains", async () => {
+  it("should assemble projectContext with audiences, pains, and value propositions", async () => {
     const project = { name: "TestProject", purpose: "Testing" };
     const audiences = [{ name: "Devs", description: "Developers", priority: "primary" }];
     const pains = [{ title: "Pain1", description: "A pain point" }];
+    const valueProps = [{ title: "VP1", description: "A value proposition", benefit: "Saves time" }];
 
     projectContextReader.getProject.mockResolvedValue(project as any);
     audienceContextReader.findAllActive.mockResolvedValue(audiences as any);
     audiencePainContextReader.findAllActive.mockResolvedValue(pains as any);
+    valuePropositionContextReader.findAllActive.mockResolvedValue(valueProps as any);
 
     const handler = createHandler();
     const result = await handler.execute();
@@ -122,6 +131,7 @@ describe("SessionContextQueryHandler", () => {
       project,
       audiences,
       audiencePains: pains,
+      valuePropositions: valueProps,
     });
   });
 

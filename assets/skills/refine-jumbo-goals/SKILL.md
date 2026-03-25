@@ -60,14 +60,19 @@ Do not skip any entity category. Every category is a potential source of impleme
 
 ### 3. Evaluate Every Entity Against the Goal
 
-For each entity returned, ask: **"Will the implementing agent need to know about this to execute correctly?"**
+Use different evaluation strategies depending on the entity category:
 
-Only register relations that are directly relevant. Do not register entities that are tangentially related or that add context without actionable value.
+#### Invariants & Guidelines — evaluate by exclusion
 
-Evaluate systematically by category:
+Review every invariant and guideline returned. For each, ask: **"Can I confidently say the implementing agent will never need this?"** Only exclude those where the answer is clearly yes. A missed constraint causes QA rejections — but over-relating creates context rot that dilutes focus. The bar is confidence of irrelevance, not possible relevance.
 
-- **Invariants**: Which non-negotiable constraints does this implementation touch, cross, or risk violating?
-- **Guidelines**: Which coding standards, testing requirements, or process practices apply?
+- **Invariants**: Review all. Exclude only those confidently unrelated to the goal's scope.
+- **Guidelines**: Review all. Exclude only those confidently unrelated to the goal's scope.
+
+#### Components, Decisions & Dependencies — evaluate by inclusion
+
+Use targeted searches to find entities the implementation will modify, use, or depend on. For each candidate, ask: **"Will the implementing agent need to know about this to execute correctly?"** Only register entities with direct, actionable relevance.
+
 - **Decisions**: Which architectural decisions inform, motivate, or constrain this change?
 - **Components**: Which system components will be created, modified, deleted, or depended upon?
 - **Dependencies**: Which external libraries are involved in the implementation?

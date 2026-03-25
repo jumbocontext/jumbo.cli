@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { SessionStartController } from "../../../../../src/application/context/sessions/start/SessionStartController.js";
 import { IStartSessionGateway } from "../../../../../src/application/context/sessions/start/IStartSessionGateway.js";
 import { SessionStartResponse } from "../../../../../src/application/context/sessions/start/SessionStartResponse.js";
+import { SessionInstructionSignal } from "../../../../../src/application/context/sessions/SessionInstructionSignal.js";
 
 describe("SessionStartController", () => {
   let controller: SessionStartController;
@@ -18,7 +19,7 @@ describe("SessionStartController", () => {
         recentDecisions: [],
         deactivatedRelations: { count: 0, summary: "No deactivated relations." },
       },
-      instructions: ["goal-selection-prompt"],
+      instructions: [SessionInstructionSignal.GOAL_SELECTION_PROMPT],
       scope: "session-start",
     },
     sessionId: "session_test-123",
