@@ -33,9 +33,11 @@ You'll be prompted for:
 |-------|-------------|
 | **Project name** | Short, memorable identifier (required) |
 | **Purpose** | High-level goal or problem the project solves (optional) |
-| **Boundaries** | What's explicitly out of scope (optional) |
+| **Target audiences** | Who the project serves, with priority level (optional, multiple) |
+| **Audience pain points** | Problems the project solves (optional, multiple) |
+| **Value propositions** | Value the project delivers, with benefit and measurable outcome (optional, multiple) |
 
-Press Enter to skip optional fields.
+Each optional section is gated by a confirm prompt (default: Yes). Decline to skip. After each entry, you can add more of the same type.
 
 ---
 
@@ -46,6 +48,17 @@ For automation or scripting:
 ```bash
 > jumbo init --non-interactive --name "MyProject" --purpose "AI memory management"
 ```
+
+You can also provide audience, pain, and value proposition data via flags:
+
+```bash
+> jumbo init --non-interactive --name "MyProject" \
+    --audience-name "Developers" --audience-description "Software developers" --audience-priority primary \
+    --pain-title "Context loss" --pain-description "LLMs lose context between sessions" \
+    --value-title "Persistent context" --value-description "Maintain context across sessions" --value-benefit "No repeated context building"
+```
+
+Primitive flags require all mandatory fields for their type to take effect. Partial sets are silently ignored.
 
 ---
 
