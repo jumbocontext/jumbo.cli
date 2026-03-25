@@ -7,6 +7,7 @@ import { IProjectContextReader } from "../../project/query/IProjectContextReader
 import { IAudienceContextReader } from "../../audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../audience-pains/query/IAudiencePainContextReader.js";
 import { IRelationViewReader } from "../../relations/get/IRelationViewReader.js";
+import { IValuePropositionContextReader } from "../../value-propositions/query/IValuePropositionContextReader.js";
 
 /**
  * SessionContextQueryHandler - Builds the reusable base session context
@@ -25,7 +26,8 @@ export class SessionContextQueryHandler {
     private readonly relationViewReader: IRelationViewReader,
     private readonly projectContextReader?: IProjectContextReader,
     private readonly audienceContextReader?: IAudienceContextReader,
-    private readonly audiencePainContextReader?: IAudiencePainContextReader
+    private readonly audiencePainContextReader?: IAudiencePainContextReader,
+    private readonly valuePropositionContextReader?: IValuePropositionContextReader
   ) {}
 
   /**
@@ -55,6 +57,7 @@ export class SessionContextQueryHandler {
       project,
       audiences,
       audiencePains,
+      valuePropositions,
     ] = await Promise.all([
       this.sessionViewReader.findActive(),
       this.goalStatusReader.findByStatus(GoalStatus.DOING),
@@ -69,10 +72,11 @@ export class SessionContextQueryHandler {
       this.projectContextReader?.getProject() ?? Promise.resolve(null),
       this.audienceContextReader?.findAllActive() ?? Promise.resolve([]),
       this.audiencePainContextReader?.findAllActive() ?? Promise.resolve([]),
+      this.valuePropositionContextReader?.findAllActive() ?? Promise.resolve([]),
     ]);
 
     const projectContext = project
-      ? { project, audiences, audiencePains }
+      ? { project, audiences, audiencePains, valuePropositions }
       : null;
 
     const activeGoals = doingGoals.concat(blockedGoals, inReviewGoals, qualifiedGoals);

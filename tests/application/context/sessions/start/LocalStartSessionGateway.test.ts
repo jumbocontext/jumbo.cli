@@ -152,6 +152,105 @@ describe("LocalStartSessionGateway", () => {
         "goal-selection-prompt",
       ]);
     });
+
+    it("should include primitive-gaps-detected when project context has empty primitive catalogs", async () => {
+      const contextView = createBaseContextView({
+        context: {
+          projectContext: {
+            project: { name: "Test", purpose: "Testing" },
+            audiences: [],
+            audiencePains: [],
+            valuePropositions: [],
+          } as any,
+          activeGoals: [],
+          pausedGoals: [],
+          plannedGoals: [],
+          recentDecisions: [],
+          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
+        },
+      });
+      sessionContextQueryHandler.execute.mockResolvedValue(contextView);
+
+      const result = await gateway.startSession({});
+
+      expect(result.context.instructions).toContain("primitive-gaps-detected");
+    });
+
+    it("should not include primitive-gaps-detected when all primitive catalogs have entries", async () => {
+      const contextView = createBaseContextView({
+        context: {
+          projectContext: {
+            project: { name: "Test", purpose: "Testing" },
+            audiences: [{ name: "Devs" }],
+            audiencePains: [{ title: "Pain" }],
+            valuePropositions: [{ title: "VP" }],
+          } as any,
+          activeGoals: [],
+          pausedGoals: [],
+          plannedGoals: [],
+          recentDecisions: [],
+          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
+        },
+      });
+      sessionContextQueryHandler.execute.mockResolvedValue(contextView);
+
+      const result = await gateway.startSession({});
+
+      expect(result.context.instructions).not.toContain("primitive-gaps-detected");
+    });
+
+    it("should not include primitive-gaps-detected during brownfield onboarding", async () => {
+      brownfieldStatusReader.isUnprimed.mockResolvedValue(true);
+      const contextView = createBaseContextView({
+        context: {
+          projectContext: {
+            project: { name: "Test", purpose: "Testing" },
+            audiences: [],
+            audiencePains: [],
+            valuePropositions: [],
+          } as any,
+          activeGoals: [],
+          pausedGoals: [],
+          plannedGoals: [],
+          recentDecisions: [],
+          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
+        },
+      });
+      sessionContextQueryHandler.execute.mockResolvedValue(contextView);
+
+      const result = await gateway.startSession({});
+
+      expect(result.context.instructions).not.toContain("primitive-gaps-detected");
+    });
+
+    it("should not include primitive-gaps-detected when no project context exists", async () => {
+      const result = await gateway.startSession({});
+
+      expect(result.context.instructions).not.toContain("primitive-gaps-detected");
+    });
+
+    it("should include primitive-gaps-detected when only some catalogs are empty", async () => {
+      const contextView = createBaseContextView({
+        context: {
+          projectContext: {
+            project: { name: "Test", purpose: "Testing" },
+            audiences: [{ name: "Devs" }],
+            audiencePains: [],
+            valuePropositions: [{ title: "VP" }],
+          } as any,
+          activeGoals: [],
+          pausedGoals: [],
+          plannedGoals: [],
+          recentDecisions: [],
+          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
+        },
+      });
+      sessionContextQueryHandler.execute.mockResolvedValue(contextView);
+
+      const result = await gateway.startSession({});
+
+      expect(result.context.instructions).toContain("primitive-gaps-detected");
+    });
   });
 
   describe("activity mirror", () => {

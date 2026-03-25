@@ -53,6 +53,10 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
       instructions.push("brownfield-onboarding");
     }
 
+    if (!isUnprimed && this.hasPrimitiveGaps(view)) {
+      instructions.push("primitive-gaps-detected");
+    }
+
     if (view.context.pausedGoals.length > 0) {
       instructions.push("paused-goals-resume");
     }
@@ -60,5 +64,18 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
     instructions.push("goal-selection-prompt");
 
     return instructions;
+  }
+
+  private hasPrimitiveGaps(view: ContextualSessionView): boolean {
+    const projectContext = view.context.projectContext;
+    if (!projectContext) {
+      return false;
+    }
+
+    return (
+      projectContext.audiences.length === 0 ||
+      projectContext.audiencePains.length === 0 ||
+      projectContext.valuePropositions.length === 0
+    );
   }
 }

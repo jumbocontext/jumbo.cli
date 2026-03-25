@@ -105,6 +105,14 @@ export class SessionContextOutputBuilder {
       }));
     }
 
+    if (projectContext.valuePropositions.length > 0) {
+      contextData.valuePropositions = projectContext.valuePropositions.map((v) => ({
+        title: v.title,
+        description: v.description,
+        benefit: v.benefit,
+      }));
+    }
+
     return contextData;
   }
 
@@ -173,12 +181,45 @@ export class SessionContextOutputBuilder {
         "Deactivated relations detected. Review them before relying on architecture links.";
     }
 
-    const llmInstruction =
-      context.context.pausedGoals.length > 0
-        ? "\n\n@LLM: Goals were paused in your workspace. To pick up where you left off, run:\n  jumbo goal resume --id <goal-id>"
-        : undefined;
+    const llmParts: string[] = [];
+
+    if (context.instructions.includes("primitive-gaps-detected")) {
+      llmParts.push(this.buildPrimitiveGapsInstruction(context));
+    }
+
+    if (context.context.pausedGoals.length > 0) {
+      llmParts.push("@LLM: Goals were paused in your workspace. To pick up where you left off, run:\n  jumbo goal resume --id <goal-id>");
+    }
+
+    const llmInstruction = llmParts.length > 0
+      ? "\n\n" + llmParts.join("\n\n")
+      : undefined;
 
     return { data: contextData, llmInstruction };
+  }
+
+  private buildPrimitiveGapsInstruction(context: EnrichedSessionContext): string {
+    const projectContext = context.context.projectContext;
+    if (!projectContext) {
+      return "";
+    }
+
+    const PRIMITIVE_CHECKS = [
+      { name: "audiences", items: projectContext.audiences, command: "jumbo audience add --help" },
+      { name: "audience pains", items: projectContext.audiencePains, command: "jumbo audience-pain add --help" },
+      { name: "value propositions", items: projectContext.valuePropositions, command: "jumbo value add --help" },
+    ] as const;
+
+    const missing = PRIMITIVE_CHECKS.filter(p => p.items.length === 0);
+
+    if (missing.length === 0) {
+      return "";
+    }
+
+    const missingNames = missing.map(p => p.name).join(", ");
+    const commands = missing.map(p => p.command).join(", ");
+
+    return `@LLM: This project has gaps in its foundational context. Missing: ${missingNames}. Ask the developer if they would like to register these now. Commands: ${commands}.`;
   }
 
   private buildBrownfieldInstruction(): string {
