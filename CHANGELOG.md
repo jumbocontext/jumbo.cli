@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-03-26
+
 ### Added
 
 - **Extended init flow**: `jumbo init` now prompts for target audiences, audience pain points, and value propositions after collecting project name and purpose. Each section is gated by a confirm prompt and supports multiple entries via an "Add another?" loop. Non-interactive mode supports new CLI flags: `--audience-name`, `--audience-description`, `--audience-priority`, `--pain-title`, `--pain-description`, `--value-title`, `--value-description`, `--value-benefit`, `--value-measurable-outcome`.
+- **Session context primitive gaps nudge**: `session start` now detects when project context is missing audiences, audience pains, or value propositions and emits an `@LLM` instruction listing the gaps with relevant `add` commands.
+- **Value propositions in session context**: `session start` now includes value propositions in the project context output alongside audiences and audience pains.
+
+### Changed
+
+- **Internal**: Extracted session instruction signal names (`brownfield-onboarding`, `paused-goals-resume`, `goal-selection-prompt`, `primitive-gaps-detected`) into shared `SessionInstructionSignal` constants, eliminating magic string coupling between application and presentation layers.
+- **Internal**: Split refinement relation strategy into entity-category-specific strategies for more targeted relation curation during goal refinement.
 
 ## [2.4.0] - 2026-03-22
 
