@@ -13,16 +13,23 @@ export class FileLogger implements ILogger {
   private writeStream: fs.WriteStream | null = null;
 
   /**
-   * @param logFilePath - Absolute path to the log file
+   * @param logDir - Absolute path to the log directory
    * @param minLevel - Minimum log level to write (default: INFO)
    */
   constructor(
-    logFilePath: string,
+    logDir: string,
     private readonly minLevel: LogLevel = LogLevel.INFO
   ) {
-    this.logFilePath = logFilePath;
+    this.logFilePath = path.join(logDir, FileLogger.buildDailyLogFileName(new Date()));
     this.ensureLogDirectory();
     this.initializeStream();
+  }
+
+  static buildDailyLogFileName(date: Date): string {
+    const yyyy = date.getFullYear().toString();
+    const dd = date.getDate().toString().padStart(2, "0");
+    const mm = (date.getMonth() + 1).toString().padStart(2, "0");
+    return `${yyyy}${dd}${mm}.log`;
   }
 
   error(message: string, error?: Error | unknown, context?: Record<string, unknown>): void {

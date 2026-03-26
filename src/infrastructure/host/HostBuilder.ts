@@ -597,9 +597,9 @@ export class HostBuilder {
     const clock = new SystemClock();
     const cliVersionReader = new CliVersionReader();
 
-    // Create logger (writes to .jumbo/logs/jumbo.log)
-    const logFilePath = path.join(this.rootDir, "logs", "jumbo.log");
-    const logger = new FileLogger(logFilePath, LogLevel.DEBUG);
+    // Create logger (writes to .jumbo/logs/<yyyyddmm>.log, one file per day)
+    const logDir = path.join(this.rootDir, "logs");
+    const logger = new FileLogger(logDir, LogLevel.DEBUG);
 
     const eventStore = new FsEventStore(this.rootDir, logger);
 
