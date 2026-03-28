@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { IdGenerator } from "../../../identity/IdGenerator.js";
 import { StartSessionCommand } from "./StartSessionCommand.js";
 import { ISessionStartedEventWriter } from "./ISessionStartedEventWriter.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
@@ -18,7 +18,7 @@ export class StartSessionCommandHandler {
     command: StartSessionCommand
   ): Promise<{ sessionId: string }> {
     // Generate new session ID
-    const sessionId = `session_${randomUUID()}`;
+    const sessionId = IdGenerator.generate();
 
     // Create new aggregate
     const session = Session.create(sessionId);

@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { IdGenerator } from "../../../identity/IdGenerator.js";
 import { AddRelationCommand } from "./AddRelationCommand.js";
 import { IRelationAddedEventWriter } from "./IRelationAddedEventWriter.js";
 import { IRelationAddedReader } from "./IRelationAddedReader.js";
@@ -33,7 +33,7 @@ export class AddRelationCommandHandler {
     }
 
     // Generate new relation ID
-    const relationId = `relation_${randomUUID()}`;
+    const relationId = IdGenerator.generate();
 
     // Create new aggregate
     const relation = Relation.create(relationId);

@@ -10,9 +10,11 @@ import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { RelationEventType, EntityType } from "../../../../../src/domain/relations/Constants";
 import { RelationView } from "../../../../../src/application/context/relations/RelationView";
 
-// Mock crypto module
-jest.mock("crypto", () => ({
-  randomUUID: jest.fn(() => "test-uuid-123"),
+// Mock IdGenerator
+jest.mock("../../../../../src/application/identity/IdGenerator", () => ({
+  IdGenerator: {
+    generate: jest.fn(() => "test-uuid-123"),
+  },
 }));
 
 describe("AddRelationCommandHandler", () => {
@@ -57,7 +59,7 @@ describe("AddRelationCommandHandler", () => {
     const result = await handler.execute(command);
 
     // Assert
-    expect(result.relationId).toBe("relation_test-uuid-123");
+    expect(result.relationId).toBe("test-uuid-123");
 
     // Verify relation uniqueness check
     expect(reader.findByEntities).toHaveBeenCalledWith(

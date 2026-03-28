@@ -4,7 +4,7 @@ import { IComponentAddReader } from "./IComponentAddReader.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Component } from "../../../../domain/components/Component.js";
 import { ComponentEvent } from "../../../../domain/components/EventIndex.js";
-import { randomUUID } from "node:crypto";
+import { IdGenerator } from "../../../identity/IdGenerator.js";
 
 export class AddComponentCommandHandler {
   constructor(
@@ -34,7 +34,7 @@ export class AddComponentCommandHandler {
       );
     } else {
       // Create new component
-      componentId = randomUUID();
+      componentId = IdGenerator.generate();
       const component = Component.create(componentId);
 
       event = component.add(

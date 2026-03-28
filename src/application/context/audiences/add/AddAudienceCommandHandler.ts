@@ -12,7 +12,7 @@ import { AddAudienceCommand } from "./AddAudienceCommand.js";
 import { IAudienceAddedEventWriter } from "./IAudienceAddedEventWriter.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Audience } from "../../../../domain/audiences/Audience.js";
-import { UUID } from "../../../../domain/BaseEvent.js";
+import { IdGenerator } from "../../../identity/IdGenerator.js";
 
 export class AddAudienceCommandHandler {
   constructor(
@@ -20,11 +20,9 @@ export class AddAudienceCommandHandler {
     private readonly eventBus: IEventBus
   ) {}
 
-  async execute(command: AddAudienceCommand): Promise<{ audienceId: UUID }> {
+  async execute(command: AddAudienceCommand): Promise<{ audienceId: string }> {
     // Generate unique ID for new audience
-    const audienceId = `audience-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)}` as UUID;
+    const audienceId = IdGenerator.generate();
 
     // 1. Create new aggregate
     const audience = Audience.create(audienceId);

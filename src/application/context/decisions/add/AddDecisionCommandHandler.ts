@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { IdGenerator } from "../../../identity/IdGenerator.js";
 import { AddDecisionCommand } from "./AddDecisionCommand.js";
 import { IDecisionAddedEventWriter } from "./IDecisionAddedEventWriter.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
@@ -17,7 +17,7 @@ export class AddDecisionCommandHandler {
 
   async execute(command: AddDecisionCommand): Promise<{ decisionId: string }> {
     // 1. Create new aggregate with unique ID
-    const decisionId = `dec_${randomUUID()}`;
+    const decisionId = IdGenerator.generate();
     const decision = Decision.create(decisionId);
 
     // 2. Domain logic produces event

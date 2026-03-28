@@ -45,7 +45,7 @@ describe("AddGoalCommandHandler", () => {
     const result = await handler.execute(command);
 
     // Assert - handler generates goalId with correct format
-    expect(result.goalId).toMatch(/^goal_[0-9a-f-]+$/);
+    expect(result.goalId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 
     // Verify event was appended to event store
     expect(eventWriter.append).toHaveBeenCalledTimes(1);
@@ -76,7 +76,7 @@ describe("AddGoalCommandHandler", () => {
     const result = await handler.execute(command);
 
     // Assert - goalId is generated
-    expect(result.goalId).toMatch(/^goal_[0-9a-f-]+$/);
+    expect(result.goalId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 
     const appendedEvent = (eventWriter.append as jest.Mock).mock.calls[0][0];
     expect(appendedEvent.payload.scopeIn).toEqual([]);

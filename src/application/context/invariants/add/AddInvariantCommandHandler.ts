@@ -14,7 +14,7 @@ import { IInvariantAddedEventWriter } from "./IInvariantAddedEventWriter.js";
 import { IInvariantAddReader } from "./IInvariantAddReader.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Invariant } from "../../../../domain/invariants/Invariant.js";
-import { randomUUID } from "node:crypto";
+import { IdGenerator } from "../../../identity/IdGenerator.js";
 
 export class AddInvariantCommandHandler {
   constructor(
@@ -31,7 +31,7 @@ export class AddInvariantCommandHandler {
     }
 
     // 1. Create new aggregate
-    const invariantId = `inv_${randomUUID()}`;
+    const invariantId = IdGenerator.generate();
     const invariant = Invariant.create(invariantId);
 
     // 2. Domain logic produces event

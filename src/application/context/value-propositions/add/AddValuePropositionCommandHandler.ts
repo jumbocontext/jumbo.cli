@@ -3,7 +3,7 @@ import { IValuePropositionAddedEventWriter } from "./IValuePropositionAddedEvent
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { ValueProposition } from "../../../../domain/value-propositions/ValueProposition.js";
 import { ValuePropositionAddedEvent } from "../../../../domain/value-propositions/add/ValuePropositionAddedEvent.js";
-import { randomUUID } from "crypto";
+import { IdGenerator } from "../../../identity/IdGenerator.js";
 
 /**
  * Handler for adding a new value proposition
@@ -19,7 +19,7 @@ export class AddValuePropositionCommandHandler {
     command: AddValuePropositionCommand
   ): Promise<{ valuePropositionId: string }> {
     // 1. Create new aggregate with generated ID
-    const valuePropositionId = `value_${randomUUID()}`;
+    const valuePropositionId = IdGenerator.generate();
     const valueProposition = ValueProposition.create(valuePropositionId);
 
     // 2. Domain logic produces event
