@@ -18,6 +18,8 @@ export class LocalAddGoalGateway implements IAddGoalGateway {
       nextGoalId: request.nextGoalId,
       previousGoalId: request.previousGoalId,
       prerequisiteGoals: request.prerequisiteGoals,
+      branch: request.branch,
+      worktree: request.worktree,
     });
 
     return {

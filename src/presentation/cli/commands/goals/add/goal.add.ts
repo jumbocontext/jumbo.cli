@@ -59,6 +59,14 @@ export const metadata: CommandMetadata = {
     {
       flags: "--prerequisite-goals <goalIds...>",
       description: "Goal IDs that must be completed before this goal can start"
+    },
+    {
+      flags: "--branch <branch>",
+      description: "Git branch to contain work for this goal (for multi-agent collaboration)"
+    },
+    {
+      flags: "--worktree <worktree>",
+      description: "Git worktree path to contain work for this goal (for multi-agent collaboration)"
     }
   ],
   examples: [
@@ -166,6 +174,8 @@ export async function goalAdd(
     nextGoal?: string;
     previousGoal?: string;
     prerequisiteGoals?: string[];
+    branch?: string;
+    worktree?: string;
   },
   container: IApplicationContainer
 ) {
@@ -190,6 +200,8 @@ export async function goalAdd(
         nextGoalId: options.nextGoal,
         previousGoalId: options.previousGoal,
         prerequisiteGoals: options.prerequisiteGoals,
+        branch: options.branch,
+        worktree: options.worktree,
       };
 
       const response = await container.addGoalController.handle(request);
@@ -226,6 +238,8 @@ export async function goalAdd(
       nextGoalId: options.nextGoal,
       previousGoalId: options.previousGoal,
       prerequisiteGoals: options.prerequisiteGoals,
+      branch: options.branch,
+      worktree: options.worktree,
     };
 
     const response = await container.addGoalController.handle(request);

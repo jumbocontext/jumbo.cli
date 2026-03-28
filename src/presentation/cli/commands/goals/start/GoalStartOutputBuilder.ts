@@ -54,6 +54,20 @@ export class GoalStartOutputBuilder {
       );
     }
 
+    // Branch/Worktree section (if defined)
+    if (goal.branch || goal.worktree) {
+      let workspaceText = "## Workspace:\n";
+      if (goal.branch) {
+        workspaceText += `Branch: ${goal.branch}\n`;
+      }
+      if (goal.worktree) {
+        workspaceText += `Worktree: ${goal.worktree}\n`;
+      }
+      workspaceText += "\nINSTRUCTION: You (the developer) MUST isolate your work in the identified " +
+        (goal.branch && goal.worktree ? "branch and worktree" : goal.branch ? "branch" : "worktree") + ".";
+      this.builder.addPrompt(workspaceText);
+    }
+
     // Scope section (if scoped)
     if (this.isScoped(contextualView)) {
       if (goal.scopeIn && goal.scopeIn.length > 0) {

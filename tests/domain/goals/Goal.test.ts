@@ -49,6 +49,63 @@ describe("Goal Aggregate", () => {
       expect(event.payload.scopeOut).toEqual(["Admin routes"]);
     });
 
+    it("should create GoalAddedEvent with branch and worktree", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+
+      // Act
+      const event = goal.add(
+        "Multi-agent goal",
+        "Implement feature X",
+        ["Tests pass"],
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        "feature/goal-123",
+        "/worktrees/goal-123"
+      );
+
+      // Assert
+      expect(event.payload.branch).toBe("feature/goal-123");
+      expect(event.payload.worktree).toBe("/worktrees/goal-123");
+    });
+
+    it("should create GoalAddedEvent without branch and worktree when not provided", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+
+      // Act
+      const event = goal.add("Simple goal", "Do something", ["Done"]);
+
+      // Assert
+      expect(event.payload.branch).toBeUndefined();
+      expect(event.payload.worktree).toBeUndefined();
+    });
+
+    it("should apply branch and worktree to state from GoalAddedEvent", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+
+      // Act
+      goal.add(
+        "Multi-agent goal",
+        "Implement feature X",
+        ["Tests pass"],
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        "feature/goal-123",
+        "/worktrees/goal-123"
+      );
+
+      // Assert
+      const snapshot = goal.snapshot;
+      expect(snapshot.branch).toBe("feature/goal-123");
+      expect(snapshot.worktree).toBe("/worktrees/goal-123");
+    });
+
     it("should throw error if goal is already defined", () => {
       // Arrange
       const goal = Goal.create("goal_123");
@@ -578,6 +635,89 @@ describe("Goal Aggregate", () => {
       expect(() => goal.update(undefined, undefined, undefined, [longItem])).toThrow(
         "Scope item must be less than 200 characters"
       );
+    });
+
+    it("should create GoalUpdatedEvent with branch only", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
+
+      // Act
+      const event = goal.update(
+        undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, "feature/new-branch"
+      );
+
+      // Assert
+      expect(event.type).toBe(GoalEventType.UPDATED);
+      expect(event.payload.branch).toBe("feature/new-branch");
+      expect(event.payload.worktree).toBeUndefined();
+    });
+
+    it("should create GoalUpdatedEvent with worktree only", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
+
+      // Act
+      const event = goal.update(
+        undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, undefined, "/worktrees/goal-123"
+      );
+
+      // Assert
+      expect(event.type).toBe(GoalEventType.UPDATED);
+      expect(event.payload.worktree).toBe("/worktrees/goal-123");
+      expect(event.payload.branch).toBeUndefined();
+    });
+
+    it("should create GoalUpdatedEvent with branch and worktree", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
+
+      // Act
+      const event = goal.update(
+        undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, "feature/branch", "/worktrees/goal-123"
+      );
+
+      // Assert
+      expect(event.payload.branch).toBe("feature/branch");
+      expect(event.payload.worktree).toBe("/worktrees/goal-123");
+    });
+
+    it("should apply branch and worktree to state from GoalUpdatedEvent", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
+
+      // Act
+      goal.update(
+        undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, "feature/branch", "/worktrees/goal-123"
+      );
+
+      // Assert
+      const snapshot = goal.snapshot;
+      expect(snapshot.branch).toBe("feature/branch");
+      expect(snapshot.worktree).toBe("/worktrees/goal-123");
+      expect(snapshot.objective).toBe("Original objective"); // Unchanged
+    });
+
+    it("should not require standard fields when only branch is updated", () => {
+      // Arrange
+      const goal = Goal.create("goal_123");
+      goal.add("Original goal", "Original objective", ["Criterion 1"]);
+
+      // Act - should not throw "At least one field must be provided"
+      const event = goal.update(
+        undefined, undefined, undefined, undefined, undefined,
+        undefined, undefined, "feature/branch"
+      );
+
+      // Assert
+      expect(event.type).toBe(GoalEventType.UPDATED);
     });
   });
 

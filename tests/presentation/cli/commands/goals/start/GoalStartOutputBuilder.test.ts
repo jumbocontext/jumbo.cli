@@ -121,6 +121,49 @@ describe("GoalStartOutputBuilder", () => {
     });
   });
 
+  describe("workspace section", () => {
+    it("should render branch and worktree when both are defined", () => {
+      const view = makeView({ branch: "feature/goal-123", worktree: "/worktrees/goal-123" });
+      const output = builder.build(view);
+      const text = output.toHumanReadable();
+
+      expect(text).toContain("## Workspace:");
+      expect(text).toContain("Branch: feature/goal-123");
+      expect(text).toContain("Worktree: /worktrees/goal-123");
+      expect(text).toContain("MUST isolate your work in the identified branch and worktree");
+    });
+
+    it("should render branch only when worktree is not defined", () => {
+      const view = makeView({ branch: "feature/goal-123" });
+      const output = builder.build(view);
+      const text = output.toHumanReadable();
+
+      expect(text).toContain("## Workspace:");
+      expect(text).toContain("Branch: feature/goal-123");
+      expect(text).not.toContain("Worktree:");
+      expect(text).toContain("MUST isolate your work in the identified branch");
+    });
+
+    it("should render worktree only when branch is not defined", () => {
+      const view = makeView({ worktree: "/worktrees/goal-123" });
+      const output = builder.build(view);
+      const text = output.toHumanReadable();
+
+      expect(text).toContain("## Workspace:");
+      expect(text).toContain("Worktree: /worktrees/goal-123");
+      expect(text).not.toContain("Branch:");
+      expect(text).toContain("MUST isolate your work in the identified worktree");
+    });
+
+    it("should not render workspace section when neither branch nor worktree is defined", () => {
+      const view = makeView();
+      const output = builder.build(view);
+      const text = output.toHumanReadable();
+
+      expect(text).not.toContain("## Workspace:");
+    });
+  });
+
   describe("context maintenance instructions", () => {
     it("should include context maintenance section with concrete commands", () => {
       const view = makeView();

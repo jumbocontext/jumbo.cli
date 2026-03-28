@@ -54,6 +54,14 @@ export const metadata: CommandMetadata = {
     {
       flags: "--prerequisite-goals <goalIds...>",
       description: "Update prerequisite goal IDs that must be completed before this goal can start"
+    },
+    {
+      flags: "--branch <branch>",
+      description: "Update the git branch for this goal (for multi-agent collaboration)"
+    },
+    {
+      flags: "--worktree <worktree>",
+      description: "Update the git worktree path for this goal (for multi-agent collaboration)"
     }
   ],
   examples: [
@@ -91,6 +99,8 @@ export async function goalUpdate(
     scopeOut?: string[];
     nextGoal?: string;
     prerequisiteGoals?: string[];
+    branch?: string;
+    worktree?: string;
   },
   container: IApplicationContainer
 ) {
@@ -107,6 +117,8 @@ export async function goalUpdate(
       scopeOut: options.scopeOut,
       nextGoalId: options.nextGoal,
       prerequisiteGoals: options.prerequisiteGoals,
+      branch: options.branch,
+      worktree: options.worktree,
     };
 
     const response = await container.updateGoalController.handle(request);

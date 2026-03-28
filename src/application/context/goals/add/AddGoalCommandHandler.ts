@@ -40,7 +40,9 @@ export class AddGoalCommandHandler {
       command.scopeIn,
       command.scopeOut,
       command.nextGoalId,
-      command.prerequisiteGoals
+      command.prerequisiteGoals,
+      command.branch,
+      command.worktree
     );
 
     // Persist event to file store

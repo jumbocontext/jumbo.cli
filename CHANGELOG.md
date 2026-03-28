@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Goal workspace fields**: `goal add` and `goal update` now accept `--branch` and `--worktree` options to assign git workspace context for multi-agent collaboration. `goal start` and `goal codify` output includes workspace instructions when these fields are set.
+
 ## [2.6.0] - 2026-03-27
 
 ### Added

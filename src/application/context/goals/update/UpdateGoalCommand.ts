@@ -11,4 +11,6 @@ export interface UpdateGoalCommand {
   readonly scopeOut?: string[];
   readonly nextGoalId?: string;
   readonly prerequisiteGoals?: string[];
+  readonly branch?: string;
+  readonly worktree?: string;
 }

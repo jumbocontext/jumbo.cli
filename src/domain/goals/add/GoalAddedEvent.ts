@@ -17,5 +17,7 @@ export interface GoalAddedEvent extends BaseEvent {
     readonly status: GoalStatusType;
     readonly nextGoalId?: UUID;
     readonly prerequisiteGoals?: UUID[];
+    readonly branch?: string;
+    readonly worktree?: string;
   };
 }

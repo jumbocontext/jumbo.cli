@@ -25,4 +25,6 @@ export interface GoalRecord {
   readonly claimExpiresAt: string | null;
   readonly nextGoalId: string | null;
   readonly prerequisiteGoals: string | null; // JSON array
+  readonly branch: string | null;
+  readonly worktree: string | null;
 }

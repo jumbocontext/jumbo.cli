@@ -7,4 +7,6 @@ export interface AddGoalRequest {
   readonly nextGoalId?: string;
   readonly previousGoalId?: string;
   readonly prerequisiteGoals?: string[];
+  readonly branch?: string;
+  readonly worktree?: string;
 }

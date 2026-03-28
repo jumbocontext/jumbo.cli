@@ -26,13 +26,18 @@ export class GoalCodifyOutputBuilder {
     const goal = response.goalContextView.goal;
 
     // Header
-    this.builder.addPrompt(
-      "# Goal Codifying - Architectural Reconciliation\n" +
+    let headerText = "# Goal Codifying - Architectural Reconciliation\n" +
       `Goal ID: ${goal.goalId}\n` +
       `Objective: ${goal.objective}\n` +
-      `Status: ${goal.status}\n` +
-      "---"
-    );
+      `Status: ${goal.status}`;
+    if (goal.branch) {
+      headerText += `\nBranch: ${goal.branch}`;
+    }
+    if (goal.worktree) {
+      headerText += `\nWorktree: ${goal.worktree}`;
+    }
+    headerText += "\n---";
+    this.builder.addPrompt(headerText);
 
     // Section 1: Capture new learnings
     this.builder.addPrompt(

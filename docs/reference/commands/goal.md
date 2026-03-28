@@ -33,6 +33,8 @@ Define a new goal.
 | `--next-goal <goalId>` | Chain to another goal after completion |
 | `--previous-goal <goalId>` | Chain from another goal to this one |
 | `--prerequisite-goals <goalIds...>` | Goal IDs that must be at submitted+ status before this goal can start |
+| `--branch <branch>` | Git branch to contain work for this goal (for multi-agent collaboration) |
+| `--worktree <worktree>` | Git worktree path to contain work for this goal (for multi-agent collaboration) |
 
 ### Examples
 
@@ -461,6 +463,8 @@ Update an existing goal's properties. Partial updates are supported — only spe
 | `--scope-out <items...>` | Updated out-of-scope items |
 | `--next-goal <goalId>` | Update the next goal chain |
 | `--prerequisite-goals <goalIds...>` | Update prerequisite goal IDs |
+| `--branch <branch>` | Update the git branch for this goal (for multi-agent collaboration) |
+| `--worktree <worktree>` | Update the git worktree path for this goal (for multi-agent collaboration) |
 
 ### Examples
 

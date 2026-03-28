@@ -45,6 +45,8 @@ export interface GoalState extends AggregateState {
   progress: string[];  // Tracks completed sub-tasks (append-only)
   nextGoalId?: UUID;
   prerequisiteGoals?: UUID[];
+  branch?: string;  // Optional: git branch for multi-agent collaboration
+  worktree?: string;  // Optional: git worktree path for multi-agent collaboration
   lastWaitingStatus?: GoalStatusType;  // Tracks the waiting state entered from when transitioning to in-progress
 }
 
@@ -72,6 +74,12 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
         }
         if (e.payload.prerequisiteGoals !== undefined) {
           state.prerequisiteGoals = e.payload.prerequisiteGoals;
+        }
+        if (e.payload.branch !== undefined) {
+          state.branch = e.payload.branch;
+        }
+        if (e.payload.worktree !== undefined) {
+          state.worktree = e.payload.worktree;
         }
         state.version = e.version;
         break;
@@ -134,6 +142,12 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
         }
         if (e.payload.prerequisiteGoals !== undefined) {
           state.prerequisiteGoals = e.payload.prerequisiteGoals;
+        }
+        if (e.payload.branch !== undefined) {
+          state.branch = e.payload.branch;
+        }
+        if (e.payload.worktree !== undefined) {
+          state.worktree = e.payload.worktree;
         }
         state.version = e.version;
         break;
@@ -315,7 +329,9 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     scopeIn?: string[],
     scopeOut?: string[],
     nextGoalId?: UUID,
-    prerequisiteGoals?: UUID[]
+    prerequisiteGoals?: UUID[],
+    branch?: string,
+    worktree?: string
   ): GoalAddedEvent {
     // State validation: goal can only be defined once (version must be 0)
     ValidationRuleSet.ensure(this.state, [new CanAddRule()]);
@@ -339,6 +355,8 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
         status: GoalStatus.TODO,
         ...(nextGoalId && { nextGoalId }),
         ...(prerequisiteGoals && prerequisiteGoals.length > 0 && { prerequisiteGoals }),
+        ...(branch && { branch }),
+        ...(worktree && { worktree }),
       },
       Goal.apply
     ) as GoalAddedEvent;
@@ -443,7 +461,9 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     scopeIn?: string[],
     scopeOut?: string[],
     nextGoalId?: UUID,
-    prerequisiteGoals?: UUID[]
+    prerequisiteGoals?: UUID[],
+    branch?: string,
+    worktree?: string
   ): GoalUpdatedEvent {
     // 1. State validation using rules - cannot update completed goals
     ValidationRuleSet.ensure(this.state, [new CanUpdateRule()]);
@@ -451,10 +471,12 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     // 2. Check if any update is provided (including nextGoalId and prerequisiteGoals)
     const hasNextGoalIdUpdate = nextGoalId !== undefined;
     const hasPrerequisiteGoalsUpdate = prerequisiteGoals !== undefined;
+    const hasBranchUpdate = branch !== undefined;
+    const hasWorktreeUpdate = worktree !== undefined;
 
     // 3. Input validation using rules (validates at least one field and validates provided fields)
-    // Skip UPDATE_RULES if only nextGoalId or prerequisiteGoals is being updated
-    if (!hasNextGoalIdUpdate && !hasPrerequisiteGoalsUpdate) {
+    // Skip UPDATE_RULES if only metadata fields are being updated
+    if (!hasNextGoalIdUpdate && !hasPrerequisiteGoalsUpdate && !hasBranchUpdate && !hasWorktreeUpdate) {
       ValidationRuleSet.ensure(
         { title, objective, successCriteria, scopeIn, scopeOut },
         UPDATE_RULES
@@ -478,6 +500,8 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
         scopeOut,
         ...(nextGoalId && { nextGoalId }),
         ...(prerequisiteGoals && { prerequisiteGoals }),
+        ...(branch !== undefined && { branch }),
+        ...(worktree !== undefined && { worktree }),
       },
       Goal.apply
     ) as GoalUpdatedEvent;

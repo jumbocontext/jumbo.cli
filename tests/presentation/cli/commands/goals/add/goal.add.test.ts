@@ -95,6 +95,29 @@ describe("goal.add command", () => {
     expect(errorOutput).toContain("--criteria is required");
   });
 
+  it("should pass branch and worktree to controller", async () => {
+    await goalAdd(
+      {
+        title: "Multi-agent Goal",
+        objective: "Implement feature X",
+        criteria: ["Tests pass"],
+        branch: "feature/goal-123",
+        worktree: "/worktrees/goal-123",
+      },
+      mockContainer as IApplicationContainer
+    );
+
+    expect(mockAddGoalController.handle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Multi-agent Goal",
+        objective: "Implement feature X",
+        successCriteria: ["Tests pass"],
+        branch: "feature/goal-123",
+        worktree: "/worktrees/goal-123",
+      })
+    );
+  });
+
   it("should exit with error when --criteria is empty array in non-interactive mode", async () => {
     await expect(
       goalAdd(

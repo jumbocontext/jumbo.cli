@@ -107,6 +107,16 @@ export class GoalShowOutputBuilder {
       output += "\n\n" + Colors.gradientB("Next Goal:  ") + Colors.gradientC(goal.nextGoalId);
     }
 
+    if (goal.branch || goal.worktree) {
+      output += "\n\n" + Colors.gradientB("Workspace:");
+      if (goal.branch) {
+        output += "\n  " + Colors.gradientB("Branch:    ") + Colors.gradientC(goal.branch);
+      }
+      if (goal.worktree) {
+        output += "\n  " + Colors.gradientB("Worktree:  ") + Colors.gradientC(goal.worktree);
+      }
+    }
+
     if (goal.claimedBy) {
       output += "\n\n" + Colors.gradientB("Claim:") +
                 "\n  " + Colors.gradientB("Claimed By:  ") + Colors.gradientC(goal.claimedBy) +
@@ -224,7 +234,9 @@ export class GoalShowOutputBuilder {
         prerequisiteGoals: goal.prerequisiteGoals,
         claimedBy: goal.claimedBy,
         claimedAt: goal.claimedAt,
-        claimExpiresAt: goal.claimExpiresAt
+        claimExpiresAt: goal.claimExpiresAt,
+        branch: goal.branch,
+        worktree: goal.worktree
       },
       architecture: context.architecture,
       components: context.components,

@@ -30,6 +30,8 @@ export class GoalRecordMapper {
       claimExpiresAt: record.claimExpiresAt || undefined,
       nextGoalId: record.nextGoalId || undefined,
       prerequisiteGoals: record.prerequisiteGoals ? JSON.parse(record.prerequisiteGoals) : undefined,
+      branch: record.branch || undefined,
+      worktree: record.worktree || undefined,
     };
   }
 }
