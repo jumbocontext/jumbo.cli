@@ -24,7 +24,6 @@ import { IConfigurer } from "./IConfigurer.js";
 import { ClaudeConfigurer } from "./ClaudeConfigurer.js";
 import { GeminiConfigurer } from "./GeminiConfigurer.js";
 import { CopilotConfigurer } from "./CopilotConfigurer.js";
-import { GitHubHooksConfigurer } from "./GitHubHooksConfigurer.js";
 import { VibeConfigurer } from "./VibeConfigurer.js";
 import { CodexConfigurer } from "./CodexConfigurer.js";
 import { CursorConfigurer } from "./CursorConfigurer.js";
@@ -45,7 +44,6 @@ export class AgentFileProtocol implements IAgentFileProtocol {
     new ClaudeConfigurer(),
     new GeminiConfigurer(),
     new CopilotConfigurer(),
-    new GitHubHooksConfigurer(),
     new VibeConfigurer(),
     new CodexConfigurer(),
     new CursorConfigurer(),
