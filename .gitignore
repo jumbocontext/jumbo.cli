@@ -171,3 +171,6 @@ GEMINI.md
 
 # VSCode
 .vscode/*
+
+# Cursor
+.cursor/*

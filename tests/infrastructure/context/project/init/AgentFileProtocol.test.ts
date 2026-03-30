@@ -13,7 +13,7 @@ import { CopilotInstructionsContent } from "../../../../../src/domain/project/Co
 describe("AgentFileProtocol", () => {
   let tmpDir: string;
   let protocol: AgentFileProtocol;
-  const skillPlatforms = [".agents/skills", ".claude/skills", ".gemini/skills", ".vibe/skills"];
+  const skillPlatforms = [".agents/skills", ".claude/skills", ".codex/skills", ".gemini/skills", ".vibe/skills"];
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-agent-files-"));
@@ -30,7 +30,9 @@ describe("AgentFileProtocol", () => {
         { id: "claude", name: "Claude" },
         { id: "gemini", name: "Gemini" },
         { id: "copilot", name: "Copilot" },
-        { id: "github-hooks", name: "GitHub Hooks" },
+        { id: "vibe", name: "Vibe" },
+        { id: "codex", name: "Codex" },
+        { id: "cursor", name: "Cursor" },
       ]);
     });
   });
@@ -162,20 +164,20 @@ describe("AgentFileProtocol", () => {
       await fs.ensureDir(templateSkillPath);
       await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# My Skill\n", "utf-8");
 
-      await protocol.ensureAgentConfigurations(tmpDir, ["claude", "github-hooks"]);
+      await protocol.ensureAgentConfigurations(tmpDir, ["claude", "copilot"]);
 
       expect(await fs.pathExists(path.join(tmpDir, "CLAUDE.md"))).toBe(true);
       expect(await fs.pathExists(path.join(tmpDir, ".claude", "settings.json"))).toBe(true);
+      expect(await fs.pathExists(path.join(tmpDir, ".github", "copilot-instructions.md"))).toBe(true);
       expect(await fs.pathExists(path.join(tmpDir, ".github", "hooks", "hooks.json"))).toBe(true);
 
       expect(await fs.pathExists(path.join(tmpDir, "GEMINI.md"))).toBe(false);
       expect(await fs.pathExists(path.join(tmpDir, ".gemini", "settings.json"))).toBe(false);
-      expect(await fs.pathExists(path.join(tmpDir, ".github", "copilot-instructions.md"))).toBe(false);
 
       expect(await fs.pathExists(path.join(tmpDir, ".claude", "skills", "my-skill", "SKILL.md"))).toBe(true);
-      expect(await fs.pathExists(path.join(tmpDir, ".vibe", "skills", "my-skill", "SKILL.md"))).toBe(true);
+      expect(await fs.pathExists(path.join(tmpDir, ".agents", "skills", "my-skill", "SKILL.md"))).toBe(true);
+      expect(await fs.pathExists(path.join(tmpDir, ".vibe", "skills", "my-skill", "SKILL.md"))).toBe(false);
       expect(await fs.pathExists(path.join(tmpDir, ".gemini", "skills", "my-skill", "SKILL.md"))).toBe(false);
-      expect(await fs.pathExists(path.join(tmpDir, ".agents", "skills", "my-skill", "SKILL.md"))).toBe(false);
     });
 
     it("should install skills from template root outside project root", async () => {
@@ -373,6 +375,14 @@ describe("AgentFileProtocol", () => {
       const hooksPath = path.join(tmpDir, ".github", "hooks", "hooks.json");
       const hooksExists = await fs.pathExists(hooksPath);
       expect(hooksExists).toBe(true);
+
+      const cursorRulesPath = path.join(tmpDir, ".cursor", "rules", "jumbo.mdc");
+      const cursorRulesExists = await fs.pathExists(cursorRulesPath);
+      expect(cursorRulesExists).toBe(true);
+
+      const cursorHooksPath = path.join(tmpDir, ".cursor", "hooks.json");
+      const cursorHooksExists = await fs.pathExists(cursorHooksPath);
+      expect(cursorHooksExists).toBe(true);
     });
 
     it("should create .github/hooks/hooks.json with SessionStart hook", async () => {
@@ -704,6 +714,10 @@ describe("AgentFileProtocol", () => {
             description: expect.stringContaining("assets/skills"),
           }),
           expect.objectContaining({
+            path: ".codex/skills/my-skill",
+            description: expect.stringContaining("assets/skills"),
+          }),
+          expect.objectContaining({
             path: ".gemini/skills/my-skill",
             description: expect.stringContaining("assets/skills"),
           }),
@@ -729,6 +743,7 @@ describe("AgentFileProtocol", () => {
           expect.objectContaining({ path: "GEMINI.md" }),
           expect.objectContaining({ path: ".gemini/settings.json" }),
           expect.objectContaining({ path: ".github/copilot-instructions.md" }),
+          expect.objectContaining({ path: ".github/hooks/hooks.json" }),
           expect.objectContaining({ path: ".gemini/skills/my-skill" }),
           expect.objectContaining({ path: ".agents/skills/my-skill" }),
         ])
@@ -738,7 +753,6 @@ describe("AgentFileProtocol", () => {
         expect.arrayContaining([
           expect.objectContaining({ path: "CLAUDE.md" }),
           expect.objectContaining({ path: ".claude/settings.json" }),
-          expect.objectContaining({ path: ".github/hooks/hooks.json" }),
           expect.objectContaining({ path: ".claude/skills/my-skill" }),
           expect.objectContaining({ path: ".vibe/skills/my-skill" }),
         ])

@@ -18,7 +18,6 @@ describe("project.init command", () => {
     { id: "claude", name: "Claude" },
     { id: "gemini", name: "Gemini" },
     { id: "copilot", name: "Copilot" },
-    { id: "github-hooks", name: "GitHub Hooks" },
   ] as const;
   let mockContainer: Partial<IApplicationContainer>;
   let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
