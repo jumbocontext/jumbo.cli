@@ -35,6 +35,13 @@ export class DeactivateRelationCommandHandler {
 
     const history = await this.eventReader.readStream(command.relationId);
     const relation = Relation.rehydrate(command.relationId, history as RelationEvent[]);
+
+    // The projection may be stale during event replay (evolve). The rehydrated
+    // aggregate is authoritative — skip if already deactivated or removed.
+    if (relation.snapshot.status !== 'active') {
+      return;
+    }
+
     const event = relation.deactivate(command.reason);
 
     await this.eventWriter.append(event);
