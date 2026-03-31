@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-03-31
+
+### Added
+
+- **Design goal skill**: New `jumbo-design-goal` skill for collaborative pre-definition discovery — aligns proposed goals with project audience, pains, and value propositions before handing off to `define-jumbo-goals`.
+
+### Changed
+
+- **Internal**: Replaced sequential rebuild (`TemporarySequentialDatabaseRebuildService`) with projection-only rebuild via `ProjectionBusFactory`, eliminating the duplicate composition root and enabling parallel projection execution during `heal`/`evolve`.
+- **Define goal skill**: Added execution order instruction for goal definition flow.
+- **Documentation**: Minor docs refinements across reference pages.
+
+### Fixed
+
+- **Cascade deactivation during evolve**: Fixed double-deactivation error by checking rehydrated aggregate status before deactivating relations.
+
 ## [2.8.0] - 2026-03-31
 
 ### Added

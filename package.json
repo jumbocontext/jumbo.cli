@@ -1,6 +1,6 @@
 {
   "name": "jumbo-cli",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "Memory and Context Orchestration for Coding Agents",
   "keywords": [
     "cli",
