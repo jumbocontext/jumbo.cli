@@ -2,7 +2,8 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import Database from "better-sqlite3";
 import { ILogger } from "../../../src/application/logging/ILogger";
-import { TemporarySequentialDatabaseRebuildService } from "../../../src/infrastructure/local/TemporarySequentialDatabaseRebuildService";
+import { LocalDatabaseRebuildService } from "../../../src/infrastructure/local/LocalDatabaseRebuildService";
+import { ProjectionBusFactory } from "../../../src/infrastructure/messaging/ProjectionBusFactory";
 import { FsEventStore } from "../../../src/infrastructure/persistence/FsEventStore";
 import { GoalEventType, GoalStatus } from "../../../src/domain/goals/Constants";
 import { WorkerEventType } from "../../../src/domain/workers/identify/WorkerIdentifiedEvent";
@@ -41,22 +42,22 @@ function createMockEventBus(): jest.Mocked<IEventBus> {
   };
 }
 
-describe("TemporarySequentialDatabaseRebuildService", () => {
+describe("LocalDatabaseRebuildService", () => {
   let tmpDir: string;
   let dbPath: string;
   let initialDb: Database.Database;
   let eventStore: FsEventStore;
+  const mockLogger: ILogger = { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() };
 
   const workerId = "worker-uuid-123";
   const hostSessionKey = "host-session-key-123";
   const goalId = "goal_rebuild_claim";
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-sequential-rebuild-"));
+    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-rebuild-"));
     dbPath = path.join(tmpDir, "jumbo.db");
     initialDb = new Database(dbPath);
     initialDb.pragma("journal_mode = WAL");
-    const mockLogger: ILogger = { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() };
     eventStore = new FsEventStore(tmpDir, mockLogger);
   });
 
@@ -79,7 +80,8 @@ describe("TemporarySequentialDatabaseRebuildService", () => {
       },
     });
 
-    const service = new TemporarySequentialDatabaseRebuildService(tmpDir, initialDb, eventStore, { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() } as ILogger);
+    const projectionBusFactory = new ProjectionBusFactory();
+    const service = new LocalDatabaseRebuildService(tmpDir, initialDb, eventStore, (db) => projectionBusFactory.create(db), mockLogger);
     const result = await service.rebuild();
 
     expect(result.success).toBe(true);
@@ -138,7 +140,8 @@ describe("TemporarySequentialDatabaseRebuildService", () => {
       },
     });
 
-    const service = new TemporarySequentialDatabaseRebuildService(tmpDir, initialDb, eventStore, { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() } as ILogger);
+    const projectionBusFactory = new ProjectionBusFactory();
+    const service = new LocalDatabaseRebuildService(tmpDir, initialDb, eventStore, (db) => projectionBusFactory.create(db), mockLogger);
     const result = await service.rebuild();
 
     expect(result.success).toBe(true);
@@ -154,7 +157,6 @@ describe("TemporarySequentialDatabaseRebuildService", () => {
     );
     await workerIdentityReader.initialize();
 
-    // Mapping restored by replayed WorkerIdentifiedEvent: same host session key resolves same worker id.
     expect(workerIdentityReader.workerId).toBe(workerId);
 
     const claimStore = new SqliteGoalClaimStore(rebuiltDb);

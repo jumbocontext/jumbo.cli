@@ -36,9 +36,8 @@ import { SystemClock } from "../time-and-date/SystemClock.js";
 import { FileLogger } from "../logging/FileLogger.js";
 import { LogLevel } from "../../application/logging/ILogger.js";
 import * as path from "path";
-// TEMPORARY: Use sequential rebuild service to avoid race conditions
-// TODO: Swap back to LocalDatabaseRebuildService when Epic/Feature/Task redesign is complete
-import { TemporarySequentialDatabaseRebuildService } from "../local/TemporarySequentialDatabaseRebuildService.js";
+import { LocalDatabaseRebuildService } from "../local/LocalDatabaseRebuildService.js";
+import { ProjectionBusFactory } from "../messaging/ProjectionBusFactory.js";
 import { MigrationRunner } from "../persistence/MigrationRunner.js";
 import { getNamespaceMigrations } from "../persistence/migrations.config.js";
 
@@ -643,12 +642,12 @@ export class HostBuilder {
     const goalClaimPolicy = new GoalClaimPolicy(goalClaimStore, clock);
 
     // Create database rebuild service and controller
-    // TEMPORARY: Uses sequential event bus to avoid race conditions during rebuild
-    // TODO: Swap back to LocalDatabaseRebuildService when Epic/Feature/Task redesign is complete
-    const databaseRebuildService = new TemporarySequentialDatabaseRebuildService(
+    const projectionBusFactory = new ProjectionBusFactory();
+    const databaseRebuildService = new LocalDatabaseRebuildService(
       this.rootDir,
       this.db,
       eventStore,
+      (db) => projectionBusFactory.create(db),
       logger
     );
     const rebuildDatabaseGateway = new LocalRebuildDatabaseGateway(databaseRebuildService);
