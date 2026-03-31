@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-03-31
+
+### Added
+
+- **Cursor agent configurer**: `jumbo init` now configures Cursor with `.cursor/rules/jumbo.mdc` (YAML frontmatter referencing JUMBO.md) and `.cursor/hooks.json` (sessionStart hook). Replaces the previously removed Cursor configurer with full rules and hooks support.
+- **Vibe agent configurer**: `jumbo init` now configures Mistral Vibe with skill distribution to `.vibe/skills`. Vibe reads AGENTS.md natively.
+- **Codex agent configurer**: `jumbo init` now configures OpenAI Codex with skill distribution to `.codex/skills`. Codex reads AGENTS.md natively.
+- **Entity registration skills**: Five new template-managed skills for proactive context capture during agent sessions: `jumbo-add-component`, `jumbo-add-decision`, `jumbo-add-dependency`, `jumbo-add-guideline`, `jumbo-add-invariant`.
+
+### Changed
+
+- **Agent selection expanded**: Interactive agent selection in `jumbo init` now includes Cursor, Vibe, and Codex alongside Claude, Gemini, and Copilot.
+
+### Removed
+
+- **GitHub Hooks configurer**: Removed standalone `GitHubHooksConfigurer`; GitHub Hooks configuration is now handled by the Copilot configurer.
+
+### Fixed
+
+- **Erroneous agent option**: Removed an invalid option from agent configuration.
+
 ## [2.7.2] - 2026-03-28
 
 ### Changed
