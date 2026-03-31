@@ -2,7 +2,7 @@
 title: Audience Pain Commands Reference
 description: Complete reference for managing audience pain points that the project addresses.
 sidebar:
-  order: 6
+  order: 11
 ---
 
 Track the pain points your target audiences experience that the project aims to solve.

@@ -142,5 +142,5 @@ All previous project memory will be lost.
 
 ## Next steps
 
-- [Create your first goal](goal-management.md)
+- [Create your first goal](../guides/goal-management.md)
 - [Project command reference](../reference/commands/project.md)

@@ -2,7 +2,7 @@
 title: Session Commands Reference
 description: Complete reference for all session-related commands — start, end, list, and compact.
 sidebar:
-  order: 5
+  order: 2
 ---
 
 Complete reference for all session-related commands.

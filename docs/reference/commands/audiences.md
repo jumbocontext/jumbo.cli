@@ -2,7 +2,7 @@
 title: Audience Commands Reference
 description: Complete reference for managing target audiences for the project.
 sidebar:
-  order: 5
+  order: 10
 ---
 
 Define and manage the target audiences for your project.

@@ -166,6 +166,7 @@ Spread some ❤️ and sponsor the projects or buy them a cup of coffee. I have.
 | [Session Management](docs/reference/commands/session.md) | Manage pause, resume, and session continuity |
 | [Advanced Workflows](docs/guides/advanced-workflows.md) | Command chaining and multi-agent collaboration patterns |
 | [Command Reference](docs/reference/) | Full command documentation |
+| [Shared Memories](https://github.com/jumbocontext/shared-jumbo-memories) | Pluggable invariants, guidelines, and patterns to prime your project |
 
 
 ## FAQs

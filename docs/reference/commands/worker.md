@@ -2,7 +2,7 @@
 title: Worker Commands Reference
 description: Complete reference for worker identity and configuration commands.
 sidebar:
-  order: 7
+  order: 16
 ---
 
 Complete reference for worker identity commands.

@@ -2,7 +2,7 @@
 title: Work Commands Reference
 description: Complete reference for work pause and resume commands.
 sidebar:
-  order: 6
+  order: 14
 ---
 
 Complete reference for work lifecycle commands that operate on the current worker's goal.

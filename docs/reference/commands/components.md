@@ -2,7 +2,7 @@
 title: Component Commands Reference
 description: Complete reference for tracking software components — add, update, search, deprecate, undeprecate, and remove.
 sidebar:
-  order: 7
+  order: 5
 ---
 
 Track the software components in your system — services, libraries, APIs, databases, and more.

@@ -25,7 +25,7 @@ Memory and context orchestration for coding agents.
 | Guide | Description |
 |-------|-------------|
 | [Goal Management](guides/goal-management.md) | Essential knowledge for using Jumbo |
-| [Project Initialization](guides/project-initialization.md) | Understand what happens during `jumbo init` |
+| [Project Initialization](reference/project-initialization.md) | Understand what happens during `jumbo init` |
 | [Advanced Workflows](guides/advanced-workflows.md) | Goal chaining, running concurrent agents, and other productivity tips |
 
 ---
