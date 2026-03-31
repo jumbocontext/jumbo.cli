@@ -1,14 +1,14 @@
 /**
  * Infrastructure implementation of database rebuild service.
  *
- * Handles all infrastructure concerns for rebuilding the database:
- * - Closing the existing database connection
- * - Deleting the database file
- * - Reinitializing the database with migrations
- * - Replaying all events through the event bus
+ * Rebuilds SQLite projections by replaying all persisted events through
+ * projection-only handlers. No side-effect handlers (cascades, maintenance
+ * goal registrars) run during rebuild — their output events are already
+ * in the event store from original execution and are replayed naturally.
  *
- * This keeps infrastructure concerns (file operations, connection management)
- * out of the presentation layer.
+ * Accepts a createProjectionBus callback that wires projection-only
+ * handlers for a given database instance. This avoids duplicating the
+ * composition root while keeping rebuild infrastructure-agnostic.
  */
 
 import fs from "fs-extra";
@@ -21,6 +21,8 @@ import {
 } from "../../application/maintenance/db/rebuild/IDatabaseRebuildService.js";
 import { IEventStore } from "../../application/persistence/IEventStore.js";
 import { IEventBus } from "../../application/messaging/IEventBus.js";
+import { MigrationRunner } from "../persistence/MigrationRunner.js";
+import { getNamespaceMigrations } from "../persistence/migrations.config.js";
 
 export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
   private readonly tag = "[DatabaseRebuild]";
@@ -29,8 +31,7 @@ export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
     private readonly rootDir: string,
     private readonly db: Database.Database,
     private readonly eventStore: IEventStore,
-    private readonly eventBus: IEventBus,
-    private readonly reinitialize: () => { db: Database.Database; eventBus: IEventBus },
+    private readonly createProjectionBus: (db: Database.Database) => IEventBus,
     private readonly logger: ILogger
   ) {}
 
@@ -45,36 +46,37 @@ export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
       this.db.close();
     }
 
-    // Step 2: Delete the database file
-    if (await fs.pathExists(dbPath)) {
-      this.logger.debug(`${this.tag} Deleting existing database file`, { dbPath });
-      await fs.remove(dbPath);
+    // Step 2: Delete the database file and WAL/SHM files
+    for (const filePath of [dbPath, `${dbPath}-wal`, `${dbPath}-shm`]) {
+      if (await fs.pathExists(filePath)) {
+        this.logger.debug(`${this.tag} Deleting file`, { filePath });
+        await fs.remove(filePath);
+      }
     }
 
-    // Also remove WAL and SHM files if they exist
-    const walPath = dbPath + "-wal";
-    const shmPath = dbPath + "-shm";
-    if (await fs.pathExists(walPath)) {
-      await fs.remove(walPath);
-    }
-    if (await fs.pathExists(shmPath)) {
-      await fs.remove(shmPath);
-    }
+    // Step 3: Create new database connection and run migrations
+    this.logger.debug(`${this.tag} Creating new database and running migrations`);
+    const newDb = new Database(dbPath);
+    newDb.pragma("journal_mode = WAL");
 
-    // Step 3: Reinitialize database (creates new connection with migrations)
-    this.logger.debug(`${this.tag} Reinitializing database with migrations`);
-    const { eventBus: newEventBus } = this.reinitialize();
+    const infrastructureDir = path.resolve(__dirname, "..");
+    const migrations = getNamespaceMigrations(infrastructureDir);
+    const migrationRunner = new MigrationRunner(newDb);
+    migrationRunner.runNamespaceMigrations(migrations);
+    this.logger.debug(`${this.tag} Migrations complete`);
 
-    // Step 4: Get all events from event store (file-based, still intact)
+    // Step 4: Create projection-only event bus
+    const projectionBus = this.createProjectionBus(newDb);
+
+    // Step 5: Replay all events through projection-only handlers
     this.logger.debug(`${this.tag} Loading events from event store`);
     const events = await this.eventStore.getAllEvents();
     this.logger.info(`${this.tag} Loaded events for replay`, { eventCount: events.length });
 
-    // Step 5: Replay each event through the new event bus
     let processedCount = 0;
     for (const event of events) {
       try {
-        await newEventBus.publish(event);
+        await projectionBus.publish(event);
         processedCount++;
       } catch (error) {
         this.logger.error(`${this.tag} Failed to replay event`, error instanceof Error ? error : undefined, {
@@ -84,6 +86,12 @@ export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
         });
         throw error;
       }
+    }
+
+    // Step 6: Close the rebuild database connection
+    if (newDb && newDb.open) {
+      newDb.pragma("wal_checkpoint(TRUNCATE)");
+      newDb.close();
     }
 
     this.logger.info(`${this.tag} Database rebuild complete`, { eventsReplayed: processedCount });
