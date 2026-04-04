@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="590" viewBox="0 0 660 590">
+  <defs>
+    <style>
+      text { font-family: 'Consolas', 'Courier New', monospace; font-size: 14px; }
+      .jumbo-blue { fill: #66b4f4; }
+      .muted { fill: #888888; }
+      .dim { fill: #555555; }
+      .info { fill: #CCC0A0; }
+      .success { fill: #40C840; }
+    </style>
+  </defs>
+
+  <!-- Terminal background -->
+  <rect width="660" height="590" rx="8" fill="#1a1a2e"/>
+
+  <!-- Terminal title bar -->
+  <rect width="660" height="32" rx="8" fill="#252540"/>
+  <rect y="24" width="660" height="8" fill="#252540"/>
+  <circle cx="18" cy="16" r="6" fill="#ff5f56"/>
+  <circle cx="38" cy="16" r="6" fill="#ffbd2e"/>
+  <circle cx="58" cy="16" r="6" fill="#27c93f"/>
+
+  <!-- ============================================ -->
+  <!-- STATE 1: IDLE / WAITING                      -->
+  <!-- ============================================ -->
+
+  <text x="24" y="62" class="dim">── IDLE STATE ──</text>
+
+  <!-- Row 1: accent bar + title (Jumbo blue) -->
+  <text x="24" y="90" class="jumbo-blue">│</text>
+  <text x="42" y="90" class="jumbo-blue">Jumbo Refinery</text>
+
+  <!-- Row 2: accent bar + config -->
+  <text x="24" y="108" class="jumbo-blue">│</text>
+  <text x="42" y="108" class="muted">claude · poll 30s · retries 3 · Q to stop</text>
+
+  <!-- Row 3: divider -->
+  <text x="24" y="138" class="dim">─────────────────────────────────────────────────</text>
+
+  <!-- Row 4: braille spinner + "Waiting..." with gradient shimmer (red cycle, L→R) -->
+  <text x="42" y="160" fill="#FFB6C1">⠺</text>
+  <text x="54" y="160" fill="#F49898"> </text>
+  <text x="60" y="160" fill="#E87A7A">W</text>
+  <text x="69" y="160" fill="#DC5C5C">a</text>
+  <text x="78" y="160" fill="#D03E3E">i</text>
+  <text x="84" y="160" fill="#C42020">t</text>
+  <text x="93" y="160" fill="#B81010">i</text>
+  <text x="99" y="160" fill="#AC0505">n</text>
+  <text x="108" y="160" fill="#A00000">g</text>
+  <text x="117" y="160" fill="#960000">.</text>
+  <text x="123" y="160" fill="#8C0000">.</text>
+  <text x="129" y="160" fill="#820000">.</text>
+
+  <!-- Row 5: orange cycle snapshot -->
+  <text x="42" y="182" fill="#C86400">⠞</text>
+  <text x="54" y="182" fill="#D07820"> </text>
+  <text x="60" y="182" fill="#D88C40">W</text>
+  <text x="69" y="182" fill="#E0A060">a</text>
+  <text x="78" y="182" fill="#E8B480">i</text>
+  <text x="84" y="182" fill="#F0C498">t</text>
+  <text x="93" y="182" fill="#F4CC A8">i</text>
+  <text x="99" y="182" fill="#F8D4B8">n</text>
+  <text x="108" y="182" fill="#FCD8C0">g</text>
+  <text x="117" y="182" fill="#FFDCC8">.</text>
+  <text x="123" y="182" fill="#FFE0D0">.</text>
+  <text x="129" y="182" fill="#FFE4D8">.</text>
+
+  <!-- Row 6: Jumbo blue cycle snapshot -->
+  <text x="42" y="204" fill="#1E50A0">⠊</text>
+  <text x="54" y="204" fill="#2C60B0"> </text>
+  <text x="60" y="204" fill="#3A70C0">W</text>
+  <text x="69" y="204" fill="#4880CC">a</text>
+  <text x="78" y="204" fill="#5690D8">i</text>
+  <text x="84" y="204" fill="#64A0E4">t</text>
+  <text x="93" y="204" fill="#72B0F0">i</text>
+  <text x="99" y="204" fill="#80BCF8">n</text>
+  <text x="108" y="204" fill="#8CC4FF">g</text>
+  <text x="117" y="204" fill="#8CC8FF">.</text>
+  <text x="123" y="204" fill="#8CC8FF">.</text>
+  <text x="129" y="204" fill="#8CC8FF">.</text>
+
+  <!-- ============================================ -->
+  <!-- STATE 2: ACTIVELY REFINING                   -->
+  <!-- ============================================ -->
+
+  <text x="24" y="254" class="dim">── ACTIVE STATE ──</text>
+
+  <!-- Row 1: accent bar + title (Jumbo blue) -->
+  <text x="24" y="282" class="jumbo-blue">│</text>
+  <text x="42" y="282" class="jumbo-blue">Jumbo Refinery</text>
+
+  <!-- Row 2: accent bar + config -->
+  <text x="24" y="300" class="jumbo-blue">│</text>
+  <text x="42" y="300" class="muted">claude · poll 30s · retries 3 · Q to stop</text>
+
+  <!-- Row 3: divider -->
+  <text x="24" y="330" class="dim">─────────────────────────────────────────────────</text>
+
+  <!-- Row 4: goal info -->
+  <text x="24" y="352" class="success">●</text>
+  <text x="42" y="352" class="info">ff5f910b</text>
+  <text x="134" y="352" class="muted">attempt 1/3</text>
+
+  <!-- Row 4b: truncated goal objective -->
+  <text x="42" y="370" class="dim">Modify the 5 cross-phase transition commands...</text>
+
+  <!-- Row 5: braille "Refining..." with green gradient shimmer -->
+  <text x="42" y="392" fill="#C8FFC8">⠗</text>
+  <text x="54" y="392" fill="#A8E8A8"> </text>
+  <text x="60" y="392" fill="#88D088">R</text>
+  <text x="69" y="392" fill="#68B868">e</text>
+  <text x="78" y="392" fill="#48A048">f</text>
+  <text x="84" y="392" fill="#308830">i</text>
+  <text x="93" y="392" fill="#207020">n</text>
+  <text x="99" y="392" fill="#105810">i</text>
+  <text x="108" y="392" fill="#084008">n</text>
+  <text x="117" y="392" fill="#003000">g</text>
+  <text x="123" y="392" fill="#002800">.</text>
+  <text x="129" y="392" fill="#002000">.</text>
+  <text x="135" y="392" fill="#001800">.</text>
+
+  <!-- Row 6: braille "Refining..." with yellow gradient shimmer -->
+  <text x="42" y="414" fill="#FFFFB4">⠑</text>
+  <text x="54" y="414" fill="#F0F098"> </text>
+  <text x="60" y="414" fill="#E0E080">R</text>
+  <text x="69" y="414" fill="#D4D468">e</text>
+  <text x="78" y="414" fill="#C8C850">f</text>
+  <text x="84" y="414" fill="#BCBC38">i</text>
+  <text x="93" y="414" fill="#B0B420">n</text>
+  <text x="99" y="414" fill="#A8A810">i</text>
+  <text x="108" y="414" fill="#A0A000">n</text>
+  <text x="117" y="414" fill="#989800">g</text>
+  <text x="123" y="414" fill="#909000">.</text>
+  <text x="129" y="414" fill="#888800">.</text>
+  <text x="135" y="414" fill="#808000">.</text>
+
+  <!-- ============================================ -->
+  <!-- STATE 3: GOAL COMPLETE                       -->
+  <!-- ============================================ -->
+
+  <text x="24" y="458" class="dim">── COMPLETION ──</text>
+
+  <!-- Row 1: accent bar + title (Jumbo blue) -->
+  <text x="24" y="486" class="jumbo-blue">│</text>
+  <text x="42" y="486" class="jumbo-blue">Jumbo Refinery</text>
+
+  <!-- Row 2: accent bar + config -->
+  <text x="24" y="504" class="jumbo-blue">│</text>
+  <text x="42" y="504" class="muted">claude · poll 30s · retries 3 · Q to stop</text>
+
+  <!-- Row 3: divider -->
+  <text x="24" y="528" class="dim">─────────────────────────────────────────────────</text>
+
+  <!-- Row 4: completed goal -->
+  <text x="24" y="548" class="success">✓</text>
+  <text x="42" y="548" class="success">refined</text>
+  <text x="118" y="548" class="info">ff5f910b</text>
+  <text x="202" y="548" class="dim">3 attempts · 4m 12s</text>
+
+  <!-- Row 5: completed goal objective -->
+  <text x="42" y="566" class="dim">Modify the 5 cross-phase transition commands...</text>
+</svg>

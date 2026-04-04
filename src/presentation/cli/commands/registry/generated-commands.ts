@@ -87,6 +87,7 @@ import { valuesList, metadata as valuesListMeta } from '../../commands/value-pro
 import { valueRemove, metadata as valueRemoveMeta } from '../../commands/value-propositions/remove/value.remove.js';
 import { valueUpdate, metadata as valueUpdateMeta } from '../../commands/value-propositions/update/value.update.js';
 import { workPause, metadata as workPauseMeta } from '../../commands/work/pause/work.pause.js';
+import { workRefine, metadata as workRefineMeta } from '../../commands/work/refine/work.refine.js';
 import { workResume, metadata as workResumeMeta } from '../../commands/work/resume/work.resume.js';
 
 export const commands: RegisteredCommand[] = [
@@ -479,6 +480,11 @@ export const commands: RegisteredCommand[] = [
     path: 'work pause',
     metadata: workPauseMeta,
     handler: workPause
+  },
+  {
+    path: 'work refine',
+    metadata: workRefineMeta,
+    handler: workRefine
   },
   {
     path: 'work resume',

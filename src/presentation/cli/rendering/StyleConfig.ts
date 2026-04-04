@@ -45,6 +45,15 @@ export const Colors = {
 } as const;
 
 /**
+ * Brand-specific colors with both chalk and raw RGB forms.
+ * Raw forms are for interactive animations that use ANSI escapes directly.
+ */
+export const BrandColors = {
+  jumboBlue: chalk.rgb(102, 180, 244),
+  jumboBlueRaw: [102, 180, 244] as const,
+} as const;
+
+/**
  * Symbols for different message types
  * Can swap between emoji and ASCII based on environment
  */
@@ -59,6 +68,9 @@ export const Symbols = {
   check: process.stdout.isTTY ? "✓" : "[x]",
   cross: process.stdout.isTTY ? "✗" : "[ ]",
   ellipsis: "...",
+  accentBar: process.stdout.isTTY ? "│" : "|",
+  dot: process.stdout.isTTY ? "·" : "-",
+  filledCircle: process.stdout.isTTY ? "●" : "*",
 } as const;
 
 /**
