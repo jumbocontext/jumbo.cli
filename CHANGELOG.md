@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-04-05
+
+### Added
+
+- **Refinery command**: New `jumbo work refine --agent <agent>` long-running daemon that continuously polls for goals in 'defined' state and delegates their refinement to an agent subprocess. Features graceful shutdown (Q key / Ctrl+C), configurable poll interval and retry count.
+- **CLI design library**: Shared animation primitives for interactive CLI output:
+  - `GradientPalette` — 10 color gradient definitions with smooth interpolation, bar animation
+  - `GlimmerEffect` — sweep-highlight animation with flash pop for text elements
+  - `BrailleSpinner` — braille character spinner with per-character gradient shimmer
+- **RefineryDisplay**: Dedicated display module implementing the refinery mockup design with accent bars, glimmer title, compact config line, dividers, and "Foraging..." / "Refining..." braille animations.
+- **BrandColors**: Added `BrandColors.jumboBlue` (#66b4f4) and raw RGB tuple to `StyleConfig.ts`.
+- **New Symbols**: Added `accentBar` (│), `dot` (·), and `filledCircle` (●) to `StyleConfig.ts` with TTY/ASCII fallbacks.
+- **Design mockup**: `refinery-mockup.svg` documenting the target UX for the refinery command across idle, active, and completion states.
+
 ## [2.9.0] - 2026-03-31
 
 ### Added
