@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.11.0] - 2026-04-05
+
 ### Added
 
 - **`--continue` flag for cross-phase commands**: `goal commit`, `goal submit`, `goal approve`, `goal reject`, and `goal close` now accept `-c, --continue`. Without the flag, next-step output is informational guidance; with it, output is an imperative directive. This makes phase boundaries explicit handoff points for multi-agent harnesses.
