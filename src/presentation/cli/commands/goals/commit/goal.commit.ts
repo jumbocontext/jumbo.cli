@@ -5,7 +5,7 @@
  * Transitions goal from 'in-refinement' to 'refined' status and releases the claim.
  */
 
-import { CommandMetadata } from "../../registry/CommandMetadata.js";
+import { CommandMetadata, CONTINUE_OPTION } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GoalCommitOutputBuilder } from "./GoalCommitOutputBuilder.js";
@@ -22,7 +22,7 @@ export const metadata: CommandMetadata = {
       description: "ID of the goal to commit"
     }
   ],
-  options: [],
+  options: [CONTINUE_OPTION],
   examples: [
     {
       command: "jumbo goal commit --id goal_abc123",
@@ -37,7 +37,7 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function goalCommit(
-  options: { id: string },
+  options: { id: string; continue?: boolean },
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
@@ -50,7 +50,7 @@ export async function goalCommit(
     });
 
     // 2. Build and render output using builder pattern
-    const output = outputBuilder.buildSuccess(response.goalId, response.status);
+    const output = outputBuilder.buildSuccess(response.goalId, response.status, options.continue === true);
     renderer.info(output.toHumanReadable());
 
   } catch (error) {

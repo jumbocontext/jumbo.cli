@@ -8,7 +8,7 @@
  * See also: goal.qualify (deprecated alias).
  */
 
-import { CommandMetadata } from "../../registry/CommandMetadata.js";
+import { CommandMetadata, CONTINUE_OPTION } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GoalApproveOutputBuilder } from "./GoalApproveOutputBuilder.js";
@@ -25,7 +25,7 @@ export const metadata: CommandMetadata = {
       description: "ID of the goal to approve"
     }
   ],
-  options: [],
+  options: [CONTINUE_OPTION],
   examples: [
     {
       command: "jumbo goal approve --id goal_abc123",
@@ -40,10 +40,12 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function goalApprove(
-  options: { id: string },
+  options: { id: string; continue?: boolean },
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
+
+  const outputBuilder = new GoalApproveOutputBuilder();
 
   try {
     // 1. Execute via controller (delegates to same QualifyGoalController)
@@ -52,13 +54,12 @@ export async function goalApprove(
     });
 
     // 2. Build and render output using builder pattern
-    const outputBuilder = new GoalApproveOutputBuilder();
-    const output = outputBuilder.buildSuccess(response);
-
+    const output = outputBuilder.buildSuccess(response, options.continue === true);
     renderer.info(output.toHumanReadable());
 
   } catch (error) {
-    renderer.error("Failed to approve goal", error instanceof Error ? error : String(error));
+    const errorOutput = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
+    renderer.error(errorOutput.toHumanReadable());
     process.exit(1);
   }
 }

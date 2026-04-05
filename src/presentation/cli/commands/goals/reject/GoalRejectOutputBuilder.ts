@@ -20,7 +20,7 @@ export class GoalRejectOutputBuilder {
    * Build output for successful goal rejection.
    * Renders rejection result with review issues and next steps for the implementing agent.
    */
-  buildSuccess(response: RejectGoalResponse): TerminalOutput {
+  buildSuccess(response: RejectGoalResponse, continueFlag: boolean = false): TerminalOutput {
     this.builder.reset();
 
     this.builder.addPrompt(
@@ -35,9 +35,17 @@ export class GoalRejectOutputBuilder {
       "---"
     );
 
-    let nextSteps = "## Next Steps\n" +
-                    "The implementing agent should address the review issues and restart the goal:\n" +
-                    `  Run: jumbo goal start --id ${response.goalId}`;
+    let nextSteps: string;
+
+    if (continueFlag) {
+      nextSteps = "## Next Steps\n" +
+                  "The implementing agent should address the review issues and restart the goal:\n" +
+                  `  Run: jumbo goal start --id ${response.goalId}`;
+    } else {
+      nextSteps = "## [Next Phase] Rework\n" +
+                  "The implementing agent should address the review issues.\n" +
+                  `To restart the goal: jumbo goal start --id ${response.goalId}`;
+    }
 
     if (response.nextGoalId) {
       nextSteps += "\n\nThe next goal in the queue is:\n" +

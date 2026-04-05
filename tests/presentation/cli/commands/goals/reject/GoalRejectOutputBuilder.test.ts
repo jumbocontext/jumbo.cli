@@ -1,45 +1,47 @@
-import { GoalApproveOutputBuilder } from "../../../../../../src/presentation/cli/commands/goals/approve/GoalApproveOutputBuilder";
-import { QualifyGoalResponse } from "../../../../../../src/application/context/goals/qualify/QualifyGoalResponse";
+import { GoalRejectOutputBuilder } from "../../../../../../src/presentation/cli/commands/goals/reject/GoalRejectOutputBuilder";
+import { RejectGoalResponse } from "../../../../../../src/application/context/goals/reject/RejectGoalResponse";
 
-describe("GoalApproveOutputBuilder", () => {
-  let builder: GoalApproveOutputBuilder;
+describe("GoalRejectOutputBuilder", () => {
+  let builder: GoalRejectOutputBuilder;
 
   beforeEach(() => {
-    builder = new GoalApproveOutputBuilder();
+    builder = new GoalRejectOutputBuilder();
   });
 
   describe("buildSuccess", () => {
-    const response: QualifyGoalResponse = {
+    const response: RejectGoalResponse = {
       goalId: "goal_123",
-      status: "approved",
+      status: "rejected",
       objective: "Implement authentication",
+      reviewIssues: "Missing error handling in API endpoint",
     };
 
     it("should build guidance output by default (no continue flag)", () => {
       const output = builder.buildSuccess(response);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("Goal Approved");
+      expect(text).toContain("Goal Rejected");
       expect(text).toContain("goal_123");
       expect(text).toContain("Implement authentication");
-      expect(text).toContain("approved");
-      expect(text).toContain("[Next Phase] Codification");
-      expect(text).toContain("jumbo goal codify --id goal_123");
-      expect(text).not.toContain("Codify the goal:");
+      expect(text).toContain("rejected");
+      expect(text).toContain("Missing error handling in API endpoint");
+      expect(text).toContain("[Next Phase] Rework");
+      expect(text).toContain("jumbo goal start --id goal_123");
+      expect(text).not.toContain("The implementing agent should address the review issues and restart");
     });
 
     it("should build directive output when continue flag is true", () => {
       const output = builder.buildSuccess(response, true);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("Goal Approved");
-      expect(text).toContain("Codify the goal:");
-      expect(text).toContain("jumbo goal codify --id goal_123");
+      expect(text).toContain("Goal Rejected");
+      expect(text).toContain("The implementing agent should address the review issues and restart");
+      expect(text).toContain("jumbo goal start --id goal_123");
       expect(text).not.toContain("[Next Phase]");
     });
 
     it("should include next goal ID when present", () => {
-      const responseWithNext: QualifyGoalResponse = {
+      const responseWithNext: RejectGoalResponse = {
         ...response,
         nextGoalId: "goal_456",
       };
@@ -55,7 +57,7 @@ describe("GoalApproveOutputBuilder", () => {
     const output = builder.buildFailureError("Something went wrong");
     const text = output.toHumanReadable();
 
-    expect(text).toContain("Failed to approve goal");
+    expect(text).toContain("Failed to reject goal");
     expect(text).toContain("Something went wrong");
   });
 
@@ -63,7 +65,7 @@ describe("GoalApproveOutputBuilder", () => {
     const output = builder.buildFailureError(new Error("Domain error"));
     const text = output.toHumanReadable();
 
-    expect(text).toContain("Failed to approve goal");
+    expect(text).toContain("Failed to reject goal");
     expect(text).toContain("Domain error");
   });
 });

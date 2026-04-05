@@ -87,7 +87,7 @@ Commit a goal after refinement is complete — transitions from `in-refinement` 
 ### Synopsis
 
 ```bash
-> jumbo goal commit --id <goalId>
+> jumbo goal commit --id <goalId> [--continue]
 ```
 
 ### Options
@@ -95,11 +95,13 @@ Commit a goal after refinement is complete — transitions from `in-refinement` 
 | Option | Description |
 |--------|-------------|
 | `-i, --id <goalId>` | ID of the goal to commit (required) |
+| `-c, --continue` | Output next-step as a directive instead of informational guidance |
 
 ### Examples
 
 ```bash
 > jumbo goal commit --id goal_abc123
+> jumbo goal commit --id goal_abc123 --continue
 ```
 
 ---
@@ -244,7 +246,7 @@ Submit a goal after implementation is complete — transitions from `doing` to `
 ### Synopsis
 
 ```bash
-> jumbo goal submit --id <goalId>
+> jumbo goal submit --id <goalId> [--continue]
 ```
 
 ### Options
@@ -252,11 +254,13 @@ Submit a goal after implementation is complete — transitions from `doing` to `
 | Option | Description |
 |--------|-------------|
 | `-i, --id <goalId>` | ID of the goal to submit (required) |
+| `-c, --continue` | Output next-step as a directive instead of informational guidance |
 
 ### Examples
 
 ```bash
 > jumbo goal submit --id goal_abc123
+> jumbo goal submit --id goal_abc123 --continue
 ```
 
 ---
@@ -292,7 +296,7 @@ Approve a goal after successful QA review — transitions from `in-review` to `a
 ### Synopsis
 
 ```bash
-> jumbo goal approve --id <goalId>
+> jumbo goal approve --id <goalId> [--continue]
 ```
 
 ### Options
@@ -300,11 +304,13 @@ Approve a goal after successful QA review — transitions from `in-review` to `a
 | Option | Description |
 |--------|-------------|
 | `-i, --id <goalId>` | ID of the goal to approve (required) |
+| `-c, --continue` | Output next-step as a directive instead of informational guidance |
 
 ### Examples
 
 ```bash
 > jumbo goal approve --id goal_abc123
+> jumbo goal approve --id goal_abc123 --continue
 ```
 
 ---
@@ -340,7 +346,7 @@ Reject a goal after failed QA review — transitions from `in-review` back to `d
 ### Synopsis
 
 ```bash
-> jumbo goal reject --id <goalId> --audit-findings <findings>
+> jumbo goal reject --id <goalId> --audit-findings <findings> [--continue]
 ```
 
 ### Options
@@ -349,11 +355,13 @@ Reject a goal after failed QA review — transitions from `in-review` back to `d
 |--------|-------------|
 | `-i, --id <goalId>` | ID of the goal to reject (required) |
 | `-a, --audit-findings <findings>` | Description of implementation problems that need fixing (required) |
+| `-c, --continue` | Output next-step as a directive instead of informational guidance |
 
 ### Examples
 
 ```bash
 > jumbo goal reject --id goal_abc123 --audit-findings "Missing error handling in API endpoint"
+> jumbo goal reject --id goal_abc123 --audit-findings "Missing tests" --continue
 ```
 
 ---
@@ -389,7 +397,7 @@ Close a goal after codification is complete — transitions from `codifying` to 
 ### Synopsis
 
 ```bash
-> jumbo goal close --id <goalId>
+> jumbo goal close --id <goalId> [--continue]
 ```
 
 ### Options
@@ -397,11 +405,13 @@ Close a goal after codification is complete — transitions from `codifying` to 
 | Option | Description |
 |--------|-------------|
 | `-i, --id <goalId>` | ID of the goal to close (required) |
+| `-c, --continue` | Output next-step as a directive instead of informational guidance |
 
 ### Examples
 
 ```bash
 > jumbo goal close --id goal_abc123
+> jumbo goal close --id goal_abc123 --continue
 ```
 
 ---

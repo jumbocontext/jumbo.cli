@@ -6,7 +6,7 @@
  * records review issues, and releases the reviewer's claim.
  */
 
-import { CommandMetadata } from "../../registry/CommandMetadata.js";
+import { CommandMetadata, CONTINUE_OPTION } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GoalRejectOutputBuilder } from "./GoalRejectOutputBuilder.js";
@@ -27,7 +27,7 @@ export const metadata: CommandMetadata = {
       description: "Description of implementation problems that need fixing"
     }
   ],
-  options: [],
+  options: [CONTINUE_OPTION],
   examples: [
     {
       command: 'jumbo goal reject --id goal_abc123 --review-issues "Missing error handling in API endpoint"',
@@ -42,7 +42,7 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function goalReject(
-  options: { id: string; reviewIssues: string },
+  options: { id: string; reviewIssues: string; continue?: boolean },
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
@@ -56,7 +56,7 @@ export async function goalReject(
     });
 
     // 2. Build and render output using builder pattern
-    const output = outputBuilder.buildSuccess(response);
+    const output = outputBuilder.buildSuccess(response, options.continue === true);
     renderer.info(output.toHumanReadable());
 
   } catch (error) {

@@ -5,7 +5,7 @@
  * Transitions goal from 'doing' to 'submitted' status and releases the implementer's claim.
  */
 
-import { CommandMetadata } from "../../registry/CommandMetadata.js";
+import { CommandMetadata, CONTINUE_OPTION } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GoalSubmitOutputBuilder } from "./GoalSubmitOutputBuilder.js";
@@ -22,7 +22,7 @@ export const metadata: CommandMetadata = {
       description: "ID of the goal to submit"
     }
   ],
-  options: [],
+  options: [CONTINUE_OPTION],
   examples: [
     {
       command: "jumbo goal submit --id goal_abc123",
@@ -37,7 +37,7 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function goalSubmit(
-  options: { id: string },
+  options: { id: string; continue?: boolean },
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
@@ -50,7 +50,7 @@ export async function goalSubmit(
     });
 
     // 2. Build and render output using builder pattern
-    const output = outputBuilder.buildSuccess(response);
+    const output = outputBuilder.buildSuccess(response, options.continue === true);
     renderer.info(output.toHumanReadable());
 
   } catch (error) {

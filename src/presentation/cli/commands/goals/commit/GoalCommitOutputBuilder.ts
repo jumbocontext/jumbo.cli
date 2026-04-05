@@ -19,14 +19,23 @@ export class GoalCommitOutputBuilder {
    * Build output for successful goal commit.
    * Renders success message with next step to start the goal.
    */
-  buildSuccess(goalId: string, status: string): TerminalOutput {
+  buildSuccess(goalId: string, status: string, continueFlag: boolean = false): TerminalOutput {
     this.builder.reset();
     this.builder.addPrompt("✓ Goal committed");
     this.builder.addData({ goalId, status });
-    this.builder.addPrompt(
-      "\n@LLM: Goal refinement is committed and ready to start.\n" +
-      `Run: jumbo goal start --id ${goalId}`
-    );
+
+    if (continueFlag) {
+      this.builder.addPrompt(
+        "\n@LLM: Goal refinement is committed and ready to start.\n" +
+        `Run: jumbo goal start --id ${goalId}`
+      );
+    } else {
+      this.builder.addPrompt(
+        "\n[Next Phase] Implementation\n" +
+        `The goal is now refined and can be started with: jumbo goal start --id ${goalId}`
+      );
+    }
+
     return this.builder.build();
   }
 

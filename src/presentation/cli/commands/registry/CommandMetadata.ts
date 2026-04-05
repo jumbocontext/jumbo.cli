@@ -66,6 +66,15 @@ export interface CommandMetadata {
 }
 
 /**
+ * Shared option for cross-phase transition commands.
+ * When present, next-step output is a directive; when absent, output is informational guidance.
+ */
+export const CONTINUE_OPTION: CommandOption = {
+  flags: "-c, --continue",
+  description: "Output next-step as a directive instead of informational guidance",
+};
+
+/**
  * Registered command with handler
  * Generated at build time by scanning command files
  */

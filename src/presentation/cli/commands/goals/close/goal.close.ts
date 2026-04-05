@@ -5,7 +5,7 @@
  * Transitions goal from 'codifying' to 'done' status and releases the claim.
  */
 
-import { CommandMetadata } from "../../registry/CommandMetadata.js";
+import { CommandMetadata, CONTINUE_OPTION } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
 import { GoalCloseOutputBuilder } from "./GoalCloseOutputBuilder.js";
@@ -22,7 +22,7 @@ export const metadata: CommandMetadata = {
       description: "ID of the goal to close"
     }
   ],
-  options: [],
+  options: [CONTINUE_OPTION],
   examples: [
     {
       command: "jumbo goal close --id goal_abc123",
@@ -37,10 +37,12 @@ export const metadata: CommandMetadata = {
  * Called by Commander with parsed options
  */
 export async function goalClose(
-  options: { id: string },
+  options: { id: string; continue?: boolean },
   container: IApplicationContainer
 ) {
   const renderer = Renderer.getInstance();
+
+  const outputBuilder = new GoalCloseOutputBuilder();
 
   try {
     // 1. Execute via controller
@@ -49,13 +51,12 @@ export async function goalClose(
     });
 
     // 2. Build and render output using builder pattern
-    const outputBuilder = new GoalCloseOutputBuilder();
-    const output = outputBuilder.buildSuccess(response);
-
+    const output = outputBuilder.buildSuccess(response, options.continue === true);
     renderer.info(output.toHumanReadable());
 
   } catch (error) {
-    renderer.error("Failed to close goal", error instanceof Error ? error : String(error));
+    const errorOutput = outputBuilder.buildFailureError(error instanceof Error ? error : String(error));
+    renderer.error(errorOutput.toHumanReadable());
     process.exit(1);
   }
 }

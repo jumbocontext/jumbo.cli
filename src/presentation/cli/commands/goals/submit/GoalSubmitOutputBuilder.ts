@@ -20,18 +20,31 @@ export class GoalSubmitOutputBuilder {
    * Build output for successful goal submission.
    * Renders success message with next step to review the goal.
    */
-  buildSuccess(response: SubmitGoalResponse): TerminalOutput {
+  buildSuccess(response: SubmitGoalResponse, continueFlag: boolean = false): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt(
-      "# Goal Submitted\n" +
+
+    const header = "# Goal Submitted\n" +
       `Goal ID: ${response.goalId}\n` +
       `Objective: ${response.objective}\n` +
       `Status: ${response.status}\n` +
-      "---\n\n" +
-      "@LLM: Implementation submitted. The goal is now awaiting QA review.\n" +
-      `Run: jumbo goal review --id ${response.goalId}\n` +
-      "---"
-    );
+      "---\n";
+
+    if (continueFlag) {
+      this.builder.addPrompt(
+        header + "\n" +
+        "@LLM: Implementation submitted. The goal is now awaiting QA review.\n" +
+        `Run: jumbo goal review --id ${response.goalId}\n` +
+        "---"
+      );
+    } else {
+      this.builder.addPrompt(
+        header + "\n" +
+        "[Next Phase] QA Review\n" +
+        `The goal is now awaiting QA review. To start the review: jumbo goal review --id ${response.goalId}\n` +
+        "---"
+      );
+    }
+
     return this.builder.build();
   }
 

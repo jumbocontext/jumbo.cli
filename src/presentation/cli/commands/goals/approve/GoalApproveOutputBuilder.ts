@@ -20,10 +20,9 @@ export class GoalApproveOutputBuilder {
    * Build output for successful goal approval.
    * Renders approval result with next steps.
    */
-  buildSuccess(response: QualifyGoalResponse): TerminalOutput {
+  buildSuccess(response: QualifyGoalResponse, continueFlag: boolean = false): TerminalOutput {
     this.builder.reset();
 
-    // Header and success message
     this.builder.addPrompt(
       "# Goal Approved\n" +
       `Goal ID: ${response.goalId}\n` +
@@ -35,10 +34,16 @@ export class GoalApproveOutputBuilder {
       "---"
     );
 
-    // Next steps
-    let nextSteps = "## Next Steps\n" +
-                    "Codify the goal:\n" +
-                    `  Run: jumbo goal codify --id ${response.goalId}`;
+    let nextSteps: string;
+
+    if (continueFlag) {
+      nextSteps = "## Next Steps\n" +
+                  "Codify the goal:\n" +
+                  `  Run: jumbo goal codify --id ${response.goalId}`;
+    } else {
+      nextSteps = "## [Next Phase] Codification\n" +
+                  `To codify the goal: jumbo goal codify --id ${response.goalId}`;
+    }
 
     if (response.nextGoalId) {
       nextSteps += "\n\nAfter closing, the next goal in the queue is:\n" +

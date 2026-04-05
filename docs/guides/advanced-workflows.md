@@ -29,6 +29,23 @@ Tips:
 - If QA finds issues, use `jumbo goal reject --id <goalId> --audit-findings "..."`, fix, then `submit` again.
 - `jumbo goal qualify --id <goalId>` exists for backward compatibility but is deprecated in favor of `goal approve`.
 
+## Control phase handoffs with --continue
+
+Cross-phase transition commands (`commit`, `submit`, `approve`, `reject`, `close`) accept a `--continue` flag that changes how next-step output is framed.
+
+- **Without `--continue`** (default): output names the upcoming phase and command as informational guidance. The agent stops at the phase boundary.
+- **With `--continue`**: output is an imperative directive, telling the agent to proceed immediately.
+
+Use the default when different agents or models handle different phases (e.g., a cheaper model refines, a stronger model implements, a dedicated reviewer approves). Use `--continue` when a single agent should drive through multiple phases without stopping.
+
+```bash
+# Multi-agent: implementer stops after submit, reviewer picks up separately
+> jumbo goal submit --id <goalId>
+
+# Single-agent: implementer continues straight into review
+> jumbo goal submit --id <goalId> --continue
+```
+
 ## Run multiple agents in parallel safely
 
 Jumbo supports concurrent workers in separate terminals.

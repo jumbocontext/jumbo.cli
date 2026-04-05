@@ -20,10 +20,9 @@ export class GoalCloseOutputBuilder {
    * Build output for successful goal close.
    * Renders close confirmation and optional next goal information.
    */
-  buildSuccess(response: CloseGoalResponse): TerminalOutput {
+  buildSuccess(response: CloseGoalResponse, continueFlag: boolean = false): TerminalOutput {
     this.builder.reset();
 
-    // Header
     this.builder.addPrompt(
       "# Goal Closed\n" +
       `Goal ID: ${response.goalId}\n` +
@@ -32,7 +31,6 @@ export class GoalCloseOutputBuilder {
       "---"
     );
 
-    // Next goal in chain (if exists)
     if (response.nextGoal) {
       this.builder.addPrompt("## Next goal in chain:");
       this.builder.addData({
@@ -40,10 +38,18 @@ export class GoalCloseOutputBuilder {
         objective: response.nextGoal.objective,
         status: response.nextGoal.status,
       });
-      this.builder.addPrompt(
-        "Start the next goal immediately. Run:\n" +
-        `  jumbo goal start --id ${response.nextGoal.goalId}`
-      );
+
+      if (continueFlag) {
+        this.builder.addPrompt(
+          "Start the next goal immediately. Run:\n" +
+          `  jumbo goal start --id ${response.nextGoal.goalId}`
+        );
+      } else {
+        this.builder.addPrompt(
+          "[Next Phase] Implementation\n" +
+          `To start the next goal: jumbo goal start --id ${response.nextGoal.goalId}`
+        );
+      }
     }
 
     return this.builder.build();

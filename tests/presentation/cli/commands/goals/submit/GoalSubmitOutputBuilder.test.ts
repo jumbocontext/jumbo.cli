@@ -8,21 +8,36 @@ describe("GoalSubmitOutputBuilder", () => {
     builder = new GoalSubmitOutputBuilder();
   });
 
-  it("should build success output with goal details and next step", () => {
+  describe("buildSuccess", () => {
     const response: SubmitGoalResponse = {
       goalId: "goal_123",
       status: "submitted",
       objective: "Implement authentication",
     };
 
-    const output = builder.buildSuccess(response);
-    const text = output.toHumanReadable();
+    it("should build guidance output by default (no continue flag)", () => {
+      const output = builder.buildSuccess(response);
+      const text = output.toHumanReadable();
 
-    expect(text).toContain("Goal Submitted");
-    expect(text).toContain("goal_123");
-    expect(text).toContain("Implement authentication");
-    expect(text).toContain("submitted");
-    expect(text).toContain("jumbo goal review --id goal_123");
+      expect(text).toContain("Goal Submitted");
+      expect(text).toContain("goal_123");
+      expect(text).toContain("Implement authentication");
+      expect(text).toContain("submitted");
+      expect(text).toContain("[Next Phase] QA Review");
+      expect(text).toContain("jumbo goal review --id goal_123");
+      expect(text).not.toContain("@LLM:");
+    });
+
+    it("should build directive output when continue flag is true", () => {
+      const output = builder.buildSuccess(response, true);
+      const text = output.toHumanReadable();
+
+      expect(text).toContain("Goal Submitted");
+      expect(text).toContain("goal_123");
+      expect(text).toContain("@LLM:");
+      expect(text).toContain("jumbo goal review --id goal_123");
+      expect(text).not.toContain("[Next Phase]");
+    });
   });
 
   it("should build failure error output", () => {
