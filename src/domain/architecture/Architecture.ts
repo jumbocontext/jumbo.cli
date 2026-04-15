@@ -1,7 +1,7 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
-import { ArchitectureEvent, ArchitectureDefinedEvent, ArchitectureUpdatedEvent, DataStore } from "./EventIndex.js";
+import { ArchitectureEvent, ArchitectureDefinedEvent, ArchitectureUpdatedEvent, ArchitectureDeprecatedEvent, DataStore } from "./EventIndex.js";
 import { ArchitectureEventType, ArchitectureErrorMessages } from "./Constants.js";
 import { DESCRIPTION_RULES } from "./rules/DescriptionRules.js";
 import { ORGANIZATION_RULES } from "./rules/OrganizationRules.js";
@@ -19,6 +19,7 @@ export interface ArchitectureState extends AggregateState {
   principles: string[];          // Optional: design principles
   dataStores: DataStore[];       // Optional: data stores
   stack: string[];               // Optional: technology stack
+  deprecated: boolean;           // Whether the architecture entity is deprecated
   version: number;               // Aggregate version
 }
 
@@ -55,6 +56,11 @@ export class Architecture extends BaseAggregate<ArchitectureState, ArchitectureE
         state.version = e.version;
         break;
       }
+      case ArchitectureEventType.DEPRECATED: {
+        state.deprecated = true;
+        state.version = event.version;
+        break;
+      }
     }
   }
 
@@ -67,6 +73,7 @@ export class Architecture extends BaseAggregate<ArchitectureState, ArchitectureE
       principles: [],
       dataStores: [],
       stack: [],
+      deprecated: false,
       version: 0,
     };
     return new Architecture(state);
@@ -85,6 +92,7 @@ export class Architecture extends BaseAggregate<ArchitectureState, ArchitectureE
       principles: [],
       dataStores: [],
       stack: [],
+      deprecated: false,
       version: 0,
     };
 
@@ -151,6 +159,11 @@ export class Architecture extends BaseAggregate<ArchitectureState, ArchitectureE
       throw new Error(ArchitectureErrorMessages.NOT_DEFINED);
     }
 
+    // Precondition: must not be deprecated
+    if (this.state.deprecated) {
+      throw new Error(ArchitectureErrorMessages.DEPRECATED);
+    }
+
     // Validate provided fields
     if (updates.description !== undefined) {
       ValidationRuleSet.ensure(updates.description, DESCRIPTION_RULES);
@@ -177,5 +190,24 @@ export class Architecture extends BaseAggregate<ArchitectureState, ArchitectureE
       updates,
       Architecture.apply
     ) as ArchitectureUpdatedEvent;
+  }
+
+  /**
+   * Deprecate the architecture entity.
+   * Once deprecated, define and update operations are no longer permitted.
+   */
+  deprecate(reason: string): ArchitectureDeprecatedEvent {
+    if (this.state.version === 0) {
+      throw new Error(ArchitectureErrorMessages.NOT_DEFINED);
+    }
+    if (this.state.deprecated) {
+      throw new Error(ArchitectureErrorMessages.ALREADY_DEPRECATED);
+    }
+
+    return this.makeEvent(
+      ArchitectureEventType.DEPRECATED,
+      { reason },
+      Architecture.apply
+    ) as ArchitectureDeprecatedEvent;
   }
 }

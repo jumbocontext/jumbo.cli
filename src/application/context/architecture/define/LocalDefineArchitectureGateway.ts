@@ -19,6 +19,9 @@ export class LocalDefineArchitectureGateway implements IDefineArchitectureGatewa
     // Check if architecture already exists (precondition)
     const existingArchitecture = await this.architectureReader.findById('architecture');
     if (existingArchitecture) {
+      if (existingArchitecture.deprecated) {
+        throw new Error(ArchitectureErrorMessages.DEPRECATED);
+      }
       throw new Error(ArchitectureErrorMessages.ALREADY_DEFINED);
     }
 

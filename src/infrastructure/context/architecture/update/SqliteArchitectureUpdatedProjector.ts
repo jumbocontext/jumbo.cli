@@ -67,6 +67,7 @@ export class SqliteArchitectureUpdatedProjector implements IArchitectureUpdatedP
       principles: JSON.parse((row.principles as string) || '[]'),
       dataStores: JSON.parse((row.dataStores as string) || '[]'),
       stack: JSON.parse((row.stack as string) || '[]'),
+      deprecated: (row.deprecated as number) === 1,
       version: row.version as number,
       createdAt: row.createdAt as string,
       updatedAt: row.updatedAt as string,

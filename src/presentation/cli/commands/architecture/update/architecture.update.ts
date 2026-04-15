@@ -1,19 +1,21 @@
 /**
  * CLI Command: jumbo architecture update
  *
- * Updates an existing Architecture aggregate with new details.
+ * DEPRECATED: This command rejects execution when the Architecture entity
+ * is deprecated, with migration guidance directing to individual entities.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
-import { UpdateArchitectureRequest } from "../../../../../application/context/architecture/update/UpdateArchitectureRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
+import { ArchitectureErrorMessages } from "../../../../../domain/architecture/Constants.js";
+import { ARCHITECTURE_REJECTION_MESSAGE } from "../../../../../application/context/architecture/ArchitectureDeprecationConstants.js";
 
 /**
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "Update project architecture details",
+  description: "Update project architecture details (deprecated)",
   category: "solution",
   options: [
     {
@@ -46,17 +48,13 @@ export const metadata: CommandMetadata = {
       command: "jumbo architecture update --pattern DDD CQRS EventSourcing --principle SOLID DRY",
       description: "Update architecture patterns and principles"
     },
-    {
-      command: 'jumbo architecture update --description "Updated architectural overview"',
-      description: "Update only the description"
-    }
   ],
-  related: ["architecture define", "component add"]
+  related: ["decision add", "invariant add", "component add", "dependency add"]
 };
 
 /**
- * Command handler
- * Called by Commander with parsed options
+ * Command handler — delegates to controller; rejects with migration guidance
+ * when the Architecture entity is deprecated.
  */
 export async function architectureUpdate(
   options: {
@@ -64,7 +62,7 @@ export async function architectureUpdate(
     organization?: string;
     pattern?: string[];
     principle?: string[];
-    dataStore?: string[];  // Format: "name:type:purpose"
+    dataStore?: string[];
     stack?: string[];
   },
   container: IApplicationContainer
@@ -72,32 +70,23 @@ export async function architectureUpdate(
   const renderer = Renderer.getInstance();
 
   try {
-    // 1. Build typed request
-    const request: UpdateArchitectureRequest = {
+    await container.updateArchitectureController.handle({
       description: options.description,
       organization: options.organization,
       patterns: options.pattern,
       principles: options.principle,
       dataStores: options.dataStore,
       stack: options.stack
-    };
+    });
 
-    // 2. Delegate to controller
-    await container.updateArchitectureController.handle(request);
-
-    // 3. Success output
     renderer.success("Architecture updated successfully");
-
-    // Show what was updated
-    if (options.description) renderer.info(`Updated description: ${options.description}`);
-    if (options.organization) renderer.info(`Updated organization: ${options.organization}`);
-    if (options.pattern) renderer.info(`Updated patterns: ${options.pattern.join(', ')}`);
-    if (options.principle) renderer.info(`Updated principles: ${options.principle.join(', ')}`);
-    if (options.dataStore) renderer.info(`Updated data stores: ${options.dataStore.join(', ')}`);
-    if (options.stack) renderer.info(`Updated stack: ${options.stack.join(', ')}`);
   } catch (error) {
-    renderer.error("Failed to update architecture", error instanceof Error ? error : String(error));
+    const message = error instanceof Error ? error.message : String(error);
+    if (message === ArchitectureErrorMessages.DEPRECATED) {
+      renderer.error(ARCHITECTURE_REJECTION_MESSAGE);
+    } else {
+      renderer.error("Failed to update architecture", error instanceof Error ? error : String(error));
+    }
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

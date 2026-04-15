@@ -347,6 +347,43 @@ describe("SessionContextOutputBuilder", () => {
       expect(text).toContain("@LLM:");
       expect(text).toContain("jumbo --help");
     });
+
+    it("should not include architecture define in brownfield available commands", () => {
+      const context = createContext({}, defaultSession, [SessionInstructionSignal.BROWNFIELD_ONBOARDING]);
+      const text = builder.renderSessionSummary(context);
+
+      expect(text).not.toContain("jumbo architecture define");
+    });
+  });
+
+  describe("architecture deprecation notice", () => {
+    it("should include deprecation notice when architecture-deprecated signal is present", () => {
+      const context = createContext({}, defaultSession, [SessionInstructionSignal.ARCHITECTURE_DEPRECATED]);
+      const text = builder.renderSessionSummary(context);
+
+      expect(text).toContain("@LLM:");
+      expect(text).toContain("deprecated");
+      expect(text).toContain("removed in v3");
+      expect(text).toContain("jumbo decision add");
+      expect(text).toContain("jumbo invariant add");
+      expect(text).toContain("jumbo component add");
+      expect(text).toContain("jumbo dependency add");
+    });
+
+    it("should not include deprecation notice when architecture-deprecated signal is absent", () => {
+      const context = createContext({}, defaultSession, []);
+      const text = builder.renderSessionSummary(context);
+
+      expect(text).not.toContain("removed in v3");
+    });
+
+    it("should include instruction not to use architecture define or update", () => {
+      const context = createContext({}, defaultSession, [SessionInstructionSignal.ARCHITECTURE_DEPRECATED]);
+      const text = builder.renderSessionSummary(context);
+
+      expect(text).toContain("Do not use 'jumbo architecture define'");
+      expect(text).toContain("jumbo architecture update");
+    });
   });
 
   describe("null session handling", () => {

@@ -43,7 +43,6 @@ describe("LocalResumeWorkGateway", () => {
       decisions: [],
       invariants: [],
       guidelines: [],
-      architecture: null,
     },
   };
 

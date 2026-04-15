@@ -42,7 +42,7 @@ const STATUS_DISPLAY: Record<string, { symbol: string; color: (s: string) => str
  * Visual language follows the Jumbo design system (mockups/design-system.svg):
  * - BrandColors.jumboBlue accent bar (|) as structural element at x=24
  * - Section headings at x=38, content at x=42, indented at x=54
- * - Only two dividers: after metadata block, before architecture band
+ * - Only two dividers: after metadata block, before related context band
  * - BrandColors.accentCyan for entity names in Band 2
  * - Static footer with ➤ arrow
  *
@@ -250,10 +250,9 @@ export class GoalShowOutputBuilder {
 
     this.builder.addPrompt(lines.join("\n"));
 
-    // ── Band 2: Related Architecture Context ──
+    // ── Band 2: Related Context ──
 
-    const hasArchContext = context.architecture ||
-      context.components.length > 0 ||
+    const hasArchContext = context.components.length > 0 ||
       context.dependencies.length > 0 ||
       context.decisions.length > 0 ||
       context.invariants.length > 0 ||
@@ -262,32 +261,8 @@ export class GoalShowOutputBuilder {
     if (hasArchContext) {
       const band2: string[] = [];
 
-      // Divider 2: goal details → architecture context
+      // Divider 2: goal details → related context
       band2.push(this.divider());
-
-      if (context.architecture) {
-        const arch = context.architecture;
-        band2.push("");
-        band2.push(this.heading("Architecture"));
-        band2.push(this.metaField("Description", Colors.primary(arch.description)));
-        band2.push(this.metaField("Organization", Colors.primary(arch.organization)));
-
-        if (arch.patterns && arch.patterns.length > 0) {
-          band2.push("");
-          band2.push(this.contentLine(Colors.bold("Design Patterns:")));
-          for (const pattern of arch.patterns) {
-            band2.push(...this.wrapBulletContinuation(pattern));
-          }
-        }
-
-        if (arch.principles && arch.principles.length > 0) {
-          band2.push("");
-          band2.push(this.contentLine(Colors.bold("Principles:")));
-          for (const principle of arch.principles) {
-            band2.push(...this.wrapBulletContinuation(principle));
-          }
-        }
-      }
 
       if (context.components.length > 0) {
         band2.push("");
@@ -387,7 +362,6 @@ export class GoalShowOutputBuilder {
         branch: goal.branch,
         worktree: goal.worktree
       },
-      architecture: context.architecture,
       components: context.components,
       dependencies: context.dependencies,
       decisions: context.decisions,

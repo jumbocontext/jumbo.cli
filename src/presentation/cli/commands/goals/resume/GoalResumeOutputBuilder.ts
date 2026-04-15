@@ -76,30 +76,6 @@ export class GoalResumeOutputBuilder {
       }
     }
 
-    // Architecture section
-    if (context.architecture) {
-      const arch = context.architecture;
-      let archText = `### Solution Architecture:\nHigh-level Description: ${arch.description}\n` +
-                     `Organization Style: ${arch.organization}\n\n` +
-                     "INSTRUCTION: Namespaces (directory structures) and file names introduced by you (the developer) MUST maintain the solution's architectural organization style.";
-
-      if (arch.patterns && arch.patterns.length > 0) {
-        const patternsText = arch.patterns.map(p => `- ${p}`).join('\n');
-        archText += `\n\n#### Design Patterns:\n${patternsText}\n\n` +
-                    "INSTRUCTION: You (the developer) MUST must leverage these architectural patterns where applicable.\n" +
-                    "If the goal does not fit a prescribed pattern, then you MUST register the new architecture pattern with jumbo. Run 'jumbo architecture update --help' for further instructions.\n" +
-                    "New patterns MUST not conflict with existing patterns. For example, if the solution uses a layered architecture pattern, then you MUST NOT introduce a microservices pattern.";
-      }
-
-      if (arch.principles && arch.principles.length > 0) {
-        const principlesText = arch.principles.map(p => `- ${p}`).join('\n');
-        archText += `\n\n#### Principles:\n${principlesText}\n\n` +
-                    "INSTRUCTION: Artifacts created by you (the developer) MUST directly reflect these principles.";
-      }
-
-      this.builder.addPrompt(archText);
-    }
-
     // Components section
     if (context.components.length > 0) {
       const componentsText = context.components

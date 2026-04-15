@@ -4,6 +4,7 @@ import { SessionStartResponse } from "./SessionStartResponse.js";
 import { StartSessionCommandHandler } from "./StartSessionCommandHandler.js";
 import { SessionContextQueryHandler } from "../get/SessionContextQueryHandler.js";
 import { IBrownfieldStatusReader } from "./IBrownfieldStatusReader.js";
+import { IArchitectureReader } from "../../architecture/IArchitectureReader.js";
 import { ContextualSessionView } from "../get/ContextualSessionView.js";
 import { SessionInstructionSignal } from "../SessionInstructionSignal.js";
 
@@ -12,6 +13,7 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
     private readonly sessionContextQueryHandler: SessionContextQueryHandler,
     private readonly startSessionCommandHandler: StartSessionCommandHandler,
     private readonly brownfieldStatusReader: IBrownfieldStatusReader,
+    private readonly architectureReader?: IArchitectureReader,
   ) {}
 
   async startSession(request: SessionStartRequest): Promise<SessionStartResponse> {
@@ -21,13 +23,18 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
     // 2. Check brownfield status
     const isUnprimed = await this.brownfieldStatusReader.isUnprimed();
 
-    // 3. Build start-specific instructions
-    const instructions = this.buildStartInstructions(contextualSessionView, isUnprimed);
+    // 3. Check architecture existence for deprecation notice
+    const architectureExists = this.architectureReader
+      ? (await this.architectureReader.find()) !== null
+      : false;
 
-    // 4. Execute session start command
+    // 4. Build start-specific instructions
+    const instructions = this.buildStartInstructions(contextualSessionView, isUnprimed, architectureExists);
+
+    // 5. Execute session start command
     const result = await this.startSessionCommandHandler.execute({});
 
-    // 5. Return enriched context with session ID
+    // 6. Return enriched context with session ID
     return {
       context: {
         ...contextualSessionView,
@@ -40,7 +47,8 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
 
   private buildStartInstructions(
     view: ContextualSessionView,
-    isUnprimed: boolean
+    isUnprimed: boolean,
+    architectureExists: boolean
   ): string[] {
     const instructions: string[] = [];
 
@@ -54,6 +62,10 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
 
     if (view.context.pausedGoals.length > 0) {
       instructions.push(SessionInstructionSignal.PAUSED_GOALS_RESUME);
+    }
+
+    if (architectureExists) {
+      instructions.push(SessionInstructionSignal.ARCHITECTURE_DEPRECATED);
     }
 
     instructions.push(SessionInstructionSignal.GOAL_SELECTION_PROMPT);

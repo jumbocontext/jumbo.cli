@@ -47,6 +47,7 @@ import { SqliteGoalStatusMigratedProjector } from "../context/goals/migrate/Sqli
 // Architecture projectors
 import { SqliteArchitectureDefinedProjector } from "../context/architecture/define/SqliteArchitectureDefinedProjector.js";
 import { SqliteArchitectureUpdatedProjector } from "../context/architecture/update/SqliteArchitectureUpdatedProjector.js";
+import { SqliteArchitectureDeprecatedProjector } from "../context/architecture/deprecate/SqliteArchitectureDeprecatedProjector.js";
 
 // Component projectors
 import { SqliteComponentAddedProjector } from "../context/components/add/SqliteComponentAddedProjector.js";
@@ -167,8 +168,10 @@ export class ProjectionBusFactory {
     // Architecture projections
     const architectureDefinedProjector = new SqliteArchitectureDefinedProjector(db);
     const architectureUpdatedProjector = new SqliteArchitectureUpdatedProjector(db);
+    const architectureDeprecatedProjector = new SqliteArchitectureDeprecatedProjector(db);
     bus.subscribe("ArchitectureDefinedEvent", this.wrap((e) => architectureDefinedProjector.applyArchitectureDefined(e as any)));
     bus.subscribe("ArchitectureUpdatedEvent", this.wrap((e) => architectureUpdatedProjector.applyArchitectureUpdated(e as any)));
+    bus.subscribe("ArchitectureDeprecatedEvent", this.wrap((e) => architectureDeprecatedProjector.applyArchitectureDeprecated(e as any)));
 
     // Component projections (projection-only — no cascades)
     const componentAddedProjector = new SqliteComponentAddedProjector(db);

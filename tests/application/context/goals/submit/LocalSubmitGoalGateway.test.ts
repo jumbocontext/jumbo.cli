@@ -35,7 +35,6 @@ describe("LocalSubmitGoalGateway", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
 

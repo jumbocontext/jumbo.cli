@@ -8,6 +8,7 @@ export interface ArchitectureView {
   principles: string[];
   dataStores: DataStore[];
   stack: string[];
+  deprecated: boolean;
   version: number;
   createdAt: string;
   updatedAt: string;

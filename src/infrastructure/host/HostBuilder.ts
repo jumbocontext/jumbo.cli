@@ -86,6 +86,7 @@ import { FsDecisionSupersededEventStore } from "../context/decisions/supersede/F
 // Architecture Event Stores - decomposed by use case
 import { FsArchitectureDefinedEventStore } from "../context/architecture/define/FsArchitectureDefinedEventStore.js";
 import { FsArchitectureUpdatedEventStore } from "../context/architecture/update/FsArchitectureUpdatedEventStore.js";
+import { FsArchitectureDeprecatedEventStore } from "../context/architecture/deprecate/FsArchitectureDeprecatedEventStore.js";
 // Component Event Stores - decomposed by use case
 import { FsComponentAddedEventStore } from "../context/components/add/FsComponentAddedEventStore.js";
 import { FsComponentUpdatedEventStore } from "../context/components/update/FsComponentUpdatedEventStore.js";
@@ -201,6 +202,7 @@ import { SqliteDecisionViewReader } from "../context/decisions/get/SqliteDecisio
 // Architecture Projection Stores - decomposed by use case
 import { SqliteArchitectureDefinedProjector } from "../context/architecture/define/SqliteArchitectureDefinedProjector.js";
 import { SqliteArchitectureUpdatedProjector } from "../context/architecture/update/SqliteArchitectureUpdatedProjector.js";
+import { SqliteArchitectureDeprecatedProjector } from "../context/architecture/deprecate/SqliteArchitectureDeprecatedProjector.js";
 import { SqliteArchitectureReader } from "../context/architecture/SqliteArchitectureReader.js";
 // Component Projection Stores - decomposed by use case
 import { SqliteComponentAddedProjector } from "../context/components/add/SqliteComponentAddedProjector.js";
@@ -308,6 +310,7 @@ import { DecisionSupersededEventHandler } from "../../application/context/decisi
 // Architecture Event Handlers - decomposed by use case
 import { ArchitectureDefinedEventHandler } from "../../application/context/architecture/define/ArchitectureDefinedEventHandler.js";
 import { ArchitectureUpdatedEventHandler } from "../../application/context/architecture/update/ArchitectureUpdatedEventHandler.js";
+import { ArchitectureDeprecatedEventHandler } from "../../application/context/architecture/deprecate/ArchitectureDeprecatedEventHandler.js";
 // Component Event Handlers - decomposed by use case
 import { ComponentAddedEventHandler } from "../../application/context/components/add/ComponentAddedEventHandler.js";
 import { ComponentUpdatedEventHandler } from "../../application/context/components/update/ComponentUpdatedEventHandler.js";
@@ -688,6 +691,7 @@ export class HostBuilder {
     // Architecture Event Stores - decomposed by use case
     const architectureDefinedEventStore = new FsArchitectureDefinedEventStore(this.rootDir, logger);
     const architectureUpdatedEventStore = new FsArchitectureUpdatedEventStore(this.rootDir, logger);
+    const architectureDeprecatedEventStore = new FsArchitectureDeprecatedEventStore(this.rootDir, logger);
     // Component Event Stores - decomposed by use case
     const componentAddedEventStore = new FsComponentAddedEventStore(this.rootDir, logger);
     const componentUpdatedEventStore = new FsComponentUpdatedEventStore(this.rootDir, logger);
@@ -781,6 +785,7 @@ export class HostBuilder {
     // Architecture Projection Stores - decomposed by use case
     const architectureDefinedProjector = new SqliteArchitectureDefinedProjector(this.db);
     const architectureUpdatedProjector = new SqliteArchitectureUpdatedProjector(this.db);
+    const architectureDeprecatedProjector = new SqliteArchitectureDeprecatedProjector(this.db);
     const architectureReader = new SqliteArchitectureReader(this.db);
     // Component Projection Stores - decomposed by use case
     const componentAddedProjector = new SqliteComponentAddedProjector(this.db);
@@ -940,8 +945,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       dependencyViewReader,
       decisionViewReader,
       invariantViewReader,
-      guidelineViewReader,
-      architectureReader
+      guidelineViewReader
     );
     const goalContextQueryHandler = new GoalContextQueryHandler(
       goalContextAssembler
@@ -979,6 +983,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       sessionContextQueryHandler,
       startSessionCommandHandler,
       brownfieldStatusReader,
+      architectureDefinedProjector,
     );
     const sessionStartController = new SessionStartController(
       startSessionGateway
@@ -1758,6 +1763,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     // Architecture Event Handlers - decomposed by use case
     const architectureDefinedEventHandler = new ArchitectureDefinedEventHandler(architectureDefinedProjector);
     const architectureUpdatedEventHandler = new ArchitectureUpdatedEventHandler(architectureUpdatedProjector, relationMaintenanceGoalRegistrar);
+    const architectureDeprecatedEventHandler = new ArchitectureDeprecatedEventHandler(architectureDeprecatedProjector);
     // Component Event Handlers - decomposed by use case
     const componentAddedEventHandler = new ComponentAddedEventHandler(componentAddedProjector);
     const componentUpdatedEventHandler = new ComponentUpdatedEventHandler(componentUpdatedProjector, relationMaintenanceGoalRegistrar);
@@ -1886,6 +1892,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     // Solution Category - Architecture events - decomposed by use case
     eventBus.subscribe("ArchitectureDefinedEvent", architectureDefinedEventHandler);
     eventBus.subscribe("ArchitectureUpdatedEvent", architectureUpdatedEventHandler);
+    eventBus.subscribe("ArchitectureDeprecatedEvent", architectureDeprecatedEventHandler);
 
     // Solution Category - Component events - decomposed by use case
     eventBus.subscribe("ComponentAddedEvent", componentAddedEventHandler);
@@ -2102,6 +2109,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       // Architecture Event Stores - decomposed by use case
       architectureDefinedEventStore,
       architectureUpdatedEventStore,
+      architectureDeprecatedEventStore,
       // Component Event Stores - decomposed by use case
       componentAddedEventStore,
       componentUpdatedEventStore,
@@ -2129,6 +2137,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       // Architecture Projection Stores - decomposed by use case
       architectureDefinedProjector,
       architectureUpdatedProjector,
+      architectureDeprecatedProjector,
       architectureReader,
       // Component Projection Stores - decomposed by use case
       componentAddedProjector,

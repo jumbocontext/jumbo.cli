@@ -7,14 +7,12 @@ import { IDependencyViewReader, DependencyListFilter } from "../../../src/applic
 import { IDecisionViewReader, DecisionStatusFilter } from "../../../src/application/context/decisions/get/IDecisionViewReader.js";
 import { IInvariantViewReader } from "../../../src/application/context/invariants/get/IInvariantViewReader.js";
 import { IGuidelineViewReader } from "../../../src/application/context/guidelines/get/IGuidelineViewReader.js";
-import { IArchitectureReader } from "../../../src/application/context/architecture/IArchitectureReader.js";
 import { GoalView } from "../../../src/application/context/goals/GoalView.js";
 import { ComponentView } from "../../../src/application/context/components/ComponentView.js";
 import { DependencyView } from "../../../src/application/context/dependencies/DependencyView.js";
 import { DecisionView } from "../../../src/application/context/decisions/DecisionView.js";
 import { InvariantView } from "../../../src/application/context/invariants/InvariantView.js";
 import { GuidelineView } from "../../../src/application/context/guidelines/GuidelineView.js";
-import { ArchitectureView } from "../../../src/application/context/architecture/ArchitectureView.js";
 import { RelationView } from "../../../src/application/context/relations/RelationView.js";
 import { EntityType, EntityTypeValue } from "../../../src/domain/relations/Constants.js";
 import { ComponentType } from "../../../src/domain/components/Constants.js";
@@ -27,7 +25,6 @@ import { GuidelineCategory } from "../../../src/domain/guidelines/Constants.js";
  * - No-relation behavior: returns empty context collections
  * - Explicit relations: when relations exist, fetch only related entities
  * - Relation metadata mapping into RelatedContext<T>
- * - Architecture handling
  */
 
 // Mock implementations
@@ -146,18 +143,6 @@ class MockGuidelineViewReader implements IGuidelineViewReader {
   }
 }
 
-class MockArchitectureReader implements IArchitectureReader {
-  private architecture: ArchitectureView | null = null;
-
-  async find(): Promise<ArchitectureView | null> {
-    return this.architecture;
-  }
-
-  setArchitecture(architecture: ArchitectureView | null): void {
-    this.architecture = architecture;
-  }
-}
-
 describe("SqliteGoalContextAssembler", () => {
   let goalReader: MockGoalReader;
   let relationReader: MockRelationReader;
@@ -166,7 +151,6 @@ describe("SqliteGoalContextAssembler", () => {
   let decisionReader: MockDecisionViewReader;
   let invariantReader: MockInvariantViewReader;
   let guidelineReader: MockGuidelineViewReader;
-  let architectureReader: MockArchitectureReader;
   let assembler: SqliteGoalContextAssembler;
 
   beforeEach(() => {
@@ -177,7 +161,6 @@ describe("SqliteGoalContextAssembler", () => {
     decisionReader = new MockDecisionViewReader();
     invariantReader = new MockInvariantViewReader();
     guidelineReader = new MockGuidelineViewReader();
-    architectureReader = new MockArchitectureReader();
 
     assembler = new SqliteGoalContextAssembler(
       goalReader,
@@ -186,8 +169,7 @@ describe("SqliteGoalContextAssembler", () => {
       dependencyReader,
       decisionReader,
       invariantReader,
-      guidelineReader,
-      architectureReader
+      guidelineReader
     );
   });
 
@@ -285,26 +267,12 @@ describe("SqliteGoalContextAssembler", () => {
         updatedAt: "2025-01-01T00:00:00Z"
       };
 
-      const architecture: ArchitectureView = {
-        architectureId: "arch_1",
-        description: "Clean Architecture",
-        organization: "Layered",
-        patterns: ["CQRS", "Event Sourcing"],
-        principles: ["Separation of concerns"],
-        dataStores: [],
-        stack: ["TypeScript", "Node.js"],
-        version: 1,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z"
-      };
-
       goalReader.setGoal(goal);
       componentReader.setComponents([component]);
       dependencyReader.setDependencies([dependency]);
       decisionReader.setDecisions([decision]);
       invariantReader.setInvariants([invariant]);
       guidelineReader.setGuidelines([guideline]);
-      architectureReader.setArchitecture(architecture);
       relationReader.setRelations([]); // No relations
 
       // Act
@@ -318,7 +286,6 @@ describe("SqliteGoalContextAssembler", () => {
       expect(result!.context.decisions).toEqual([]);
       expect(result!.context.invariants).toEqual([]);
       expect(result!.context.guidelines).toEqual([]);
-      expect(result!.context.architecture).toBeNull();
     });
 
     it("should return only related entities when explicit relations exist", async () => {

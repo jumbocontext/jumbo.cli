@@ -1,18 +1,22 @@
 /**
  * CLI Command: jumbo architecture view
  *
- * Displays the current architecture definition.
+ * Displays the current architecture definition with deprecation notice.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
+import {
+  ARCHITECTURE_DEPRECATION_NOTICE,
+  ARCHITECTURE_MIGRATION_TABLE,
+} from "../../../../../application/context/architecture/ArchitectureDeprecationConstants.js";
 
 /**
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "View current project architecture",
+  description: "View current project architecture (deprecated)",
   category: "solution",
   examples: [
     {
@@ -20,7 +24,7 @@ export const metadata: CommandMetadata = {
       description: "Show the current architecture definition"
     }
   ],
-  related: ["architecture define", "architecture update"]
+  related: ["decision add", "invariant add", "component add", "dependency add"]
 };
 
 /**
@@ -37,7 +41,7 @@ export async function architectureView(
     const { architecture } = await container.getArchitectureController.handle({});
 
     if (!architecture) {
-      renderer.info("No architecture defined. Use 'jumbo architecture define' to create one.");
+      renderer.info("No architecture defined.");
       return;
     }
 
@@ -67,6 +71,10 @@ export async function architectureView(
           console.log(`  - ${dataStore.name} (${dataStore.type}): ${dataStore.purpose}`);
         }
       }
+
+      console.log(`\n--- ${ARCHITECTURE_DEPRECATION_NOTICE} ---`);
+      console.log("Migrate to individual entities:");
+      console.log(ARCHITECTURE_MIGRATION_TABLE);
       console.log("");
     } else {
       renderer.data({ architecture });

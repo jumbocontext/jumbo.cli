@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Deprecated
+
+- **Architecture entity**: `architecture define` and `architecture update` now reject with migration guidance directing users to register individual Decisions, Invariants, Components, and Dependencies. `architecture view` remains functional with a deprecation notice and migration mapping table. `session start` shows a conditional deprecation notice when architecture data exists. The Architecture entity will be removed in v3.
+
 ## [2.11.1] - 2026-04-11
 
 ### Changed

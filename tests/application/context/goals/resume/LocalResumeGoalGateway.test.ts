@@ -41,7 +41,6 @@ describe("LocalResumeGoalGateway", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
     mockCommandHandler.execute.mockResolvedValue(mockContextualView);
@@ -77,7 +76,6 @@ describe("LocalResumeGoalGateway", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
     mockCommandHandler.execute.mockResolvedValue(mockContextualView);

@@ -29,6 +29,7 @@ export class SqliteArchitectureReader implements IArchitectureReader {
       principles: JSON.parse((r.principles as string) || "[]"),
       dataStores: JSON.parse((r.dataStores as string) || "[]"),
       stack: JSON.parse((r.stack as string) || "[]"),
+      deprecated: (r.deprecated as number) === 1,
       version: r.version as number,
       createdAt: r.createdAt as string,
       updatedAt: r.updatedAt as string,

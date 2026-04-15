@@ -4,7 +4,7 @@
  * Verifies output for goal start command including:
  * - Goal implementation instructions rendering
  * - Context maintenance instructions with concrete commands
- * - Scope, architecture, components, decisions, invariants, guidelines sections
+ * - Scope, components, decisions, invariants, guidelines sections
  * - Progress tracking and submit instructions
  */
 
@@ -45,7 +45,6 @@ describe("GoalStartOutputBuilder", () => {
       decisions: [],
       invariants: [],
       guidelines: [],
-      architecture: null,
       ...overrides,
     };
   }

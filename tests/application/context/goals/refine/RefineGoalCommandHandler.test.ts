@@ -101,7 +101,6 @@ describe("RefineGoalCommandHandler", () => {
           decisions: [],
           invariants: [],
           guidelines: [],
-          architecture: null,
         },
       })),
     } as any;

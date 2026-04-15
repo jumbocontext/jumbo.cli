@@ -51,6 +51,7 @@ describe("LocalDefineArchitectureGateway", () => {
       principles: [],
       dataStores: [],
       stack: [],
+      deprecated: false,
       version: 1,
       createdAt: "2025-01-01T00:00:00Z",
       updatedAt: "2025-01-01T00:00:00Z",
@@ -62,6 +63,32 @@ describe("LocalDefineArchitectureGateway", () => {
         organization: "Clean Architecture",
       })
     ).rejects.toThrow(ArchitectureErrorMessages.ALREADY_DEFINED);
+
+    expect(mockEventWriter.append).not.toHaveBeenCalled();
+    expect(mockEventBus.publish).not.toHaveBeenCalled();
+  });
+
+  it("should throw DEPRECATED if architecture exists and is deprecated", async () => {
+    mockReader.findById.mockResolvedValue({
+      architectureId: "architecture",
+      description: "Existing",
+      organization: "Existing",
+      patterns: [],
+      principles: [],
+      dataStores: [],
+      stack: [],
+      deprecated: true,
+      version: 2,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T00:00:00Z",
+    });
+
+    await expect(
+      gateway.defineArchitecture({
+        description: "New system",
+        organization: "Clean Architecture",
+      })
+    ).rejects.toThrow(ArchitectureErrorMessages.DEPRECATED);
 
     expect(mockEventWriter.append).not.toHaveBeenCalled();
     expect(mockEventBus.publish).not.toHaveBeenCalled();

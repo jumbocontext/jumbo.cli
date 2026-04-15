@@ -142,6 +142,8 @@ import { IArchitectureDefinedProjector } from "../context/architecture/define/IA
 import { IArchitectureDefineReader } from "../context/architecture/define/IArchitectureDefineReader.js";
 import { IArchitectureUpdatedProjector } from "../context/architecture/update/IArchitectureUpdatedProjector.js";
 import { IArchitectureUpdateReader } from "../context/architecture/update/IArchitectureUpdateReader.js";
+import { IArchitectureDeprecatedProjector } from "../context/architecture/deprecate/IArchitectureDeprecatedProjector.js";
+import { IArchitectureDeprecatedEventWriter } from "../context/architecture/deprecate/IArchitectureDeprecatedEventWriter.js";
 import { IArchitectureReader } from "../context/architecture/IArchitectureReader.js";
 import { GetArchitectureController } from "../context/architecture/get/GetArchitectureController.js";
 import { AddComponentController } from "../context/components/add/AddComponentController.js";
@@ -489,6 +491,7 @@ export interface IApplicationContainer {
   // Architecture Event Stores - decomposed by use case
   architectureDefinedEventStore: IArchitectureDefinedEventWriter;
   architectureUpdatedEventStore: IArchitectureUpdatedEventWriter & IArchitectureUpdatedEventReader;
+  architectureDeprecatedEventStore: IArchitectureDeprecatedEventWriter;
   // Component Event Stores - decomposed by use case
   componentAddedEventStore: IComponentAddedEventWriter;
   componentUpdatedEventStore: IComponentUpdatedEventWriter;
@@ -521,6 +524,7 @@ export interface IApplicationContainer {
   // Architecture Projection Stores - decomposed by use case
   architectureDefinedProjector: IArchitectureDefinedProjector & IArchitectureDefineReader;
   architectureUpdatedProjector: IArchitectureUpdatedProjector & IArchitectureUpdateReader;
+  architectureDeprecatedProjector: IArchitectureDeprecatedProjector;
   architectureReader: IArchitectureReader;
   // Component Projection Stores - decomposed by use case
   componentAddedProjector: IComponentAddedProjector & IComponentAddReader;

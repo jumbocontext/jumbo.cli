@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { LocalStartSessionGateway } from "../../../../../src/application/context/sessions/start/LocalStartSessionGateway.js";
 import { SessionContextQueryHandler } from "../../../../../src/application/context/sessions/get/SessionContextQueryHandler.js";
 import { StartSessionCommandHandler } from "../../../../../src/application/context/sessions/start/StartSessionCommandHandler.js";
 import { IBrownfieldStatusReader } from "../../../../../src/application/context/sessions/start/IBrownfieldStatusReader.js";
+import { IArchitectureReader } from "../../../../../src/application/context/architecture/IArchitectureReader.js";
 import { ContextualSessionView } from "../../../../../src/application/context/sessions/get/ContextualSessionView.js";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
 import { SessionInstructionSignal } from "../../../../../src/application/context/sessions/SessionInstructionSignal.js";
@@ -244,6 +245,58 @@ describe("LocalStartSessionGateway", () => {
       const result = await gateway.startSession({});
 
       expect(result.context.instructions).toContain(SessionInstructionSignal.PRIMITIVE_GAPS_DETECTED);
+    });
+
+    it("should include architecture-deprecated when architecture data exists", async () => {
+      const mockArchitectureReader: jest.Mocked<IArchitectureReader> = {
+        find: jest.fn<IArchitectureReader["find"]>().mockResolvedValue({
+          architectureId: "architecture",
+          description: "Test",
+          organization: "Clean",
+          patterns: [],
+          principles: [],
+          dataStores: [],
+          stack: [],
+          deprecated: false,
+          version: 1,
+          createdAt: "2025-01-01T00:00:00Z",
+          updatedAt: "2025-01-01T00:00:00Z",
+        }),
+      };
+
+      const gatewayWithArch = new LocalStartSessionGateway(
+        sessionContextQueryHandler,
+        startSessionCommandHandler,
+        brownfieldStatusReader,
+        mockArchitectureReader,
+      );
+
+      const result = await gatewayWithArch.startSession({});
+
+      expect(result.context.instructions).toContain(SessionInstructionSignal.ARCHITECTURE_DEPRECATED);
+    });
+
+    it("should not include architecture-deprecated when no architecture data exists", async () => {
+      const mockArchitectureReader: jest.Mocked<IArchitectureReader> = {
+        find: jest.fn<IArchitectureReader["find"]>().mockResolvedValue(null),
+      };
+
+      const gatewayWithArch = new LocalStartSessionGateway(
+        sessionContextQueryHandler,
+        startSessionCommandHandler,
+        brownfieldStatusReader,
+        mockArchitectureReader,
+      );
+
+      const result = await gatewayWithArch.startSession({});
+
+      expect(result.context.instructions).not.toContain(SessionInstructionSignal.ARCHITECTURE_DEPRECATED);
+    });
+
+    it("should not include architecture-deprecated when no architecture reader provided", async () => {
+      const result = await gateway.startSession({});
+
+      expect(result.context.instructions).not.toContain(SessionInstructionSignal.ARCHITECTURE_DEPRECATED);
     });
   });
 

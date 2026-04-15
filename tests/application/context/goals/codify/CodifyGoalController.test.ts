@@ -38,7 +38,6 @@ describe("CodifyGoalController", () => {
           progress: [],
         },
         context: {
-          architecture: null,
           components: [],
           dependencies: [],
           decisions: [],

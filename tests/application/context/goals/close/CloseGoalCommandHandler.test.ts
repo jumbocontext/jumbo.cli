@@ -94,7 +94,6 @@ describe("CloseGoalCommandHandler", () => {
           decisions: [],
           invariants: [],
           guidelines: [],
-          architecture: null,
         },
       }),
     } as any;

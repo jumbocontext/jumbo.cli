@@ -25,7 +25,6 @@ describe("LocalCodifyGoalGateway", () => {
       progress: [],
     },
     context: {
-      architecture: null,
       components: [],
       dependencies: [],
       decisions: [],

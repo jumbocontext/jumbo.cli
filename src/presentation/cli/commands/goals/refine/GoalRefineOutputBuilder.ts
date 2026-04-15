@@ -151,7 +151,6 @@ export class GoalRefineOutputBuilder {
       "  jumbo decisions list     - Architectural decisions\n" +
       "  jumbo components search  - Search components (preferred over list)\n" +
       "  jumbo dependencies list  - External dependencies\n" +
-      "  jumbo architecture view  - Architecture overview\n" +
       "\nComponent search (use targeted searches to reduce token cost):\n" +
       "  jumbo components search --name <substring>     Substring match (or use * wildcards: Auth*, *Service)\n" +
       "  jumbo components search --type <type>           Exact type: service, lib, api, db, ui, etc.\n" +

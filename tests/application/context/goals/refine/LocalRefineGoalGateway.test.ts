@@ -35,7 +35,6 @@ describe("LocalRefineGoalGateway", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
 

@@ -1,18 +1,21 @@
 /**
  * CLI Command: jumbo architecture define
  *
- * Defines the system architecture for the project.
+ * DEPRECATED: This command rejects execution when the Architecture entity
+ * is deprecated, with migration guidance directing to individual entities.
  */
 
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
+import { ArchitectureErrorMessages } from "../../../../../domain/architecture/Constants.js";
+import { ARCHITECTURE_REJECTION_MESSAGE } from "../../../../../application/context/architecture/ArchitectureDeprecationConstants.js";
 
 /**
  * Command metadata for auto-registration
  */
 export const metadata: CommandMetadata = {
-  description: "Define project architecture",
+  description: "Define project architecture (deprecated)",
   category: "solution",
   requiredOptions: [
     {
@@ -47,21 +50,13 @@ export const metadata: CommandMetadata = {
       command: 'jumbo architecture define --description "Event-sourced DDD system" --organization "Clean Architecture" --pattern DDD CQRS --stack TypeScript Node.js',
       description: "Define architecture with patterns and stack"
     },
-    {
-      command: 'jumbo architecture define --description "REST API" --organization "Layered"',
-      description: "Minimal architecture definition"
-    },
-    {
-      command: 'jumbo architecture define --description "Microservices platform" --organization "Hexagonal" --data-store postgres:relational:primary redis:cache:sessions --principle "Single Responsibility" "Dependency Inversion"',
-      description: "Define with data stores and principles"
-    }
   ],
-  related: ["architecture update", "component add"]
+  related: ["decision add", "invariant add", "component add", "dependency add"]
 };
 
 /**
- * Command handler
- * Called by Commander with parsed options
+ * Command handler — delegates to controller; rejects with migration guidance
+ * when the Architecture entity is deprecated.
  */
 export async function architectureDefine(
   options: {
@@ -69,7 +64,7 @@ export async function architectureDefine(
     organization: string;
     pattern?: string[];
     principle?: string[];
-    dataStore?: string[];  // Format: "name:type:purpose"
+    dataStore?: string[];
     stack?: string[];
   },
   container: IApplicationContainer
@@ -77,7 +72,6 @@ export async function architectureDefine(
   const renderer = Renderer.getInstance();
 
   try {
-    // Build typed request and delegate to controller
     const result = await container.defineArchitectureController.handle({
       description: options.description,
       organization: options.organization,
@@ -87,19 +81,15 @@ export async function architectureDefine(
       stack: options.stack
     });
 
-    // Success output
     renderer.success(`Architecture defined successfully`);
     renderer.info(`Architecture ID: ${result.architectureId}`);
-    renderer.info(`Organization: ${options.organization}`);
-    if (options.pattern?.length) {
-      renderer.info(`Patterns: ${options.pattern.join(', ')}`);
-    }
-    if (options.stack?.length) {
-      renderer.info(`Stack: ${options.stack.join(', ')}`);
-    }
   } catch (error) {
-    renderer.error("Failed to define architecture", error instanceof Error ? error : String(error));
+    const message = error instanceof Error ? error.message : String(error);
+    if (message === ArchitectureErrorMessages.DEPRECATED) {
+      renderer.error(ARCHITECTURE_REJECTION_MESSAGE);
+    } else {
+      renderer.error("Failed to define architecture", error instanceof Error ? error : String(error));
+    }
     process.exit(1);
   }
-  // NO CLEANUP - infrastructure manages itself!
 }

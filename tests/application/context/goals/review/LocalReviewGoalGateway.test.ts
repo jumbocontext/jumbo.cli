@@ -37,7 +37,6 @@ describe("LocalReviewGoalGateway", () => {
       decisions: [],
       invariants: [],
       guidelines: [],
-      architecture: null,
     },
   });
 
@@ -132,7 +131,6 @@ describe("LocalReviewGoalGateway", () => {
           decisions: [{ decisionId: "dec_1", title: "Use TypeScript", rationale: "Type safety", status: "active" }],
           invariants: [{ invariantId: "inv_1", title: "coding", description: "Use strict mode" }],
           guidelines: [{ guidelineId: "guide_1", category: "testing", description: "100% coverage" }],
-          architecture: null,
         },
       };
 

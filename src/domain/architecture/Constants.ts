@@ -6,7 +6,8 @@
 // Architecture event types
 export const ArchitectureEventType = {
   DEFINED: 'ArchitectureDefinedEvent',
-  UPDATED: 'ArchitectureUpdatedEvent'
+  UPDATED: 'ArchitectureUpdatedEvent',
+  DEPRECATED: 'ArchitectureDeprecatedEvent'
 } as const;
 
 export type ArchitectureEventTypeValue = typeof ArchitectureEventType[keyof typeof ArchitectureEventType];
@@ -15,6 +16,8 @@ export type ArchitectureEventTypeValue = typeof ArchitectureEventType[keyof type
 export const ArchitectureErrorMessages = {
   ALREADY_DEFINED: 'Architecture is already defined',
   NOT_DEFINED: 'Architecture must be defined before updating. Use architecture define first.',
+  DEPRECATED: 'Architecture entity is deprecated. Register individual entities instead.',
+  ALREADY_DEPRECATED: 'Architecture is already deprecated',
   DESCRIPTION_REQUIRED: 'Architecture description must be provided',
   DESCRIPTION_TOO_LONG: 'Architecture description must be less than {max} characters',
   ORGANIZATION_REQUIRED: 'Architecture organization must be provided',

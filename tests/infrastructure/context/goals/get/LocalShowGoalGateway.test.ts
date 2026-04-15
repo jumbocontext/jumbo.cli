@@ -31,7 +31,6 @@ describe("LocalShowGoalGateway", () => {
         progress: [],
       },
       context: {
-        architecture: null,
         components: [],
         dependencies: [],
         decisions: [],

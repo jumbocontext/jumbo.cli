@@ -4,6 +4,10 @@ import { EnrichedSessionContext } from "../../../../../application/context/sessi
 import { ContextualProjectView } from "../../../../../application/context/project/get/ContextualProjectView.js";
 import { YamlFormatter } from "../../../formatting/YamlFormatter.js";
 import { SessionInstructionSignal } from "../../../../../application/context/sessions/SessionInstructionSignal.js";
+import {
+  ARCHITECTURE_DEPRECATION_NOTICE,
+  ARCHITECTURE_MIGRATION_TABLE,
+} from "../../../../../application/context/architecture/ArchitectureDeprecationConstants.js";
 
 /**
  * SessionContextOutputBuilder - Builds output for session context orientation.
@@ -192,6 +196,10 @@ export class SessionContextOutputBuilder {
       llmParts.push("@LLM: Goals were paused in your workspace. To pick up where you left off, run:\n  jumbo goal resume --id <goal-id>");
     }
 
+    if (context.instructions.includes(SessionInstructionSignal.ARCHITECTURE_DEPRECATED)) {
+      llmParts.push(this.buildArchitectureDeprecationNotice());
+    }
+
     const llmInstruction = llmParts.length > 0
       ? "\n\n" + llmParts.join("\n\n")
       : undefined;
@@ -251,13 +259,22 @@ export class SessionContextOutputBuilder {
       "- Start with docs: README.md, package.json, or docs/ are good starting points.",
       "",
       "AVAILABLE COMMANDS (use after getting user permission):",
-      "- jumbo architecture define --help",
       "- jumbo component add --name 'ComponentName' --description 'What it does'",
       "- jumbo decision add --title 'Decision' --rationale 'Why' --context 'Background'",
       "- jumbo guideline add --category 'testing' --description 'Guideline text'",
       "- jumbo invariant add --category 'architecture' --description 'Non-negotiable rule'",
+      "- jumbo dependency add --name 'package' --version '1.0' --purpose 'What it does'",
       "",
       "Run 'jumbo --help' to see all available commands.",
+    ].join("\n");
+  }
+
+  private buildArchitectureDeprecationNotice(): string {
+    return [
+      `@LLM: ${ARCHITECTURE_DEPRECATION_NOTICE}`,
+      "Migrate existing architecture data to individual entities:",
+      ARCHITECTURE_MIGRATION_TABLE,
+      "Do not use 'jumbo architecture define' or 'jumbo architecture update'.",
     ].join("\n");
   }
 }
