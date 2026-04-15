@@ -7,9 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-04-15
+
+### Added
+
+- **`decompose-architecture-aggregate` skill**: New template-managed skill that guides agents through migrating Architecture entity data to fine-grained entities (Decisions, Invariants, Components, Dependencies) with user confirmation at each step.
+
 ### Deprecated
 
 - **Architecture entity**: `architecture define` and `architecture update` now reject with migration guidance directing users to register individual Decisions, Invariants, Components, and Dependencies. `architecture view` remains functional with a deprecation notice and migration mapping table. `session start` shows a conditional deprecation notice when architecture data exists. The Architecture entity will be removed in v3.
+
+### Changed
+
+- **Goal context**: Architecture data removed from goal context output across all goal lifecycle commands (`goal show`, `goal start`, `goal resume`, `goal codify`, `goal refine`, `goal review`). Architecture context is no longer included in the `GoalContext` interface — use Invariants and Decisions instead.
 
 ## [2.11.1] - 2026-04-11
 
