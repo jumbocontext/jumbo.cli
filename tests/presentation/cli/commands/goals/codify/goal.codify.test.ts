@@ -40,7 +40,6 @@ describe("goal.codify command", () => {
             decisions: [],
             invariants: [],
             guidelines: [],
-            architecture: null,
           },
         },
       }),

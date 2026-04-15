@@ -47,7 +47,6 @@ describe("ReviewGoalController", () => {
             decisions: [],
             invariants: [],
             guidelines: [],
-            architecture: null,
           },
         },
       };

@@ -40,7 +40,6 @@ describe("UpdateGoalProgressController", () => {
           progress: ["Implemented user login form"],
         },
         context: {
-          architecture: null,
           components: [],
           dependencies: [],
           decisions: [],

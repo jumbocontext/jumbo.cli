@@ -26,7 +26,6 @@ describe("LocalUpdateGoalProgressGateway", () => {
       progress: ["Implemented user login form"],
     },
     context: {
-      architecture: null,
       components: [],
       dependencies: [],
       decisions: [],

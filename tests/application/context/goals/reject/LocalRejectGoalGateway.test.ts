@@ -32,7 +32,6 @@ describe("LocalRejectGoalGateway", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
     (commandHandler.execute as jest.Mock).mockResolvedValue(mockContextualView);

@@ -945,8 +945,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       dependencyViewReader,
       decisionViewReader,
       invariantViewReader,
-      guidelineViewReader,
-      architectureReader
+      guidelineViewReader
     );
     const goalContextQueryHandler = new GoalContextQueryHandler(
       goalContextAssembler

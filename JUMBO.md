@@ -81,8 +81,6 @@ Context you register now is served to future sessions — yours or another agent
 `jumbo session pause --help `
 `jumbo session resume --help `
 `jumbo session start --help `
-`jumbo architecture define --help `
-`jumbo architecture update --help `
 `jumbo component add --help `
 `jumbo component deprecate --help `
 `jumbo component remove --help `

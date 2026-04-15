@@ -8,7 +8,6 @@ import { IDependencyViewReader } from "../../application/context/dependencies/ge
 import { IDecisionViewReader } from "../../application/context/decisions/get/IDecisionViewReader.js";
 import { IInvariantViewReader } from "../../application/context/invariants/get/IInvariantViewReader.js";
 import { IGuidelineViewReader } from "../../application/context/guidelines/get/IGuidelineViewReader.js";
-import { IArchitectureReader } from "../../application/context/architecture/IArchitectureReader.js";
 import { ComponentView } from "../../application/context/components/ComponentView.js";
 import { DependencyView } from "../../application/context/dependencies/DependencyView.js";
 import { DecisionView } from "../../application/context/decisions/DecisionView.js";
@@ -28,7 +27,7 @@ import { EntityType } from "../../domain/relations/Constants.js";
  * 4. Merge entity data with relation metadata into RelatedContext<T>
  * 5. Return complete ContextualGoalView (goal + context)
  *
- * Performance: ~7 queries worst case (goal + relations + 6 entity types)
+ * Performance: ~7 queries worst case (goal + relations + 5 entity types)
  * All queries are indexed. Can optimize with caching if needed.
  */
 export class SqliteGoalContextAssembler implements IGoalContextAssembler {
@@ -39,8 +38,7 @@ export class SqliteGoalContextAssembler implements IGoalContextAssembler {
     private readonly dependencyReader: IDependencyViewReader,
     private readonly decisionReader: IDecisionViewReader,
     private readonly invariantReader: IInvariantViewReader,
-    private readonly guidelineReader: IGuidelineViewReader,
-    private readonly architectureReader: IArchitectureReader
+    private readonly guidelineReader: IGuidelineViewReader
   ) {}
 
   async assembleContextForGoal(goalId: string): Promise<ContextualGoalView | null> {
@@ -73,23 +71,19 @@ export class SqliteGoalContextAssembler implements IGoalContextAssembler {
       .filter(r => r.toEntityType === EntityType.GUIDELINE)
       .map(r => r.toEntityId);
 
-    const hasArchitectureRelation = relations.some(r => r.toEntityType === EntityType.ARCHITECTURE);
-
     // 4. Batch fetch entities (parallel queries)
     const [
       componentViews,
       dependencyViews,
       decisionViews,
       invariantViews,
-      guidelineViews,
-      architectureView
+      guidelineViews
     ] = await Promise.all([
       this.componentReader.findByIds(componentIds),
       this.dependencyReader.findByIds(dependencyIds),
       this.decisionReader.findByIds(decisionIds),
       this.invariantReader.findByIds(invariantIds),
-      this.guidelineReader.findByIds(guidelineIds),
-      hasArchitectureRelation ? this.architectureReader.find() : Promise.resolve(null)
+      this.guidelineReader.findByIds(guidelineIds)
     ]);
 
     // 5. Merge entity data with relation metadata into RelatedContext<T>
@@ -126,8 +120,7 @@ export class SqliteGoalContextAssembler implements IGoalContextAssembler {
         dependencies,
         decisions,
         invariants,
-        guidelines,
-        architecture: architectureView
+        guidelines
       }
     };
   }

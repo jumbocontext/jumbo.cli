@@ -33,7 +33,6 @@ describe("work.resume command", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     },
     context: {

@@ -66,35 +66,6 @@ export class GoalReviewOutputBuilder {
       }
     }
 
-    // Architecture
-    if (context.architecture) {
-      output += "\n\n### Solution Architecture:\n" +
-                `High-level Description: ${context.architecture.description}\n\n` +
-                `Organization Style: ${context.architecture.organization}\n\n` +
-                "\nVERIFY: Namespaces (directory structures) and file names introduced by you (the developer) maintain the solution's architectural organization style.\n" +
-                `INSTRUCTION: If any namespaces or file names do not maintain the solution's architectural organization style, then note the issues for goal rejection.`;
-
-      if (context.architecture.patterns && context.architecture.patterns.length > 0) {
-        output += "\n\n#### Design Patterns:\n";
-        context.architecture.patterns.forEach((pattern: string) => {
-          output += `- ${pattern}\n`;
-        });
-        output += "\nVERIFY: You (the developer) leveraged these architectural patterns where applicable.\n" +
-                  "If the goal does not fit a prescribed pattern, then did you register the new architecture pattern with jumbo. Run 'jumbo architecture update --help' for further instructions.\n" +
-                  "New patterns MUST not conflict with existing patterns. For example, if the solution uses a layered architecture pattern, then you MUST NOT introduce a microservices pattern.\n" +
-                  `INSTRUCTION: If any architectural patterns were not leveraged or new patterns conflict with existing ones, then note the issues for goal rejection.`;
-      }
-
-      if (context.architecture.principles && context.architecture.principles.length > 0) {
-        output += "\n\n#### Principles:\n";
-        context.architecture.principles.forEach((principle: string) => {
-          output += `- ${principle}\n`;
-        });
-        output += "\nVERIFY: Artifacts created by you (the developer) directly reflect these principles.\n" +
-                  `INSTRUCTION: If any artifacts do not reflect these principles, then note the issues for goal rejection.`;
-      }
-    }
-
     // Components
     if (context.components.length > 0) {
       output += "\n\n## Relevant Components:\n";

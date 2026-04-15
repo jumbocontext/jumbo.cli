@@ -31,7 +31,6 @@ describe("ShowGoalController", () => {
           progress: [],
         },
         context: {
-          architecture: null,
           components: [],
           dependencies: [],
           decisions: [],

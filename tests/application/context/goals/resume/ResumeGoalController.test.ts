@@ -44,7 +44,6 @@ describe("ResumeGoalController", () => {
           decisions: [],
           invariants: [],
           guidelines: [],
-          architecture: null,
         },
       },
     };
@@ -81,7 +80,6 @@ describe("ResumeGoalController", () => {
           decisions: [],
           invariants: [],
           guidelines: [],
-          architecture: null,
         },
       },
     };

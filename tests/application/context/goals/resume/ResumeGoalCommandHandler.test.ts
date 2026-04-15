@@ -96,7 +96,6 @@ describe("ResumeGoalCommandHandler", () => {
           decisions: [],
           invariants: [],
           guidelines: [],
-          architecture: null,
         },
       })),
     } as any;

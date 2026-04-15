@@ -178,7 +178,6 @@ describe("LocalDatabaseRebuildService", () => {
           decisions: [],
           invariants: [],
           guidelines: [],
-          architecture: null,
         },
       }),
     } as any;

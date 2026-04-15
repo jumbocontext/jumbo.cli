@@ -34,7 +34,6 @@ describe("ResumeWorkController", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     },
     context: {

@@ -62,7 +62,6 @@ describe("GoalContextQueryHandler", () => {
           components: [],
           dependencies: [],
           decisions: [],
-          architecture: null,
         },
       };
 

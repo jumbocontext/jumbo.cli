@@ -35,7 +35,6 @@ describe("LocalCommitGoalGateway", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
 

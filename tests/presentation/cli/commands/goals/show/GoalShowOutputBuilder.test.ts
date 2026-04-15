@@ -52,7 +52,6 @@ describe("GoalShowOutputBuilder", () => {
       decisions: [],
       invariants: [],
       guidelines: [],
-      architecture: null,
       ...overrides,
     };
   }
@@ -157,7 +156,7 @@ describe("GoalShowOutputBuilder", () => {
       expect(text).toContain("src/other/");
     });
 
-    it("should render three dividers when architecture context exists: metadata, band 2, footer", () => {
+    it("should render three dividers when related context exists: metadata, band 2, footer", () => {
       const view = makeContextualView({}, {
         components: [{
           entity: { componentId: "c1", name: "Svc", type: "service", description: "desc" } as any,

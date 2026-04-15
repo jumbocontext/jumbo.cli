@@ -74,7 +74,6 @@ describe("SubmitGoalCommandHandler", () => {
           decisions: [],
           invariants: [],
           guidelines: [],
-          architecture: null,
         },
       })),
     } as any;

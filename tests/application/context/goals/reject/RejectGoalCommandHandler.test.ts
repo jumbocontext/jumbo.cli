@@ -144,7 +144,6 @@ describe("RejectGoalCommandHandler", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
     (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);

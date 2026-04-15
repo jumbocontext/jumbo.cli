@@ -158,7 +158,6 @@ describe("QualifyGoalCommandHandler", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
     (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
@@ -498,7 +497,6 @@ describe("QualifyGoalCommandHandler", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
     (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);
@@ -588,7 +586,6 @@ describe("QualifyGoalCommandHandler", () => {
         decisions: [],
         invariants: [],
         guidelines: [],
-        architecture: null,
       },
     };
     (goalContextQueryHandler.execute as jest.Mock).mockResolvedValue(mockContext);

@@ -96,7 +96,6 @@ describe("SubmitGoalForReviewCommandHandler", () => {
           decisions: [],
           invariants: [],
           guidelines: [],
-          architecture: null,
         },
       })),
     } as any;

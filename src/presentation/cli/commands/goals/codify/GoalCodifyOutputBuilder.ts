@@ -83,9 +83,6 @@ export class GoalCodifyOutputBuilder {
       "  Add: jumbo dependency add --consumer-id <id> --provider-id <id> --contract \"...\"\n" +
       "  Update: jumbo dependency update --id <id> --contract \"...\"\n" +
       "  Remove: jumbo dependency remove --id <id>\n\n" +
-      "### Architecture\n" +
-      "Did this work change the architecture style, principles, or patterns?\n" +
-      "  Update: jumbo architecture update --style \"...\" --principles \"...\"\n\n" +
       "### Relations\n" +
       "Should any new relations be established between entities touched by this goal?\n" +
       "  Add: jumbo relation add --from-type <type> --from-id <id> --to-type <type> --to-id <id> --type <type> --strength <level>"
