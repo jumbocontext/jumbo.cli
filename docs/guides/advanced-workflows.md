@@ -46,6 +46,25 @@ Use the default when different agents or models handle different phases (e.g., a
 > jumbo goal submit --id <goalId> --continue
 ```
 
+## Automate refinement with the refinery daemon
+
+Instead of manually refining each goal, use `work refine` to run a background daemon that continuously picks up `defined` goals and delegates refinement to an agent:
+
+```bash
+# In a dedicated terminal
+> jumbo work refine --agent claude
+```
+
+The daemon polls for defined goals, spawns the agent as a subprocess for each one, and retries until the goal reaches `refined` status. You can keep defining goals in another terminal while refinement happens continuously.
+
+Tune the daemon for your workflow:
+
+- `--poll-interval 60` for a quieter loop when goals trickle in slowly.
+- `--max-retries 5` when refinement often needs multiple passes.
+- Press **Q** to stop gracefully when you're done.
+
+See the [work refine reference](/reference/commands/work/#jumbo-work-refine) for full option details.
+
 ## Run multiple agents in parallel safely
 
 Jumbo supports concurrent workers in separate terminals.

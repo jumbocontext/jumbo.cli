@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Documentation**: Added `work refine` command reference and advanced workflow guide for the refinery daemon.
+
 ## [2.12.0] - 2026-04-15
 
 ### Added
