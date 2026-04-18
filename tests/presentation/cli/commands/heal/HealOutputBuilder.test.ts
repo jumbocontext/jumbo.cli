@@ -11,9 +11,11 @@ describe("HealOutputBuilder", () => {
     });
 
     const text = output.toHumanReadable();
-    expect(text).toContain("Projection rebuild complete");
-    expect(text).toContain("Status:            success");
-    expect(text).toContain("Events replayed:   42");
+    expect(text).toContain("Projection Rebuild");
+    expect(text).toContain("Rebuild complete");
+    expect(text).toContain("success");
+    expect(text).toContain("Events replayed");
+    expect(text).toContain("42");
   });
 
   it("renders confirmation-required output", () => {

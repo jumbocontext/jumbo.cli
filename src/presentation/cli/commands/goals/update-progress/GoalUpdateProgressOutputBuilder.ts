@@ -1,6 +1,8 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { ContextualGoalView } from '../../../../../application/context/goals/get/ContextualGoalView.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { heading, contentLine, metaField, wrapBulletContinuation } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.update-progress command output.
@@ -23,21 +25,25 @@ export class GoalUpdateProgressOutputBuilder {
   build(context: ContextualGoalView, addedTask: string): TerminalOutput {
     const goal = context.goal;
     const progress = goal.progress || [];
+    const lines: string[] = [];
 
-    // Success message with task info
-    this.builder.addPrompt(
-      `✓ Progress updated\n\n` +
-      `Goal ID: ${goal.goalId}\n` +
-      `Added Task: ${addedTask}\n` +
-      `Total Progress Items: ${progress.length}`
-    );
+    lines.push("");
+    lines.push(heading("Progress Updated"));
+    lines.push(contentLine(`${Symbols.check} ${Colors.success("Progress has been updated")}`));
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(goal.goalId), 6));
+    lines.push(metaField("Added", Colors.primary(addedTask), 6));
+    lines.push(metaField("Total", Colors.primary(String(progress.length)), 6));
 
-    // Progress list section
     if (progress.length > 0) {
-      const progressList = progress.map((task, index) => `  ${index + 1}. ${task}`).join('\n');
-      this.builder.addPrompt(`Progress:\n${progressList}`);
+      lines.push("");
+      lines.push(heading("Progress"));
+      for (const task of progress) {
+        lines.push(...wrapBulletContinuation(task));
+      }
     }
 
+    this.builder.addPrompt(lines.join("\n"));
     return this.builder.build();
   }
 }

@@ -1,6 +1,8 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { GoalView } from '../../../../../application/context/goals/GoalView.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { heading, contentLine, metaField, wrapContent, wrapBulletContinuation } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.refine command output.
@@ -22,7 +24,8 @@ export class GoalRefineOutputBuilder {
    */
   buildSuccess(goalId: string, status: string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✓ Goal refinement started");
+    this.builder.addPrompt(heading("Goal Refinement Started"));
+    this.builder.addPrompt(contentLine(`${Symbols.check} ${Colors.success("Goal refinement started")}`));
     this.builder.addData({ goalId, status });
     this.builder.addPrompt(
       "\n@LLM: Goal refinement has started. Register relations and then commit.\n" +
@@ -37,7 +40,7 @@ export class GoalRefineOutputBuilder {
    */
   buildGoalNotFoundError(goalId: string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Goal not found");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Goal not found")}`);
     this.builder.addData({ message: `No goal exists with ID: ${goalId}` });
     return this.builder.build();
   }
@@ -48,7 +51,7 @@ export class GoalRefineOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to refine goal");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to refine goal")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });
@@ -62,9 +65,9 @@ export class GoalRefineOutputBuilder {
   buildInteractiveFlowHeader(): TerminalOutput {
     this.builder.reset();
     this.builder.addPrompt(
-      "\n=== Goal Refinement: Register Relations ===\n\n" +
-      "Select entities that this goal relates to.\n" +
-      "Relations help track what components, decisions, and invariants are involved.\n"
+      heading("Goal Refinement: Register Relations") + "\n" +
+      contentLine("Select entities that this goal relates to.") + "\n" +
+      contentLine("Relations help track what components, decisions, and invariants are involved.") + "\n"
     );
     return this.builder.build();
   }
@@ -75,8 +78,8 @@ export class GoalRefineOutputBuilder {
    */
   buildCreatedRelations(relations: Array<{ relationType: string; toType: string; toId: string }>): TerminalOutput {
     this.builder.reset();
-    const relationsList = relations.map(rel => `  - ${rel.relationType} → ${rel.toType}:${rel.toId}`).join('\n');
-    this.builder.addPrompt(`\nRelations registered:\n${relationsList}`);
+    const relationLines = relations.map(rel => contentLine(`${rel.relationType} ${Symbols.arrow} ${rel.toType}:${rel.toId}`)).join('\n');
+    this.builder.addPrompt(`\n${heading("Relations Registered")}\n${relationLines}`);
     return this.builder.build();
   }
 
@@ -89,43 +92,33 @@ export class GoalRefineOutputBuilder {
     this.builder.reset();
 
     // Goal ID and Status section
-    this.builder.addPrompt(
-      "=== Goal Details ===\n" +
-      `Goal ID: ${goal.goalId}\n` +
-      `Status: ${goal.status}`
-    );
+    this.builder.addPrompt(heading("Goal Details"));
+    this.builder.addPrompt(metaField("Id", Colors.muted(goal.goalId)));
+    this.builder.addPrompt(metaField("Status", goal.status));
 
     // Objective section
-    this.builder.addPrompt(
-      "\n=== Objective ===\n" +
-      goal.objective
-    );
+    this.builder.addPrompt("\n" + heading("Objective"));
+    this.builder.addPrompt(wrapContent(goal.objective).join("\n"));
 
     // Success Criteria section
     if (goal.successCriteria && goal.successCriteria.length > 0) {
-      const criteriaText = goal.successCriteria.map(c => `  - ${c}`).join('\n');
-      this.builder.addPrompt(
-        "\n=== Success Criteria ===\n" +
-        criteriaText
-      );
+      this.builder.addPrompt("\n" + heading("Success Criteria"));
+      const criteriaLines = goal.successCriteria.flatMap(c => wrapBulletContinuation(c));
+      this.builder.addPrompt(criteriaLines.join("\n"));
     }
 
     // Scope In section
     if (goal.scopeIn && goal.scopeIn.length > 0) {
-      const scopeInText = goal.scopeIn.map(s => `  - ${s}`).join('\n');
-      this.builder.addPrompt(
-        "\n=== Scope In ===\n" +
-        scopeInText
-      );
+      this.builder.addPrompt("\n" + heading("Scope: In"));
+      const scopeInLines = goal.scopeIn.flatMap(s => wrapBulletContinuation(s));
+      this.builder.addPrompt(scopeInLines.join("\n"));
     }
 
     // Scope Out section
     if (goal.scopeOut && goal.scopeOut.length > 0) {
-      const scopeOutText = goal.scopeOut.map(s => `  - ${s}`).join('\n');
-      this.builder.addPrompt(
-        "\n=== Scope Out ===\n" +
-        scopeOutText
-      );
+      this.builder.addPrompt("\n" + heading("Scope: Out"));
+      const scopeOutLines = goal.scopeOut.flatMap(s => wrapBulletContinuation(s));
+      this.builder.addPrompt(scopeOutLines.join("\n"));
     }
 
     // LLM Refinement Instructions

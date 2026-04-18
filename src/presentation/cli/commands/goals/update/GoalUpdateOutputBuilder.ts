@@ -1,5 +1,7 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { heading, contentLine, metaField } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.update command output.
@@ -21,7 +23,13 @@ export class GoalUpdateOutputBuilder {
    */
   buildSuccess(goalId: string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✓ Goal updated");
+    const lines: string[] = [];
+    lines.push("");
+    lines.push(heading("Goal Updated"));
+    lines.push(contentLine(`${Symbols.check} ${Colors.success("Goal has been updated")}`));
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(goalId)));
+    this.builder.addPrompt(lines.join("\n"));
     this.builder.addData({ goalId });
     return this.builder.build();
   }
@@ -32,7 +40,7 @@ export class GoalUpdateOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to update goal");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to update goal")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });

@@ -7,7 +7,7 @@
  */
 
 import inquirer from "inquirer";
-import chalk from "chalk";
+import { Colors, Symbols } from "../../../rendering/StyleConfig.js";
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { AgentId, AvailableAgent } from "../../../../../application/context/project/init/AgentSelection.js";
@@ -31,22 +31,22 @@ function displayPlannedChanges(renderer: Renderer, changes: PlannedFileChange[])
   // Calculate the max path length for column alignment
   const maxPathLength = Math.max(...changes.map((c) => c.path.length));
 
-  const renderChangeList = (items: PlannedFileChange[], symbol: string, pathColor: typeof chalk.green) => {
+  const renderChangeList = (items: PlannedFileChange[], symbol: string, pathColor: (s: string) => string) => {
     items.forEach((c) => {
       const padding = " ".repeat(maxPathLength - c.path.length + 2);
-      console.log(`    ${symbol} ${pathColor(c.path)}${padding}${chalk.dim(c.description)}`);
+      console.log(`    ${symbol} ${pathColor(c.path)}${padding}${Colors.dim(c.description)}`);
     });
   };
 
   if (creates.length > 0) {
-    console.log(chalk.green("  Files/directories to create:"));
-    renderChangeList(creates, "+", chalk.cyan);
+    console.log(Colors.success("  Files/directories to create:"));
+    renderChangeList(creates, "+", Colors.accent);
     console.log();
   }
 
   if (modifies.length > 0) {
-    console.log(chalk.yellow("  Files to modify (existing content will be preserved):"));
-    renderChangeList(modifies, "~", chalk.cyan);
+    console.log(Colors.warning("  Files to modify (existing content will be preserved):"));
+    renderChangeList(modifies, "~", Colors.accent);
     console.log();
   }
 }
@@ -658,7 +658,7 @@ export async function projectInit(
   // Show completion status for each change (from the result, not hardcoded)
   console.log();
   result.changes.forEach((change: PlannedFileChange) => {
-    const symbol = change.action === "create" ? chalk.green("✓") : chalk.yellow("✓");
+    const symbol = change.action === "create" ? Colors.success(Symbols.check) : Colors.warning(Symbols.check);
     const verb = change.action === "create" ? "Created" : "Updated";
     console.log(`  ${symbol} ${verb} ${change.path}`);
   });
@@ -684,7 +684,7 @@ export async function projectInit(
   if (registered.length > 0) {
     console.log();
     registered.forEach((item) => {
-      console.log(`  ${chalk.green("✓")} Registered ${item}`);
+      console.log(`  ${Colors.success(Symbols.check)} Registered ${item}`);
     });
   }
 

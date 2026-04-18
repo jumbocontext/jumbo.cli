@@ -17,7 +17,8 @@ describe("GoalAddOutputBuilder", () => {
       const output = outputBuilder.buildSuccess("goal_abc123", "JWT Auth", "Implement JWT authentication");
       const text = output.toHumanReadable();
 
-      expect(text).toContain("Goal defined");
+      expect(text).toContain("Goal Defined");
+      expect(text).toContain("Goal has been defined");
     });
 
     it("should render goalId in output", () => {

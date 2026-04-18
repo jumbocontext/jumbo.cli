@@ -1,5 +1,7 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { heading, contentLine, metaField } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.remove command output.
@@ -21,11 +23,15 @@ export class GoalRemoveOutputBuilder {
    */
   buildSuccess(goalId: string, objective: string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✓ Goal removed");
-    this.builder.addData({
-      goalId,
-      objective
-    });
+    const lines: string[] = [];
+    lines.push("");
+    lines.push(heading("Goal Removed"));
+    lines.push(contentLine(`${Symbols.check} ${Colors.success("Goal has been removed")}`));
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(goalId)));
+    lines.push(metaField("Objective", Colors.primary(objective)));
+    this.builder.addPrompt(lines.join("\n"));
+    this.builder.addData({ goalId, objective });
     return this.builder.build();
   }
 
@@ -35,7 +41,7 @@ export class GoalRemoveOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to remove goal");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to remove goal")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });

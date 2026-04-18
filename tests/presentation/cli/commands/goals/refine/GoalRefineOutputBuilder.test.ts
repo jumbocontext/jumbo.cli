@@ -41,7 +41,7 @@ describe("GoalRefineOutputBuilder", () => {
       const output = builder.buildSuccess("goal_123", "in-refinement");
       const text = output.toHumanReadable();
 
-      expect(text).toContain("✓ Goal refinement started");
+      expect(text).toContain("Goal refinement started");
     });
 
     it("should include commit instruction with goal ID", () => {
@@ -57,7 +57,7 @@ describe("GoalRefineOutputBuilder", () => {
       const output = builder.buildGoalNotFoundError("goal_missing");
       const text = output.toHumanReadable();
 
-      expect(text).toContain("✗ Goal not found");
+      expect(text).toContain("Goal not found");
       expect(text).toContain("goal_missing");
     });
   });
@@ -67,7 +67,7 @@ describe("GoalRefineOutputBuilder", () => {
       const output = builder.buildFailureError(new Error("Something broke"));
       const text = output.toHumanReadable();
 
-      expect(text).toContain("✗ Failed to refine goal");
+      expect(text).toContain("Failed to refine goal");
       expect(text).toContain("Something broke");
     });
 
@@ -75,7 +75,7 @@ describe("GoalRefineOutputBuilder", () => {
       const output = builder.buildFailureError("String error");
       const text = output.toHumanReadable();
 
-      expect(text).toContain("✗ Failed to refine goal");
+      expect(text).toContain("Failed to refine goal");
       expect(text).toContain("String error");
     });
   });
@@ -86,8 +86,10 @@ describe("GoalRefineOutputBuilder", () => {
       const output = builder.buildGoalDetailsAndRefinementPrompt(goal);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("Goal ID: goal_refine_123");
-      expect(text).toContain("Status: in-refinement");
+      expect(text).toContain("Id:");
+      expect(text).toContain("goal_refine_123");
+      expect(text).toContain("Status:");
+      expect(text).toContain("in-refinement");
       expect(text).toContain("Build feature Y");
     });
 
@@ -96,7 +98,7 @@ describe("GoalRefineOutputBuilder", () => {
       const output = builder.buildGoalDetailsAndRefinementPrompt(goal);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("=== Success Criteria ===");
+      expect(text).toContain("Success Criteria");
       expect(text).toContain("Criterion 1");
     });
 
@@ -105,9 +107,9 @@ describe("GoalRefineOutputBuilder", () => {
       const output = builder.buildGoalDetailsAndRefinementPrompt(goal);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("=== Scope In ===");
+      expect(text).toContain("Scope: In");
       expect(text).toContain("src/feature/");
-      expect(text).toContain("=== Scope Out ===");
+      expect(text).toContain("Scope: Out");
       expect(text).toContain("src/other/");
     });
 
@@ -171,9 +173,11 @@ describe("GoalRefineOutputBuilder", () => {
       const output = builder.buildCreatedRelations(relations);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("Relations registered:");
-      expect(text).toContain("involves → component:comp_1");
-      expect(text).toContain("must-respect → invariant:inv_1");
+      expect(text).toContain("Relations Registered");
+      expect(text).toContain("involves");
+      expect(text).toContain("component:comp_1");
+      expect(text).toContain("must-respect");
+      expect(text).toContain("invariant:inv_1");
     });
   });
 });

@@ -7,7 +7,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { GuidelineView } from "../../../../../application/context/guidelines/GuidelineView.js";
+import { RenderData } from "../../../rendering/types.js";
+import { GuidelineListOutputBuilder } from "./GuidelineListOutputBuilder.js";
 
 export const metadata: CommandMetadata = {
   description: "List all execution guidelines",
@@ -25,13 +26,6 @@ export const metadata: CommandMetadata = {
   ],
   related: ["guideline add", "guideline update", "guideline remove"],
 };
-
-function formatGuidelineText(guideline: GuidelineView): void {
-  console.log(`[${guideline.category.toUpperCase()}] ${guideline.title}`);
-  console.log(`  ${guideline.description}`);
-  console.log(`  ID: ${guideline.guidelineId}`);
-  console.log("");
-}
 
 export async function guidelinesList(
   options: { category?: string },
@@ -52,29 +46,15 @@ export async function guidelinesList(
 
     const config = renderer.getConfig();
 
+    const outputBuilder = new GuidelineListOutputBuilder();
     if (config.format === "text") {
-      const filterLabel = options.category ? ` (${options.category})` : "";
-      console.log(`\nGuidelines${filterLabel} (${guidelines.length}):\n`);
-      for (const guideline of guidelines) {
-        formatGuidelineText(guideline);
-      }
+      const output = outputBuilder.build(guidelines, options.category);
+      renderer.info(output.toHumanReadable());
     } else {
-      const data = {
-        count: guidelines.length,
-        filter: options.category ?? null,
-        guidelines: guidelines.map((g) => ({
-          guidelineId: g.guidelineId,
-          category: g.category,
-          title: g.title,
-          description: g.description,
-          rationale: g.rationale,
-          enforcement: g.enforcement,
-          examples: g.examples,
-          createdAt: g.createdAt,
-          updatedAt: g.updatedAt,
-        })),
-      };
-      renderer.data(data);
+      const output = outputBuilder.buildStructuredOutput(guidelines, options.category);
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === "data");
+      if (dataSection) renderer.data(dataSection.content as RenderData);
     }
   } catch (error) {
     renderer.error("Failed to list guidelines", error instanceof Error ? error : String(error));

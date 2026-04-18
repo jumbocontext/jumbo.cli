@@ -1,5 +1,7 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { heading, contentLine, metaField } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.add command output.
@@ -21,7 +23,7 @@ export class GoalAddOutputBuilder {
    */
   buildInteractiveHeader(): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("\n=== Interactive Goal Creation ===\n");
+    this.builder.addPrompt("\n" + heading("Interactive Goal Creation"));
     return this.builder.build();
   }
 
@@ -31,7 +33,16 @@ export class GoalAddOutputBuilder {
    */
   buildSuccess(goalId: string, title: string, objective: string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✓ Goal defined");
+    const lines: string[] = [];
+    lines.push("");
+    lines.push(heading("Goal Defined"));
+    lines.push(contentLine(`${Symbols.check} ${Colors.success("Goal has been defined")}`));
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(goalId)));
+    lines.push(metaField("Title", Colors.primary(title)));
+    lines.push(metaField("Objective", Colors.primary(objective)));
+    lines.push(metaField("Status", Colors.primary("defined")));
+    this.builder.addPrompt(lines.join("\n"));
     this.builder.addData({
       goalId,
       title,
@@ -48,7 +59,7 @@ export class GoalAddOutputBuilder {
    */
   buildMissingObjectiveError(): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Missing required option");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Missing required option")}`);
     this.builder.addData({
       message: '--objective is required (or use --interactive for guided creation)'
     });
@@ -61,7 +72,7 @@ export class GoalAddOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to define goal");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to define goal")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });

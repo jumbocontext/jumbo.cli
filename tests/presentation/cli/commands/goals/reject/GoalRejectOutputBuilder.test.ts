@@ -25,9 +25,10 @@ describe("GoalRejectOutputBuilder", () => {
       expect(text).toContain("Implement authentication");
       expect(text).toContain("rejected");
       expect(text).toContain("Missing error handling in API endpoint");
-      expect(text).toContain("[Next Phase] Rework");
+      expect(text).toContain("➤");
+      expect(text).toContain("To restart:");
       expect(text).toContain("jumbo goal start --id goal_123");
-      expect(text).not.toContain("The implementing agent should address the review issues and restart");
+      expect(text).not.toContain("Address the review issues");
     });
 
     it("should build directive output when continue flag is true", () => {
@@ -35,9 +36,9 @@ describe("GoalRejectOutputBuilder", () => {
       const text = output.toHumanReadable();
 
       expect(text).toContain("Goal Rejected");
-      expect(text).toContain("The implementing agent should address the review issues and restart");
+      expect(text).toContain("Address the review issues");
       expect(text).toContain("jumbo goal start --id goal_123");
-      expect(text).not.toContain("[Next Phase]");
+      expect(text).not.toContain("➤");
     });
 
     it("should include next goal ID when present", () => {

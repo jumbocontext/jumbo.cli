@@ -23,7 +23,8 @@ describe("GoalSubmitOutputBuilder", () => {
       expect(text).toContain("goal_123");
       expect(text).toContain("Implement authentication");
       expect(text).toContain("submitted");
-      expect(text).toContain("[Next Phase] QA Review");
+      expect(text).toContain("➤");
+      expect(text).toContain("To review:");
       expect(text).toContain("jumbo goal review --id goal_123");
       expect(text).not.toContain("@LLM:");
     });
@@ -36,7 +37,7 @@ describe("GoalSubmitOutputBuilder", () => {
       expect(text).toContain("goal_123");
       expect(text).toContain("@LLM:");
       expect(text).toContain("jumbo goal review --id goal_123");
-      expect(text).not.toContain("[Next Phase]");
+      expect(text).not.toContain("➤");
     });
   });
 

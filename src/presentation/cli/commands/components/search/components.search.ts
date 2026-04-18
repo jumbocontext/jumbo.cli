@@ -115,7 +115,7 @@ export async function componentsSearch(
 
     if (config.format === "text") {
       const output = outputBuilder.build(components, outputFormat);
-      console.log(output.toHumanReadable());
+      renderer.info(output.toHumanReadable());
     } else {
       const output = outputBuilder.buildStructuredOutput(components, outputFormat);
       renderer.data(JSON.parse(JSON.stringify(output.getSections().find(s => s.type === "data")?.content)));

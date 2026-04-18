@@ -12,7 +12,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { ValuePropositionView } from "../../../../../application/context/value-propositions/ValuePropositionView.js";
+import { RenderData } from "../../../rendering/types.js";
+import { ValueListOutputBuilder } from './ValueListOutputBuilder.js';
 
 /**
  * Command metadata for auto-registration
@@ -38,20 +39,6 @@ export const metadata: CommandMetadata = {
 };
 
 /**
- * Format value proposition for text output
- */
-function formatValueText(value: ValuePropositionView): void {
-  console.log(`${value.title}`);
-  console.log(`  ${value.description}`);
-  console.log(`  Benefit: ${value.benefit}`);
-  if (value.measurableOutcome) {
-    console.log(`  Outcome: ${value.measurableOutcome}`);
-  }
-  console.log(`  ID: ${value.valuePropositionId}`);
-  console.log("");
-}
-
-/**
  * Command handler
  * Called by Commander with parsed options
  */
@@ -71,28 +58,16 @@ export async function valuesList(
 
     // Check if we're in structured output mode by examining renderer config
     const config = renderer.getConfig();
+    const outputBuilder = new ValueListOutputBuilder();
 
     if (config.format === "text") {
-      // Text format: human-readable output
-      console.log(`\nValue Propositions (${values.length}):\n`);
-      for (const value of values) {
-        formatValueText(value);
-      }
+      const output = outputBuilder.build(values);
+      renderer.info(output.toHumanReadable());
     } else {
-      // Structured format (json/yaml/ndjson): use renderer.data()
-      const data = {
-        count: values.length,
-        values: values.map((v) => ({
-          valuePropositionId: v.valuePropositionId,
-          title: v.title,
-          description: v.description,
-          benefit: v.benefit,
-          measurableOutcome: v.measurableOutcome,
-          createdAt: v.createdAt,
-          updatedAt: v.updatedAt,
-        })),
-      };
-      renderer.data(data);
+      const output = outputBuilder.buildStructuredOutput(values);
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === "data");
+      if (dataSection) renderer.data(dataSection.content as RenderData);
     }
   } catch (error) {
     renderer.error("Failed to list value propositions", error instanceof Error ? error : String(error));

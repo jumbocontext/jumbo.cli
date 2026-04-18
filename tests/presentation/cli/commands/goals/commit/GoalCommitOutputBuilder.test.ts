@@ -12,8 +12,8 @@ describe("GoalCommitOutputBuilder", () => {
       const output = builder.buildSuccess("goal_123", "refined");
       const text = output.toHumanReadable();
 
-      expect(text).toContain("Goal committed");
-      expect(text).toContain("[Next Phase] Implementation");
+      expect(text).toContain("Goal Committed");
+      expect(text).toContain("Goal refinement committed");
       expect(text).toContain("jumbo goal start --id goal_123");
       expect(text).not.toContain("@LLM:");
     });
@@ -22,7 +22,7 @@ describe("GoalCommitOutputBuilder", () => {
       const output = builder.buildSuccess("goal_123", "refined", true);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("Goal committed");
+      expect(text).toContain("Goal Committed");
       expect(text).toContain("@LLM:");
       expect(text).toContain("jumbo goal start --id goal_123");
       expect(text).not.toContain("[Next Phase]");

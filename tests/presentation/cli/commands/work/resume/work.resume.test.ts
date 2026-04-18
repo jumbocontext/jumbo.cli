@@ -77,9 +77,9 @@ describe("work.resume command", () => {
     await workResume({}, mockContainer as IApplicationContainer);
 
     const output = consoleLogSpy.mock.calls.map((call) => String(call[0])).join("\n");
-    expect(output).toContain("# Goal Implementation Instructions");
-    expect(output).toContain("## Objective:");
-    expect(output).toContain("Run: jumbo goal submit --id goal_123");
+    expect(output).toContain("Goal Implementation Instructions");
+    expect(output).toContain("Objective");
+    expect(output).toContain("jumbo goal submit --id goal_123");
   });
 
   it("includes resumedGoalContext in structured output", async () => {

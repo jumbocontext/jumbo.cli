@@ -14,7 +14,8 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { SessionStatusFilter } from "../../../../../application/context/sessions/get/ISessionViewReader.js";
 import { GetSessionsRequest } from "../../../../../application/context/sessions/get/GetSessionsRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { SessionView } from "../../../../../application/context/sessions/SessionView.js";
+import { RenderData } from "../../../rendering/types.js";
+import { SessionListOutputBuilder } from './SessionListOutputBuilder.js';
 
 /**
  * Command metadata for auto-registration
@@ -44,34 +45,6 @@ export const metadata: CommandMetadata = {
   ],
   related: ["session start", "session end"],
 };
-
-/**
- * Format status for display
- */
-function formatStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    active: "[ACTIVE]",
-    paused: "[PAUSED]",
-    blocked: "[BLOCKED]",
-    ended: "[ENDED]",
-  };
-  return statusMap[status] || `[${status.toUpperCase()}]`;
-}
-
-/**
- * Format session for text output
- */
-function formatSessionText(session: SessionView): void {
-  console.log(`${formatStatus(session.status)} ${session.sessionId}`);
-  if (session.focus) {
-    console.log(`  Focus: ${session.focus}`);
-  }
-  console.log(`  Started: ${session.startedAt}`);
-  if (session.endedAt) {
-    console.log(`  Ended: ${session.endedAt}`);
-  }
-  console.log("");
-}
 
 /**
  * Validate status filter
@@ -109,30 +82,16 @@ export async function sessionsList(
 
     // Check if we're in structured output mode by examining renderer config
     const config = renderer.getConfig();
+    const outputBuilder = new SessionListOutputBuilder();
 
     if (config.format === "text") {
-      // Text format: human-readable output
-      const filterLabel = statusFilter === "all" ? "" : ` (${statusFilter})`;
-      console.log(`\nSession History${filterLabel} (${sessions.length}):\n`);
-      for (const session of sessions) {
-        formatSessionText(session);
-      }
+      const output = outputBuilder.build(sessions, statusFilter);
+      renderer.info(output.toHumanReadable());
     } else {
-      // Structured format (json/yaml/ndjson): use renderer.data()
-      const data = {
-        count: sessions.length,
-        filter: statusFilter,
-        sessions: sessions.map((s) => ({
-          sessionId: s.sessionId,
-          status: s.status,
-          focus: s.focus,
-          startedAt: s.startedAt,
-          endedAt: s.endedAt,
-          createdAt: s.createdAt,
-          updatedAt: s.updatedAt,
-        })),
-      };
-      renderer.data(data);
+      const output = outputBuilder.buildStructuredOutput(sessions, statusFilter);
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === "data");
+      if (dataSection) renderer.data(dataSection.content as RenderData);
     }
   } catch (error) {
     renderer.error("Failed to list sessions", error instanceof Error ? error : String(error));

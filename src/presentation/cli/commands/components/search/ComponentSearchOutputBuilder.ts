@@ -9,6 +9,8 @@
 import { TerminalOutputBuilder } from "../../../output/TerminalOutputBuilder.js";
 import { TerminalOutput } from "../../../output/TerminalOutput.js";
 import { ComponentView } from "../../../../../application/context/components/ComponentView.js";
+import { Colors, BrandColors } from "../../../rendering/StyleConfig.js";
+import { heading, contentLine, metaField, divider, wrapContent } from "../../../rendering/OutputLayout.js";
 
 export type SearchOutputFormat = "default" | "compact";
 
@@ -26,26 +28,30 @@ export class ComponentSearchOutputBuilder {
     this.builder.reset();
 
     if (components.length === 0) {
-      this.builder.addPrompt("No components matched the search criteria.");
+      this.builder.addPrompt(Colors.muted("No components matched the search criteria."));
       return this.builder.build();
     }
 
+    const lines: string[] = [];
+    lines.push("");
+    lines.push(heading(`Components (${components.length})`));
+
     if (format === "compact") {
-      let output = `\nComponents (${components.length}):\n`;
       for (const c of components) {
-        output += `\n  ${c.componentId}  ${c.name}  (${c.type})`;
+        lines.push(contentLine(`${Colors.muted(c.componentId)}  ${BrandColors.accentCyan(c.name)}  ${Colors.muted(`(${c.type})`)}`));
       }
-      this.builder.addPrompt(output);
     } else {
-      let output = `\nComponents (${components.length}):\n`;
-      for (const c of components) {
-        output += `\n  ${c.name} (${c.type}) [${c.status}]` +
-                  `\n    ${c.description}` +
-                  `\n    Path: ${c.path}` +
-                  `\n    ID: ${c.componentId}\n`;
+      for (let i = 0; i < components.length; i++) {
+        const c = components[i];
+        if (i > 0) lines.push("");
+        lines.push(contentLine(`${BrandColors.accentCyan(c.name)} ${Colors.muted(`(${c.type})`)} ${Colors.dim(`[${c.status}]`)}`));
+        lines.push(...wrapContent(c.description));
+        lines.push(metaField("Path", Colors.muted(c.path), 6));
+        lines.push(metaField("ID", Colors.muted(c.componentId), 6));
       }
-      this.builder.addPrompt(output);
     }
+
+    this.builder.addPrompt(lines.join("\n"));
 
     return this.builder.build();
   }

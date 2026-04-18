@@ -1,6 +1,8 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { SubmitGoalResponse } from '../../../../../application/context/goals/submit/SubmitGoalResponse.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { EDGE, heading, contentLine, metaField } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.submit command output.
@@ -22,26 +24,26 @@ export class GoalSubmitOutputBuilder {
    */
   buildSuccess(response: SubmitGoalResponse, continueFlag: boolean = false): TerminalOutput {
     this.builder.reset();
+    const lines: string[] = [];
 
-    const header = "# Goal Submitted\n" +
-      `Goal ID: ${response.goalId}\n` +
-      `Objective: ${response.objective}\n` +
-      `Status: ${response.status}\n` +
-      "---\n";
+    lines.push("");
+    lines.push(heading("Goal Submitted"));
+    lines.push(contentLine(`${Symbols.check} ${Colors.success("Implementation submitted for QA review")}`));
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(response.goalId), 11));
+    lines.push(metaField("Objective", Colors.primary(response.objective), 11));
+    lines.push(metaField("Status", Colors.primary(response.status), 11));
+
+    this.builder.addPrompt(lines.join("\n"));
 
     if (continueFlag) {
       this.builder.addPrompt(
-        header + "\n" +
-        "@LLM: Implementation submitted. The goal is now awaiting QA review.\n" +
-        `Run: jumbo goal review --id ${response.goalId}\n` +
-        "---"
+        "\n@LLM: Implementation submitted. The goal is now awaiting QA review.\n" +
+        `Run: jumbo goal review --id ${response.goalId}`
       );
     } else {
       this.builder.addPrompt(
-        header + "\n" +
-        "[Next Phase] QA Review\n" +
-        `The goal is now awaiting QA review. To start the review: jumbo goal review --id ${response.goalId}\n` +
-        "---"
+        "\n" + `${EDGE}${Colors.primary("➤")} ${Colors.primary(`To review: jumbo goal review --id ${response.goalId}`)}`
       );
     }
 
@@ -54,7 +56,7 @@ export class GoalSubmitOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to submit goal");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to submit goal")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });

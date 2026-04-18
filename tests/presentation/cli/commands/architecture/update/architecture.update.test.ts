@@ -3,7 +3,7 @@ import { architectureUpdate } from "../../../../../../src/presentation/cli/comma
 import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 import { ArchitectureErrorMessages } from "../../../../../../src/domain/architecture/Constants.js";
-import { ARCHITECTURE_REJECTION_MESSAGE } from "../../../../../../src/application/context/architecture/ArchitectureDeprecationConstants.js";
+import { ARCHITECTURE_DEPRECATION_NOTICE } from "../../../../../../src/application/context/architecture/ArchitectureDeprecationConstants.js";
 
 describe("architecture.update command", () => {
   let mockUpdateController: { handle: jest.Mock };
@@ -69,7 +69,9 @@ describe("architecture.update command", () => {
     ).rejects.toThrow("process.exit called with code 1");
 
     const errorOutput = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-    expect(errorOutput).toContain(ARCHITECTURE_REJECTION_MESSAGE);
+    expect(errorOutput).toContain(ARCHITECTURE_DEPRECATION_NOTICE);
+    expect(errorOutput).toContain("jumbo decision add");
+    expect(errorOutput).toContain("jumbo component add");
   });
 
   it("should exit with error for non-deprecation failures", async () => {

@@ -13,7 +13,7 @@ describe("EvolveOutputBuilder", () => {
       { name: "Schema migrations", status: "repaired", detail: "Applied pending schema migrations." },
     ]);
 
-    expect(output.toHumanReadable()).toContain("Evolve complete");
+    expect(output.toHumanReadable()).toContain("Complete");
   });
 
   it("renders an error prompt when any step fails", () => {
@@ -21,7 +21,7 @@ describe("EvolveOutputBuilder", () => {
       { name: "Schema migrations", status: "failed", detail: "DDL failed" },
     ]);
 
-    expect(output.toHumanReadable()).toContain("Evolve completed with errors");
+    expect(output.toHumanReadable()).toContain("Completed with errors");
   });
 
   it("includes step data in the output", () => {

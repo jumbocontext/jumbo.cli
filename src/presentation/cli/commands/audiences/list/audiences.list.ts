@@ -12,7 +12,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { AudienceView } from "../../../../../application/context/audiences/AudienceView.js";
+import { RenderData } from "../../../rendering/types.js";
+import { AudienceListOutputBuilder } from './AudienceListOutputBuilder.js';
 
 /**
  * Command metadata for auto-registration
@@ -38,23 +39,6 @@ export const metadata: CommandMetadata = {
 };
 
 /**
- * Format priority for display
- */
-function formatPriority(priority: string): string {
-  return priority.toUpperCase();
-}
-
-/**
- * Format audience for text output
- */
-function formatAudienceText(audience: AudienceView): void {
-  console.log(`[${formatPriority(audience.priority)}] ${audience.name}`);
-  console.log(`  ${audience.description}`);
-  console.log(`  ID: ${audience.audienceId}`);
-  console.log("");
-}
-
-/**
  * Command handler
  * Called by Commander with parsed options
  */
@@ -74,27 +58,16 @@ export async function audiencesList(
 
     // Check if we're in structured output mode by examining renderer config
     const config = renderer.getConfig();
+    const outputBuilder = new AudienceListOutputBuilder();
 
     if (config.format === "text") {
-      // Text format: human-readable output
-      console.log(`\nTarget Audiences (${audiences.length}):\n`);
-      for (const audience of audiences) {
-        formatAudienceText(audience);
-      }
+      const output = outputBuilder.build(audiences);
+      renderer.info(output.toHumanReadable());
     } else {
-      // Structured format (json/yaml/ndjson): use renderer.data()
-      const data = {
-        count: audiences.length,
-        audiences: audiences.map((a) => ({
-          audienceId: a.audienceId,
-          name: a.name,
-          description: a.description,
-          priority: a.priority,
-          createdAt: a.createdAt,
-          updatedAt: a.updatedAt,
-        })),
-      };
-      renderer.data(data);
+      const output = outputBuilder.buildStructuredOutput(audiences);
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === "data");
+      if (dataSection) renderer.data(dataSection.content as RenderData);
     }
   } catch (error) {
     renderer.error("Failed to list audiences", error instanceof Error ? error : String(error));

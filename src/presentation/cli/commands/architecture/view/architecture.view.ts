@@ -11,6 +11,8 @@ import {
   ARCHITECTURE_DEPRECATION_NOTICE,
   ARCHITECTURE_MIGRATION_TABLE,
 } from "../../../../../application/context/architecture/ArchitectureDeprecationConstants.js";
+import { Colors, Symbols } from "../../../rendering/StyleConfig.js";
+import { heading, metaField, contentLine, divider } from "../../../rendering/OutputLayout.js";
 
 /**
  * Command metadata for auto-registration
@@ -48,34 +50,43 @@ export async function architectureView(
     const config = renderer.getConfig();
 
     if (config.format === "text") {
-      console.log("\n=== Architecture ===\n");
-      console.log(`Architecture ID: ${architecture.architectureId}`);
-      console.log(`Description:     ${architecture.description}`);
-      console.log(`Organization:    ${architecture.organization}`);
-      console.log(`Version:         ${architecture.version}`);
-      console.log(`Created:         ${architecture.createdAt}`);
-      console.log(`Updated:         ${architecture.updatedAt}`);
+      const lines: string[] = [];
+      lines.push("");
+      lines.push(heading("Architecture"));
+      lines.push("");
+      lines.push(metaField("ID", Colors.muted(architecture.architectureId), 14));
+      lines.push(metaField("Description", Colors.primary(architecture.description), 14));
+      lines.push(metaField("Organization", Colors.primary(architecture.organization), 14));
+      lines.push(metaField("Version", Colors.muted(String(architecture.version)), 14));
+      lines.push(metaField("Created", Colors.muted(architecture.createdAt), 14));
+      lines.push(metaField("Updated", Colors.muted(architecture.updatedAt), 14));
 
       if (architecture.patterns.length > 0) {
-        console.log(`\nPatterns: ${architecture.patterns.join(", ")}`);
+        lines.push(metaField("Patterns", Colors.primary(architecture.patterns.join(", ")), 14));
       }
       if (architecture.principles.length > 0) {
-        console.log(`Principles: ${architecture.principles.join(", ")}`);
+        lines.push(metaField("Principles", Colors.primary(architecture.principles.join(", ")), 14));
       }
       if (architecture.stack.length > 0) {
-        console.log(`Stack: ${architecture.stack.join(", ")}`);
+        lines.push(metaField("Stack", Colors.primary(architecture.stack.join(", ")), 14));
       }
       if (architecture.dataStores.length > 0) {
-        console.log("\nData Stores:");
+        lines.push("");
+        lines.push(heading("Data Stores"));
         for (const dataStore of architecture.dataStores) {
-          console.log(`  - ${dataStore.name} (${dataStore.type}): ${dataStore.purpose}`);
+          lines.push(contentLine(`${Colors.primary(dataStore.name)} ${Colors.muted(`(${dataStore.type})`)}: ${dataStore.purpose}`));
         }
       }
 
-      console.log(`\n--- ${ARCHITECTURE_DEPRECATION_NOTICE} ---`);
-      console.log("Migrate to individual entities:");
-      console.log(ARCHITECTURE_MIGRATION_TABLE);
-      console.log("");
+      lines.push("");
+      lines.push(divider());
+      lines.push(contentLine(`${Symbols.warning} ${Colors.warning(ARCHITECTURE_DEPRECATION_NOTICE)}`));
+      lines.push(contentLine("Migrate to individual entities:"));
+      for (const tableLine of ARCHITECTURE_MIGRATION_TABLE.split("\n")) {
+        lines.push(contentLine(tableLine));
+      }
+      lines.push("");
+      renderer.info(lines.join("\n"));
     } else {
       renderer.data({ architecture });
     }

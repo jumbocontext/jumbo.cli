@@ -7,9 +7,10 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { RelationView } from "../../../../../application/context/relations/RelationView.js";
+import { RenderData } from "../../../rendering/types.js";
 import { EntityTypeValue } from "../../../../../domain/relations/Constants.js";
 import { GetRelationsRequest } from "../../../../../application/context/relations/get/GetRelationsRequest.js";
+import { RelationListOutputBuilder } from './RelationListOutputBuilder.js';
 
 export const metadata: CommandMetadata = {
   description: "List all knowledge graph relations",
@@ -39,16 +40,6 @@ export const metadata: CommandMetadata = {
   related: ["relation add", "relation remove"],
 };
 
-function formatRelationText(relation: RelationView): void {
-  console.log(`${relation.fromEntityType}:${relation.fromEntityId} --[${relation.relationType}]--> ${relation.toEntityType}:${relation.toEntityId}`);
-  console.log(`  ${relation.description}`);
-  if (relation.strength) {
-    console.log(`  Strength: ${relation.strength}`);
-  }
-  console.log(`  ID: ${relation.relationId}`);
-  console.log("");
-}
-
 export async function relationsList(
   options: { entityType?: string; entityId?: string; status?: string },
   container: IApplicationContainer
@@ -70,38 +61,23 @@ export async function relationsList(
     }
 
     const config = renderer.getConfig();
+    const outputBuilder = new RelationListOutputBuilder();
 
     if (config.format === "text") {
       const filterLabel = options.entityType
-        ? ` (${options.entityType}${options.entityId ? ':' + options.entityId : ''})`
-        : "";
-      console.log(`\nRelations${filterLabel} (${relations.length}):\n`);
-      for (const relation of relations) {
-        formatRelationText(relation);
-      }
+        ? `${options.entityType}${options.entityId ? ':' + options.entityId : ''}`
+        : undefined;
+      const output = outputBuilder.build(relations, filterLabel);
+      renderer.info(output.toHumanReadable());
     } else {
-      const data = {
-        count: relations.length,
-        filter: {
-          entityType: options.entityType ?? null,
-          entityId: options.entityId ?? null,
-          status: options.status ?? "active",
-        },
-        relations: relations.map((r) => ({
-          relationId: r.relationId,
-          fromEntityType: r.fromEntityType,
-          fromEntityId: r.fromEntityId,
-          toEntityType: r.toEntityType,
-          toEntityId: r.toEntityId,
-          relationType: r.relationType,
-          strength: r.strength,
-          description: r.description,
-          status: r.status,
-          createdAt: r.createdAt,
-          updatedAt: r.updatedAt,
-        })),
-      };
-      renderer.data(data);
+      const output = outputBuilder.buildStructuredOutput(relations, {
+        entityType: options.entityType ?? null,
+        entityId: options.entityId ?? null,
+        status: options.status ?? "active",
+      });
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === "data");
+      if (dataSection) renderer.data(dataSection.content as RenderData);
     }
   } catch (error) {
     renderer.error("Failed to list relations", error instanceof Error ? error : String(error));

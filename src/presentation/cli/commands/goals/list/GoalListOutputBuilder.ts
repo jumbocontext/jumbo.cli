@@ -1,6 +1,8 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { GoalView } from '../../../../../application/context/goals/GoalView.js';
+import { Colors, BrandColors, Symbols } from '../../../rendering/StyleConfig.js';
+import { heading, contentLine, metaField, divider, wrapContent } from '../../../rendering/OutputLayout.js';
 
 /**
  * Status ordering for goal list display.
@@ -100,25 +102,33 @@ export class GoalListOutputBuilder {
       (a, b) => (STATUS_ORDER[a] ?? 99) - (STATUS_ORDER[b] ?? 99)
     );
 
-    let output = `\nActive Goals (${activeGoals.length}):\n`;
+    const lines: string[] = [];
+    lines.push("");
+    lines.push(heading(`Active Goals (${activeGoals.length})`));
 
     for (const status of orderedStatuses) {
       const goals = groupedGoals.get(status)!;
-      const heading = STATUS_HEADINGS[status] ?? `[${status.toUpperCase()}]`;
-      output += `\n── ${heading} ──\n\n`;
+      const statusHeading = STATUS_HEADINGS[status] ?? `[${status.toUpperCase()}]`;
+      lines.push("");
+      lines.push(divider());
+      lines.push(contentLine(Colors.bold(statusHeading)));
+      lines.push("");
 
-      for (const goal of goals) {
-        output += `  ${goal.goalId}\n`;
+      for (let i = 0; i < goals.length; i++) {
+        const goal = goals[i];
+        if (i > 0) lines.push("");
         if (goal.title) {
-          output += `    ${goal.title}\n`;
+          lines.push(contentLine(BrandColors.accentCyan(goal.title)));
         }
-        output += `    ${goal.objective}\n`;
+        lines.push(...wrapContent(goal.objective));
+        lines.push(metaField("Id", Colors.muted(goal.goalId), 6));
         if (goal.note) {
-          output += `    Note: ${goal.note}\n`;
+          lines.push(metaField("Note", Colors.primary(goal.note), 6));
         }
-        output += "\n";
       }
     }
+
+    let output = lines.join("\n");
 
     this.builder.addPrompt(output);
     return this.builder.build();
@@ -158,7 +168,7 @@ export class GoalListOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to list goals");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to list goals")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });

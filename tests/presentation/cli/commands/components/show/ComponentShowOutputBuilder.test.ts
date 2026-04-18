@@ -64,21 +64,21 @@ describe("ComponentShowOutputBuilder", () => {
       const output = outputBuilder.build(mockComponent, mockRelations);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("=== Component Details ===");
-      expect(text).toContain("Name:           UserService");
-      expect(text).toContain("ID:             comp_123");
-      expect(text).toContain("Type:           service");
-      expect(text).toContain("Status:         active");
-      expect(text).toContain("Description:    Handles user operations");
-      expect(text).toContain("Responsibility: User management");
-      expect(text).toContain("Path:           src/services/user");
+      expect(text).toContain("Component");
+      expect(text).toContain("UserService");
+      expect(text).toContain("comp_123");
+      expect(text).toContain("service");
+      expect(text).toContain("active");
+      expect(text).toContain("Handles user operations");
+      expect(text).toContain("User management");
+      expect(text).toContain("src/services/user");
     });
 
     it("should render relations section", () => {
       const output = outputBuilder.build(mockComponent, mockRelations);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("=== Relations ===");
+      expect(text).toContain("Relations");
       expect(text).toContain("uses");
       expect(text).toContain("involves");
     });
@@ -87,14 +87,14 @@ describe("ComponentShowOutputBuilder", () => {
       const output = outputBuilder.build(mockComponent, mockRelations);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("→ component:comp_456");
+      expect(text).toContain("component:comp_456");
     });
 
     it("should show incoming relation direction", () => {
       const output = outputBuilder.build(mockComponent, mockRelations);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("← goal:goal_789");
+      expect(text).toContain("goal:goal_789");
     });
 
     it("should show no relations message when empty", () => {
@@ -113,7 +113,7 @@ describe("ComponentShowOutputBuilder", () => {
       const output = outputBuilder.build(deprecated, []);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("Deprecation:    Replaced by NewService");
+      expect(text).toContain("Replaced by NewService");
     });
   });
 

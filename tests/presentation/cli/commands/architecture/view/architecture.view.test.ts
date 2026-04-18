@@ -4,7 +4,6 @@ import { IApplicationContainer } from "../../../../../../src/application/host/IA
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 import {
   ARCHITECTURE_DEPRECATION_NOTICE,
-  ARCHITECTURE_MIGRATION_TABLE,
 } from "../../../../../../src/application/context/architecture/ArchitectureDeprecationConstants.js";
 
 describe("architecture.view command", () => {
@@ -62,7 +61,10 @@ describe("architecture.view command", () => {
     expect(output).toContain("Architecture");
     expect(output).toContain("Event-sourced DDD system");
     expect(output).toContain(ARCHITECTURE_DEPRECATION_NOTICE);
-    expect(output).toContain(ARCHITECTURE_MIGRATION_TABLE);
+    expect(output).toContain("jumbo decision add");
+    expect(output).toContain("jumbo invariant add");
+    expect(output).toContain("jumbo component add");
+    expect(output).toContain("jumbo dependency add");
   });
 
   it("should display migration mapping table in deprecation notice", async () => {

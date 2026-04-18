@@ -1,6 +1,8 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { ContextualGoalView } from '../../../../../application/context/goals/get/ContextualGoalView.js';
+import { heading, divider, metaField, contentLine, wrapContent, wrapBulletContinuation } from '../../../rendering/OutputLayout.js';
+import { Colors, BrandColors, Symbols } from '../../../rendering/StyleConfig.js';
 
 /**
  * Specialized builder for goal.resume command output.
@@ -28,134 +30,139 @@ export class GoalResumeOutputBuilder {
 
     // Opening prompt: Goal Implementation Instructions
     this.builder.addPrompt(
-      "# Goal Implementation Instructions\n\n" +
-      "You are the developer tasked with implementing the goal outlined below. DO NOT DEVIATE from the instructions.\n" +
-      "You (the developer) are the perfect software engineer - the amalgamation of Robert C. Martin, Martin Fowler, and Eric Evans.\n" +
-      "You write perfect, efficient, secure, and well-documented code."
+      heading("Goal Implementation Instructions") + "\n\n" +
+      wrapContent("You are the developer tasked with implementing the goal outlined below. DO NOT DEVIATE from the instructions.").join('\n') + "\n" +
+      wrapContent("You (the developer) are the perfect software engineer - the amalgamation of Robert C. Martin, Martin Fowler, and Eric Evans.").join('\n') + "\n" +
+      wrapContent("You write perfect, efficient, secure, and well-documented code.").join('\n')
     );
 
     // Objective section
     this.builder.addPrompt(
-      `## Objective:\n'${goal.objective}'\n\n` +
-      "INSTRUCTION: Your (the developer's) purpose for this goal is to fulfill this objective."
+      heading("Objective") + "\n" +
+      contentLine(`'${goal.objective}'`) + "\n\n" +
+      contentLine("INSTRUCTION: Your (the developer's) purpose for this goal is to fulfill this objective.")
     );
 
     // Success Criteria section
-    const successCriteriaText = goal.successCriteria.map(c => `- ${c}`).join('\n');
+    const successCriteriaLines = goal.successCriteria.flatMap(c => wrapBulletContinuation(c));
     this.builder.addPrompt(
-      `## Success Criteria:\n${successCriteriaText}\n\n` +
-      "INSTRUCTION: Your (the developer's) success in fulfilling the objective is measured by these specific criteria and adherence to the instructions below."
+      heading("Success Criteria") + "\n" +
+      successCriteriaLines.join('\n') + "\n\n" +
+      contentLine("INSTRUCTION: Your (the developer's) success in fulfilling the objective is measured by these specific criteria and adherence to the instructions below.")
     );
 
     // Progress section (if exists)
     if (goal.progress && goal.progress.length > 0) {
-      const progressText = goal.progress.map(p => `- ${p}`).join('\n');
+      const progressLines = goal.progress.flatMap(p => wrapBulletContinuation(p));
       this.builder.addPrompt(
-        `## Current Progress:\n${progressText}\n\n` +
-        "INSTRUCTION: Implementation of this goal has previously been started.\n" +
-        "Review the current progress to understand what has already been accomplished and continue from there."
+        heading("Current Progress") + "\n" +
+        progressLines.join('\n') + "\n\n" +
+        contentLine("INSTRUCTION: Implementation of this goal has previously been started.") + "\n" +
+        contentLine("Review the current progress to understand what has already been accomplished and continue from there.")
       );
     }
 
     // Scope section (if scoped)
     if (this.isScoped(contextualView)) {
       if (goal.scopeIn && goal.scopeIn.length > 0) {
-        const scopeInText = goal.scopeIn.map(s => `- ${s}`).join('\n');
+        const scopeInLines = goal.scopeIn.flatMap(s => wrapBulletContinuation(s));
         this.builder.addPrompt(
-          `### Scope:\n#### In Scope\n${scopeInText}\n\n` +
-          "INSTRUCTION: You (the developer) MUST work within the defined scope."
+          heading("Scope: In") + "\n" +
+          scopeInLines.join('\n') + "\n\n" +
+          contentLine("INSTRUCTION: You (the developer) MUST work within the defined scope.")
         );
       }
 
       if (goal.scopeOut && goal.scopeOut.length > 0) {
-        const scopeOutText = goal.scopeOut.map(s => `- ${s}`).join('\n');
+        const scopeOutLines = goal.scopeOut.flatMap(s => wrapBulletContinuation(s));
         this.builder.addPrompt(
-          `#### Out of Scope\n${scopeOutText}\n\n` +
-          "INSTRUCTION: Your (the developer) work MUST NOT overlap these items."
+          heading("Scope: Out") + "\n" +
+          scopeOutLines.join('\n') + "\n\n" +
+          contentLine("INSTRUCTION: Your (the developer) work MUST NOT overlap these items.")
         );
       }
     }
 
     // Components section
     if (context.components.length > 0) {
-      const componentsText = context.components
-        .map(c => `- ${c.entity.name}: ${c.entity.description}`)
-        .join('\n');
+      const componentsLines = context.components
+        .flatMap(c => wrapBulletContinuation(`${c.entity.name}: ${c.entity.description}`));
       this.builder.addPrompt(
-        `## Relevant Components:\n${componentsText}\n\n` +
-        'INSTRUCTION: You (the developer) MUST consider these components while implementing this goal.'
+        heading("Relevant Components") + "\n" +
+        componentsLines.join('\n') + "\n\n" +
+        contentLine('INSTRUCTION: You (the developer) MUST consider these components while implementing this goal.')
       );
     }
 
     // Dependencies section
     if (context.dependencies.length > 0) {
-      const dependenciesText = context.dependencies
-        .map(d => {
+      const dependenciesLines = context.dependencies
+        .flatMap(d => {
           const version = d.entity.versionConstraint ? `@${d.entity.versionConstraint}` : "";
           const purpose = d.entity.contract || d.entity.endpoint || "External dependency";
-          return `- ${d.entity.ecosystem}:${d.entity.packageName}${version} (${d.entity.name}): ${purpose}`;
-        })
-        .join('\n');
+          return wrapBulletContinuation(`${d.entity.ecosystem}:${d.entity.packageName}${version} (${d.entity.name}): ${purpose}`);
+        });
       this.builder.addPrompt(
-        `## Relevant Dependencies:\n${dependenciesText}\n\n` +
-        'INSTRUCTION: You (the developer) MUST consider the following dependencies while implementing this goal.'
+        heading("Relevant Dependencies") + "\n" +
+        dependenciesLines.join('\n') + "\n\n" +
+        contentLine('INSTRUCTION: You (the developer) MUST consider the following dependencies while implementing this goal.')
       );
     }
 
     // Decisions section
     if (context.decisions.length > 0) {
-      const decisionsText = context.decisions
-        .map(d => `- ${d.entity.title}: ${d.entity.rationale}`)
-        .join('\n');
+      const decisionsLines = context.decisions
+        .flatMap(d => wrapBulletContinuation(`${d.entity.title}: ${d.entity.rationale}`));
       this.builder.addPrompt(
-        `## Relevant Decisions:\n${decisionsText}\n\n` +
-        'INSTRUCTION: The solution may contain artifacts that reflect previous design decisions.\n' +
-        'Therefore, you MUST consider these design decisions while implementing this goal to ensure the trajectory of the solution remains consistent.'
+        heading("Relevant Decisions") + "\n" +
+        decisionsLines.join('\n') + "\n\n" +
+        contentLine('INSTRUCTION: The solution may contain artifacts that reflect previous design decisions.') + "\n" +
+        contentLine('Therefore, you MUST consider these design decisions while implementing this goal to ensure the trajectory of the solution remains consistent.')
       );
     }
 
     // Invariants section (CRITICAL - emphasized)
     if (context.invariants.length > 0) {
-      const invariantsText = context.invariants
-        .map(inv => `- ${inv.entity.title}:\n  - ${inv.entity.description}`)
-        .join('\n');
+      const invariantsLines = context.invariants
+        .flatMap(inv => wrapBulletContinuation(`${inv.entity.title}: ${inv.entity.description}`));
       this.builder.addPrompt(
-        `## Invariants:\n${invariantsText}\n\n` +
-        'INSTRUCTION: You (the developer) MUST adhere to ALL of these invariants while implementing this goal.'
+        heading("Invariants") + "\n" +
+        invariantsLines.join('\n') + "\n\n" +
+        contentLine('INSTRUCTION: You (the developer) MUST adhere to ALL of these invariants while implementing this goal.')
       );
     }
 
     // Guidelines section
     if (context.guidelines.length > 0) {
-      const guidelinesText = context.guidelines
-        .map(g => `- ${g.entity.category}: ${g.entity.description}`)
-        .join('\n');
+      const guidelinesLines = context.guidelines
+        .flatMap(g => wrapBulletContinuation(`${g.entity.category}: ${g.entity.description}`));
       this.builder.addPrompt(
-        `## Guidelines:\n${guidelinesText}\n\n` +
-        'INSTRUCTION: You (the developer) SHOULD follow these guidelines while implementing this goal.'
+        heading("Guidelines") + "\n" +
+        guidelinesLines.join('\n') + "\n\n" +
+        contentLine('INSTRUCTION: You (the developer) SHOULD follow these guidelines while implementing this goal.')
       );
     }
 
     // Closing prompt with additional instructions
-    this.builder.addPrompt("---\n");
+    this.builder.addPrompt(divider() + "\n");
 
     // LLM Guidance - different messages depending on transition state
     if (transitionedFromPaused) {
       this.builder.addPrompt(
-        "@LLM: Goal context loaded. Work within scope.\n" +
-        "YOUR ROLE: Proactively run jumbo commands to capture project memories as they surface.\n" +
-        "Run 'jumbo --help' to see what can be tracked, if you haven't already."
+        contentLine("@LLM: Goal context loaded. Work within scope.") + "\n" +
+        contentLine("YOUR ROLE: Proactively run jumbo commands to capture project memories as they surface.") + "\n" +
+        contentLine("Run 'jumbo --help' to see what can be tracked, if you haven't already.")
       );
     } else {
-      this.builder.addPrompt("@LLM: Goal context loaded. Work within scope.");
+      this.builder.addPrompt(contentLine("@LLM: Goal context loaded. Work within scope."));
     }
 
     // Review instructions (prominent)
     this.builder.addPrompt(
-      "=".repeat(80) + "\n" +
-      "🚀 IMPORTANT NEXT STEP\n" +
-      `Run: jumbo goal submit --id ${goal.goalId}\n` +
-      "=".repeat(80)
+      divider() + "\n" +
+      contentLine("IMPORTANT NEXT STEP") + "\n" +
+      contentLine(`Run: jumbo goal submit --id ${goal.goalId}`) + "\n" +
+      divider()
     );
 
     return this.builder.build();

@@ -58,8 +58,10 @@ describe("heal command", () => {
     });
 
     const output = consoleLogSpy.mock.calls.map((call) => String(call[0])).join("\n");
-    expect(output).toContain("Projection rebuild complete");
-    expect(output).toContain("Events replayed:   123");
+    expect(output).toContain("Projection Rebuild");
+    expect(output).toContain("Rebuild complete");
+    expect(output).toContain("Events replayed");
+    expect(output).toContain("123");
   });
 
   it("renders structured output in json mode", async () => {

@@ -1,6 +1,8 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { CloseGoalResponse } from '../../../../../application/context/goals/close/CloseGoalResponse.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { EDGE, heading, contentLine, metaField, divider } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.close command output.
@@ -22,17 +24,26 @@ export class GoalCloseOutputBuilder {
    */
   buildSuccess(response: CloseGoalResponse, continueFlag: boolean = false): TerminalOutput {
     this.builder.reset();
+    const lines: string[] = [];
 
-    this.builder.addPrompt(
-      "# Goal Closed\n" +
-      `Goal ID: ${response.goalId}\n` +
-      `Objective: ${response.objective}\n` +
-      `Status: ${response.status}\n` +
-      "---"
-    );
+    lines.push("");
+    lines.push(heading("Goal Closed"));
+    lines.push(contentLine(`${Symbols.check} ${Colors.success("Goal has been closed")}`));
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(response.goalId), 11));
+    lines.push(metaField("Objective", Colors.primary(response.objective), 11));
+    lines.push(metaField("Status", Colors.primary(response.status), 11));
 
     if (response.nextGoal) {
-      this.builder.addPrompt("## Next goal in chain:");
+      lines.push("");
+      lines.push(divider());
+      lines.push("");
+      lines.push(heading("Next Goal"));
+      lines.push(metaField("Id", Colors.muted(response.nextGoal.goalId), 11));
+      lines.push(metaField("Objective", Colors.primary(response.nextGoal.objective), 11));
+      lines.push(metaField("Status", Colors.primary(response.nextGoal.status), 11));
+
+      this.builder.addPrompt(lines.join("\n"));
       this.builder.addData({
         goalId: response.nextGoal.goalId,
         objective: response.nextGoal.objective,
@@ -41,15 +52,16 @@ export class GoalCloseOutputBuilder {
 
       if (continueFlag) {
         this.builder.addPrompt(
-          "Start the next goal immediately. Run:\n" +
-          `  jumbo goal start --id ${response.nextGoal.goalId}`
+          "\n@LLM: Start the next goal immediately.\n" +
+          `Run: jumbo goal start --id ${response.nextGoal.goalId}`
         );
       } else {
         this.builder.addPrompt(
-          "[Next Phase] Implementation\n" +
-          `To start the next goal: jumbo goal start --id ${response.nextGoal.goalId}`
+          "\n" + `${EDGE}${Colors.primary("➤")} ${Colors.primary(`To start: jumbo goal start --id ${response.nextGoal.goalId}`)}`
         );
       }
+    } else {
+      this.builder.addPrompt(lines.join("\n"));
     }
 
     return this.builder.build();
@@ -60,7 +72,7 @@ export class GoalCloseOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to close goal");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to close goal")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });

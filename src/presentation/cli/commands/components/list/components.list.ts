@@ -14,7 +14,8 @@ import { IApplicationContainer } from "../../../../../application/host/IApplicat
 import { ComponentStatusFilter } from "../../../../../application/context/components/get/IComponentViewReader.js";
 import { GetComponentsRequest } from "../../../../../application/context/components/list/GetComponentsRequest.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { ComponentView } from "../../../../../application/context/components/ComponentView.js";
+import { RenderData } from "../../../rendering/types.js";
+import { ComponentListOutputBuilder } from "./ComponentListOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -44,32 +45,6 @@ export const metadata: CommandMetadata = {
   ],
   related: ["component add", "component update", "component deprecate", "component remove"],
 };
-
-/**
- * Format status for display
- */
-function formatStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    active: "[ACTIVE]",
-    deprecated: "[DEPRECATED]",
-    removed: "[REMOVED]",
-  };
-  return statusMap[status] || `[${status.toUpperCase()}]`;
-}
-
-/**
- * Format component for text output
- */
-function formatComponentText(component: ComponentView): void {
-  console.log(`${formatStatus(component.status)} ${component.name} (${component.type})`);
-  console.log(`  ${component.description}`);
-  console.log(`  Path: ${component.path}`);
-  if (component.deprecationReason) {
-    console.log(`  Deprecation: ${component.deprecationReason}`);
-  }
-  console.log(`  ID: ${component.componentId}`);
-  console.log("");
-}
 
 /**
  * Validate status filter
@@ -109,32 +84,15 @@ export async function componentsList(
     // Check if we're in structured output mode by examining renderer config
     const config = renderer.getConfig();
 
+    const outputBuilder = new ComponentListOutputBuilder();
     if (config.format === "text") {
-      // Text format: human-readable output
-      const filterLabel = statusFilter === "all" ? "" : ` (${statusFilter})`;
-      console.log(`\nComponents${filterLabel} (${components.length}):\n`);
-      for (const component of components) {
-        formatComponentText(component);
-      }
+      const output = outputBuilder.build(components, statusFilter);
+      renderer.info(output.toHumanReadable());
     } else {
-      // Structured format (json/yaml/ndjson): use renderer.data()
-      const data = {
-        count: components.length,
-        filter: statusFilter,
-        components: components.map((c) => ({
-          componentId: c.componentId,
-          name: c.name,
-          type: c.type,
-          description: c.description,
-          responsibility: c.responsibility,
-          path: c.path,
-          status: c.status,
-          deprecationReason: c.deprecationReason,
-          createdAt: c.createdAt,
-          updatedAt: c.updatedAt,
-        })),
-      };
-      renderer.data(data);
+      const output = outputBuilder.buildStructuredOutput(components, statusFilter);
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === "data");
+      if (dataSection) renderer.data(dataSection.content as RenderData);
     }
   } catch (error) {
     renderer.error("Failed to list components", error instanceof Error ? error : String(error));

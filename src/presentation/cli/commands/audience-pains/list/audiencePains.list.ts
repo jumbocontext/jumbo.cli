@@ -12,7 +12,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { AudiencePainView } from "../../../../../application/context/audience-pains/AudiencePainView.js";
+import { RenderData } from "../../../rendering/types.js";
+import { AudiencePainListOutputBuilder } from './AudiencePainListOutputBuilder.js';
 
 /**
  * Command metadata for auto-registration
@@ -38,23 +39,6 @@ export const metadata: CommandMetadata = {
 };
 
 /**
- * Format status for display
- */
-function formatStatus(status: string): string {
-  return status.toUpperCase();
-}
-
-/**
- * Format pain point for text output
- */
-function formatPainText(pain: AudiencePainView): void {
-  console.log(`[${formatStatus(pain.status)}] ${pain.title}`);
-  console.log(`  ${pain.description}`);
-  console.log(`  ID: ${pain.painId}`);
-  console.log("");
-}
-
-/**
  * Command handler
  * Called by Commander with parsed options
  */
@@ -74,27 +58,16 @@ export async function audiencePainsList(
 
     // Check if we're in structured output mode by examining renderer config
     const config = renderer.getConfig();
+    const outputBuilder = new AudiencePainListOutputBuilder();
 
     if (config.format === "text") {
-      // Text format: human-readable output
-      console.log(`\nAudience Pain Points (${pains.length}):\n`);
-      for (const pain of pains) {
-        formatPainText(pain);
-      }
+      const output = outputBuilder.build(pains);
+      renderer.info(output.toHumanReadable());
     } else {
-      // Structured format (json/yaml/ndjson): use renderer.data()
-      const data = {
-        count: pains.length,
-        pains: pains.map((p) => ({
-          painId: p.painId,
-          title: p.title,
-          description: p.description,
-          status: p.status,
-          createdAt: p.createdAt,
-          updatedAt: p.updatedAt,
-        })),
-      };
-      renderer.data(data);
+      const output = outputBuilder.buildStructuredOutput(pains);
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === "data");
+      if (dataSection) renderer.data(dataSection.content as RenderData);
     }
   } catch (error) {
     renderer.error("Failed to list audience pains", error instanceof Error ? error : String(error));

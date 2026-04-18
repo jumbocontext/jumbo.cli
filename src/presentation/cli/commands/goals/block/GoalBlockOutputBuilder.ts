@@ -1,5 +1,7 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { heading, contentLine, metaField } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.block command output.
@@ -21,11 +23,15 @@ export class GoalBlockOutputBuilder {
    */
   buildSuccess(goalId: string, reason: string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✓ Goal blocked");
-    this.builder.addData({
-      goalId,
-      reason
-    });
+    const lines: string[] = [];
+    lines.push("");
+    lines.push(heading("Goal Blocked"));
+    lines.push(contentLine(`${Symbols.check} ${Colors.success("Goal has been blocked")}`));
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(goalId)));
+    lines.push(metaField("Reason", Colors.primary(reason)));
+    this.builder.addPrompt(lines.join("\n"));
+    this.builder.addData({ goalId, reason });
     return this.builder.build();
   }
 
@@ -35,7 +41,7 @@ export class GoalBlockOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to block goal");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to block goal")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });

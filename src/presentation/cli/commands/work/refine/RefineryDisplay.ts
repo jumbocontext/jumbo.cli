@@ -6,18 +6,14 @@
  * compact config, and gradient braille spinners.
  */
 
-import { BrandColors } from "../../../rendering/StyleConfig.js";
+import { Colors, BrandColors, Symbols } from "../../../rendering/StyleConfig.js";
 import { playGlimmer } from "../../../animations/GlimmerEffect.js";
 import { startBrailleSpinner } from "../../../animations/BrailleSpinner.js";
 
+// Raw ANSI codes retained only for the glimmer animation API
+// which requires raw string prefixes, not chalk-wrapped strings.
 const RESET = "\x1b[0m";
-const DIM = "\x1b[2m";
-const GREEN = "\x1b[32m";
-const YELLOW = "\x1b[33m";
-const RED = "\x1b[31m";
-const BOLD = "\x1b[1m";
 const BRIGHT_WHITE = "\x1b[97m";
-
 const [jbR, jbG, jbB] = BrandColors.jumboBlueRaw;
 const JUMBO_BLUE = `\x1b[38;2;${jbR};${jbG};${jbB}m`;
 
@@ -48,7 +44,7 @@ export class RefineryDisplay {
     this.out("\n");
 
     this.line(
-      `  ${JUMBO_BLUE}│${RESET} ${DIM}${agentId} · poll ${pollIntervalS}s · retries ${maxRetries} · Q to stop${RESET}`,
+      `  ${BrandColors.jumboBlue(Symbols.accentBar)} ${Colors.dim(`${agentId} · poll ${pollIntervalS}s · retries ${maxRetries} · Q to stop`)}`,
     );
     this.divider();
   }
@@ -67,9 +63,9 @@ export class RefineryDisplay {
   ): void {
     const sid = this.shortId(goalId);
     this.line(
-      `  ${GREEN}●${RESET} ${BOLD}${sid}${RESET}  ${DIM}attempt ${attempt}/${maxRetries}${RESET}`,
+      `  ${Colors.success(Symbols.filledCircle)} ${Colors.bold(sid)}  ${Colors.dim(`attempt ${attempt}/${maxRetries}`)}`,
     );
-    this.line(`  ${DIM}${this.truncateObjective(objective)}${RESET}`);
+    this.line(`  ${Colors.dim(this.truncateObjective(objective))}`);
   }
 
   /** Start the active "Refining..." braille spinner */
@@ -85,9 +81,9 @@ export class RefineryDisplay {
   ): void {
     const sid = this.shortId(goalId);
     this.line(
-      `  ${GREEN}✓${RESET} ${GREEN}refined${RESET}  ${BOLD}${sid}${RESET}  ${DIM}${attempts} attempt${attempts !== 1 ? "s" : ""}${RESET}`,
+      `  ${Colors.success(Symbols.check)} ${Colors.success("refined")}  ${Colors.bold(sid)}  ${Colors.dim(`${attempts} attempt${attempts !== 1 ? "s" : ""}`)}`,
     );
-    this.line(`  ${DIM}${this.truncateObjective(objective)}${RESET}`);
+    this.line(`  ${Colors.dim(this.truncateObjective(objective))}`);
     this.line("");
   }
 
@@ -99,25 +95,25 @@ export class RefineryDisplay {
   ): void {
     const sid = this.shortId(goalId);
     this.line(
-      `  ${YELLOW}⚠${RESET} ${sid} did not reach 'refined' after ${maxRetries} attempts (status: ${status}). Skipping.`,
+      `  ${Colors.warning(Symbols.warning)} ${sid} did not reach 'refined' after ${maxRetries} attempts (status: ${status}). Skipping.`,
     );
     this.line("");
   }
 
   /** Render retry info */
   renderRetry(attempt: number, maxRetries: number): void {
-    this.line(`  ${DIM}→ Retry ${attempt}/${maxRetries}...${RESET}`);
+    this.line(`  ${Colors.dim(`${Symbols.arrow} Retry ${attempt}/${maxRetries}...`)}`);
   }
 
   /** Render unknown agent error */
   renderUnknownAgent(agent: string, supported: readonly string[]): void {
-    this.line(`${RED}✗${RESET} Unknown agent '${agent}'. Supported: ${supported.join(", ")}`);
+    this.line(`${Colors.error(Symbols.cross)} Unknown agent '${agent}'. Supported: ${supported.join(", ")}`);
   }
 
   /** Render shutdown message */
   renderShutdown(): void {
     this.line("");
-    this.line(`  ${DIM}→ Refinery stopped.${RESET}`);
+    this.line(`  ${Colors.dim(`${Symbols.arrow} Refinery stopped.`)}`);
   }
 
   // --- Private helpers ---
@@ -131,7 +127,7 @@ export class RefineryDisplay {
   }
 
   private divider(): void {
-    this.line(`  ${DIM}${"─".repeat(50)}${RESET}`);
+    this.line(`  ${Colors.dim("─".repeat(50))}`);
   }
 
   private truncateObjective(text: string, max = 60): string {

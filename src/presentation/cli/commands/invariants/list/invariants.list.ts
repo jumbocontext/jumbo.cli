@@ -7,7 +7,8 @@
 import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { InvariantView } from "../../../../../application/context/invariants/InvariantView.js";
+import { RenderData } from "../../../rendering/types.js";
+import { InvariantListOutputBuilder } from "./InvariantListOutputBuilder.js";
 
 export const metadata: CommandMetadata = {
   description: "List all project invariants",
@@ -19,13 +20,6 @@ export const metadata: CommandMetadata = {
   ],
   related: ["invariant add", "invariant update", "invariant remove"],
 };
-
-function formatInvariantText(invariant: InvariantView): void {
-  console.log(`${invariant.title}`);
-  console.log(`  ${invariant.description}`);
-  console.log(`  ID: ${invariant.invariantId}`);
-  console.log("");
-}
 
 export async function invariantsList(
   options: Record<string, never>,
@@ -43,25 +37,15 @@ export async function invariantsList(
 
     const config = renderer.getConfig();
 
+    const outputBuilder = new InvariantListOutputBuilder();
     if (config.format === "text") {
-      console.log(`\nInvariants (${invariants.length}):\n`);
-      for (const invariant of invariants) {
-        formatInvariantText(invariant);
-      }
+      const output = outputBuilder.build(invariants);
+      renderer.info(output.toHumanReadable());
     } else {
-      const data = {
-        count: invariants.length,
-        invariants: invariants.map((i) => ({
-          invariantId: i.invariantId,
-          title: i.title,
-          description: i.description,
-          rationale: i.rationale,
-          enforcement: i.enforcement,
-          createdAt: i.createdAt,
-          updatedAt: i.updatedAt,
-        })),
-      };
-      renderer.data(data);
+      const output = outputBuilder.buildStructuredOutput(invariants);
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === "data");
+      if (dataSection) renderer.data(dataSection.content as RenderData);
     }
   } catch (error) {
     renderer.error("Failed to list invariants", error instanceof Error ? error : String(error));

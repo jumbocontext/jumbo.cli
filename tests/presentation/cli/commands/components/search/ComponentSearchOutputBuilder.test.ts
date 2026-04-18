@@ -44,11 +44,13 @@ describe("ComponentSearchOutputBuilder", () => {
         const output = outputBuilder.build(mockComponents, "default");
         const text = output.toHumanReadable();
 
-        expect(text).toContain("Components (2):");
-        expect(text).toContain("AuthService (service) [active]");
+        expect(text).toContain("Components (2)");
+        expect(text).toContain("AuthService");
+        expect(text).toContain("service");
+        expect(text).toContain("active");
         expect(text).toContain("Handles authentication");
-        expect(text).toContain("Path: src/auth");
-        expect(text).toContain("ID: comp_1");
+        expect(text).toContain("src/auth");
+        expect(text).toContain("comp_1");
       });
 
       it("should render multiple components", () => {

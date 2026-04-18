@@ -1,6 +1,8 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { RejectGoalResponse } from '../../../../../application/context/goals/reject/RejectGoalResponse.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { EDGE, heading, contentLine, metaField, divider, wrapContent } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.reject command output.
@@ -22,39 +24,38 @@ export class GoalRejectOutputBuilder {
    */
   buildSuccess(response: RejectGoalResponse, continueFlag: boolean = false): TerminalOutput {
     this.builder.reset();
+    const lines: string[] = [];
 
-    this.builder.addPrompt(
-      "# Goal Rejected\n" +
-      `Goal ID: ${response.goalId}\n` +
-      `Objective: ${response.objective}\n` +
-      `Status: ${response.status}\n` +
-      "---\n\n" +
-      "## QA Review Failed\n" +
-      "The goal has been returned for rework. The following issues were found:\n\n" +
-      `${response.reviewIssues}\n` +
-      "---"
-    );
-
-    let nextSteps: string;
-
-    if (continueFlag) {
-      nextSteps = "## Next Steps\n" +
-                  "The implementing agent should address the review issues and restart the goal:\n" +
-                  `  Run: jumbo goal start --id ${response.goalId}`;
-    } else {
-      nextSteps = "## [Next Phase] Rework\n" +
-                  "The implementing agent should address the review issues.\n" +
-                  `To restart the goal: jumbo goal start --id ${response.goalId}`;
-    }
+    lines.push("");
+    lines.push(heading("Goal Rejected"));
+    lines.push(contentLine(`${Symbols.cross} ${Colors.error("QA review failed — returned for rework")}`));
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(response.goalId), 11));
+    lines.push(metaField("Objective", Colors.primary(response.objective), 11));
+    lines.push(metaField("Status", Colors.primary(response.status), 11));
 
     if (response.nextGoalId) {
-      nextSteps += "\n\nThe next goal in the queue is:\n" +
-                   `  Goal ID: ${response.nextGoalId}`;
+      lines.push(metaField("Next Goal", Colors.muted(response.nextGoalId), 11));
     }
 
-    nextSteps += "\n---\n";
+    lines.push("");
+    lines.push(divider());
+    lines.push("");
+    lines.push(heading("Review Issues"));
+    lines.push(...wrapContent(response.reviewIssues));
 
-    this.builder.addPrompt(nextSteps);
+    this.builder.addPrompt(lines.join("\n"));
+
+    if (continueFlag) {
+      this.builder.addPrompt(
+        "\n@LLM: Address the review issues and restart the goal:\n" +
+        `Run: jumbo goal start --id ${response.goalId}`
+      );
+    } else {
+      this.builder.addPrompt(
+        "\n" + `${EDGE}${Colors.primary("➤")} ${Colors.primary(`To restart: jumbo goal start --id ${response.goalId}`)}`
+      );
+    }
 
     return this.builder.build();
   }
@@ -65,7 +66,7 @@ export class GoalRejectOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to reject goal");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to reject goal")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });

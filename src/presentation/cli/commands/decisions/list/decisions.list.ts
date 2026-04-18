@@ -13,7 +13,8 @@ import { CommandMetadata } from "../../registry/CommandMetadata.js";
 import { IApplicationContainer } from "../../../../../application/host/IApplicationContainer.js";
 import { DecisionStatusFilter } from "../../../../../application/context/decisions/get/IDecisionViewReader.js";
 import { Renderer } from "../../../rendering/Renderer.js";
-import { DecisionView } from "../../../../../application/context/decisions/DecisionView.js";
+import { RenderData } from "../../../rendering/types.js";
+import { DecisionListOutputBuilder } from "./DecisionListOutputBuilder.js";
 
 /**
  * Command metadata for auto-registration
@@ -43,37 +44,6 @@ export const metadata: CommandMetadata = {
   ],
   related: ["decision add", "decision update", "decision reverse", "decision supersede"],
 };
-
-/**
- * Format status for display
- */
-function formatStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    active: "[ACTIVE]",
-    superseded: "[SUPERSEDED]",
-    reversed: "[REVERSED]",
-  };
-  return statusMap[status] || `[${status.toUpperCase()}]`;
-}
-
-/**
- * Format decision for text output
- */
-function formatDecisionText(decision: DecisionView): void {
-  console.log(`${formatStatus(decision.status)} ${decision.title}`);
-  console.log(`  Context: ${decision.context.substring(0, 100)}${decision.context.length > 100 ? "..." : ""}`);
-  if (decision.rationale) {
-    console.log(`  Rationale: ${decision.rationale.substring(0, 100)}${decision.rationale.length > 100 ? "..." : ""}`);
-  }
-  if (decision.supersededBy) {
-    console.log(`  Superseded by: ${decision.supersededBy}`);
-  }
-  if (decision.reversalReason) {
-    console.log(`  Reversal: ${decision.reversalReason}`);
-  }
-  console.log(`  ID: ${decision.decisionId}`);
-  console.log("");
-}
 
 /**
  * Validate status filter
@@ -112,34 +82,15 @@ export async function decisionsList(
     // Check if we're in structured output mode by examining renderer config
     const config = renderer.getConfig();
 
+    const outputBuilder = new DecisionListOutputBuilder();
     if (config.format === "text") {
-      // Text format: human-readable output
-      const filterLabel = statusFilter === "all" ? "" : ` (${statusFilter})`;
-      console.log(`\nArchitectural Decisions${filterLabel} (${decisions.length}):\n`);
-      for (const decision of decisions) {
-        formatDecisionText(decision);
-      }
+      const output = outputBuilder.build(decisions, statusFilter);
+      renderer.info(output.toHumanReadable());
     } else {
-      // Structured format (json/yaml/ndjson): use renderer.data()
-      const data = {
-        count: decisions.length,
-        filter: statusFilter,
-        decisions: decisions.map((d) => ({
-          decisionId: d.decisionId,
-          title: d.title,
-          context: d.context,
-          rationale: d.rationale,
-          alternatives: d.alternatives,
-          consequences: d.consequences,
-          status: d.status,
-          supersededBy: d.supersededBy,
-          reversalReason: d.reversalReason,
-          reversedAt: d.reversedAt,
-          createdAt: d.createdAt,
-          updatedAt: d.updatedAt,
-        })),
-      };
-      renderer.data(data);
+      const output = outputBuilder.buildStructuredOutput(decisions, statusFilter);
+      const sections = output.getSections();
+      const dataSection = sections.find(s => s.type === "data");
+      if (dataSection) renderer.data(dataSection.content as RenderData);
     }
   } catch (error) {
     renderer.error("Failed to list decisions", error instanceof Error ? error : String(error));

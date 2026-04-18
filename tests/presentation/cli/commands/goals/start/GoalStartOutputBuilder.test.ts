@@ -65,7 +65,7 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("## Objective:");
+      expect(text).toContain("Objective");
       expect(text).toContain("Implement feature X");
     });
 
@@ -74,9 +74,9 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("## Success Criteria:");
-      expect(text).toContain("- Criterion A");
-      expect(text).toContain("- Criterion B");
+      expect(text).toContain("Success Criteria");
+      expect(text).toContain("Criterion A");
+      expect(text).toContain("Criterion B");
     });
 
     it("should render scope sections when scoped", () => {
@@ -87,10 +87,10 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("#### In Scope");
-      expect(text).toContain("- src/feature/");
-      expect(text).toContain("#### Out of Scope");
-      expect(text).toContain("- src/other/");
+      expect(text).toContain("Scope: In");
+      expect(text).toContain("src/feature/");
+      expect(text).toContain("Scope: Out");
+      expect(text).toContain("src/other/");
     });
 
     it("should render progress section when progress exists", () => {
@@ -98,9 +98,9 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("## Current Progress:");
-      expect(text).toContain("- Completed step 1");
-      expect(text).toContain("- Completed step 2");
+      expect(text).toContain("Current Progress");
+      expect(text).toContain("Completed step 1");
+      expect(text).toContain("Completed step 2");
     });
 
     it("should include submit instruction with goal ID", () => {
@@ -126,9 +126,11 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("## Workspace:");
-      expect(text).toContain("Branch: feature/goal-123");
-      expect(text).toContain("Worktree: /worktrees/goal-123");
+      expect(text).toContain("Workspace");
+      expect(text).toContain("Branch:");
+      expect(text).toContain("feature/goal-123");
+      expect(text).toContain("Worktree:");
+      expect(text).toContain("/worktrees/goal-123");
       expect(text).toContain("MUST isolate your work in the identified branch and worktree");
     });
 
@@ -137,8 +139,9 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("## Workspace:");
-      expect(text).toContain("Branch: feature/goal-123");
+      expect(text).toContain("Workspace");
+      expect(text).toContain("Branch:");
+      expect(text).toContain("feature/goal-123");
       expect(text).not.toContain("Worktree:");
       expect(text).toContain("MUST isolate your work in the identified branch");
     });
@@ -148,8 +151,9 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("## Workspace:");
-      expect(text).toContain("Worktree: /worktrees/goal-123");
+      expect(text).toContain("Workspace");
+      expect(text).toContain("Worktree:");
+      expect(text).toContain("/worktrees/goal-123");
       expect(text).not.toContain("Branch:");
       expect(text).toContain("MUST isolate your work in the identified worktree");
     });
@@ -159,7 +163,7 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).not.toContain("## Workspace:");
+      expect(text).not.toContain("Workspace");
     });
   });
 
@@ -172,7 +176,8 @@ describe("GoalStartOutputBuilder", () => {
       expect(text).toContain("CONTEXT MAINTENANCE:");
       expect(text).toContain("jumbo decision add --title");
       expect(text).toContain("jumbo component add --name");
-      expect(text).toContain("jumbo relation add --from-type goal --from-id goal_test_123");
+      expect(text).toContain("jumbo relation add --from-type goal");
+      expect(text).toContain("goal_test_123");
       expect(text).toContain("jumbo invariant add --category");
       expect(text).toContain("jumbo guideline add --category");
     });
@@ -191,7 +196,7 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("--from-id goal_specific_456");
+      expect(text).toContain("goal_specific_456");
     });
   });
 
@@ -205,8 +210,9 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("## Relevant Components:");
-      expect(text).toContain("AuthService: Handles authentication");
+      expect(text).toContain("Relevant Components");
+      expect(text).toContain("AuthService");
+      expect(text).toContain("Handles authentication");
     });
   });
 
@@ -220,8 +226,9 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("## Relevant Decisions:");
-      expect(text).toContain("Use REST: Simpler than GraphQL");
+      expect(text).toContain("Relevant Decisions");
+      expect(text).toContain("Use REST");
+      expect(text).toContain("Simpler than GraphQL");
     });
   });
 
@@ -235,8 +242,8 @@ describe("GoalStartOutputBuilder", () => {
       const output = builder.build(view);
       const text = output.toHumanReadable();
 
-      expect(text).toContain("## Invariants:");
-      expect(text).toContain("No raw SQL:");
+      expect(text).toContain("Invariants");
+      expect(text).toContain("No raw SQL");
       expect(text).toContain("Always use query builder");
     });
   });

@@ -2,6 +2,10 @@ import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js'
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { ComponentView } from '../../../../../application/context/components/ComponentView.js';
 import { RelationView } from '../../../../../application/context/relations/RelationView.js';
+import { Colors, BrandColors, Symbols } from '../../../rendering/StyleConfig.js';
+import {
+  EDGE, heading, metaField, contentLine, divider, wrapContent,
+} from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for component.show command output.
@@ -35,40 +39,62 @@ export class ComponentShowOutputBuilder {
    */
   build(component: ComponentView, relations: RelationView[]): TerminalOutput {
     this.builder.reset();
+    const lines: string[] = [];
 
-    let output = "\n=== Component Details ===\n\n" +
-                 `Name:           ${component.name}\n` +
-                 `ID:             ${component.componentId}\n` +
-                 `Type:           ${component.type}\n` +
-                 `Status:         ${this.formatStatus(component.status)}\n` +
-                 `Description:    ${component.description}\n` +
-                 `Responsibility: ${component.responsibility}\n` +
-                 `Path:           ${component.path}`;
+    lines.push("");
+    lines.push(heading("Component"));
+    lines.push(contentLine(Colors.primary(component.name)));
+
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(component.componentId), 16));
+    lines.push(metaField("Type", Colors.primary(component.type), 16));
+    lines.push(metaField("Status", Colors.primary(this.formatStatus(component.status)), 16));
+    lines.push(metaField("Path", Colors.muted(component.path), 16));
+    lines.push(metaField("Created", Colors.muted(component.createdAt), 16));
+    lines.push(metaField("Updated", Colors.muted(component.updatedAt), 16));
 
     if (component.deprecationReason) {
-      output += `\nDeprecation:    ${component.deprecationReason}`;
+      lines.push(metaField("Deprecation", Colors.warning(component.deprecationReason), 16));
     }
 
-    output += `\nCreated:        ${component.createdAt}` +
-              `\nUpdated:        ${component.updatedAt}`;
+    lines.push("");
+    lines.push(divider());
+    lines.push("");
 
-    this.builder.addPrompt(output);
+    lines.push(heading("Description"));
+    lines.push(...wrapContent(component.description));
+
+    if (component.responsibility) {
+      lines.push("");
+      lines.push(heading("Responsibility"));
+      lines.push(...wrapContent(component.responsibility));
+    }
+
+    this.builder.addPrompt(lines.join("\n"));
 
     if (relations.length > 0) {
-      let relationsOutput = "\n=== Relations ===\n";
+      const relLines: string[] = [];
+      relLines.push(divider());
+      relLines.push("");
+      relLines.push(heading("Relations"));
       for (const relation of relations) {
         const direction = relation.fromEntityId === component.componentId
-          ? `→ ${relation.toEntityType}:${relation.toEntityId}`
-          : `← ${relation.fromEntityType}:${relation.fromEntityId}`;
+          ? `${Symbols.arrow} ${relation.toEntityType}:${relation.toEntityId}`
+          : `${Symbols.arrow} ${relation.fromEntityType}:${relation.fromEntityId}`;
         const strength = relation.strength ? ` [${relation.strength}]` : "";
-        relationsOutput += `\n  ${relation.relationType}${strength} ${direction}`;
+        relLines.push(contentLine(`${BrandColors.accentCyan(relation.relationType)}${strength} ${direction}`));
         if (relation.description) {
-          relationsOutput += `\n    ${relation.description}`;
+          relLines.push(...wrapContent(relation.description));
         }
       }
-      this.builder.addPrompt(relationsOutput);
+      this.builder.addPrompt("\n\n" + relLines.join("\n"));
     } else {
-      this.builder.addPrompt("\n=== Relations ===\n\n  No relations registered.");
+      const relLines: string[] = [];
+      relLines.push(divider());
+      relLines.push("");
+      relLines.push(heading("Relations"));
+      relLines.push(contentLine(Colors.muted("No relations registered.")));
+      this.builder.addPrompt("\n\n" + relLines.join("\n"));
     }
 
     return this.builder.build();
@@ -113,7 +139,7 @@ export class ComponentShowOutputBuilder {
    */
   buildNotFoundError(identifier: string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("Component not found");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Component not found")}`);
     this.builder.addData({ message: `No component exists with ID or name: ${identifier}` });
     return this.builder.build();
   }
@@ -123,7 +149,7 @@ export class ComponentShowOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("Failed to show component");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to show component")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error,
     });

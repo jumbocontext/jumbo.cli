@@ -39,9 +39,10 @@ describe("GoalCloseOutputBuilder", () => {
       const text = output.toHumanReadable();
 
       expect(text).toContain("Goal Closed");
-      expect(text).toContain("Next goal in chain");
+      expect(text).toContain("Next Goal");
       expect(text).toContain("goal_456");
-      expect(text).toContain("[Next Phase] Implementation");
+      expect(text).toContain("➤");
+      expect(text).toContain("To start:");
       expect(text).toContain("jumbo goal start --id goal_456");
       expect(text).not.toContain("Start the next goal immediately");
     });
@@ -61,7 +62,7 @@ describe("GoalCloseOutputBuilder", () => {
 
       expect(text).toContain("Start the next goal immediately");
       expect(text).toContain("jumbo goal start --id goal_456");
-      expect(text).not.toContain("[Next Phase]");
+      expect(text).not.toContain("➤");
     });
   });
 

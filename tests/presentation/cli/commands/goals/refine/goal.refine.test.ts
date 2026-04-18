@@ -99,7 +99,7 @@ describe("goal.refine command", () => {
       // Verify output includes goal details and LLM instructions
       expect(consoleLogSpy).toHaveBeenCalled();
       const allOutput = consoleLogSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-      expect(allOutput).toContain("Goal ID:");
+      expect(allOutput).toContain("Id:");
       expect(allOutput).toContain("goal_123");
       expect(allOutput).toContain("@LLM:");
     });
@@ -126,9 +126,9 @@ describe("goal.refine command", () => {
       );
 
       const allOutput = consoleLogSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-      expect(allOutput).toContain("Scope In");
+      expect(allOutput).toContain("Scope: In");
       expect(allOutput).toContain("Login form");
-      expect(allOutput).toContain("Scope Out");
+      expect(allOutput).toContain("Scope: Out");
       expect(allOutput).toContain("Password reset");
     });
 
@@ -221,7 +221,7 @@ describe("goal.refine command", () => {
       expect(consoleLogSpy).toHaveBeenCalled();
       // Should not throw and should still display goal details
       const allOutput = consoleLogSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-      expect(allOutput).toContain("Goal ID:");
+      expect(allOutput).toContain("Id:");
     });
 
     it("should handle goal with empty scopeIn and scopeOut", async () => {
@@ -239,10 +239,10 @@ describe("goal.refine command", () => {
 
       expect(consoleLogSpy).toHaveBeenCalled();
       const allOutput = consoleLogSpy.mock.calls.map((c) => c.join(" ")).join("\n");
-      expect(allOutput).toContain("Goal ID:");
+      expect(allOutput).toContain("Id:");
       // Scope sections should not appear when empty
-      expect(allOutput).not.toContain("Scope In");
-      expect(allOutput).not.toContain("Scope Out");
+      expect(allOutput).not.toContain("Scope: In");
+      expect(allOutput).not.toContain("Scope: Out");
     });
   });
 });

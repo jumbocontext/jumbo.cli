@@ -1,5 +1,7 @@
 import { TerminalOutputBuilder } from '../../../output/TerminalOutputBuilder.js';
 import { TerminalOutput } from '../../../output/TerminalOutput.js';
+import { Colors, Symbols } from '../../../rendering/StyleConfig.js';
+import { heading, contentLine, metaField } from '../../../rendering/OutputLayout.js';
 
 /**
  * Specialized builder for goal.reset command output.
@@ -21,12 +23,16 @@ export class GoalResetOutputBuilder {
    */
   buildSuccess(goalId: string, objective: string, status: string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt(`✓ Goal reset to ${status} status`);
-    this.builder.addData({
-      goalId,
-      objective,
-      status
-    });
+    const lines: string[] = [];
+    lines.push("");
+    lines.push(heading("Goal Reset"));
+    lines.push(contentLine(`${Symbols.check} ${Colors.success(`Goal reset to ${status}`)}`));
+    lines.push("");
+    lines.push(metaField("Id", Colors.muted(goalId)));
+    lines.push(metaField("Objective", Colors.primary(objective)));
+    lines.push(metaField("Status", Colors.primary(status)));
+    this.builder.addPrompt(lines.join("\n"));
+    this.builder.addData({ goalId, objective, status });
     return this.builder.build();
   }
 
@@ -36,7 +42,7 @@ export class GoalResetOutputBuilder {
    */
   buildFailureError(error: Error | string): TerminalOutput {
     this.builder.reset();
-    this.builder.addPrompt("✗ Failed to reset goal");
+    this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to reset goal")}`);
     this.builder.addData({
       message: error instanceof Error ? error.message : error
     });
