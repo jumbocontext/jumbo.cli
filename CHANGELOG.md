@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.13.0] - 2026-04-19
+
 ### Added
 
+- **Automatic relation-discovery goals**: When an entity is created, a goal to discover its relations is now automatically registered for a future session. Prevents new entities from remaining isolated in the context graph.
 - **Documentation**: Added `work refine` command reference and advanced workflow guide for the refinery daemon.
+
+### Changed
+
+- **CLI output alignment**: Extracted shared `OutputLayout` rendering module and introduced dedicated `*ListOutputBuilder` classes for all entity list commands (audiences, audience pains, components, decisions, dependencies, guidelines, invariants, relations, sessions, values). All output builders now use consistent layout primitives from the design library.
+- **Legacy ID syntax removed**: Cleaned up residual references to the deprecated prefixed ID syntax across all goal commands.
 
 ## [2.12.0] - 2026-04-15
 
