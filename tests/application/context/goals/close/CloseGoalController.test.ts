@@ -1,5 +1,6 @@
 import { CloseGoalController } from "../../../../../src/application/context/goals/close/CloseGoalController";
 import { ICloseGoalGateway } from "../../../../../src/application/context/goals/close/ICloseGoalGateway";
+import { jest } from "@jest/globals";
 
 describe("CloseGoalController", () => {
   let controller: CloseGoalController;

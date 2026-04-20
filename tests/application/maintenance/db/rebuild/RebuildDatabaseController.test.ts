@@ -1,5 +1,6 @@
 import { RebuildDatabaseController } from "../../../../../src/application/maintenance/db/rebuild/RebuildDatabaseController";
 import { IRebuildDatabaseGateway } from "../../../../../src/application/maintenance/db/rebuild/IRebuildDatabaseGateway";
+import { jest } from "@jest/globals";
 
 describe("RebuildDatabaseController", () => {
   let gateway: jest.Mocked<IRebuildDatabaseGateway>;

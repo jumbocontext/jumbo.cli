@@ -6,6 +6,7 @@ import { IWorkerIdentityReader } from "../../../../../src/application/host/worke
 import { GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
+import { jest } from "@jest/globals";
 
 describe("LocalCloseGoalGateway", () => {
   let gateway: LocalCloseGoalGateway;

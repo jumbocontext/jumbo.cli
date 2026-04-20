@@ -1,5 +1,5 @@
-import { Section } from './Section';
-import { Annotation } from './Annotation';
+import { Section } from './Section.js';
+import { Annotation } from './Annotation.js';
 
 export interface GroupSection extends Section {
   type: 'group';

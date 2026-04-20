@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { FileLogger } from "../../../src/infrastructure/logging/FileLogger";
 import { LogLevel } from "../../../src/application/logging/ILogger";

@@ -2,6 +2,7 @@ import { LocalRemoveInvariantGateway } from "../../../../../src/application/cont
 import { RemoveInvariantCommandHandler } from "../../../../../src/application/context/invariants/remove/RemoveInvariantCommandHandler";
 import { IInvariantRemoveReader } from "../../../../../src/application/context/invariants/remove/IInvariantRemoveReader";
 import { InvariantView } from "../../../../../src/application/context/invariants/InvariantView";
+import { jest } from "@jest/globals";
 
 describe("LocalRemoveInvariantGateway", () => {
   let gateway: LocalRemoveInvariantGateway;

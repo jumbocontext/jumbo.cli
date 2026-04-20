@@ -2,6 +2,7 @@ import { GoalCodifyingStartedEventHandler } from "../../../../../src/application
 import { IGoalCodifyingStartedProjector } from "../../../../../src/application/context/goals/codify/IGoalCodifyingStartedProjector";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalCodifyingStartedEvent } from "../../../../../src/domain/goals/codify/GoalCodifyingStartedEvent";
+import { jest } from "@jest/globals";
 
 describe("GoalCodifyingStartedEventHandler", () => {
   let projector: jest.Mocked<IGoalCodifyingStartedProjector>;

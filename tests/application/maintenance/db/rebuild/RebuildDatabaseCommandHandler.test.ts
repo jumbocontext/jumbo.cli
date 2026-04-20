@@ -7,6 +7,7 @@ import { IEventStore } from "../../../../../src/application/persistence/IEventSt
 import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { BaseEvent } from "../../../../../src/domain/BaseEvent";
 import { RebuildDatabaseCommand } from "../../../../../src/application/maintenance/db/rebuild/RebuildDatabaseCommand";
+import { jest } from "@jest/globals";
 
 describe("RebuildDatabaseCommandHandler", () => {
   let eventStore: jest.Mocked<IEventStore>;

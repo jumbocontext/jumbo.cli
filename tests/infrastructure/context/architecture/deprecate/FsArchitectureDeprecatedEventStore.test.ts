@@ -1,9 +1,10 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { FsArchitectureDeprecatedEventStore } from "../../../../../src/infrastructure/context/architecture/deprecate/FsArchitectureDeprecatedEventStore.js";
 import { ILogger } from "../../../../../src/application/logging/ILogger.js";
 import { ArchitectureEventType } from "../../../../../src/domain/architecture/Constants.js";
 import { BaseEvent } from "../../../../../src/domain/BaseEvent.js";
+import { jest } from "@jest/globals";
 
 const mockLogger: ILogger = {
   error: jest.fn(),

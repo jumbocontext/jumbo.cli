@@ -3,6 +3,7 @@ import { IDecisionReversedProjector } from "../../../../../src/application/conte
 import { DecisionReversedEvent } from "../../../../../src/domain/decisions/reverse/DecisionReversedEvent.js";
 import { DecisionEventType } from "../../../../../src/domain/decisions/Constants.js";
 import { RelationDeactivationCascade } from "../../../../../src/application/context/relations/deactivate/RelationDeactivationCascade.js";
+import { jest } from "@jest/globals";
 
 describe("DecisionReversedEventHandler", () => {
   let projector: jest.Mocked<IDecisionReversedProjector>;

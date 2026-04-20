@@ -2,6 +2,7 @@ import { GuidelineUpdatedEventHandler } from "../../../../../src/application/con
 import { IGuidelineUpdatedProjector } from "../../../../../src/application/context/guidelines/update/IGuidelineUpdatedProjector.js";
 import { GuidelineUpdatedEvent } from "../../../../../src/domain/guidelines/update/GuidelineUpdatedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("GuidelineUpdatedEventHandler", () => {
   let projector: jest.Mocked<IGuidelineUpdatedProjector>;

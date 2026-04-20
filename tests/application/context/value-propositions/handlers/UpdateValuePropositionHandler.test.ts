@@ -11,6 +11,7 @@ import { ValuePropositionAddedEvent } from "../../../../../src/domain/value-prop
 import { ValuePropositionUpdatedEvent } from "../../../../../src/domain/value-propositions/update/ValuePropositionUpdatedEvent.js";
 import { ValuePropositionEventType } from "../../../../../src/domain/value-propositions/Constants.js";
 import { ValuePropositionView } from "../../../../../src/application/context/value-propositions/ValuePropositionView.js";
+import { jest } from "@jest/globals";
 
 describe("UpdateValuePropositionCommandHandler", () => {
   let handler: UpdateValuePropositionCommandHandler;

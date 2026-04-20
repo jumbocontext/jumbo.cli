@@ -6,6 +6,7 @@ import { GoalRejectedEventHandler } from "../../../../../src/application/context
 import { IGoalRejectedProjector } from "../../../../../src/application/context/goals/reject/IGoalRejectedProjector";
 import { GoalRejectedEvent } from "../../../../../src/domain/goals/EventIndex";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("GoalRejectedEventHandler", () => {
   let projector: IGoalRejectedProjector;

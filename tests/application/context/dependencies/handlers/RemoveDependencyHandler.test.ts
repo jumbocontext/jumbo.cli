@@ -11,6 +11,7 @@ import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { DependencyAddedEvent } from "../../../../../src/domain/dependencies/EventIndex";
 import { DependencyEventType, DependencyStatus } from "../../../../../src/domain/dependencies/Constants";
 import { DependencyView } from "../../../../../src/application/context/dependencies/DependencyView";
+import { jest } from "@jest/globals";
 
 describe("RemoveDependencyCommandHandler", () => {
   let eventWriter: IDependencyRemovedEventWriter;

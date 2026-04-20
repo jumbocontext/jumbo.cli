@@ -3,6 +3,7 @@ import { IRelationViewReader } from "../../../../../src/application/context/rela
 import { ReactivateRelationCommandHandler } from "../../../../../src/application/context/relations/reactivate/ReactivateRelationCommandHandler.js";
 import { EntityType } from "../../../../../src/domain/relations/Constants.js";
 import { RelationView } from "../../../../../src/application/context/relations/RelationView.js";
+import { jest } from "@jest/globals";
 
 describe("RelationReactivationCascade", () => {
   let relationViewReader: jest.Mocked<IRelationViewReader>;

@@ -4,6 +4,7 @@ import { DecisionSupersededEvent } from "../../../../../src/domain/decisions/sup
 import { DecisionEventType } from "../../../../../src/domain/decisions/Constants.js";
 import { RelationDeactivationCascade } from "../../../../../src/application/context/relations/deactivate/RelationDeactivationCascade.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("DecisionSupersededEventHandler", () => {
   let projector: jest.Mocked<IDecisionSupersededProjector>;

@@ -1,4 +1,4 @@
-import { Annotation } from '../Annotation';
+import { Annotation } from '../Annotation.js';
 
 /**
  * Strategy interface for rendering specific entity types.

@@ -3,6 +3,7 @@ import { IComponentDeprecatedProjector } from "../../../../../src/application/co
 import { ComponentDeprecatedEvent } from "../../../../../src/domain/components/deprecate/ComponentDeprecatedEvent.js";
 import { RelationDeactivationCascade } from "../../../../../src/application/context/relations/deactivate/RelationDeactivationCascade.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("ComponentDeprecatedEventHandler", () => {
   let projector: jest.Mocked<IComponentDeprecatedProjector>;

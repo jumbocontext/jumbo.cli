@@ -3,8 +3,8 @@
  * Enables true event-driven architecture with pub/sub pattern.
  */
 
-import { BaseEvent } from "../../domain/BaseEvent";
-import { IEventHandler } from "./IEventHandler";
+import { BaseEvent } from "../../domain/BaseEvent.js";
+import { IEventHandler } from "./IEventHandler.js";
 
 export interface IEventBus {
   /**

@@ -6,6 +6,7 @@ import { GoalPausedEventHandler } from "../../../../../src/application/context/g
 import { IGoalPausedProjector } from "../../../../../src/application/context/goals/pause/IGoalPausedProjector";
 import { GoalPausedEvent } from "../../../../../src/domain/goals/EventIndex";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("GoalPausedEventHandler", () => {
   let projector: IGoalPausedProjector;

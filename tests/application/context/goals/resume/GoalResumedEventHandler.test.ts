@@ -6,6 +6,7 @@ import { GoalResumedEventHandler } from "../../../../../src/application/context/
 import { IGoalResumedProjector } from "../../../../../src/application/context/goals/resume/IGoalResumedProjector";
 import { GoalResumedEvent } from "../../../../../src/domain/goals/EventIndex";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("GoalResumedEventHandler", () => {
   let projector: IGoalResumedProjector;

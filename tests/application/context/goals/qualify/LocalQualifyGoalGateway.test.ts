@@ -12,6 +12,7 @@ import { GoalView } from "../../../../../src/application/context/goals/GoalView"
 import { GoalClaimPolicy } from "../../../../../src/application/context/goals/claims/GoalClaimPolicy";
 import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
+import { jest } from "@jest/globals";
 
 describe("LocalQualifyGoalGateway", () => {
   let commandHandler: QualifyGoalCommandHandler;

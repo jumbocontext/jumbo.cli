@@ -11,6 +11,7 @@ import { ValuePropositionAddedEvent } from "../../../../../src/domain/value-prop
 import { ValuePropositionRemovedEvent } from "../../../../../src/domain/value-propositions/remove/ValuePropositionRemovedEvent.js";
 import { ValuePropositionEventType } from "../../../../../src/domain/value-propositions/Constants.js";
 import { ValuePropositionView } from "../../../../../src/application/context/value-propositions/ValuePropositionView.js";
+import { jest } from "@jest/globals";
 
 describe("RemoveValuePropositionCommandHandler", () => {
   let handler: RemoveValuePropositionCommandHandler;

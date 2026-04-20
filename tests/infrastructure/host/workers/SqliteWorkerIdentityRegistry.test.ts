@@ -5,6 +5,7 @@ import { IWorkerIdentifiedEventWriter } from "../../../../src/application/host/w
 import { InProcessEventBus } from "../../../../src/infrastructure/messaging/InProcessEventBus";
 import { SqliteWorkerIdentifiedProjector } from "../../../../src/infrastructure/host/workers/identify/SqliteWorkerIdentifiedProjector";
 import { WorkerIdentifiedEventHandler } from "../../../../src/application/host/workers/identify/WorkerIdentifiedEventHandler";
+import { jest } from "@jest/globals";
 
 class MockHostSessionKeyResolver extends HostSessionKeyResolver {
   constructor(private readonly mockKey: string) {

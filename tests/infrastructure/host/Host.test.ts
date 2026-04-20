@@ -1,10 +1,15 @@
 import Database from "better-sqlite3";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
+import { fileURLToPath } from "node:url";
 import { Host } from "../../../src/infrastructure/host/Host";
 import { MigrationRunner } from "../../../src/infrastructure/persistence/MigrationRunner";
 import { getNamespaceMigrations } from "../../../src/infrastructure/persistence/migrations.config";
+import { jest } from "@jest/globals";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe("Host", () => {
   let tempDir: string;

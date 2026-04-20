@@ -1,5 +1,6 @@
 import { LocalRefineGoalGateway } from "../../../../../src/application/context/goals/refine/LocalRefineGoalGateway";
 import { RefineGoalCommandHandler } from "../../../../../src/application/context/goals/refine/RefineGoalCommandHandler";
+import { jest } from "@jest/globals";
 
 describe("LocalRefineGoalGateway", () => {
   let gateway: LocalRefineGoalGateway;

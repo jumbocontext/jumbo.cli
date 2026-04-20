@@ -8,6 +8,7 @@ import { SubmitGoalController } from "../../../../../src/application/context/goa
 import { ISubmitGoalGateway } from "../../../../../src/application/context/goals/submit/ISubmitGoalGateway";
 import { SubmitGoalRequest } from "../../../../../src/application/context/goals/submit/SubmitGoalRequest";
 import { SubmitGoalResponse } from "../../../../../src/application/context/goals/submit/SubmitGoalResponse";
+import { jest } from "@jest/globals";
 
 describe("SubmitGoalController", () => {
   let gateway: jest.Mocked<ISubmitGoalGateway>;

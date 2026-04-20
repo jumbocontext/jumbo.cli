@@ -5,6 +5,7 @@ import { IRelationReactivatedReader } from "../../../../../src/application/conte
 import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { RelationEventType, EntityType } from "../../../../../src/domain/relations/Constants";
 import { RelationAddedEvent, RelationDeactivatedEvent } from "../../../../../src/domain/relations/EventIndex";
+import { jest } from "@jest/globals";
 
 describe("ReactivateRelationCommandHandler", () => {
   let eventWriter: IRelationReactivatedEventWriter;

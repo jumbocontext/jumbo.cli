@@ -1,8 +1,9 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { FsEventStore } from "../../../src/infrastructure/persistence/FsEventStore";
 import { BaseEvent } from "../../../src/domain/BaseEvent";
 import { ILogger } from "../../../src/application/logging/ILogger";
+import { jest } from "@jest/globals";
 
 const mockLogger: ILogger = {
   error: jest.fn(),

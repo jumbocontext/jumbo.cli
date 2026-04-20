@@ -10,6 +10,7 @@ import { AddGoalCommand } from "../../../../../src/application/context/goals/add
 import { IGoalAddedEventWriter } from "../../../../../src/application/context/goals/add/IGoalAddedEventWriter";
 import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("AddGoalCommandHandler", () => {
   let eventWriter: IGoalAddedEventWriter;

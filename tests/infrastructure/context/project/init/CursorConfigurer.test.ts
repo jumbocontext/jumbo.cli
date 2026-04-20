@@ -2,7 +2,7 @@
  * Tests for CursorConfigurer infrastructure implementation
  */
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { CursorConfigurer } from "../../../../../src/infrastructure/context/project/init/CursorConfigurer";
 import { CursorRulesContent } from "../../../../../src/domain/project/CursorRulesContent";

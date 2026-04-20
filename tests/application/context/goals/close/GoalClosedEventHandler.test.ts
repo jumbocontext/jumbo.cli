@@ -2,6 +2,7 @@ import { GoalClosedEventHandler } from "../../../../../src/application/context/g
 import { IGoalClosedProjector } from "../../../../../src/application/context/goals/close/IGoalClosedProjector";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalClosedEvent } from "../../../../../src/domain/goals/close/GoalClosedEvent";
+import { jest } from "@jest/globals";
 
 describe("GoalClosedEventHandler", () => {
   let projector: jest.Mocked<IGoalClosedProjector>;

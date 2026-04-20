@@ -6,6 +6,7 @@ import { RelationAddedEventHandler } from "../../../../../src/application/contex
 import { IRelationAddedProjector } from "../../../../../src/application/context/relations/add/IRelationAddedProjector";
 import { RelationAddedEvent } from "../../../../../src/domain/relations/add/RelationAddedEvent";
 import { RelationEventType, EntityType } from "../../../../../src/domain/relations/Constants";
+import { jest } from "@jest/globals";
 
 describe("RelationAddedEventHandler", () => {
   let projector: IRelationAddedProjector;

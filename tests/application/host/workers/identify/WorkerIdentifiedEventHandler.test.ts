@@ -1,6 +1,7 @@
 import { WorkerIdentifiedEventHandler } from "../../../../../src/application/host/workers/identify/WorkerIdentifiedEventHandler";
 import { IWorkerIdentifiedProjector } from "../../../../../src/application/host/workers/identify/IWorkerIdentifiedProjector";
 import { WorkerEventType, WorkerIdentifiedEvent } from "../../../../../src/domain/workers/identify/WorkerIdentifiedEvent";
+import { jest } from "@jest/globals";
 
 describe("WorkerIdentifiedEventHandler", () => {
   let projector: jest.Mocked<IWorkerIdentifiedProjector>;

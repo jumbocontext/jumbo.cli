@@ -1,22 +1,23 @@
-jest.mock("../../../../../../src/presentation/cli/animations/GlimmerEffect.js", () => ({
+import { jest, describe, it, expect, beforeEach } from "@jest/globals";
+
+jest.unstable_mockModule("../../../../../../src/presentation/cli/animations/GlimmerEffect.js", () => ({
   playGlimmer: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("../../../../../../src/presentation/cli/animations/BrailleSpinner.js", () => ({
+jest.unstable_mockModule("../../../../../../src/presentation/cli/animations/BrailleSpinner.js", () => ({
   startBrailleSpinner: jest.fn().mockReturnValue({ stop: jest.fn() }),
 }));
 
-import { describe, it, expect, jest, beforeEach } from "@jest/globals";
-import { DaemonDisplay } from "../../../../../../src/presentation/cli/commands/work/shared/DaemonDisplay.js";
-import { playGlimmer } from "../../../../../../src/presentation/cli/animations/GlimmerEffect.js";
-import { startBrailleSpinner } from "../../../../../../src/presentation/cli/animations/BrailleSpinner.js";
+const { DaemonDisplay } = await import("../../../../../../src/presentation/cli/commands/work/shared/DaemonDisplay.js");
+const { playGlimmer } = await import("../../../../../../src/presentation/cli/animations/GlimmerEffect.js");
+const { startBrailleSpinner } = await import("../../../../../../src/presentation/cli/animations/BrailleSpinner.js");
 
 const mockPlayGlimmer = playGlimmer as jest.MockedFunction<typeof playGlimmer>;
 const mockStartBrailleSpinner = startBrailleSpinner as jest.MockedFunction<typeof startBrailleSpinner>;
 
 describe("DaemonDisplay", () => {
   let captured: string;
-  let display: DaemonDisplay;
+  let display: InstanceType<typeof DaemonDisplay>;
 
   const displayConfig = {
     title: "Test Daemon",

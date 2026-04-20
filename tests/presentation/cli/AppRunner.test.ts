@@ -1,12 +1,14 @@
-jest.mock("../../../src/presentation/cli/program/ProgramFactory.js", () => ({
+import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+
+jest.unstable_mockModule("../../../src/presentation/cli/program/ProgramFactory.js", () => ({
   createProgram: jest.fn(),
 }));
 
-jest.mock("../../../src/presentation/cli/program/GlobalOptionsHandler.js", () => ({
+jest.unstable_mockModule("../../../src/presentation/cli/program/GlobalOptionsHandler.js", () => ({
   attachGlobalOptions: jest.fn(),
 }));
 
-jest.mock(
+jest.unstable_mockModule(
   "../../../src/presentation/cli/commands/registry/CommanderApplicator.js",
   () => ({
     CommanderApplicator: jest.fn().mockImplementation(() => ({
@@ -15,7 +17,7 @@ jest.mock(
   })
 );
 
-jest.mock(
+jest.unstable_mockModule(
   "../../../src/presentation/cli/commands/registry/generated-commands.js",
   () => ({
     commands: [
@@ -31,10 +33,9 @@ jest.mock(
   })
 );
 
-import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { IApplicationContainer } from "../../../src/application/host/IApplicationContainer.js";
-import { AppRunner } from "../../../src/presentation/cli/AppRunner.js";
-import { createProgram } from "../../../src/presentation/cli/program/ProgramFactory.js";
+const { createProgram } = await import("../../../src/presentation/cli/program/ProgramFactory.js");
+import type { IApplicationContainer } from "../../../src/application/host/IApplicationContainer.js";
+const { AppRunner } = await import("../../../src/presentation/cli/AppRunner.js");
 import { Renderer } from "../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("AppRunner", () => {

@@ -4,6 +4,7 @@ import { ComponentUndeprecatedEvent } from "../../../../../src/domain/components
 import { ComponentEventType } from "../../../../../src/domain/components/Constants.js";
 import { RelationReactivationCascade } from "../../../../../src/application/context/relations/reactivate/RelationReactivationCascade.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("ComponentUndeprecatedEventHandler", () => {
   let projector: jest.Mocked<IComponentUndeprecatedProjector>;

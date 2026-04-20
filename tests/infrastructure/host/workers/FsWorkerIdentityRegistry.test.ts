@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { FsWorkerIdentityRegistry } from "../../../../src/infrastructure/host/workers/FsWorkerIdentityRegistry";
 import { HostSessionKeyResolver, HostSessionKeyResult } from "../../../../src/infrastructure/host/session/HostSessionKeyResolver";

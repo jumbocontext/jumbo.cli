@@ -4,6 +4,7 @@ import { DecisionRestoredEvent } from "../../../../../src/domain/decisions/resto
 import { DecisionEventType } from "../../../../../src/domain/decisions/Constants.js";
 import { RelationReactivationCascade } from "../../../../../src/application/context/relations/reactivate/RelationReactivationCascade.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("DecisionRestoredEventHandler", () => {
   let projector: jest.Mocked<IDecisionRestoredProjector>;

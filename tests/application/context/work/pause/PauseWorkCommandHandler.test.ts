@@ -11,6 +11,7 @@ import { GoalPausedReasons } from "../../../../../src/domain/goals/GoalPausedRea
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { ILogger } from "../../../../../src/application/logging/ILogger";
+import { jest } from "@jest/globals";
 
 describe("PauseWorkCommandHandler", () => {
   let workerIdentityReader: IWorkerIdentityReader;

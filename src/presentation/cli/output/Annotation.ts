@@ -1,4 +1,4 @@
-import { AnnotationType } from './AnnotationType';
+import { AnnotationType } from './AnnotationType.js';
 
 export interface Annotation {
   type: AnnotationType;

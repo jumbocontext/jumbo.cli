@@ -1,5 +1,6 @@
 import { RefineGoalController } from "../../../../../src/application/context/goals/refine/RefineGoalController";
 import { IRefineGoalGateway } from "../../../../../src/application/context/goals/refine/IRefineGoalGateway";
+import { jest } from "@jest/globals";
 
 describe("RefineGoalController", () => {
   let controller: RefineGoalController;

@@ -1,6 +1,7 @@
 import { AddRelationController } from "../../../../../src/application/context/relations/add/AddRelationController";
 import { IAddRelationGateway } from "../../../../../src/application/context/relations/add/IAddRelationGateway";
 import { EntityType } from "../../../../../src/domain/relations/Constants";
+import { jest } from "@jest/globals";
 
 describe("AddRelationController", () => {
   let controller: AddRelationController;

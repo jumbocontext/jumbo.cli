@@ -2,6 +2,7 @@ import { LocalUpdateInvariantGateway } from "../../../../../src/application/cont
 import { UpdateInvariantCommandHandler } from "../../../../../src/application/context/invariants/update/UpdateInvariantCommandHandler";
 import { IInvariantUpdateReader } from "../../../../../src/application/context/invariants/update/IInvariantUpdateReader";
 import { InvariantView } from "../../../../../src/application/context/invariants/InvariantView";
+import { jest } from "@jest/globals";
 
 describe("LocalUpdateInvariantGateway", () => {
   let gateway: LocalUpdateInvariantGateway;

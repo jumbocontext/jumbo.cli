@@ -1,5 +1,6 @@
 import { RemoveRelationController } from "../../../../../src/application/context/relations/remove/RemoveRelationController";
 import { IRemoveRelationGateway } from "../../../../../src/application/context/relations/remove/IRemoveRelationGateway";
+import { jest } from "@jest/globals";
 
 describe("RemoveRelationController", () => {
   let controller: RemoveRelationController;

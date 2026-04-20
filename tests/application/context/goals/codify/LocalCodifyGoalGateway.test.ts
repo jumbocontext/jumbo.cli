@@ -6,6 +6,7 @@
 import { LocalCodifyGoalGateway } from "../../../../../src/application/context/goals/codify/LocalCodifyGoalGateway";
 import { CodifyGoalCommandHandler } from "../../../../../src/application/context/goals/codify/CodifyGoalCommandHandler";
 import { ContextualGoalView } from "../../../../../src/application/context/goals/get/ContextualGoalView";
+import { jest } from "@jest/globals";
 
 describe("LocalCodifyGoalGateway", () => {
   let gateway: LocalCodifyGoalGateway;

@@ -3,7 +3,7 @@
  * Tests the full stack: command handlers, domain logic, event persistence, and projections
  */
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { Host } from "../../src/infrastructure/host/Host.js";
 import { IApplicationContainer } from "../../src/application/host/IApplicationContainer.js";
@@ -19,6 +19,7 @@ import { PauseGoalCommand } from "../../src/application/context/goals/pause/Paus
 import { ResumeGoalCommandHandler } from "../../src/application/context/goals/resume/ResumeGoalCommandHandler.js";
 import { ResumeGoalCommand } from "../../src/application/context/goals/resume/ResumeGoalCommand.js";
 import { GoalStatus, GoalEventType } from "../../src/domain/goals/Constants.js";
+import { jest } from "@jest/globals";
 
 describe("Pause-Resume Lifecycle Integration", () => {
   jest.setTimeout(30_000);

@@ -1,10 +1,10 @@
-import { Section } from './Section';
-import { PromptSection } from './PromptSection';
-import { DataSection } from './DataSection';
-import { GroupSection } from './GroupSection';
-import { Annotation } from './Annotation';
-import { AnnotationType } from './AnnotationType';
-import { TerminalOutput } from './TerminalOutput';
+import { Section } from './Section.js';
+import { PromptSection } from './PromptSection.js';
+import { DataSection } from './DataSection.js';
+import { GroupSection } from './GroupSection.js';
+import { Annotation } from './Annotation.js';
+import { AnnotationType } from './AnnotationType.js';
+import { TerminalOutput } from './TerminalOutput.js';
 
 /**
  * Fluent builder for composing terminal output.

@@ -2,6 +2,7 @@ import { GoalApprovedEventHandler } from "../../../../../src/application/context
 import { IGoalApprovedProjector } from "../../../../../src/application/context/goals/approve/IGoalApprovedProjector";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalApprovedEvent } from "../../../../../src/domain/goals/approve/GoalApprovedEvent";
+import { jest } from "@jest/globals";
 
 describe("GoalApprovedEventHandler", () => {
   let projector: jest.Mocked<IGoalApprovedProjector>;

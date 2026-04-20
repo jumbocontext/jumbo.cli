@@ -47,9 +47,13 @@
 import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "node:url";
 import { IDbConnectionManager } from "./IDbConnectionManager.js";
 import { MigrationRunner } from "./MigrationRunner.js";
 import { getNamespaceMigrations } from "./migrations.config.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export class SqliteConnectionManager implements IDbConnectionManager {
   private connection: Database.Database;

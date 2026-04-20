@@ -2,6 +2,7 @@ import { RelationReactivatedEventHandler } from "../../../../../src/application/
 import { IRelationReactivatedProjector } from "../../../../../src/application/context/relations/reactivate/IRelationReactivatedProjector";
 import { RelationReactivatedEvent } from "../../../../../src/domain/relations/reactivate/RelationReactivatedEvent";
 import { RelationEventType } from "../../../../../src/domain/relations/Constants";
+import { jest } from "@jest/globals";
 
 describe("RelationReactivatedEventHandler", () => {
   let projector: IRelationReactivatedProjector;

@@ -2,6 +2,7 @@ import { GuidelineRemovedEventHandler } from "../../../../../src/application/con
 import { IGuidelineRemovedProjector } from "../../../../../src/application/context/guidelines/remove/IGuidelineRemovedProjector.js";
 import { GuidelineRemovedEvent } from "../../../../../src/domain/guidelines/remove/GuidelineRemovedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("GuidelineRemovedEventHandler", () => {
   let projector: jest.Mocked<IGuidelineRemovedProjector>;

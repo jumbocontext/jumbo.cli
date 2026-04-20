@@ -2,6 +2,7 @@ import { ValuePropositionRemovedEventHandler } from "../../../../../src/applicat
 import { IValuePropositionRemovedProjector } from "../../../../../src/application/context/value-propositions/remove/IValuePropositionRemovedProjector.js";
 import { ValuePropositionRemovedEvent } from "../../../../../src/domain/value-propositions/remove/ValuePropositionRemovedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("ValuePropositionRemovedEventHandler", () => {
   let projector: jest.Mocked<IValuePropositionRemovedProjector>;

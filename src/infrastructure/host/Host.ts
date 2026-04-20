@@ -21,11 +21,16 @@
  */
 
 import Database from "better-sqlite3";
+import fs from "fs-extra";
 import path from "path";
+import { fileURLToPath } from "node:url";
 import { ITelemetryClient } from "../../application/telemetry/ITelemetryClient.js";
 import { HostBuilder } from "./HostBuilder.js";
 import { MigrationRunner } from "../persistence/MigrationRunner.js";
 import { getNamespaceMigrations } from "../persistence/migrations.config.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export class Host {
   private readonly rootDir: string;
@@ -58,8 +63,7 @@ export class Host {
    */
   createBuilder(): HostBuilder {
     // Ensure root directory exists
-    const fsExtra = require("fs-extra");
-    fsExtra.ensureDirSync(this.rootDir);
+    fs.ensureDirSync(this.rootDir);
 
     // Initialize database connection
     const dbPath = path.join(this.rootDir, "jumbo.db");

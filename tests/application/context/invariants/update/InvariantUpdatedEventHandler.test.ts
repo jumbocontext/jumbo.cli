@@ -2,6 +2,7 @@ import { InvariantUpdatedEventHandler } from "../../../../../src/application/con
 import { IInvariantUpdatedProjector } from "../../../../../src/application/context/invariants/update/IInvariantUpdatedProjector.js";
 import { InvariantUpdatedEvent } from "../../../../../src/domain/invariants/update/InvariantUpdatedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("InvariantUpdatedEventHandler", () => {
   let projector: jest.Mocked<IInvariantUpdatedProjector>;

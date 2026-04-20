@@ -9,6 +9,7 @@ import { IGuidelineRemovedEventReader } from "../../../src/application/context/g
 import { IEventBus } from "../../../src/application/messaging/IEventBus";
 import { GuidelineEvent, GuidelineRemovedEvent } from "../../../src/domain/guidelines/EventIndex";
 import { GuidelineEventType } from "../../../src/domain/guidelines/Constants";
+import { jest } from "@jest/globals";
 
 describe("RemoveGuidelineCommandHandler", () => {
   let mockEventWriter: jest.Mocked<IGuidelineRemovedEventWriter>;

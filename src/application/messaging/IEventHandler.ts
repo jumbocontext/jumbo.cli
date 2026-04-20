@@ -3,7 +3,7 @@
  * Handlers can subscribe to specific event types or use wildcard '*' for all events.
  */
 
-import { BaseEvent } from "../../domain/BaseEvent";
+import { BaseEvent } from "../../domain/BaseEvent.js";
 
 export interface IEventHandler {
   /**

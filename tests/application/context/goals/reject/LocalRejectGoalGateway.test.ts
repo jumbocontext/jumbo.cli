@@ -5,6 +5,7 @@
 import { LocalRejectGoalGateway } from "../../../../../src/application/context/goals/reject/LocalRejectGoalGateway";
 import { RejectGoalCommandHandler } from "../../../../../src/application/context/goals/reject/RejectGoalCommandHandler";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("LocalRejectGoalGateway", () => {
   let commandHandler: RejectGoalCommandHandler;

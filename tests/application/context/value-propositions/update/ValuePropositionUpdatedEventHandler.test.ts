@@ -2,6 +2,7 @@ import { ValuePropositionUpdatedEventHandler } from "../../../../../src/applicat
 import { IValuePropositionUpdatedProjector } from "../../../../../src/application/context/value-propositions/update/IValuePropositionUpdatedProjector.js";
 import { ValuePropositionUpdatedEvent } from "../../../../../src/domain/value-propositions/update/ValuePropositionUpdatedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("ValuePropositionUpdatedEventHandler", () => {
   let projector: jest.Mocked<IValuePropositionUpdatedProjector>;

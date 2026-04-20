@@ -2,6 +2,7 @@ import { GoalSubmittedEventHandler } from "../../../../../src/application/contex
 import { IGoalSubmittedProjector } from "../../../../../src/application/context/goals/submit/IGoalSubmittedProjector";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalSubmittedEvent } from "../../../../../src/domain/goals/submit/GoalSubmittedEvent";
+import { jest } from "@jest/globals";
 
 describe("GoalSubmittedEventHandler", () => {
   let projector: jest.Mocked<IGoalSubmittedProjector>;

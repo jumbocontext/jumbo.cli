@@ -1,10 +1,11 @@
-jest.mock("node:child_process", () => ({
+import { jest, describe, it, expect, beforeEach } from "@jest/globals";
+
+jest.unstable_mockModule("node:child_process", () => ({
   execSync: jest.fn(),
 }));
 
-import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import { execSync } from "node:child_process";
-import { queryGoalStatus } from "../../../../../../src/presentation/cli/commands/work/shared/GoalStatusQuery.js";
+const { execSync } = await import("node:child_process");
+const { queryGoalStatus } = await import("../../../../../../src/presentation/cli/commands/work/shared/GoalStatusQuery.js");
 
 const mockExecSync = execSync as jest.MockedFunction<typeof execSync>;
 

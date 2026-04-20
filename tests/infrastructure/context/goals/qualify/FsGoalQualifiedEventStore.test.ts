@@ -5,7 +5,7 @@
  * properly implements IGoalQualifiedEventWriter and IGoalQualifiedEventReader.
  */
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { FsGoalQualifiedEventStore } from "../../../../../src/infrastructure/context/goals/qualify/FsGoalQualifiedEventStore";
 import { IGoalQualifiedEventReader } from "../../../../../src/application/context/goals/qualify/IGoalQualifiedEventReader";

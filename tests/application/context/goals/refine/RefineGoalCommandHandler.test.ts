@@ -11,6 +11,7 @@ import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/goals/get/GoalContextQueryHandler";
+import { jest } from "@jest/globals";
 
 describe("RefineGoalCommandHandler", () => {
   let eventWriter: IGoalRefineEventWriter;

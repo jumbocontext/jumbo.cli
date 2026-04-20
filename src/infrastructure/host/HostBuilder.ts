@@ -36,7 +36,11 @@ import { SystemClock } from "../time-and-date/SystemClock.js";
 import { FileLogger } from "../logging/FileLogger.js";
 import { LogLevel } from "../../application/logging/ILogger.js";
 import * as path from "path";
+import { fileURLToPath } from "node:url";
 import { LocalDatabaseRebuildService } from "../local/LocalDatabaseRebuildService.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { ProjectionBusFactory } from "../messaging/ProjectionBusFactory.js";
 import { MigrationRunner } from "../persistence/MigrationRunner.js";
 import { getNamespaceMigrations } from "../persistence/migrations.config.js";

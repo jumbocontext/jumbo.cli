@@ -11,6 +11,7 @@ import { AudiencePainAddedEvent } from "../../../../../src/domain/audience-pains
 import { AudiencePainUpdatedEvent } from "../../../../../src/domain/audience-pains/update/AudiencePainUpdatedEvent.js";
 import { AudiencePainEventType } from "../../../../../src/domain/audience-pains/Constants.js";
 import { AudiencePainView } from "../../../../../src/application/context/audience-pains/AudiencePainView.js";
+import { jest } from "@jest/globals";
 
 describe("UpdateAudiencePainCommandHandler", () => {
   let handler: UpdateAudiencePainCommandHandler;

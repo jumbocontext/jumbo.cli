@@ -14,6 +14,7 @@ import { ProjectErrorMessages, ProjectEventType } from "../../../../../src/domai
 import { ProjectInitializedEvent } from "../../../../../src/domain/project/init/ProjectInitializedEvent.js";
 import { ProjectView } from "../../../../../src/application/context/project/ProjectView.js";
 import { AppendResult } from "../../../../../src/application/persistence/IEventStore.js";
+import { jest } from "@jest/globals";
 
 describe("InitializeProjectCommandHandler", () => {
   let handler: InitializeProjectCommandHandler;

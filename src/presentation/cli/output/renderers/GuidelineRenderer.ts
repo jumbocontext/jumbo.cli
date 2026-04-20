@@ -1,5 +1,5 @@
-import { EntityRenderer } from './EntityRenderer';
-import { Annotation } from '../Annotation';
+import { EntityRenderer } from './EntityRenderer.js';
+import { Annotation } from '../Annotation.js';
 
 /**
  * GuidelineContextView from ContextualGoalView

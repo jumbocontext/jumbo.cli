@@ -4,8 +4,8 @@
  * Provides reusable interactive prompt utilities for CLI commands.
  */
 
-export {
-  InteractivePromptService,
+export { InteractivePromptService } from "./InteractivePromptService.js";
+export type {
   EntitySelectionConfig,
   EntitySelectionResult,
   TextInputConfig,

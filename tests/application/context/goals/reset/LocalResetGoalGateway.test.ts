@@ -3,6 +3,7 @@ import { ResetGoalCommandHandler } from "../../../../../src/application/context/
 import { IGoalResetReader } from "../../../../../src/application/context/goals/reset/IGoalResetReader";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("LocalResetGoalGateway", () => {
   let gateway: LocalResetGoalGateway;

@@ -2,6 +2,7 @@ import { AudienceRemovedEventHandler } from "../../../../../src/application/cont
 import { IAudienceRemovedProjector } from "../../../../../src/application/context/audiences/remove/IAudienceRemovedProjector.js";
 import { AudienceRemovedEvent } from "../../../../../src/domain/audiences/remove/AudienceRemovedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("AudienceRemovedEventHandler", () => {
   let projector: jest.Mocked<IAudienceRemovedProjector>;

@@ -9,9 +9,9 @@
  * - Error isolation (handler failures logged but don't block other handlers)
  */
 
-import { IEventBus } from "../../application/messaging/IEventBus";
-import { IEventHandler } from "../../application/messaging/IEventHandler";
-import { BaseEvent } from "../../domain/BaseEvent";
+import { IEventBus } from "../../application/messaging/IEventBus.js";
+import { IEventHandler } from "../../application/messaging/IEventHandler.js";
+import { BaseEvent } from "../../domain/BaseEvent.js";
 
 export class InProcessEventBus implements IEventBus {
   private handlers = new Map<string, IEventHandler[]>();

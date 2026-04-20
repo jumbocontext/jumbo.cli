@@ -1,16 +1,17 @@
-jest.mock("inquirer", () => ({
-  prompt: jest.fn(),
+import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+
+jest.unstable_mockModule("inquirer", () => ({
+  default: { prompt: jest.fn() },
 }));
 
-jest.mock("../../../../../../src/presentation/cli/banner/AnimatedBanner.js", () => ({
+jest.unstable_mockModule("../../../../../../src/presentation/cli/banner/AnimatedBanner.js", () => ({
   getBannerLines: jest.fn(() => ["Jumbo"]),
   showAnimatedBanner: jest.fn().mockResolvedValue(undefined),
 }));
 
-import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
-import inquirer from "inquirer";
-import { projectInit } from "../../../../../../src/presentation/cli/commands/project/init/project.init.js";
-import { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
+const { default: inquirer } = await import("inquirer");
+const { projectInit } = await import("../../../../../../src/presentation/cli/commands/project/init/project.init.js");
+import type { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("project.init command", () => {

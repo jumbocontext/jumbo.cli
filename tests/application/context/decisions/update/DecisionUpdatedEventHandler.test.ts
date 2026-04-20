@@ -2,6 +2,7 @@ import { DecisionUpdatedEventHandler } from "../../../../../src/application/cont
 import { IDecisionUpdatedProjector } from "../../../../../src/application/context/decisions/update/IDecisionUpdatedProjector.js";
 import { DecisionUpdatedEvent } from "../../../../../src/domain/decisions/update/DecisionUpdatedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("DecisionUpdatedEventHandler", () => {
   let projector: jest.Mocked<IDecisionUpdatedProjector>;

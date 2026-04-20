@@ -1,5 +1,6 @@
 import { RemoveGuidelineController } from "../../../../../src/application/context/guidelines/remove/RemoveGuidelineController";
 import { IRemoveGuidelineGateway } from "../../../../../src/application/context/guidelines/remove/IRemoveGuidelineGateway";
+import { jest } from "@jest/globals";
 
 describe("RemoveGuidelineController", () => {
   let controller: RemoveGuidelineController;

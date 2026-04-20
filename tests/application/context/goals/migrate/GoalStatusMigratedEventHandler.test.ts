@@ -3,6 +3,7 @@ import { IGoalStatusMigratedProjector } from "../../../../../src/application/con
 import { GoalEventType } from "../../../../../src/domain/goals/Constants";
 import { GoalStatusMigratedEvent } from "../../../../../src/domain/goals/migrate/GoalStatusMigratedEvent";
 import { GoalStatusType } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("GoalStatusMigratedEventHandler", () => {
   let projector: jest.Mocked<IGoalStatusMigratedProjector>;

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { ActivityMirrorAssembler } from "../../../../../src/application/context/sessions/start/ActivityMirrorAssembler.js";
 import { IEventStore } from "../../../../../src/application/persistence/IEventStore.js";
 import { BaseEvent } from "../../../../../src/domain/BaseEvent.js";

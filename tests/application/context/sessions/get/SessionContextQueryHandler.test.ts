@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { SessionContextQueryHandler } from "../../../../../src/application/context/sessions/get/SessionContextQueryHandler.js";
 import { ISessionViewReader } from "../../../../../src/application/context/sessions/get/ISessionViewReader.js";
 import { IGoalStatusReader } from "../../../../../src/application/context/goals/IGoalStatusReader.js";

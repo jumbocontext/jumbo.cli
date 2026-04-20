@@ -6,6 +6,7 @@
 import { InProcessEventBus } from "../../../../src/infrastructure/messaging/InProcessEventBus";
 import { IEventHandler } from "../../../../src/application/messaging/IEventHandler";
 import { BaseEvent } from "../../../../src/domain/BaseEvent";
+import { jest } from "@jest/globals";
 
 class MockHandler implements IEventHandler {
   public calls: BaseEvent[] = [];

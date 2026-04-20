@@ -1,5 +1,6 @@
 import { ResetGoalController } from "../../../../../src/application/context/goals/reset/ResetGoalController";
 import { IResetGoalGateway } from "../../../../../src/application/context/goals/reset/IResetGoalGateway";
+import { jest } from "@jest/globals";
 
 describe("ResetGoalController", () => {
   let controller: ResetGoalController;

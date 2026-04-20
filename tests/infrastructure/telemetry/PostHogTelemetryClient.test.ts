@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { Host } from "../../../src/infrastructure/host/Host.js";

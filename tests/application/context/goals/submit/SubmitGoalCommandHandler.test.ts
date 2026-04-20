@@ -16,6 +16,7 @@ import { IClock } from "../../../../../src/application/time-and-date/IClock";
 import { IWorkerIdentityReader } from "../../../../../src/application/host/workers/IWorkerIdentityReader";
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/goals/get/GoalContextQueryHandler";
+import { jest } from "@jest/globals";
 
 describe("SubmitGoalCommandHandler", () => {
   let eventWriter: IGoalSubmittedEventWriter;

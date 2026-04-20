@@ -7,6 +7,7 @@ import { CodifyGoalController } from "../../../../../src/application/context/goa
 import { ICodifyGoalGateway } from "../../../../../src/application/context/goals/codify/ICodifyGoalGateway";
 import { CodifyGoalRequest } from "../../../../../src/application/context/goals/codify/CodifyGoalRequest";
 import { CodifyGoalResponse } from "../../../../../src/application/context/goals/codify/CodifyGoalResponse";
+import { jest } from "@jest/globals";
 
 describe("CodifyGoalController", () => {
   let controller: CodifyGoalController;

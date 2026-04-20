@@ -2,7 +2,7 @@
  * Tests for AgentFileProtocol infrastructure implementation
  */
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { AgentFileProtocol } from "../../../../../src/infrastructure/context/project/init/AgentFileProtocol";
 import { JumboMdContent } from "../../../../../src/domain/project/JumboMdContent";

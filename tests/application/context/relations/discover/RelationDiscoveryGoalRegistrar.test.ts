@@ -4,6 +4,7 @@ import { AddGoalCommandHandler } from "../../../../../src/application/context/go
 import { ILogger } from "../../../../../src/application/logging/ILogger.js";
 import { EntityType } from "../../../../../src/domain/relations/Constants.js";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
+import { jest } from "@jest/globals";
 
 describe("RelationDiscoveryGoalRegistrar", () => {
   let goalTitleReader: jest.Mocked<IGoalTitleReader>;

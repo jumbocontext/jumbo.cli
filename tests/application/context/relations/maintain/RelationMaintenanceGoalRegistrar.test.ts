@@ -3,6 +3,7 @@ import { IRelationViewReader } from "../../../../../src/application/context/rela
 import { AddGoalCommandHandler } from "../../../../../src/application/context/goals/add/AddGoalCommandHandler.js";
 import { EntityType } from "../../../../../src/domain/relations/Constants.js";
 import { RelationView } from "../../../../../src/application/context/relations/RelationView.js";
+import { jest } from "@jest/globals";
 
 describe("RelationMaintenanceGoalRegistrar", () => {
   let relationViewReader: jest.Mocked<IRelationViewReader>;

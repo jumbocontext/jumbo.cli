@@ -1,7 +1,7 @@
-import { Section } from '../Section';
-import { TerminalOutput } from '../TerminalOutput';
-import { HookOutput } from '../HookOutput';
-import { EntityRendererRegistry } from './EntityRendererRegistry';
+import { Section } from '../Section.js';
+import { TerminalOutput } from '../TerminalOutput.js';
+import { HookOutput } from '../HookOutput.js';
+import { EntityRendererRegistry } from './EntityRendererRegistry.js';
 
 /**
  * Renders TerminalOutput as strict JSON for hook integration.

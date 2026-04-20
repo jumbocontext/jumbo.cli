@@ -7,6 +7,7 @@ import { IGoalClaimStore } from "../../../../../src/application/context/goals/cl
 import { GoalClaim } from "../../../../../src/application/context/goals/claims/GoalClaim";
 import { IClock } from "../../../../../src/application/time-and-date/IClock";
 import { createWorkerId, WorkerId } from "../../../../../src/application/host/workers/WorkerId";
+import { jest } from "@jest/globals";
 
 describe("GoalClaimPolicy", () => {
   let claimStore: IGoalClaimStore;

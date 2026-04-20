@@ -1,5 +1,6 @@
 import { RemoveInvariantController } from "../../../../../src/application/context/invariants/remove/RemoveInvariantController";
 import { IRemoveInvariantGateway } from "../../../../../src/application/context/invariants/remove/IRemoveInvariantGateway";
+import { jest } from "@jest/globals";
 
 describe("RemoveInvariantController", () => {
   let controller: RemoveInvariantController;

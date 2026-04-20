@@ -1,5 +1,5 @@
-import { Section } from './Section';
-import { HookOutput } from './HookOutput';
+import { Section } from './Section.js';
+import { HookOutput } from './HookOutput.js';
 
 /**
  * Format-agnostic terminal output structure.

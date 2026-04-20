@@ -1,14 +1,15 @@
-jest.mock("crypto", () => ({
+import { jest, describe, it, expect, beforeEach } from "@jest/globals";
+
+jest.unstable_mockModule("crypto", () => ({
   randomUUID: jest.fn(() => "generated-uuid"),
 }));
 
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { UpdateTelemetryConsentCommandHandler } from "../../../../../src/application/context/telemetry/update/UpdateTelemetryConsentCommandHandler.js";
-import { ISettingsReader } from "../../../../../src/application/settings/ISettingsReader.js";
+const { UpdateTelemetryConsentCommandHandler } = await import("../../../../../src/application/context/telemetry/update/UpdateTelemetryConsentCommandHandler.js");
+import type { ISettingsReader } from "../../../../../src/application/settings/ISettingsReader.js";
 
 describe("UpdateTelemetryConsentCommandHandler", () => {
   let settingsReader: jest.Mocked<ISettingsReader>;
-  let handler: UpdateTelemetryConsentCommandHandler;
+  let handler: InstanceType<typeof UpdateTelemetryConsentCommandHandler>;
 
   beforeEach(() => {
     settingsReader = {

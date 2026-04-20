@@ -10,6 +10,7 @@ import { IGoalReader } from "../../../../../src/application/context/goals/pause/
 import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
+import { jest } from "@jest/globals";
 
 describe("PauseGoalCommandHandler", () => {
   let eventWriter: IGoalPausedEventWriter;

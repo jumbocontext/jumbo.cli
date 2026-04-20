@@ -13,6 +13,7 @@ import { createWorkerId } from "../../../../../src/application/host/workers/Work
 import { ILogger } from "../../../../../src/application/logging/ILogger";
 import { ContextualSessionView } from "../../../../../src/application/context/sessions/get/ContextualSessionView";
 import { ContextualGoalView } from "../../../../../src/application/context/goals/get/ContextualGoalView";
+import { jest } from "@jest/globals";
 
 describe("LocalResumeWorkGateway", () => {
   let workerIdentityReader: IWorkerIdentityReader;

@@ -2,7 +2,7 @@
  * Tests for FsGitignoreProtocol infrastructure implementation
  */
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { FsGitignoreProtocol } from "../../../../../src/infrastructure/context/project/init/FsGitignoreProtocol";
 

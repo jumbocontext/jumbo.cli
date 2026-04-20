@@ -1,4 +1,4 @@
-import { BaseEvent } from "../../domain/BaseEvent";
+import { BaseEvent } from "../../domain/BaseEvent.js";
 
 export interface IEventStore {
   append(event: BaseEvent & Record<string, any>): Promise<AppendResult>;

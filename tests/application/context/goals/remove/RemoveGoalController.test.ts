@@ -1,5 +1,6 @@
 import { RemoveGoalController } from "../../../../../src/application/context/goals/remove/RemoveGoalController";
 import { IRemoveGoalGateway } from "../../../../../src/application/context/goals/remove/IRemoveGoalGateway";
+import { jest } from "@jest/globals";
 
 describe("RemoveGoalController", () => {
   let controller: RemoveGoalController;

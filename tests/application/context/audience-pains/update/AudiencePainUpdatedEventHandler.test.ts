@@ -2,6 +2,7 @@ import { AudiencePainUpdatedEventHandler } from "../../../../../src/application/
 import { IAudiencePainUpdatedProjector } from "../../../../../src/application/context/audience-pains/update/IAudiencePainUpdatedProjector.js";
 import { AudiencePainUpdatedEvent } from "../../../../../src/domain/audience-pains/update/AudiencePainUpdatedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("AudiencePainUpdatedEventHandler", () => {
   let projector: jest.Mocked<IAudiencePainUpdatedProjector>;

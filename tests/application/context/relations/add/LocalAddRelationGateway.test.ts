@@ -1,6 +1,7 @@
 import { LocalAddRelationGateway } from "../../../../../src/application/context/relations/add/LocalAddRelationGateway";
 import { AddRelationCommandHandler } from "../../../../../src/application/context/relations/add/AddRelationCommandHandler";
 import { EntityType } from "../../../../../src/domain/relations/Constants";
+import { jest } from "@jest/globals";
 
 describe("LocalAddRelationGateway", () => {
   let gateway: LocalAddRelationGateway;

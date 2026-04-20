@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import Database from "better-sqlite3";
 import { ILogger } from "../../../src/application/logging/ILogger";
@@ -15,6 +15,7 @@ import { SqliteGoalClaimStore } from "../../../src/infrastructure/context/goals/
 import { GoalClaimPolicy } from "../../../src/application/context/goals/claims/GoalClaimPolicy";
 import { CommitGoalCommandHandler } from "../../../src/application/context/goals/commit/CommitGoalCommandHandler";
 import { SqliteGoalCommittedProjector } from "../../../src/infrastructure/context/goals/commit/SqliteGoalCommittedProjector";
+import { jest } from "@jest/globals";
 
 class MockHostSessionKeyResolver extends HostSessionKeyResolver {
   constructor(private readonly sessionKey: string) {

@@ -6,6 +6,7 @@ import { GoalCommittedEventHandler } from "../../../../../src/application/contex
 import { IGoalCommittedProjector } from "../../../../../src/application/context/goals/commit/IGoalCommittedProjector";
 import { GoalCommittedEvent } from "../../../../../src/domain/goals/EventIndex";
 import { GoalEventType, GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("GoalCommittedEventHandler", () => {
   let projector: IGoalCommittedProjector;

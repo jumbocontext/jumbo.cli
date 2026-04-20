@@ -1,22 +1,23 @@
-jest.mock("../../../../../../src/presentation/cli/animations/GlimmerEffect.js", () => ({
+import { jest, describe, it, expect, beforeEach } from "@jest/globals";
+
+jest.unstable_mockModule("../../../../../../src/presentation/cli/animations/GlimmerEffect.js", () => ({
   playGlimmer: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("../../../../../../src/presentation/cli/animations/BrailleSpinner.js", () => ({
+jest.unstable_mockModule("../../../../../../src/presentation/cli/animations/BrailleSpinner.js", () => ({
   startBrailleSpinner: jest.fn().mockReturnValue({ stop: jest.fn() }),
 }));
 
-import { describe, it, expect, jest, beforeEach } from "@jest/globals";
-import { ReviewerDisplay } from "../../../../../../src/presentation/cli/commands/work/review/ReviewerDisplay.js";
-import { playGlimmer } from "../../../../../../src/presentation/cli/animations/GlimmerEffect.js";
-import { startBrailleSpinner } from "../../../../../../src/presentation/cli/animations/BrailleSpinner.js";
+const { ReviewerDisplay } = await import("../../../../../../src/presentation/cli/commands/work/review/ReviewerDisplay.js");
+const { playGlimmer } = await import("../../../../../../src/presentation/cli/animations/GlimmerEffect.js");
+const { startBrailleSpinner } = await import("../../../../../../src/presentation/cli/animations/BrailleSpinner.js");
 
 const mockPlayGlimmer = playGlimmer as jest.MockedFunction<typeof playGlimmer>;
 const mockStartBrailleSpinner = startBrailleSpinner as jest.MockedFunction<typeof startBrailleSpinner>;
 
 describe("ReviewerDisplay", () => {
   let captured: string;
-  let display: ReviewerDisplay;
+  let display: InstanceType<typeof ReviewerDisplay>;
 
   const runtimeConfig = {
     agentId: "claude",

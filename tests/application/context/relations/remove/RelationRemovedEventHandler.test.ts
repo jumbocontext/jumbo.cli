@@ -6,6 +6,7 @@ import { RelationRemovedEventHandler } from "../../../../../src/application/cont
 import { IRelationRemovedProjector } from "../../../../../src/application/context/relations/remove/IRelationRemovedProjector";
 import { RelationRemovedEvent } from "../../../../../src/domain/relations/remove/RelationRemovedEvent";
 import { RelationEventType, EntityType } from "../../../../../src/domain/relations/Constants";
+import { jest } from "@jest/globals";
 
 describe("RelationRemovedEventHandler", () => {
   let projector: IRelationRemovedProjector;

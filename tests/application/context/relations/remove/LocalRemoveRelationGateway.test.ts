@@ -2,6 +2,7 @@ import { LocalRemoveRelationGateway } from "../../../../../src/application/conte
 import { RemoveRelationCommandHandler } from "../../../../../src/application/context/relations/remove/RemoveRelationCommandHandler";
 import { IRelationRemovedReader } from "../../../../../src/application/context/relations/remove/IRelationRemovedReader";
 import { EntityType } from "../../../../../src/domain/relations/Constants";
+import { jest } from "@jest/globals";
 
 describe("LocalRemoveRelationGateway", () => {
   let gateway: LocalRemoveRelationGateway;

@@ -3,15 +3,17 @@
  */
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
-import inquirer from "inquirer";
-import {
-  InteractivePromptService,
-  EntitySelectionConfig,
-} from "../../../../src/presentation/cli/prompts/InteractivePromptService.js";
 
 // Mock inquirer
-jest.mock("inquirer");
+jest.unstable_mockModule("inquirer", () => ({
+  default: { prompt: jest.fn() },
+}));
+
+const { default: inquirer } = await import("inquirer");
 const mockedInquirer = inquirer as jest.Mocked<typeof inquirer>;
+
+const { InteractivePromptService } = await import("../../../../src/presentation/cli/prompts/InteractivePromptService.js");
+import type { EntitySelectionConfig } from "../../../../src/presentation/cli/prompts/InteractivePromptService.js";
 
 // Sample entity type for testing
 interface TestEntity {

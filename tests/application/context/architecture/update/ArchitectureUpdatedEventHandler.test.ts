@@ -2,6 +2,7 @@ import { ArchitectureUpdatedEventHandler } from "../../../../../src/application/
 import { IArchitectureUpdatedProjector } from "../../../../../src/application/context/architecture/update/IArchitectureUpdatedProjector.js";
 import { ArchitectureUpdatedEvent } from "../../../../../src/domain/architecture/update/ArchitectureUpdatedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("ArchitectureUpdatedEventHandler", () => {
   let projector: jest.Mocked<IArchitectureUpdatedProjector>;

@@ -3,6 +3,7 @@ import { IComponentRemovedProjector } from "../../../../../src/application/conte
 import { ComponentRemovedEvent } from "../../../../../src/domain/components/remove/ComponentRemovedEvent.js";
 import { RelationDeactivationCascade } from "../../../../../src/application/context/relations/deactivate/RelationDeactivationCascade.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("ComponentRemovedEventHandler", () => {
   let projector: jest.Mocked<IComponentRemovedProjector>;

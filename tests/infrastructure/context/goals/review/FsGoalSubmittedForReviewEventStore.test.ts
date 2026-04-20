@@ -5,7 +5,7 @@
  * properly implements IGoalSubmittedForReviewEventWriter and IGoalSubmittedForReviewEventReader.
  */
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { FsGoalSubmittedForReviewEventStore } from "../../../../../src/infrastructure/context/goals/review/FsGoalSubmittedForReviewEventStore";
 import { IGoalSubmittedForReviewEventReader } from "../../../../../src/application/context/goals/review/IGoalSubmittedForReviewEventReader";

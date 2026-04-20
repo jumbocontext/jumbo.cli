@@ -11,6 +11,7 @@ import { ProjectEvent, ProjectUpdatedEvent } from "../../../../../src/domain/pro
 import { ProjectEventType } from "../../../../../src/domain/project/Constants";
 import { ProjectView } from "../../../../../src/application/context/project/ProjectView";
 import { AppendResult } from "../../../../../src/application/persistence/IEventStore";
+import { jest } from "@jest/globals";
 
 describe("UpdateProjectCommandHandler", () => {
   let mockEventWriter: jest.Mocked<IProjectUpdatedEventWriter>;

@@ -13,6 +13,7 @@
 
 import fs from "fs-extra";
 import path from "path";
+import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
 import { ILogger } from "../../application/logging/ILogger.js";
 import {
@@ -23,6 +24,9 @@ import { IEventStore } from "../../application/persistence/IEventStore.js";
 import { IEventBus } from "../../application/messaging/IEventBus.js";
 import { MigrationRunner } from "../persistence/MigrationRunner.js";
 import { getNamespaceMigrations } from "../persistence/migrations.config.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
   private readonly tag = "[DatabaseRebuild]";

@@ -6,6 +6,7 @@ import { ResumeWorkController } from "../../../../../src/application/context/wor
 import { IResumeWorkGateway } from "../../../../../src/application/context/work/resume/IResumeWorkGateway";
 import { ResumeWorkResponse } from "../../../../../src/application/context/work/resume/ResumeWorkResponse";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("ResumeWorkController", () => {
   let gateway: jest.Mocked<IResumeWorkGateway>;

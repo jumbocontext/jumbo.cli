@@ -25,6 +25,7 @@
     "type": "git",
     "url": "git+https://github.com/jumbocontext/jumbo.cli.git"
   },
+  "type": "module",
   "license": "AGPL-3.0",
   "author": "Josh Wheelock <hello@jumbocontext.com> (https://jumbocontext.com)",
   "main": "dist/index.js",
@@ -42,7 +43,7 @@
     "inject:telemetry": "node build/inject-telemetry-config.mjs",
     "copy:migrations": "node build/copy-migrations.mjs",
     "dev": "tsc --watch",
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.cjs",
     "lint": "eslint --config eslint.config.mjs \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "prepublishOnly": "npm run build",

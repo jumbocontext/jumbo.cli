@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { Host } from "../../src/infrastructure/host/Host.js";
 import { IApplicationContainer } from "../../src/application/host/IApplicationContainer.js";

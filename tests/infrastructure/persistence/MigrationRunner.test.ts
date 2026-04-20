@@ -1,8 +1,9 @@
 import Database from "better-sqlite3";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { MigrationRunner } from "../../../src/infrastructure/persistence/MigrationRunner";
+import { jest } from "@jest/globals";
 
 describe("MigrationRunner", () => {
   let tempDir: string;

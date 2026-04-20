@@ -2,6 +2,7 @@ import { DependencyRemovedEventHandler } from "../../../../../src/application/co
 import { IDependencyRemovedProjector } from "../../../../../src/application/context/dependencies/remove/IDependencyRemovedProjector.js";
 import { DependencyRemovedEvent } from "../../../../../src/domain/dependencies/remove/DependencyRemovedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("DependencyRemovedEventHandler", () => {
   let projector: jest.Mocked<IDependencyRemovedProjector>;

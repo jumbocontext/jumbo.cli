@@ -17,6 +17,7 @@ import { IWorkerIdentityReader } from "../../../../../src/application/host/worke
 import { createWorkerId } from "../../../../../src/application/host/workers/WorkerId";
 import { ISettingsReader } from "../../../../../src/application/settings/ISettingsReader";
 import { GoalContextQueryHandler } from "../../../../../src/application/context/goals/get/GoalContextQueryHandler";
+import { jest } from "@jest/globals";
 
 describe("SubmitGoalForReviewCommandHandler", () => {
   let eventWriter: IGoalSubmittedForReviewEventWriter;

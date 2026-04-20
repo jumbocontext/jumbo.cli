@@ -2,6 +2,7 @@ import { DependencyUpdatedEventHandler } from "../../../../../src/application/co
 import { IDependencyUpdatedProjector } from "../../../../../src/application/context/dependencies/update/IDependencyUpdatedProjector.js";
 import { DependencyUpdatedEvent } from "../../../../../src/domain/dependencies/update/DependencyUpdatedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("DependencyUpdatedEventHandler", () => {
   let projector: jest.Mocked<IDependencyUpdatedProjector>;

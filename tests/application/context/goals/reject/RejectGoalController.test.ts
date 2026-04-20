@@ -5,6 +5,7 @@
 import { RejectGoalController } from "../../../../../src/application/context/goals/reject/RejectGoalController";
 import { IRejectGoalGateway } from "../../../../../src/application/context/goals/reject/IRejectGoalGateway";
 import { RejectGoalResponse } from "../../../../../src/application/context/goals/reject/RejectGoalResponse";
+import { jest } from "@jest/globals";
 
 describe("RejectGoalController", () => {
   let gateway: IRejectGoalGateway;

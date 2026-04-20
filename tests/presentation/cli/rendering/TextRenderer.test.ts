@@ -2,7 +2,7 @@
  * Tests for TextRenderer divider rendering
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals";
 import { TextRenderer } from "../../../../src/presentation/cli/rendering/formats/TextRenderer.js";
 import { Layout, stripAnsi } from "../../../../src/presentation/cli/rendering/StyleConfig.js";
 

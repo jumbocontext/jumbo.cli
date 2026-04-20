@@ -14,6 +14,7 @@
  */
 
 import path from "path";
+import { fileURLToPath } from "node:url";
 import fs from "fs-extra";
 import { AgentId, AvailableAgent } from "../../../../application/context/project/init/AgentSelection.js";
 import { IAgentFileProtocol } from "../../../../application/context/project/init/IAgentFileProtocol.js";
@@ -27,6 +28,9 @@ import { CopilotConfigurer } from "./CopilotConfigurer.js";
 import { VibeConfigurer } from "./VibeConfigurer.js";
 import { CodexConfigurer } from "./CodexConfigurer.js";
 import { CursorConfigurer } from "./CursorConfigurer.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const DEFAULT_TEMPLATE_SKILLS_ROOT = path.resolve(
   __dirname,

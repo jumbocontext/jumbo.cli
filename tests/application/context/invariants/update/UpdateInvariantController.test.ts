@@ -1,5 +1,6 @@
 import { UpdateInvariantController } from "../../../../../src/application/context/invariants/update/UpdateInvariantController";
 import { IUpdateInvariantGateway } from "../../../../../src/application/context/invariants/update/IUpdateInvariantGateway";
+import { jest } from "@jest/globals";
 
 describe("UpdateInvariantController", () => {
   let controller: UpdateInvariantController;

@@ -9,6 +9,7 @@ import { IInvariantUpdatedEventReader } from "../../../../../src/application/con
 import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
 import { InvariantEvent, InvariantUpdatedEvent } from "../../../../../src/domain/invariants/EventIndex";
 import { InvariantEventType } from "../../../../../src/domain/invariants/Constants";
+import { jest } from "@jest/globals";
 
 describe("UpdateInvariantCommandHandler", () => {
   let mockEventWriter: jest.Mocked<IInvariantUpdatedEventWriter>;

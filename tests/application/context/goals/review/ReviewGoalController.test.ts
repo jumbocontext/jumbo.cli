@@ -9,6 +9,7 @@ import { IReviewGoalGateway } from "../../../../../src/application/context/goals
 import { ReviewGoalRequest } from "../../../../../src/application/context/goals/review/ReviewGoalRequest";
 import { ReviewGoalResponse } from "../../../../../src/application/context/goals/review/ReviewGoalResponse";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("ReviewGoalController", () => {
   let gateway: jest.Mocked<IReviewGoalGateway>;

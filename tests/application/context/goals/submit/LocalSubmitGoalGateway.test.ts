@@ -1,5 +1,6 @@
 import { LocalSubmitGoalGateway } from "../../../../../src/application/context/goals/submit/LocalSubmitGoalGateway";
 import { SubmitGoalCommandHandler } from "../../../../../src/application/context/goals/submit/SubmitGoalCommandHandler";
+import { jest } from "@jest/globals";
 
 describe("LocalSubmitGoalGateway", () => {
   let gateway: LocalSubmitGoalGateway;

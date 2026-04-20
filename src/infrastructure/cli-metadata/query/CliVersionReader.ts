@@ -5,10 +5,14 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { fileURLToPath } from "node:url";
 import {
   CliVersion,
   ICliVersionReader,
 } from "../../../application/cli-metadata/query/ICliMetadataReader.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export class CliVersionReader implements ICliVersionReader {
   private cachedVersion?: CliVersion;

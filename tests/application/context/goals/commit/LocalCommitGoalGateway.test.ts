@@ -1,5 +1,6 @@
 import { LocalCommitGoalGateway } from "../../../../../src/application/context/goals/commit/LocalCommitGoalGateway";
 import { CommitGoalCommandHandler } from "../../../../../src/application/context/goals/commit/CommitGoalCommandHandler";
+import { jest } from "@jest/globals";
 
 describe("LocalCommitGoalGateway", () => {
   let gateway: LocalCommitGoalGateway;

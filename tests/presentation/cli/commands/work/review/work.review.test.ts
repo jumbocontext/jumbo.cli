@@ -1,35 +1,36 @@
-jest.mock("node:child_process", () => ({
+import { jest, describe, it, expect, beforeEach } from "@jest/globals";
+
+jest.unstable_mockModule("node:child_process", () => ({
   execSync: jest.fn(),
   spawn: jest.fn(),
 }));
 
-jest.mock("../../../../../../src/presentation/cli/commands/work/shared/DaemonLoop.js", () => ({
+jest.unstable_mockModule("../../../../../../src/presentation/cli/commands/work/shared/DaemonLoop.js", () => ({
   runDaemonLoop: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("../../../../../../src/presentation/cli/commands/work/shared/GoalStatusQuery.js", () => ({
+jest.unstable_mockModule("../../../../../../src/presentation/cli/commands/work/shared/GoalStatusQuery.js", () => ({
   queryGoalStatus: jest.fn().mockReturnValue("unknown"),
 }));
 
-jest.mock("../../../../../../src/presentation/cli/commands/work/shared/AgentSpawner.js", () => ({
+jest.unstable_mockModule("../../../../../../src/presentation/cli/commands/work/shared/AgentSpawner.js", () => ({
   SUPPORTED_AGENTS: ["claude", "gemini"],
   spawnAgent: jest.fn().mockResolvedValue(0),
 }));
 
-jest.mock("../../../../../../src/presentation/cli/animations/GlimmerEffect.js", () => ({
+jest.unstable_mockModule("../../../../../../src/presentation/cli/animations/GlimmerEffect.js", () => ({
   playGlimmer: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock("../../../../../../src/presentation/cli/animations/BrailleSpinner.js", () => ({
+jest.unstable_mockModule("../../../../../../src/presentation/cli/animations/BrailleSpinner.js", () => ({
   startBrailleSpinner: jest.fn().mockReturnValue({ stop: jest.fn() }),
 }));
 
-import { describe, it, expect, jest, beforeEach } from "@jest/globals";
-import { execSync } from "node:child_process";
-import { workReview, metadata } from "../../../../../../src/presentation/cli/commands/work/review/work.review.js";
-import { runDaemonLoop } from "../../../../../../src/presentation/cli/commands/work/shared/DaemonLoop.js";
-import { queryGoalStatus } from "../../../../../../src/presentation/cli/commands/work/shared/GoalStatusQuery.js";
-import { spawnAgent } from "../../../../../../src/presentation/cli/commands/work/shared/AgentSpawner.js";
+const { execSync } = await import("node:child_process");
+const { workReview, metadata } = await import("../../../../../../src/presentation/cli/commands/work/review/work.review.js");
+const { runDaemonLoop } = await import("../../../../../../src/presentation/cli/commands/work/shared/DaemonLoop.js");
+const { queryGoalStatus } = await import("../../../../../../src/presentation/cli/commands/work/shared/GoalStatusQuery.js");
+const { spawnAgent } = await import("../../../../../../src/presentation/cli/commands/work/shared/AgentSpawner.js");
 import type { DaemonCallbacks } from "../../../../../../src/presentation/cli/commands/work/shared/DaemonLoop.js";
 
 const mockExecSync = execSync as jest.MockedFunction<typeof execSync>;

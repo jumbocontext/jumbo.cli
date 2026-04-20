@@ -1,6 +1,7 @@
 import { RelationDiscoveryEventHandler } from "../../../../../src/application/context/relations/discover/RelationDiscoveryEventHandler.js";
 import { IRelationDiscoveryGoalRegistrar } from "../../../../../src/application/context/relations/discover/IRelationDiscoveryGoalRegistrar.js";
 import { EntityType } from "../../../../../src/domain/relations/Constants.js";
+import { jest } from "@jest/globals";
 
 describe("RelationDiscoveryEventHandler", () => {
   let relationDiscoveryGoalRegistrar: jest.Mocked<IRelationDiscoveryGoalRegistrar>;

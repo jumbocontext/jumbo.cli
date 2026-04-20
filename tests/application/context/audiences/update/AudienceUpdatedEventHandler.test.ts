@@ -2,6 +2,7 @@ import { AudienceUpdatedEventHandler } from "../../../../../src/application/cont
 import { IAudienceUpdatedProjector } from "../../../../../src/application/context/audiences/update/IAudienceUpdatedProjector.js";
 import { AudienceUpdatedEvent } from "../../../../../src/domain/audiences/update/AudienceUpdatedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("AudienceUpdatedEventHandler", () => {
   let projector: jest.Mocked<IAudienceUpdatedProjector>;

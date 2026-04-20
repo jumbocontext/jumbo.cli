@@ -2,6 +2,7 @@ import { ComponentUpdatedEventHandler } from "../../../../../src/application/con
 import { IComponentUpdatedProjector } from "../../../../../src/application/context/components/update/IComponentUpdatedProjector.js";
 import { ComponentUpdatedEvent } from "../../../../../src/domain/components/update/ComponentUpdatedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("ComponentUpdatedEventHandler", () => {
   let projector: jest.Mocked<IComponentUpdatedProjector>;

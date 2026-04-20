@@ -2,6 +2,7 @@ import { LocalRemoveGuidelineGateway } from "../../../../../src/application/cont
 import { RemoveGuidelineCommandHandler } from "../../../../../src/application/context/guidelines/remove/RemoveGuidelineCommandHandler";
 import { IGuidelineRemoveReader } from "../../../../../src/application/context/guidelines/remove/IGuidelineRemoveReader";
 import { GuidelineView } from "../../../../../src/application/context/guidelines/GuidelineView";
+import { jest } from "@jest/globals";
 
 describe("LocalRemoveGuidelineGateway", () => {
   let gateway: LocalRemoveGuidelineGateway;

@@ -9,6 +9,7 @@ import { SubmitGoalForReviewCommandHandler } from "../../../../../src/applicatio
 import { IGoalSubmitForReviewReader } from "../../../../../src/application/context/goals/review/IGoalSubmitForReviewReader";
 import { GoalErrorMessages, GoalStatus, formatErrorMessage } from "../../../../../src/domain/goals/Constants";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView";
+import { jest } from "@jest/globals";
 
 describe("LocalReviewGoalGateway", () => {
   let commandHandler: SubmitGoalForReviewCommandHandler;

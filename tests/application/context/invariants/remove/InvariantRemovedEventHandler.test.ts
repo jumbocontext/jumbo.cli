@@ -2,6 +2,7 @@ import { InvariantRemovedEventHandler } from "../../../../../src/application/con
 import { IInvariantRemovedProjector } from "../../../../../src/application/context/invariants/remove/IInvariantRemovedProjector.js";
 import { InvariantRemovedEvent } from "../../../../../src/domain/invariants/remove/InvariantRemovedEvent.js";
 import { IRelationMaintenanceGoalRegistrar } from "../../../../../src/application/context/relations/maintain/IRelationMaintenanceGoalRegistrar.js";
+import { jest } from "@jest/globals";
 
 describe("InvariantRemovedEventHandler", () => {
   let projector: jest.Mocked<IInvariantRemovedProjector>;

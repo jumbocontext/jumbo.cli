@@ -9,6 +9,7 @@ import { IQualifyGoalGateway } from "../../../../../src/application/context/goal
 import { QualifyGoalRequest } from "../../../../../src/application/context/goals/qualify/QualifyGoalRequest";
 import { QualifyGoalResponse } from "../../../../../src/application/context/goals/qualify/QualifyGoalResponse";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("QualifyGoalController", () => {
   let gateway: jest.Mocked<IQualifyGoalGateway>;

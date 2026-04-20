@@ -2,26 +2,28 @@
  * Tests for AddRelationCommandHandler (command handler)
  */
 
-import { AddRelationCommandHandler } from "../../../../../src/application/context/relations/add/AddRelationCommandHandler";
-import { AddRelationCommand } from "../../../../../src/application/context/relations/add/AddRelationCommand";
-import { IRelationAddedEventWriter } from "../../../../../src/application/context/relations/add/IRelationAddedEventWriter";
-import { IRelationAddedReader } from "../../../../../src/application/context/relations/add/IRelationAddedReader";
-import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
-import { RelationEventType, EntityType } from "../../../../../src/domain/relations/Constants";
-import { RelationView } from "../../../../../src/application/context/relations/RelationView";
+import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 
 // Mock IdGenerator
-jest.mock("../../../../../src/application/identity/IdGenerator", () => ({
+jest.unstable_mockModule("../../../../../src/application/identity/IdGenerator", () => ({
   IdGenerator: {
     generate: jest.fn(() => "test-uuid-123"),
   },
 }));
 
+const { AddRelationCommandHandler } = await import("../../../../../src/application/context/relations/add/AddRelationCommandHandler");
+const { AddRelationCommand } = await import("../../../../../src/application/context/relations/add/AddRelationCommand");
+import type { IRelationAddedEventWriter } from "../../../../../src/application/context/relations/add/IRelationAddedEventWriter";
+import type { IRelationAddedReader } from "../../../../../src/application/context/relations/add/IRelationAddedReader";
+import type { IEventBus } from "../../../../../src/application/messaging/IEventBus";
+import { RelationEventType, EntityType } from "../../../../../src/domain/relations/Constants";
+import type { RelationView } from "../../../../../src/application/context/relations/RelationView";
+
 describe("AddRelationCommandHandler", () => {
   let eventWriter: IRelationAddedEventWriter;
   let reader: IRelationAddedReader;
   let eventBus: IEventBus;
-  let handler: AddRelationCommandHandler;
+  let handler: InstanceType<typeof AddRelationCommandHandler>;
 
   beforeEach(() => {
     // Mock event writer

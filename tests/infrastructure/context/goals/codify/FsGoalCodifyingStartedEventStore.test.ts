@@ -5,7 +5,7 @@
  * extends FsEventStore.
  */
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import { FsGoalCodifyingStartedEventStore } from "../../../../../src/infrastructure/context/goals/codify/FsGoalCodifyingStartedEventStore";
 import { FsEventStore } from "../../../../../src/infrastructure/persistence/FsEventStore";

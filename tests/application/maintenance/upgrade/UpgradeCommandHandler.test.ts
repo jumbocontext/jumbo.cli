@@ -3,6 +3,7 @@ import { IEventStore } from "../../../../src/application/persistence/IEventStore
 import { IGoalStatusReader } from "../../../../src/application/context/goals/IGoalStatusReader";
 import { GoalView } from "../../../../src/application/context/goals/GoalView";
 import { GoalEventType } from "../../../../src/domain/goals/Constants";
+import { jest } from "@jest/globals";
 
 describe("UpgradeCommandHandler", () => {
   let eventStore: jest.Mocked<IEventStore>;

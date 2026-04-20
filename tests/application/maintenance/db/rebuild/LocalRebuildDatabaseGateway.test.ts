@@ -1,5 +1,6 @@
 import { LocalRebuildDatabaseGateway } from "../../../../../src/application/maintenance/db/rebuild/LocalRebuildDatabaseGateway";
 import { IDatabaseRebuildService } from "../../../../../src/application/maintenance/db/rebuild/IDatabaseRebuildService";
+import { jest } from "@jest/globals";
 
 describe("LocalRebuildDatabaseGateway", () => {
   let databaseRebuildService: jest.Mocked<IDatabaseRebuildService>;

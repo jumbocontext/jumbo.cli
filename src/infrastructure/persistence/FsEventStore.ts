@@ -2,8 +2,8 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 import { ILogger } from "../../application/logging/ILogger.js";
-import { IEventStore, AppendResult } from "../../application/persistence/IEventStore";
-import { BaseEvent } from "../../domain/BaseEvent";
+import { IEventStore, AppendResult } from "../../application/persistence/IEventStore.js";
+import { BaseEvent } from "../../domain/BaseEvent.js";
 
 /**
  * StoredEvent adds infrastructure metadata to domain events.

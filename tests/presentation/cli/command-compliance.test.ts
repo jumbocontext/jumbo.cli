@@ -8,6 +8,7 @@
 import fs from 'fs-extra';
 import fastGlob from 'fast-glob';
 import path from 'path';
+import { jest } from "@jest/globals";
 
 describe('Command Compliance', () => {
   jest.setTimeout(30_000);
