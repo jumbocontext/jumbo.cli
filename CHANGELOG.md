@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`work review` daemon**: Long-running daemon that polls for goals in `submitted` status and delegates QA review to an agent subprocess. Supports `--agent`, `--poll-interval`, and `--max-retries` options. Both `approved` and `rejected` are valid review outcomes.
+
 ## [2.13.0] - 2026-04-19
 
 ### Added

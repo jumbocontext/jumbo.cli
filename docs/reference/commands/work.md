@@ -1,11 +1,11 @@
 ---
 title: Work Commands Reference
-description: Complete reference for work refine, work pause, and work resume commands.
+description: Complete reference for work refine, work review, work pause, and work resume commands.
 sidebar:
   order: 14
 ---
 
-Complete reference for work lifecycle commands that operate on workers and goals.
+Complete reference for work lifecycle commands that operate on workers, goals, and autonomous daemons.
 
 ---
 
@@ -51,6 +51,53 @@ Press **Q** or **Ctrl+C** to stop the daemon. The current subprocess will finish
 
 # Poll every 60 seconds with 5 retries per goal
 > jumbo work refine --agent claude --poll-interval 60 --max-retries 5
+```
+
+---
+
+## jumbo work review
+
+Long-running daemon that continuously polls for goals in `submitted` state and delegates their QA review to an agent subprocess.
+
+### Synopsis
+
+```bash
+> jumbo work review --agent <agentId> [--poll-interval <seconds>] [--max-retries <number>]
+```
+
+### Options
+
+| Option | Required | Default | Description |
+|--------|----------|---------|-------------|
+| `--agent <agentId>` | Yes | — | Agent to delegate review to. Supported: `claude`, `gemini`, `copilot`, `codex`, `cursor`, `vibe` |
+| `--poll-interval <seconds>` | No | `30` | Seconds to wait between polling for new goals |
+| `--max-retries <number>` | No | `3` | Max retry attempts per goal before skipping |
+
+### Behavior
+
+1. Polls `jumbo goals list --status submitted` on the configured interval
+2. Picks the oldest submitted goal
+3. Spawns the configured agent as a subprocess with a review prompt
+4. After the subprocess exits, checks whether the goal reached `approved` or `rejected` status
+5. Both outcomes are valid — the daemon moves to the next goal after either
+6. If neither outcome is reached, retries up to the configured max retries
+7. If exhausted, skips the goal and moves to the next one
+8. Repeats until stopped
+
+The daemon holds no database connections or application infrastructure between iterations. Every interaction with Jumbo state is a short-lived subprocess.
+
+### Graceful shutdown
+
+Press **Q** or **Ctrl+C** to stop the daemon. The current subprocess will finish before exit.
+
+### Examples
+
+```bash
+# Start the reviewer using Claude
+> jumbo work review --agent claude
+
+# Poll every 60 seconds with 5 retries per goal
+> jumbo work review --agent claude --poll-interval 60 --max-retries 5
 ```
 
 ---
