@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.15.0] - 2026-04-26
+
+### Changed
+
+- **ESM migration**: Project module system fully migrated to ESM. Jest config converted to `.cjs`, internal imports normalized, and tsconfig adjusted to support Node.js ESM resolution.
+- **Dependency audit**: Removed 7 unused dependencies (`inversify`, `date-fns`, `ink`, `react`, `react-dom`, `boxen`, `reflect-metadata`). Updated `chalk` 4→5, `commander` 11→14, `strip-ansi` 6→7. Moved `fast-glob` to devDependencies.
+- **inquirer upgraded to v13**: `project init` and `InteractivePromptService` updated to the new inquirer API.
+- **TypeScript upgraded to v6**.
+- **Jest upgraded to v30**: Test config updated, including a dedicated `tsconfig.jest.json`.
+
 ## [2.14.0] - 2026-04-20
 
 ### Added
