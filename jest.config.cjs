@@ -22,7 +22,7 @@ module.exports = {
   transform: {
     '^.+\\.[jt]s$': ['ts-jest', {
       useESM: true,
-      isolatedModules: true,
+      tsconfig: './tsconfig.jest.json',
     }],
   },
 };
