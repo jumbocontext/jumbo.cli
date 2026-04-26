@@ -4,15 +4,17 @@
 
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 
-// Mock inquirer
-jest.unstable_mockModule("inquirer", () => ({
-  default: { prompt: jest.fn() },
+jest.unstable_mockModule("@inquirer/prompts", () => ({
+  checkbox: jest.fn(),
+  input: jest.fn(),
 }));
 
-const { default: inquirer } = await import("inquirer");
-const mockedInquirer = inquirer as jest.Mocked<typeof inquirer>;
+const prompts = await import("@inquirer/prompts");
+const checkboxMock = prompts.checkbox as jest.Mock;
+const inputMock = prompts.input as jest.Mock;
 
-const { InteractivePromptService } = await import("../../../../src/presentation/cli/prompts/InteractivePromptService.js");
+const { InteractivePromptService } =
+  await import("../../../../src/presentation/cli/prompts/InteractivePromptService.js");
 import type { EntitySelectionConfig } from "../../../../src/presentation/cli/prompts/InteractivePromptService.js";
 
 // Sample entity type for testing
@@ -45,7 +47,7 @@ describe("InteractivePromptService", () => {
     };
 
     it("should return selected entities in original form", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ selection: [0, 2] });
+      checkboxMock.mockResolvedValueOnce([0, 2]);
 
       const result = await service.selectEntities(testEntities, defaultConfig);
 
@@ -56,7 +58,7 @@ describe("InteractivePromptService", () => {
     });
 
     it("should return empty selection when user selects nothing", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ selection: [] });
+      checkboxMock.mockResolvedValueOnce([]);
 
       const result = await service.selectEntities(testEntities, defaultConfig);
 
@@ -75,7 +77,7 @@ describe("InteractivePromptService", () => {
       expect(result.prompted).toBe(false);
       expect(result.selected).toHaveLength(0);
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("No entities available")
+        expect.stringContaining("No entities available"),
       );
     });
 
@@ -89,33 +91,29 @@ describe("InteractivePromptService", () => {
     });
 
     it("should pass formatted choices to inquirer", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ selection: [] });
+      checkboxMock.mockResolvedValueOnce([]);
 
       await service.selectEntities(testEntities, defaultConfig);
 
-      expect(mockedInquirer.prompt).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            type: "checkbox",
-            name: "selection",
-            message: expect.stringContaining("Select entities:"),
-            choices: expect.arrayContaining([
-              expect.objectContaining({
-                name: "Entity One - First entity",
-                value: 0,
-              }),
-              expect.objectContaining({
-                name: "Entity Two - Second entity",
-                value: 1,
-              }),
-            ]),
-          }),
-        ])
+      expect(checkboxMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining("Select entities:"),
+          choices: expect.arrayContaining([
+            expect.objectContaining({
+              name: "Entity One - First entity",
+              value: 0,
+            }),
+            expect.objectContaining({
+              name: "Entity Two - Second entity",
+              value: 1,
+            }),
+          ]),
+        }),
       );
     });
 
     it("should include suffix when provided", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ selection: [] });
+      checkboxMock.mockResolvedValueOnce([]);
       const config: EntitySelectionConfig<TestEntity> = {
         ...defaultConfig,
         suffix: "Use space to select, enter to confirm",
@@ -123,17 +121,17 @@ describe("InteractivePromptService", () => {
 
       await service.selectEntities(testEntities, config);
 
-      expect(mockedInquirer.prompt).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            suffix: expect.stringContaining("Use space to select, enter to confirm"),
-          }),
-        ])
+      expect(checkboxMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining(
+            "Use space to select, enter to confirm",
+          ),
+        }),
       );
     });
 
     it("should preserve entity references, not copies", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ selection: [1] });
+      checkboxMock.mockResolvedValueOnce([1]);
 
       const result = await service.selectEntities(testEntities, defaultConfig);
 
@@ -144,7 +142,7 @@ describe("InteractivePromptService", () => {
 
   describe("textInput", () => {
     it("should return trimmed input value", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ value: "  test value  " });
+      inputMock.mockResolvedValueOnce("  test value  ");
 
       const result = await service.textInput({ message: "Enter value:" });
 
@@ -152,7 +150,7 @@ describe("InteractivePromptService", () => {
     });
 
     it("should return undefined for empty input when not required", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ value: "   " });
+      inputMock.mockResolvedValueOnce("   ");
 
       const result = await service.textInput({ message: "Enter value:" });
 
@@ -160,24 +158,22 @@ describe("InteractivePromptService", () => {
     });
 
     it("should include suffix when provided", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ value: "test" });
+      inputMock.mockResolvedValueOnce("test");
 
       await service.textInput({
         message: "Enter value:",
         suffix: "Optional field",
       });
 
-      expect(mockedInquirer.prompt).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            suffix: expect.stringContaining("Optional field"),
-          }),
-        ])
+      expect(inputMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining("Optional field"),
+        }),
       );
     });
 
     it("should pass validation function to inquirer", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ value: "valid" });
+      inputMock.mockResolvedValueOnce("valid");
 
       await service.textInput({
         message: "Enter value:",
@@ -186,16 +182,14 @@ describe("InteractivePromptService", () => {
       });
 
       // Verify prompt was called with a validate function
-      const promptCall = mockedInquirer.prompt.mock.calls[0][0] as any[];
-      expect(promptCall[0].validate).toBeDefined();
+      const promptCall = inputMock.mock.calls[0][0] as any;
+      expect(promptCall.validate).toBeDefined();
     });
   });
 
   describe("multiTextInput", () => {
     it("should parse comma-separated values", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({
-        value: "one, two, three",
-      });
+      inputMock.mockResolvedValueOnce("one, two, three");
 
       const result = await service.multiTextInput({ message: "Enter values:" });
 
@@ -203,9 +197,7 @@ describe("InteractivePromptService", () => {
     });
 
     it("should filter empty values", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({
-        value: "one, , two,  , three",
-      });
+      inputMock.mockResolvedValueOnce("one, , two,  , three");
 
       const result = await service.multiTextInput({ message: "Enter values:" });
 
@@ -213,9 +205,7 @@ describe("InteractivePromptService", () => {
     });
 
     it("should use custom separator", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({
-        value: "one; two; three",
-      });
+      inputMock.mockResolvedValueOnce("one; two; three");
 
       const result = await service.multiTextInput({
         message: "Enter values:",
@@ -226,7 +216,7 @@ describe("InteractivePromptService", () => {
     });
 
     it("should return empty array for empty input", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({ value: "" });
+      inputMock.mockResolvedValueOnce("");
 
       const result = await service.multiTextInput({ message: "Enter values:" });
 
@@ -234,9 +224,7 @@ describe("InteractivePromptService", () => {
     });
 
     it("should trim individual values", async () => {
-      mockedInquirer.prompt.mockResolvedValueOnce({
-        value: "  one  ,  two  ",
-      });
+      inputMock.mockResolvedValueOnce("  one  ,  two  ");
 
       const result = await service.multiTextInput({ message: "Enter values:" });
 
@@ -257,9 +245,13 @@ describe("InteractivePromptService", () => {
       expect(consoleSpy).toHaveBeenCalledTimes(4);
       // Title is colored with chalk.yellow, items with chalk.dim
       // We just verify the calls were made with something containing our text
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Test Items:"));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Test Items:"),
+      );
       expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("First"));
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Second"));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Second"),
+      );
     });
 
     it("should not display anything for empty items", () => {

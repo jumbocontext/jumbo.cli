@@ -6,7 +6,7 @@
  * Designed to be generic and work with any entity type.
  */
 
-import inquirer from "inquirer";
+import { checkbox, input } from "@inquirer/prompts";
 import chalk from "chalk";
 
 /**
@@ -72,7 +72,7 @@ export class InteractivePromptService {
    */
   async selectEntities<T>(
     entities: T[],
-    config: EntitySelectionConfig<T>
+    config: EntitySelectionConfig<T>,
   ): Promise<EntitySelectionResult<T>> {
     // Add spacing before prompt
     console.log();
@@ -92,18 +92,12 @@ export class InteractivePromptService {
       short: this.truncateForShort(config.formatter(entity)),
     }));
 
-    const answers = await inquirer.prompt([
-      {
-        type: "checkbox",
-        name: "selection",
-        message: chalk.cyan(config.message),
-        suffix: config.suffix ? `\n${chalk.dim(config.suffix)}` : undefined,
-        choices,
-      },
-    ]);
+    const selectedIndices = await checkbox<number>({
+      message: this.buildMessage(config.message, config.suffix),
+      choices,
+    });
 
     // Map selected indices back to original entities
-    const selectedIndices: number[] = answers.selection;
     const selected = selectedIndices.map((index) => entities[index]);
 
     return { prompted: true, selected };
@@ -119,26 +113,21 @@ export class InteractivePromptService {
     // Add spacing before prompt
     console.log();
 
-    const answers = await inquirer.prompt([
-      {
-        type: "input",
-        name: "value",
-        message: chalk.cyan(config.message),
-        suffix: config.suffix ? `\n${chalk.dim(config.suffix)}` : undefined,
-        validate: (input: string) => {
-          const trimmed = input.trim();
-          if (config.required && !trimmed) {
-            return "This field is required";
-          }
-          if (config.validate) {
-            return config.validate(trimmed);
-          }
-          return true;
-        },
+    const value = await input({
+      message: this.buildMessage(config.message, config.suffix),
+      validate: (input: string) => {
+        const trimmed = input.trim();
+        if (config.required && !trimmed) {
+          return "This field is required";
+        }
+        if (config.validate) {
+          return config.validate(trimmed);
+        }
+        return true;
       },
-    ]);
+    });
 
-    const trimmed = answers.value.trim();
+    const trimmed = value.trim();
     return trimmed || undefined;
   }
 
@@ -155,23 +144,18 @@ export class InteractivePromptService {
     const separator = config.separator ?? ",";
     const minValues = config.minValues ?? 0;
 
-    const answers = await inquirer.prompt([
-      {
-        type: "input",
-        name: "value",
-        message: chalk.cyan(config.message),
-        suffix: config.suffix ? `\n${chalk.dim(config.suffix)}` : undefined,
-        validate: (input: string) => {
-          const values = this.parseMultiValue(input, separator);
-          if (values.length < minValues) {
-            return `At least ${minValues} value(s) required`;
-          }
-          return true;
-        },
+    const value = await input({
+      message: this.buildMessage(config.message, config.suffix),
+      validate: (input: string) => {
+        const values = this.parseMultiValue(input, separator);
+        if (values.length < minValues) {
+          return `At least ${minValues} value(s) required`;
+        }
+        return true;
       },
-    ]);
+    });
 
-    return this.parseMultiValue(answers.value, separator);
+    return this.parseMultiValue(value, separator);
   }
 
   /**
@@ -181,7 +165,11 @@ export class InteractivePromptService {
    * @param items - Items to display
    * @param formatter - Function to format each item for display
    */
-  displayInfo<T>(title: string, items: T[], formatter: (item: T) => string): void {
+  displayInfo<T>(
+    title: string,
+    items: T[],
+    formatter: (item: T) => string,
+  ): void {
     if (items.length === 0) {
       return;
     }
@@ -211,5 +199,13 @@ export class InteractivePromptService {
       return text;
     }
     return text.substring(0, maxLength - 3) + "...";
+  }
+
+  private buildMessage(message: string, suffix?: string): string {
+    if (!suffix) {
+      return chalk.cyan(message);
+    }
+
+    return `${chalk.cyan(message)}\n${chalk.dim(suffix)}`;
   }
 }

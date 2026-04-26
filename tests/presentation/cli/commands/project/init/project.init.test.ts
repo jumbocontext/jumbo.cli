@@ -1,16 +1,30 @@
-import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 
-jest.unstable_mockModule("inquirer", () => ({
-  default: { prompt: jest.fn() },
+jest.unstable_mockModule("@inquirer/prompts", () => ({
+  checkbox: jest.fn(),
+  confirm: jest.fn(),
+  input: jest.fn(),
+  select: jest.fn(),
 }));
 
-jest.unstable_mockModule("../../../../../../src/presentation/cli/banner/AnimatedBanner.js", () => ({
-  getBannerLines: jest.fn(() => ["Jumbo"]),
-  showAnimatedBanner: jest.fn().mockResolvedValue(undefined),
-}));
+jest.unstable_mockModule(
+  "../../../../../../src/presentation/cli/banner/AnimatedBanner.js",
+  () => ({
+    getBannerLines: jest.fn(() => ["Jumbo"]),
+    showAnimatedBanner: jest.fn().mockResolvedValue(undefined),
+  }),
+);
 
-const { default: inquirer } = await import("inquirer");
-const { projectInit } = await import("../../../../../../src/presentation/cli/commands/project/init/project.init.js");
+const prompts = await import("@inquirer/prompts");
+const { projectInit } =
+  await import("../../../../../../src/presentation/cli/commands/project/init/project.init.js");
 import type { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
@@ -23,9 +37,10 @@ describe("project.init command", () => {
   let mockContainer: Partial<IApplicationContainer>;
   let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
   let isTtyDescriptor: PropertyDescriptor | undefined;
+  let promptResultQueue: unknown[];
 
   function createMockContainer(
-    telemetryStatusOverrides: Record<string, unknown> = {}
+    telemetryStatusOverrides: Record<string, unknown> = {},
   ): Partial<IApplicationContainer> {
     return {
       cliVersionReader: {
@@ -102,23 +117,53 @@ describe("project.init command", () => {
    * 8. Telemetry consent
    * 9. Agent selection
    */
+  function queuePromptResults(...results: unknown[]): void {
+    promptResultQueue.push(...results);
+  }
+
+  function installPromptQueue(): void {
+    const nextResult = jest.fn(async () => {
+      if (promptResultQueue.length === 0) {
+        throw new Error("Unexpected prompt call");
+      }
+      return promptResultQueue.shift();
+    });
+
+    (prompts.input as jest.Mock).mockImplementation(nextResult);
+    (prompts.confirm as jest.Mock).mockImplementation(nextResult);
+    (prompts.checkbox as jest.Mock).mockImplementation(nextResult);
+    (prompts.select as jest.Mock).mockImplementation(nextResult);
+  }
+
+  function expectNoPromptCalls(): void {
+    expect(prompts.input).not.toHaveBeenCalled();
+    expect(prompts.confirm).not.toHaveBeenCalled();
+    expect(prompts.checkbox).not.toHaveBeenCalled();
+    expect(prompts.select).not.toHaveBeenCalled();
+  }
+
   function mockInteractiveSkipAllPrimitives(
     projectOverrides: Record<string, unknown> = {},
     telemetryAnswer: Record<string, unknown> = { enabled: true },
-    agentSelectionAnswer: Record<string, unknown> = { selectedAgentIds: availableAgents.map((agent) => agent.id) }
+    agentSelectionAnswer: Record<string, unknown> = {
+      selectedAgentIds: availableAgents.map((agent) => agent.id),
+    },
   ) {
-    const promptMock = inquirer.prompt as jest.Mock;
-    promptMock
-      .mockResolvedValueOnce({ name: "TestProject", ...projectOverrides }) // project details
-      .mockResolvedValueOnce({ defineAudience: false })    // skip audiences
-      .mockResolvedValueOnce({ definePain: false })         // skip pains
-      .mockResolvedValueOnce({ defineValue: false })        // skip values
-      .mockResolvedValueOnce(telemetryAnswer)               // telemetry
-      .mockResolvedValueOnce(agentSelectionAnswer);         // agents
+    queuePromptResults(
+      projectOverrides.name ?? "TestProject",
+      projectOverrides.purpose ?? "",
+      false,
+      false,
+      false,
+      telemetryAnswer.enabled,
+      agentSelectionAnswer.selectedAgentIds,
+    );
   }
 
   beforeEach(() => {
-    (inquirer.prompt as jest.Mock).mockReset();
+    jest.clearAllMocks();
+    promptResultQueue = [];
+    installPromptQueue();
 
     mockContainer = createMockContainer();
 
@@ -145,16 +190,16 @@ describe("project.init command", () => {
     it("collects telemetry consent during interactive init", async () => {
       mockInteractiveSkipAllPrimitives(
         { name: "Jumbo", purpose: "Telemetry" },
-        { enabled: true }
+        { enabled: true },
       );
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
       expect(
-        mockContainer.getTelemetryStatusController!.handle
+        mockContainer.getTelemetryStatusController!.handle,
       ).toHaveBeenCalledWith({});
       expect(
-        mockContainer.updateTelemetryConsentController!.handle
+        mockContainer.updateTelemetryConsentController!.handle,
       ).toHaveBeenCalledWith({ enabled: true });
     });
 
@@ -164,7 +209,7 @@ describe("project.init command", () => {
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
       expect(
-        mockContainer.updateTelemetryConsentController!.handle
+        mockContainer.updateTelemetryConsentController!.handle,
       ).toHaveBeenCalledWith({ enabled: true });
     });
 
@@ -174,99 +219,86 @@ describe("project.init command", () => {
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
       expect(
-        mockContainer.updateTelemetryConsentController!.handle
+        mockContainer.updateTelemetryConsentController!.handle,
       ).toHaveBeenCalledWith({ enabled: false });
     });
 
     it("enables telemetry by default in non-interactive mode without prompting", async () => {
-      const promptMock = inquirer.prompt as jest.Mock;
-
       await projectInit(
         {
           nonInteractive: true,
           yolo: true,
           name: "Jumbo",
         },
-        mockContainer as IApplicationContainer
+        mockContainer as IApplicationContainer,
       );
 
-      expect(promptMock).not.toHaveBeenCalled();
+      expectNoPromptCalls();
       expect(
-        mockContainer.updateTelemetryConsentController!.handle
+        mockContainer.updateTelemetryConsentController!.handle,
       ).toHaveBeenCalledWith({ enabled: true });
     });
 
     it("skips telemetry prompt when CI is detected", async () => {
       mockContainer = createMockContainer({ disabledByCi: true });
 
-      const promptMock = inquirer.prompt as jest.Mock;
-      promptMock
-        .mockResolvedValueOnce({ name: "TestProject" })
-        .mockResolvedValueOnce({ defineAudience: false })
-        .mockResolvedValueOnce({ definePain: false })
-        .mockResolvedValueOnce({ defineValue: false })
-        .mockResolvedValueOnce({ selectedAgentIds: ["claude"] });
+      queuePromptResults("TestProject", "", false, false, false, ["claude"]);
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
       expect(
-        mockContainer.updateTelemetryConsentController!.handle
+        mockContainer.updateTelemetryConsentController!.handle,
       ).not.toHaveBeenCalled();
     });
 
     it("skips telemetry prompt when JUMBO_TELEMETRY_DISABLED=1 is set", async () => {
       mockContainer = createMockContainer({ disabledByEnvironment: true });
 
-      const promptMock = inquirer.prompt as jest.Mock;
-      promptMock
-        .mockResolvedValueOnce({ name: "TestProject" })
-        .mockResolvedValueOnce({ defineAudience: false })
-        .mockResolvedValueOnce({ definePain: false })
-        .mockResolvedValueOnce({ defineValue: false })
-        .mockResolvedValueOnce({ selectedAgentIds: ["claude"] });
+      queuePromptResults("TestProject", "", false, false, false, ["claude"]);
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
       expect(
-        mockContainer.updateTelemetryConsentController!.handle
+        mockContainer.updateTelemetryConsentController!.handle,
       ).not.toHaveBeenCalled();
     });
 
     it("skips telemetry prompt when already configured", async () => {
       mockContainer = createMockContainer({ configured: true });
 
-      const promptMock = inquirer.prompt as jest.Mock;
-      promptMock
-        .mockResolvedValueOnce({ name: "TestProject" })
-        .mockResolvedValueOnce({ defineAudience: false })
-        .mockResolvedValueOnce({ definePain: false })
-        .mockResolvedValueOnce({ defineValue: false })
-        .mockResolvedValueOnce({ selectedAgentIds: ["claude"] });
+      queuePromptResults("TestProject", "", false, false, false, ["claude"]);
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
       expect(
-        mockContainer.updateTelemetryConsentController!.handle
+        mockContainer.updateTelemetryConsentController!.handle,
       ).not.toHaveBeenCalled();
     });
   });
 
   describe("interactive primitive prompts", () => {
     it("prompts for audience, pain, and value when user accepts each gate", async () => {
-      const promptMock = inquirer.prompt as jest.Mock;
-      promptMock
-        .mockResolvedValueOnce({ name: "TestProject" })                      // project details
-        .mockResolvedValueOnce({ defineAudience: true })                     // audience gate
-        .mockResolvedValueOnce({ name: "Devs", description: "Software developers", priority: "primary" }) // audience fields
-        .mockResolvedValueOnce({ another: false })                           // no more audiences
-        .mockResolvedValueOnce({ definePain: true })                         // pain gate
-        .mockResolvedValueOnce({ title: "Context loss", description: "LLMs lose context" }) // pain fields
-        .mockResolvedValueOnce({ another: false })                           // no more pains
-        .mockResolvedValueOnce({ defineValue: true })                        // value gate
-        .mockResolvedValueOnce({ title: "Persistent", description: "Keep context", benefit: "No loss", measurableOutcome: "" }) // value fields
-        .mockResolvedValueOnce({ another: false })                           // no more values
-        .mockResolvedValueOnce({ enabled: true })                            // telemetry
-        .mockResolvedValueOnce({ selectedAgentIds: ["claude", "copilot"] }); // agents
+      queuePromptResults(
+        "TestProject",
+        "",
+        true,
+        "Devs",
+        "Software developers",
+        "primary",
+        false,
+        true,
+        "Context loss",
+        "LLMs lose context",
+        false,
+        true,
+        "Persistent",
+        "Keep context",
+        "No loss",
+        "",
+        false,
+        true,
+        ["claude", "copilot"],
+      );
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
@@ -275,11 +307,15 @@ describe("project.init command", () => {
         description: "Software developers",
         priority: "primary",
       });
-      expect(mockContainer.addAudiencePainController!.handle).toHaveBeenCalledWith({
+      expect(
+        mockContainer.addAudiencePainController!.handle,
+      ).toHaveBeenCalledWith({
         title: "Context loss",
         description: "LLMs lose context",
       });
-      expect(mockContainer.addValuePropositionController!.handle).toHaveBeenCalledWith({
+      expect(
+        mockContainer.addValuePropositionController!.handle,
+      ).toHaveBeenCalledWith({
         title: "Persistent",
         description: "Keep context",
         benefit: "No loss",
@@ -292,28 +328,41 @@ describe("project.init command", () => {
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
-      expect(mockContainer.addAudienceController!.handle).not.toHaveBeenCalled();
-      expect(mockContainer.addAudiencePainController!.handle).not.toHaveBeenCalled();
-      expect(mockContainer.addValuePropositionController!.handle).not.toHaveBeenCalled();
+      expect(
+        mockContainer.addAudienceController!.handle,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockContainer.addAudiencePainController!.handle,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockContainer.addValuePropositionController!.handle,
+      ).not.toHaveBeenCalled();
     });
 
     it("allows adding multiple audiences via the loop", async () => {
-      const promptMock = inquirer.prompt as jest.Mock;
-      promptMock
-        .mockResolvedValueOnce({ name: "TestProject" })
-        .mockResolvedValueOnce({ defineAudience: true })
-        .mockResolvedValueOnce({ name: "Devs", description: "Developers", priority: "primary" })
-        .mockResolvedValueOnce({ another: true })                            // add another
-        .mockResolvedValueOnce({ name: "PMs", description: "Product managers", priority: "secondary" })
-        .mockResolvedValueOnce({ another: false })                           // done
-        .mockResolvedValueOnce({ definePain: false })
-        .mockResolvedValueOnce({ defineValue: false })
-        .mockResolvedValueOnce({ enabled: true })
-        .mockResolvedValueOnce({ selectedAgentIds: ["claude"] });
+      queuePromptResults(
+        "TestProject",
+        "",
+        true,
+        "Devs",
+        "Developers",
+        "primary",
+        true,
+        "PMs",
+        "Product managers",
+        "secondary",
+        false,
+        false,
+        false,
+        true,
+        ["claude"],
+      );
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
-      expect(mockContainer.addAudienceController!.handle).toHaveBeenCalledTimes(2);
+      expect(mockContainer.addAudienceController!.handle).toHaveBeenCalledTimes(
+        2,
+      );
       expect(mockContainer.addAudienceController!.handle).toHaveBeenCalledWith({
         name: "Devs",
         description: "Developers",
@@ -327,42 +376,58 @@ describe("project.init command", () => {
     });
 
     it("allows adding multiple pain points via the loop", async () => {
-      const promptMock = inquirer.prompt as jest.Mock;
-      promptMock
-        .mockResolvedValueOnce({ name: "TestProject" })
-        .mockResolvedValueOnce({ defineAudience: false })
-        .mockResolvedValueOnce({ definePain: true })
-        .mockResolvedValueOnce({ title: "Pain A", description: "Desc A" })
-        .mockResolvedValueOnce({ another: true })
-        .mockResolvedValueOnce({ title: "Pain B", description: "Desc B" })
-        .mockResolvedValueOnce({ another: false })
-        .mockResolvedValueOnce({ defineValue: false })
-        .mockResolvedValueOnce({ enabled: true })
-        .mockResolvedValueOnce({ selectedAgentIds: ["claude"] });
+      queuePromptResults(
+        "TestProject",
+        "",
+        false,
+        true,
+        "Pain A",
+        "Desc A",
+        true,
+        "Pain B",
+        "Desc B",
+        false,
+        false,
+        true,
+        ["claude"],
+      );
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
-      expect(mockContainer.addAudiencePainController!.handle).toHaveBeenCalledTimes(2);
+      expect(
+        mockContainer.addAudiencePainController!.handle,
+      ).toHaveBeenCalledTimes(2);
     });
 
     it("allows adding multiple value propositions via the loop", async () => {
-      const promptMock = inquirer.prompt as jest.Mock;
-      promptMock
-        .mockResolvedValueOnce({ name: "TestProject" })
-        .mockResolvedValueOnce({ defineAudience: false })
-        .mockResolvedValueOnce({ definePain: false })
-        .mockResolvedValueOnce({ defineValue: true })
-        .mockResolvedValueOnce({ title: "V1", description: "D1", benefit: "B1", measurableOutcome: "" })
-        .mockResolvedValueOnce({ another: true })
-        .mockResolvedValueOnce({ title: "V2", description: "D2", benefit: "B2", measurableOutcome: "M2" })
-        .mockResolvedValueOnce({ another: false })
-        .mockResolvedValueOnce({ enabled: true })
-        .mockResolvedValueOnce({ selectedAgentIds: ["claude"] });
+      queuePromptResults(
+        "TestProject",
+        "",
+        false,
+        false,
+        true,
+        "V1",
+        "D1",
+        "B1",
+        "",
+        true,
+        "V2",
+        "D2",
+        "B2",
+        "M2",
+        false,
+        true,
+        ["claude"],
+      );
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
-      expect(mockContainer.addValuePropositionController!.handle).toHaveBeenCalledTimes(2);
-      expect(mockContainer.addValuePropositionController!.handle).toHaveBeenCalledWith({
+      expect(
+        mockContainer.addValuePropositionController!.handle,
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        mockContainer.addValuePropositionController!.handle,
+      ).toHaveBeenCalledWith({
         title: "V2",
         description: "D2",
         benefit: "B2",
@@ -379,14 +444,20 @@ describe("project.init command", () => {
           yolo: true,
           name: "TestProject",
         },
-        mockContainer as IApplicationContainer
+        mockContainer as IApplicationContainer,
       );
 
-      expect(mockContainer.planProjectInitController!.handle).toHaveBeenCalledTimes(1);
-      expect(mockContainer.planProjectInitController!.handle).toHaveBeenCalledWith({
+      expect(
+        mockContainer.planProjectInitController!.handle,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        mockContainer.planProjectInitController!.handle,
+      ).toHaveBeenCalledWith({
         projectRoot: process.cwd(),
       });
-      expect(mockContainer.initializeProjectController!.handle).toHaveBeenCalledWith({
+      expect(
+        mockContainer.initializeProjectController!.handle,
+      ).toHaveBeenCalledWith({
         name: "TestProject",
         purpose: undefined,
         projectRoot: process.cwd(),
@@ -404,7 +475,7 @@ describe("project.init command", () => {
           audienceDescription: "Software developers",
           audiencePriority: "primary",
         },
-        mockContainer as IApplicationContainer
+        mockContainer as IApplicationContainer,
       );
 
       expect(mockContainer.addAudienceController!.handle).toHaveBeenCalledWith({
@@ -423,10 +494,12 @@ describe("project.init command", () => {
           painTitle: "Context loss",
           painDescription: "LLMs lose context",
         },
-        mockContainer as IApplicationContainer
+        mockContainer as IApplicationContainer,
       );
 
-      expect(mockContainer.addAudiencePainController!.handle).toHaveBeenCalledWith({
+      expect(
+        mockContainer.addAudiencePainController!.handle,
+      ).toHaveBeenCalledWith({
         title: "Context loss",
         description: "LLMs lose context",
       });
@@ -443,10 +516,12 @@ describe("project.init command", () => {
           valueBenefit: "No context loss",
           valueMeasurableOutcome: "Zero loss",
         },
-        mockContainer as IApplicationContainer
+        mockContainer as IApplicationContainer,
       );
 
-      expect(mockContainer.addValuePropositionController!.handle).toHaveBeenCalledWith({
+      expect(
+        mockContainer.addValuePropositionController!.handle,
+      ).toHaveBeenCalledWith({
         title: "Persistent context",
         description: "Keep context across sessions",
         benefit: "No context loss",
@@ -463,10 +538,12 @@ describe("project.init command", () => {
           audienceName: "Devs",
           // missing audienceDescription and audiencePriority
         },
-        mockContainer as IApplicationContainer
+        mockContainer as IApplicationContainer,
       );
 
-      expect(mockContainer.addAudienceController!.handle).not.toHaveBeenCalled();
+      expect(
+        mockContainer.addAudienceController!.handle,
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -475,19 +552,25 @@ describe("project.init command", () => {
       mockInteractiveSkipAllPrimitives(
         {},
         { enabled: true },
-        { selectedAgentIds: ["gemini", "copilot"] }
+        { selectedAgentIds: ["gemini", "copilot"] },
       );
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
-      expect(mockContainer.planProjectInitController!.handle).toHaveBeenNthCalledWith(1, {
+      expect(
+        mockContainer.planProjectInitController!.handle,
+      ).toHaveBeenNthCalledWith(1, {
         projectRoot: process.cwd(),
       });
-      expect(mockContainer.planProjectInitController!.handle).toHaveBeenNthCalledWith(2, {
+      expect(
+        mockContainer.planProjectInitController!.handle,
+      ).toHaveBeenNthCalledWith(2, {
         projectRoot: process.cwd(),
         selectedAgentIds: ["gemini", "copilot"],
       });
-      expect(mockContainer.initializeProjectController!.handle).toHaveBeenCalledWith({
+      expect(
+        mockContainer.initializeProjectController!.handle,
+      ).toHaveBeenCalledWith({
         name: "TestProject",
         purpose: undefined,
         projectRoot: process.cwd(),
@@ -496,20 +579,25 @@ describe("project.init command", () => {
     });
 
     it("lists registered primitives in success output", async () => {
-      const promptMock = inquirer.prompt as jest.Mock;
-      promptMock
-        .mockResolvedValueOnce({ name: "TestProject" })
-        .mockResolvedValueOnce({ defineAudience: true })
-        .mockResolvedValueOnce({ name: "Devs", description: "Developers", priority: "primary" })
-        .mockResolvedValueOnce({ another: false })
-        .mockResolvedValueOnce({ definePain: false })
-        .mockResolvedValueOnce({ defineValue: false })
-        .mockResolvedValueOnce({ enabled: true })
-        .mockResolvedValueOnce({ selectedAgentIds: ["claude"] });
+      queuePromptResults(
+        "TestProject",
+        "",
+        true,
+        "Devs",
+        "Developers",
+        "primary",
+        false,
+        false,
+        false,
+        true,
+        ["claude"],
+      );
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
-      const loggedText = consoleLogSpy.mock.calls.map((c) => String(c[0])).join("\n");
+      const loggedText = consoleLogSpy.mock.calls
+        .map((c) => String(c[0]))
+        .join("\n");
       expect(loggedText).toContain("Registered Audience: Devs");
     });
 
@@ -518,31 +606,42 @@ describe("project.init command", () => {
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
-      const loggedText = consoleLogSpy.mock.calls.map((c) => String(c[0])).join("\n");
+      const loggedText = consoleLogSpy.mock.calls
+        .map((c) => String(c[0]))
+        .join("\n");
       expect(loggedText).toContain("jumbo audience add");
       expect(loggedText).toContain("jumbo audience-pain add");
       expect(loggedText).toContain("jumbo value add");
     });
 
     it("omits suggestion for primitives that were provided", async () => {
-      const promptMock = inquirer.prompt as jest.Mock;
-      promptMock
-        .mockResolvedValueOnce({ name: "TestProject" })
-        .mockResolvedValueOnce({ defineAudience: true })
-        .mockResolvedValueOnce({ name: "Devs", description: "Developers", priority: "primary" })
-        .mockResolvedValueOnce({ another: false })
-        .mockResolvedValueOnce({ definePain: true })
-        .mockResolvedValueOnce({ title: "Pain", description: "Desc" })
-        .mockResolvedValueOnce({ another: false })
-        .mockResolvedValueOnce({ defineValue: true })
-        .mockResolvedValueOnce({ title: "Val", description: "Desc", benefit: "Ben", measurableOutcome: "" })
-        .mockResolvedValueOnce({ another: false })
-        .mockResolvedValueOnce({ enabled: true })
-        .mockResolvedValueOnce({ selectedAgentIds: ["claude"] });
+      queuePromptResults(
+        "TestProject",
+        "",
+        true,
+        "Devs",
+        "Developers",
+        "primary",
+        false,
+        true,
+        "Pain",
+        "Desc",
+        false,
+        true,
+        "Val",
+        "Desc",
+        "Ben",
+        "",
+        false,
+        true,
+        ["claude"],
+      );
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
 
-      const loggedText = consoleLogSpy.mock.calls.map((c) => String(c[0])).join("\n");
+      const loggedText = consoleLogSpy.mock.calls
+        .map((c) => String(c[0]))
+        .join("\n");
       expect(loggedText).not.toContain("jumbo audience add");
       expect(loggedText).not.toContain("jumbo audience-pain add");
       expect(loggedText).not.toContain("jumbo value add");
