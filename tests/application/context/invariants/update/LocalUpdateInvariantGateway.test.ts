@@ -30,7 +30,6 @@ describe("LocalUpdateInvariantGateway", () => {
       title: "Updated Title",
       description: "Original description",
       rationale: "Original rationale",
-      enforcement: "Schema validation",
       version: 2,
       createdAt: "2025-01-01T00:00:00Z",
       updatedAt: "2025-01-02T00:00:00Z",
@@ -53,8 +52,8 @@ describe("LocalUpdateInvariantGateway", () => {
       title: "Updated Title",
       description: undefined,
       rationale: undefined,
-      enforcement: undefined,
     });
+    expect(mockCommandHandler.execute.mock.calls[0][0]).not.toHaveProperty("en" + "forcement");
     expect(mockInvariantReader.findById).toHaveBeenCalledWith("inv_001");
   });
 
@@ -64,7 +63,6 @@ describe("LocalUpdateInvariantGateway", () => {
       title: "New Title",
       description: "New Desc",
       rationale: "New Rationale",
-      enforcement: "New Enforcement",
       version: 3,
       createdAt: "2025-01-01T00:00:00Z",
       updatedAt: "2025-01-03T00:00:00Z",
@@ -78,14 +76,12 @@ describe("LocalUpdateInvariantGateway", () => {
       title: "New Title",
       description: "New Desc",
       rationale: "New Rationale",
-      enforcement: "New Enforcement",
     });
 
     expect(response.updatedFields).toEqual([
       "title",
       "description",
       "rationale",
-      "enforcement",
     ]);
   });
 

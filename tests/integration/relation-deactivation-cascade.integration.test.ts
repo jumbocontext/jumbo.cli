@@ -122,7 +122,7 @@ describe("Relation deactivation cascade integration", () => {
     expect(deactivated.relations[0].toEntityId).toBe(componentId);
   });
 
-  it("removing a component deactivates active relations linked to that component", async () => {
+  it("removing a component prunes active relations linked to that component", async () => {
     const decisionId = await addDecision("Removal Decision");
     const componentId = await addComponent("RemovedComponent");
 
@@ -142,12 +142,12 @@ describe("Relation deactivation cascade integration", () => {
 
     await container.removeComponentController.handle({ componentId });
 
-    const deactivated = await container.getRelationsController.handle({ status: "deactivated" });
-    expect(deactivated.relations.length).toBeGreaterThan(0);
-    expect(deactivated.relations.some((relation) => relation.toEntityId === componentId)).toBe(true);
+    const removed = await container.getRelationsController.handle({ status: "removed" });
+    expect(removed.relations.length).toBeGreaterThan(0);
+    expect(removed.relations.some((relation) => relation.toEntityId === componentId)).toBe(true);
   });
 
-  it("session start context includes deactivated relation warning data", async () => {
+  it("session start context omits deactivated relation warning data", async () => {
     const decisionId = await addDecision("Session Warning Decision");
     const componentId = await addComponent("SessionWarningComponent");
 
@@ -165,8 +165,7 @@ describe("Relation deactivation cascade integration", () => {
     });
 
     const sessionStart = await container.sessionStartController.handle({});
-    expect(sessionStart.context.context.deactivatedRelations.count).toBeGreaterThan(0);
-    expect(sessionStart.context.context.deactivatedRelations.summary.length).toBeGreaterThan(0);
+    expect(sessionStart.context.context).not.toHaveProperty("deactivatedRelations");
   });
 
   it("relations query supports filtering by deactivated status", async () => {

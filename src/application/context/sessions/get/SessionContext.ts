@@ -1,7 +1,6 @@
 import { GoalView } from "../../goals/GoalView.js";
 import { DecisionView } from "../../decisions/DecisionView.js";
 import { ContextualProjectView } from "../../project/get/ContextualProjectView.js";
-import { DeactivatedRelationSummary } from "./DeactivatedRelationSummary.js";
 
 /**
  * SessionContext - Pure context container for session orientation.
@@ -43,8 +42,4 @@ export interface SessionContext {
    */
   readonly recentDecisions: DecisionView[];
 
-  /**
-   * Summary of deactivated relations so agents can avoid stale architecture links.
-   */
-  readonly deactivatedRelations: DeactivatedRelationSummary;
 }

@@ -60,8 +60,8 @@ jumbo decision supersede --id <id> --new-decision-id <new-id>
 #### Invariants
 Were any invariants introduced, weakened, strengthened, or made obsolete?
 ```bash
-jumbo invariant add --title "..." --description "..." --enforcement "..."
-jumbo invariant update --id <id> --description "..." --enforcement "..."
+jumbo invariant add --title "..." --description "..." --rationale "..."
+jumbo invariant update --id <id> --description "..." --rationale "..."
 jumbo invariant remove --id <id>
 ```
 

@@ -15,7 +15,6 @@ export interface GuidelineUpdatedEvent extends BaseEvent {
     readonly title?: string;
     readonly description?: string;
     readonly rationale?: string;
-    readonly enforcement?: string;
     readonly examples?: string[];
   };
 }

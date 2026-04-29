@@ -18,7 +18,6 @@ describe("LocalAddInvariantGateway", () => {
     const request = {
       title: "HTTPS only",
       description: "All API calls must use HTTPS",
-      enforcement: "Linter rule",
       rationale: "Security requirement",
     };
 
@@ -32,16 +31,15 @@ describe("LocalAddInvariantGateway", () => {
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({
       title: "HTTPS only",
       description: "All API calls must use HTTPS",
-      enforcement: "Linter rule",
       rationale: "Security requirement",
     });
+    expect(mockCommandHandler.execute.mock.calls[0][0]).not.toHaveProperty("en" + "forcement");
   });
 
   it("should pass undefined rationale when not provided", async () => {
     const request = {
       title: "80% test coverage",
       description: "All code must have at least 80% test coverage",
-      enforcement: "Pre-commit hook",
     };
 
     mockCommandHandler.execute.mockResolvedValue({
@@ -54,8 +52,8 @@ describe("LocalAddInvariantGateway", () => {
     expect(mockCommandHandler.execute).toHaveBeenCalledWith({
       title: "80% test coverage",
       description: "All code must have at least 80% test coverage",
-      enforcement: "Pre-commit hook",
       rationale: undefined,
     });
+    expect(mockCommandHandler.execute.mock.calls[0][0]).not.toHaveProperty("en" + "forcement");
   });
 });

@@ -10,5 +10,4 @@ export interface UpdateInvariantCommand {
   title?: string;
   description?: string;
   rationale?: string | null;
-  enforcement?: string;
 }

@@ -15,7 +15,6 @@ describe("SqliteGuidelineViewReader", () => {
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         rationale TEXT NOT NULL,
-        enforcement TEXT NOT NULL,
         examples TEXT NOT NULL,
         isRemoved INTEGER NOT NULL DEFAULT 0,
         removedAt TEXT,
@@ -34,9 +33,9 @@ describe("SqliteGuidelineViewReader", () => {
 
   function insertGuideline(id: string, title: string, createdAt: string): void {
     db.prepare(`
-      INSERT INTO guideline_views (guidelineId, category, title, description, rationale, enforcement, examples, isRemoved, version, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, GuidelineCategory.TESTING, title, "desc", "rationale", "enforcement", "[]", 0, 1, createdAt, createdAt);
+      INSERT INTO guideline_views (guidelineId, category, title, description, rationale, examples, isRemoved, version, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(id, GuidelineCategory.TESTING, title, "desc", "rationale", "[]", 0, 1, createdAt, createdAt);
   }
 
   describe("findByIds", () => {
@@ -53,6 +52,7 @@ describe("SqliteGuidelineViewReader", () => {
       expect(result).toHaveLength(1);
       expect(result[0].guidelineId).toBe("guide_1");
       expect(result[0].title).toBe("Test all things");
+      expect(result[0]).not.toHaveProperty(["enforce", "ment"].join(""));
     });
 
     it("should return multiple guidelines by IDs ordered by createdAt DESC", async () => {

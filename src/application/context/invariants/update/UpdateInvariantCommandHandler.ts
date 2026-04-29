@@ -38,7 +38,6 @@ export class UpdateInvariantCommandHandler {
       title: command.title,
       description: command.description,
       rationale: command.rationale,
-      enforcement: command.enforcement,
     });
 
     // 4. Persist event to file store

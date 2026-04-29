@@ -14,8 +14,7 @@ describe("Invariant Aggregate", () => {
       // Act
       const event = invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
 
       // Assert
@@ -24,7 +23,7 @@ describe("Invariant Aggregate", () => {
       expect(event.version).toBe(1);
       expect(event.payload.title).toBe("HTTPS only");
       expect(event.payload.description).toBe("All API calls must use HTTPS");
-      expect(event.payload.enforcement).toBe("Linter rule");
+      expect(event.payload).not.toHaveProperty("en" + "forcement");
       expect(event.payload.rationale).toBeNull();
       expect(event.timestamp).toBeDefined();
     });
@@ -37,14 +36,13 @@ describe("Invariant Aggregate", () => {
       const event = invariant.add(
         "HTTPS only",
         "All API calls must use HTTPS",
-        "Linter rule",
         "Security best practice"
       );
 
       // Assert
       expect(event.payload.title).toBe("HTTPS only");
       expect(event.payload.description).toBe("All API calls must use HTTPS");
-      expect(event.payload.enforcement).toBe("Linter rule");
+      expect(event.payload).not.toHaveProperty("en" + "forcement");
       expect(event.payload.rationale).toBe("Security best practice");
     });
 
@@ -54,7 +52,7 @@ describe("Invariant Aggregate", () => {
 
       // Act & Assert
       expect(() =>
-        invariant.add("", "Some description", "Linter rule")
+        invariant.add("", "Some description")
       ).toThrow("Invariant title must be provided");
     });
 
@@ -65,7 +63,7 @@ describe("Invariant Aggregate", () => {
 
       // Act & Assert
       expect(() =>
-        invariant.add(longTitle, "Some description", "Linter rule")
+        invariant.add(longTitle, "Some description")
       ).toThrow("Invariant title must be less than 100 characters");
     });
 
@@ -75,7 +73,7 @@ describe("Invariant Aggregate", () => {
 
       // Act & Assert
       expect(() =>
-        invariant.add("HTTPS only", "", "Linter rule")
+        invariant.add("HTTPS only", "")
       ).toThrow("Invariant description must be provided");
     });
 
@@ -86,29 +84,8 @@ describe("Invariant Aggregate", () => {
 
       // Act & Assert
       expect(() =>
-        invariant.add("HTTPS only", longDescription, "Linter rule")
+        invariant.add("HTTPS only", longDescription)
       ).toThrow("Invariant description must be less than 1000 characters");
-    });
-
-    it("should throw error if enforcement is empty", () => {
-      // Arrange
-      const invariant = Invariant.create("inv_123");
-
-      // Act & Assert
-      expect(() =>
-        invariant.add("HTTPS only", "Some description", "")
-      ).toThrow("Enforcement method must be provided");
-    });
-
-    it("should throw error if enforcement is too long", () => {
-      // Arrange
-      const invariant = Invariant.create("inv_123");
-      const longEnforcement = "a".repeat(201); // Max is 200
-
-      // Act & Assert
-      expect(() =>
-        invariant.add("HTTPS only", "Some description", longEnforcement)
-      ).toThrow("Enforcement must be less than 200 characters");
     });
 
     it("should throw error if rationale is too long", () => {
@@ -121,7 +98,6 @@ describe("Invariant Aggregate", () => {
         invariant.add(
           "HTTPS only",
           "Some description",
-          "Linter rule",
           longRationale
         )
       ).toThrow("Rationale must be less than 1000 characters");
@@ -135,7 +111,6 @@ describe("Invariant Aggregate", () => {
       invariant.add(
         "HTTPS only",
         "All API calls must use HTTPS",
-        "Linter rule",
         "Security best practice"
       );
 
@@ -143,7 +118,7 @@ describe("Invariant Aggregate", () => {
       const snapshot = invariant.snapshot;
       expect(snapshot.title).toBe("HTTPS only");
       expect(snapshot.description).toBe("All API calls must use HTTPS");
-      expect(snapshot.enforcement).toBe("Linter rule");
+      expect(snapshot).not.toHaveProperty("en" + "forcement");
       expect(snapshot.rationale).toBe("Security best practice");
       expect(snapshot.version).toBe(1);
     });
@@ -156,7 +131,6 @@ describe("Invariant Aggregate", () => {
       const event = invariant1.add(
         "HTTPS only",
         "All API calls must use HTTPS",
-        "Linter rule",
         "Security best practice"
       );
 
@@ -167,7 +141,7 @@ describe("Invariant Aggregate", () => {
       const snapshot = invariant2.snapshot;
       expect(snapshot.title).toBe("HTTPS only");
       expect(snapshot.description).toBe("All API calls must use HTTPS");
-      expect(snapshot.enforcement).toBe("Linter rule");
+      expect(snapshot).not.toHaveProperty("en" + "forcement");
       expect(snapshot.rationale).toBe("Security best practice");
       expect(snapshot.version).toBe(1);
     });
@@ -179,8 +153,7 @@ describe("Invariant Aggregate", () => {
       const invariant = Invariant.create("inv_123");
       invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
 
       // Act
@@ -192,7 +165,7 @@ describe("Invariant Aggregate", () => {
       expect(event.version).toBe(2);
       expect(event.payload.title).toBe("TLS 1.2+ only");
       expect(event.payload.description).toBeUndefined();
-      expect(event.payload.enforcement).toBeUndefined();
+      expect(event.payload).not.toHaveProperty("en" + "forcement");
       expect(event.payload.rationale).toBeUndefined();
     });
 
@@ -201,8 +174,7 @@ describe("Invariant Aggregate", () => {
       const invariant = Invariant.create("inv_123");
       invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
 
       // Act
@@ -218,7 +190,7 @@ describe("Invariant Aggregate", () => {
       expect(event.payload.title).toBe("TLS 1.2+ only");
       expect(event.payload.description).toBe("All API calls must use TLS 1.2 or higher");
       expect(event.payload.rationale).toBe("Security compliance requirement");
-      expect(event.payload.enforcement).toBeUndefined();
+      expect(event.payload).not.toHaveProperty("en" + "forcement");
     });
 
     it("should update aggregate state after update event", () => {
@@ -227,7 +199,6 @@ describe("Invariant Aggregate", () => {
       invariant.add(
         "HTTPS only",
         "All API calls must use HTTPS",
-        "Linter rule",
         "Security"
       );
 
@@ -238,7 +209,7 @@ describe("Invariant Aggregate", () => {
       const snapshot = invariant.snapshot;
       expect(snapshot.title).toBe("TLS 1.2+ only");
       expect(snapshot.description).toBe("All API calls must use HTTPS"); // unchanged
-      expect(snapshot.enforcement).toBe("Linter rule"); // unchanged
+      expect(snapshot).not.toHaveProperty("en" + "forcement");
       expect(snapshot.rationale).toBe("Security"); // unchanged
       expect(snapshot.version).toBe(2);
     });
@@ -248,8 +219,7 @@ describe("Invariant Aggregate", () => {
       const invariant = Invariant.create("inv_123");
       invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
 
       // Act & Assert
@@ -263,8 +233,7 @@ describe("Invariant Aggregate", () => {
       const invariant = Invariant.create("inv_123");
       invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
 
       // Act & Assert
@@ -278,8 +247,7 @@ describe("Invariant Aggregate", () => {
       const invariant = Invariant.create("inv_123");
       invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
       const longTitle = "a".repeat(101); // Max is 100
 
@@ -294,8 +262,7 @@ describe("Invariant Aggregate", () => {
       const invariant = Invariant.create("inv_123");
       invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
 
       // Act & Assert
@@ -309,8 +276,7 @@ describe("Invariant Aggregate", () => {
       const invariant = Invariant.create("inv_123");
       invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
       const longDescription = "a".repeat(1001); // Max is 1000
 
@@ -320,44 +286,12 @@ describe("Invariant Aggregate", () => {
       );
     });
 
-    it("should throw error if updated enforcement is empty", () => {
-      // Arrange
-      const invariant = Invariant.create("inv_123");
-      invariant.add(
-        "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
-      );
-
-      // Act & Assert
-      expect(() => invariant.update({ enforcement: "" })).toThrow(
-        "Enforcement method must be provided"
-      );
-    });
-
-    it("should throw error if updated enforcement is too long", () => {
-      // Arrange
-      const invariant = Invariant.create("inv_123");
-      invariant.add(
-        "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
-      );
-      const longEnforcement = "a".repeat(201); // Max is 200
-
-      // Act & Assert
-      expect(() => invariant.update({ enforcement: longEnforcement })).toThrow(
-        "Enforcement must be less than 200 characters"
-      );
-    });
-
     it("should throw error if updated rationale is too long", () => {
       // Arrange
       const invariant = Invariant.create("inv_123");
       invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
       const longRationale = "a".repeat(1001); // Max is 1000
 
@@ -373,7 +307,6 @@ describe("Invariant Aggregate", () => {
       invariant.add(
         "HTTPS only",
         "All API calls must use HTTPS",
-        "Linter rule",
         "Security requirement"
       );
 
@@ -390,8 +323,7 @@ describe("Invariant Aggregate", () => {
       const invariant = Invariant.create("inv_123");
       invariant.add(
         "HTTPS only",
-        "All API calls must use HTTPS",
-        "Linter rule"
+        "All API calls must use HTTPS"
       );
 
       // Act

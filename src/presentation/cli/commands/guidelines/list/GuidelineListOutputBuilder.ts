@@ -38,7 +38,6 @@ export class GuidelineListOutputBuilder {
         title: g.title,
         description: g.description,
         rationale: g.rationale,
-        enforcement: g.enforcement,
         examples: g.examples,
         createdAt: g.createdAt,
         updatedAt: g.updatedAt,

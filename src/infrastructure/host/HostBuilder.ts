@@ -375,6 +375,7 @@ import { AddRelationController } from "../../application/context/relations/add/A
 import { RelationDeactivatedEventHandler } from "../../application/context/relations/deactivate/RelationDeactivatedEventHandler.js";
 import { DeactivateRelationCommandHandler } from "../../application/context/relations/deactivate/DeactivateRelationCommandHandler.js";
 import { RelationDeactivationCascade } from "../../application/context/relations/deactivate/RelationDeactivationCascade.js";
+import { RelationPruningCascade } from "../../application/context/relations/prune/RelationPruningCascade.js";
 import { RelationReactivatedEventHandler } from "../../application/context/relations/reactivate/RelationReactivatedEventHandler.js";
 import { ReactivateRelationCommandHandler } from "../../application/context/relations/reactivate/ReactivateRelationCommandHandler.js";
 import { RelationReactivationCascade } from "../../application/context/relations/reactivate/RelationReactivationCascade.js";
@@ -975,7 +976,6 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       sessionViewReader,
       goalStatusReader,
       decisionViewReader,
-      relationViewReader,
       projectContextReader,
       audienceContextReader,
       audiencePainContextReader,
@@ -1705,6 +1705,10 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       relationViewReader,
       deactivateRelationCommandHandler
     );
+    const relationPruningCascade = new RelationPruningCascade(
+      relationViewReader,
+      removeRelationCommandHandler
+    );
     const reactivateRelationCommandHandler = new ReactivateRelationCommandHandler(
       relationReactivatedEventStore,
       relationReactivatedEventStore,
@@ -1760,7 +1764,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const goalCompletedEventHandler = new GoalCompletedEventHandler(goalCompletedProjector);
     const goalRefinedEventHandler = new GoalRefinedEventHandler(goalRefinedProjector);
     const goalResetEventHandler = new GoalResetEventHandler(goalResetProjector);
-    const goalRemovedEventHandler = new GoalRemovedEventHandler(goalRemovedProjector, relationMaintenanceGoalRegistrar);
+    const goalRemovedEventHandler = new GoalRemovedEventHandler(goalRemovedProjector, relationPruningCascade);
     const goalProgressUpdatedEventHandler = new GoalProgressUpdatedEventHandler(goalProgressUpdatedProjector);
     const goalSubmittedForReviewEventHandler = new GoalSubmittedForReviewEventHandler(goalSubmittedForReviewProjector);
     const goalQualifiedEventHandler = new GoalQualifiedEventHandler(goalQualifiedProjector);
@@ -1783,7 +1787,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const componentUpdatedEventHandler = new ComponentUpdatedEventHandler(componentUpdatedProjector, relationMaintenanceGoalRegistrar);
     const componentDeprecatedEventHandler = new ComponentDeprecatedEventHandler(componentDeprecatedProjector, relationDeactivationCascade, relationMaintenanceGoalRegistrar);
     const componentUndeprecatedEventHandler = new ComponentUndeprecatedEventHandler(componentUndeprecatedProjector, relationReactivationCascade, relationMaintenanceGoalRegistrar);
-    const componentRemovedEventHandler = new ComponentRemovedEventHandler(componentRemovedProjector, relationDeactivationCascade, relationMaintenanceGoalRegistrar);
+    const componentRemovedEventHandler = new ComponentRemovedEventHandler(componentRemovedProjector, relationPruningCascade);
     const componentRenamedEventHandler = new ComponentRenamedEventHandler(componentRenamedProjector);
     // Dependency Event Handlers - decomposed by use case
     const dependencyAddedEventHandler = new DependencyAddedEventHandler(dependencyAddedProjector);

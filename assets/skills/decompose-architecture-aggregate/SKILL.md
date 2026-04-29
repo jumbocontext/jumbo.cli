@@ -32,8 +32,8 @@ Parse the output. If no Architecture data exists, inform the user and stop.
 For each non-empty section in the Architecture view, build a mapping proposal:
 
 - **patterns** — Each pattern becomes a Decision. Draft: `--title`, `--context` (use the pattern description), `--rationale` (why this pattern was chosen, if stated).
-- **principles** — Each principle becomes an Invariant. Draft: `--title`, `--description` (the principle text), `--enforcement` (how it is enforced — ask the user if not obvious from the data).
-- **organization** — Each organization entry becomes an Invariant. Draft: `--title`, `--description` (the organizational rule), `--enforcement` (ask the user if not obvious).
+- **principles** — Each principle becomes an Invariant. Draft: `--title`, `--description` (the principle text), and `--rationale` if the source explains why the principle is non-negotiable.
+- **organization** — Each organization entry becomes an Invariant. Draft: `--title`, `--description` (the organizational rule), and `--rationale` if the source explains why the rule is non-negotiable.
 - **dataStores** — Each data store becomes a Component. Draft: `--name`, `--type` (select from: service, db, queue, ui, lib, api, worker, cache, storage), `--description`, `--responsibility`, `--path` (ask the user if not derivable from the data).
 - **stack** — Each stack entry becomes a Dependency. Draft: `--name`, `--ecosystem` (e.g., npm, pip, maven, service), `--package-name`, `--version-constraint` (if known).
 
@@ -52,7 +52,7 @@ Ask the user to confirm, adjust, skip, or augment each mapping. Do not execute a
 Execute each confirmed mapping one at a time using the appropriate `jumbo` command:
 
 - `jumbo decision add --title "..." --context "..." [--rationale "..."] [--alternative "..."]`
-- `jumbo invariant add --title "..." --description "..." --enforcement "..." [--rationale "..."]`
+- `jumbo invariant add --title "..." --description "..." [--rationale "..."]`
 - `jumbo component add --name "..." --type "..." --description "..." --responsibility "..." --path "..."`
 - `jumbo dependency add --name "..." --ecosystem "..." --package-name "..." [--version-constraint "..."]`
 

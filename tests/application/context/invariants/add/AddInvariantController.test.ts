@@ -18,7 +18,6 @@ describe("AddInvariantController", () => {
     const request = {
       title: "HTTPS only",
       description: "All API calls must use HTTPS",
-      enforcement: "Linter rule",
       rationale: "Security requirement",
     };
 
@@ -38,7 +37,6 @@ describe("AddInvariantController", () => {
     const request = {
       title: "80% test coverage",
       description: "All code must have at least 80% test coverage",
-      enforcement: "Pre-commit hook",
     };
 
     const expectedResponse = {

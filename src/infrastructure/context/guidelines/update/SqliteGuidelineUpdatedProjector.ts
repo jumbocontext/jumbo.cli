@@ -33,10 +33,6 @@ export class SqliteGuidelineUpdatedProjector implements IGuidelineUpdatedProject
       updates.push("rationale = ?");
       params.push(event.payload.rationale);
     }
-    if (event.payload.enforcement !== undefined) {
-      updates.push("enforcement = ?");
-      params.push(event.payload.enforcement);
-    }
     if (event.payload.examples !== undefined) {
       updates.push("examples = ?");
       params.push(JSON.stringify(event.payload.examples));
@@ -73,7 +69,6 @@ export class SqliteGuidelineUpdatedProjector implements IGuidelineUpdatedProject
       title: row.title as string,
       description: row.description as string,
       rationale: row.rationale as string,
-      enforcement: row.enforcement as string,
       examples: JSON.parse((row.examples as string) || "[]"),
       isRemoved: (row.isRemoved as number) === 1,
       removedAt: (row.removedAt as string) ?? null,

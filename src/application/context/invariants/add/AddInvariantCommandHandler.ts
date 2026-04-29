@@ -38,7 +38,6 @@ export class AddInvariantCommandHandler {
     const event = invariant.add(
       command.title,
       command.description,
-      command.enforcement,
       command.rationale
     );
 

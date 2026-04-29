@@ -43,7 +43,6 @@ export class LocalUpdateGuidelineGateway implements IUpdateGuidelineGateway {
       title?: string;
       description?: string;
       rationale?: string;
-      enforcement?: string;
       examples?: string[];
     } = {};
 
@@ -52,8 +51,6 @@ export class LocalUpdateGuidelineGateway implements IUpdateGuidelineGateway {
     if (request.description !== undefined)
       changes.description = request.description;
     if (request.rationale !== undefined) changes.rationale = request.rationale;
-    if (request.enforcement !== undefined)
-      changes.enforcement = request.enforcement;
     if (request.examples !== undefined) changes.examples = request.examples;
 
     // 3.1 Domain logic produces update event
@@ -74,7 +71,6 @@ export class LocalUpdateGuidelineGateway implements IUpdateGuidelineGateway {
     if (request.title !== undefined) updatedFields.push("title");
     if (request.description !== undefined) updatedFields.push("description");
     if (request.rationale !== undefined) updatedFields.push("rationale");
-    if (request.enforcement !== undefined) updatedFields.push("enforcement");
     if (request.examples !== undefined) updatedFields.push("examples");
 
     return {

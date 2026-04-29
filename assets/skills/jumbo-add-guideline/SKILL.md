@@ -16,8 +16,7 @@ jumbo guideline add \
   --category "<testing|codingStyle|process|communication|documentation|security|performance|other>" \
   --title "<Guideline title>" \
   --description "<What to do and when>" \
-  --rationale "<Why this matters>" \
-  --enforcement "<How compliance is verified>"
+  --rationale "<Why this matters>"
 ```
 
 ## Bad Example
@@ -27,8 +26,7 @@ jumbo guideline add \
   --category codingStyle \
   --title "Use arrow functions in the auth module" \
   --description "All functions in src/auth/ should be arrow functions" \
-  --rationale "Consistency in auth code" \
-  --enforcement "Code review"
+  --rationale "Consistency in auth code"
 ```
 
 Too narrow — scoped to one module and one task. This is a goal criterion, not a project guideline.
@@ -40,8 +38,7 @@ jumbo guideline add \
   --category codingStyle \
   --title "Prefer arrow functions for non-method declarations" \
   --description "Use arrow functions for callbacks, inline handlers, and standalone function expressions. Use function declarations for exported named functions and class methods." \
-  --rationale "Consistent lexical scoping and concise syntax across the codebase" \
-  --enforcement "ESLint prefer-arrow-callback rule"
+  --rationale "Consistent lexical scoping and concise syntax across the codebase"
 ```
 
-Applies project-wide. States when to use and when not to use. Rationale explains the benefit. Enforcement is concrete.
+Applies project-wide. States when to use and when not to use. Rationale explains the benefit.

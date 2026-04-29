@@ -31,7 +31,6 @@ describe("GetGuidelinesController", () => {
           title: "Write unit tests",
           description: "Every function should have tests",
           rationale: "Quality",
-          enforcement: "CI",
           examples: [],
           isRemoved: false,
           removedAt: null,

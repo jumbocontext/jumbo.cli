@@ -15,8 +15,8 @@ export class SqliteGuidelineAddedProjector implements IGuidelineAddedProjector {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO guideline_views (
         guidelineId, category, title, description, rationale,
-        enforcement, examples, version, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        examples, version, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -25,7 +25,6 @@ export class SqliteGuidelineAddedProjector implements IGuidelineAddedProjector {
       event.payload.title,
       event.payload.description,
       event.payload.rationale,
-      event.payload.enforcement,
       JSON.stringify(event.payload.examples),
       event.version,
       event.timestamp,
@@ -49,7 +48,6 @@ export class SqliteGuidelineAddedProjector implements IGuidelineAddedProjector {
       title: row.title as string,
       description: row.description as string,
       rationale: row.rationale as string,
-      enforcement: row.enforcement as string,
       examples: JSON.parse((row.examples as string) || "[]"),
       isRemoved: (row.isRemoved as number) === 1,
       removedAt: (row.removedAt as string) ?? null,

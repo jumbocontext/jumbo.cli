@@ -3,5 +3,4 @@ export interface UpdateInvariantRequest {
   readonly title?: string;
   readonly description?: string;
   readonly rationale?: string;
-  readonly enforcement?: string;
 }

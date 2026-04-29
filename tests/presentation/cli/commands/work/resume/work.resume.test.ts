@@ -43,7 +43,6 @@ describe("work.resume command", () => {
         pausedGoals: [],
         plannedGoals: [],
         recentDecisions: [],
-        deactivatedRelations: { count: 0, summary: "No deactivated relations." },
       },
       instructions: ["resume-continuation-prompt"],
       scope: "work-resume",

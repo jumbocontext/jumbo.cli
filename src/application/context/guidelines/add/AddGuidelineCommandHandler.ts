@@ -28,7 +28,6 @@ export class AddGuidelineCommandHandler {
       command.title,
       command.description,
       command.rationale,
-      command.enforcement,
       command.examples
     );
 

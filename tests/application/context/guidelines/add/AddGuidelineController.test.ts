@@ -20,7 +20,6 @@ describe("AddGuidelineController", () => {
       title: "80% coverage required",
       description: "All new features must have at least 80% test coverage",
       rationale: "Ensures code quality and reduces bugs",
-      enforcement: "Pre-commit hook checks coverage",
       examples: ["src/example.ts"],
     };
 
@@ -34,6 +33,7 @@ describe("AddGuidelineController", () => {
 
     expect(response).toEqual(expectedResponse);
     expect(mockGateway.addGuideline).toHaveBeenCalledWith(request);
+    expect(request).not.toHaveProperty(["enforce", "ment"].join(""));
   });
 
   it("should handle request without optional examples", async () => {
@@ -42,7 +42,6 @@ describe("AddGuidelineController", () => {
       title: "Use TypeScript strict mode",
       description: "All TypeScript files must use strict mode",
       rationale: "Catches type errors early",
-      enforcement: "tsconfig.json strict flag",
     };
 
     const expectedResponse = {

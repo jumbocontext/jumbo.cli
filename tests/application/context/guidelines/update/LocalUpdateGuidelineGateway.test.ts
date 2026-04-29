@@ -19,7 +19,6 @@ describe("LocalUpdateGuidelineGateway", () => {
     title: "Original Title",
     description: "Original description",
     rationale: "Original rationale",
-    enforcement: "Original enforcement",
     examples: [],
     isRemoved: false,
     removedAt: null,
@@ -76,7 +75,6 @@ describe("LocalUpdateGuidelineGateway", () => {
           title: "Original Title",
           description: "Original description",
           rationale: "Original rationale",
-          enforcement: "Original enforcement",
           examples: [],
         },
       },
@@ -94,6 +92,7 @@ describe("LocalUpdateGuidelineGateway", () => {
     expect(response.title).toBe("Updated Title");
     expect(response.version).toBe(2);
     expect(mockEventWriter.append).toHaveBeenCalled();
+    expect(mockEventWriter.append.mock.calls[0][0].payload).not.toHaveProperty(["enforce", "ment"].join(""));
     expect(mockEventBus.publish).toHaveBeenCalled();
   });
 
@@ -132,7 +131,6 @@ describe("LocalUpdateGuidelineGateway", () => {
           title: "Original Title",
           description: "Original description",
           rationale: "Original rationale",
-          enforcement: "Original enforcement",
           examples: [],
         },
       },

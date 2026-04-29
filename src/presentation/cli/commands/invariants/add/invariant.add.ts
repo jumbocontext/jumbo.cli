@@ -22,10 +22,6 @@ export const metadata: CommandMetadata = {
     {
       flags: "-d, --description <description>",
       description: "Detailed description of the invariant"
-    },
-    {
-      flags: "--enforcement <enforcement>",
-      description: "How this invariant is enforced (e.g., 'Linter rule', 'Pre-commit hook')"
     }
   ],
   options: [
@@ -36,11 +32,11 @@ export const metadata: CommandMetadata = {
   ],
   examples: [
     {
-      command: "jumbo invariant add --title 'HTTPS only' --description 'All API calls must use HTTPS' --enforcement 'Linter rule'",
+      command: "jumbo invariant add --title 'HTTPS only' --description 'All API calls must use HTTPS'",
       description: "Add a security invariant"
     },
     {
-      command: "jumbo invariant add --title '80% test coverage' --description 'All code must have at least 80% test coverage' --enforcement 'Pre-commit hook' --rationale 'Ensures code quality'",
+      command: "jumbo invariant add --title '80% test coverage' --description 'All code must have at least 80% test coverage' --rationale 'Ensures code quality'",
       description: "Add a testing invariant with rationale"
     }
   ],
@@ -54,7 +50,6 @@ export const metadata: CommandMetadata = {
 export async function invariantAdd(options: {
   title: string;
   description: string;
-  enforcement: string;
   rationale?: string;
 }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
@@ -63,14 +58,12 @@ export async function invariantAdd(options: {
     const { invariantId } = await container.addInvariantController.handle({
       title: options.title,
       description: options.description,
-      enforcement: options.enforcement,
       rationale: options.rationale,
     });
 
     const data: Record<string, string> = {
       invariantId,
       title: options.title,
-      enforcement: options.enforcement,
     };
     if (options.rationale) {
       data.rationale = options.rationale;

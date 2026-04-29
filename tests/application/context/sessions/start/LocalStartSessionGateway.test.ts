@@ -25,7 +25,6 @@ describe("LocalStartSessionGateway", () => {
         pausedGoals: [],
         plannedGoals: [],
         recentDecisions: [],
-        deactivatedRelations: { count: 0, summary: "No deactivated relations." },
       },
       ...overrides,
     };
@@ -109,7 +108,6 @@ describe("LocalStartSessionGateway", () => {
           pausedGoals: [{ goalId: "g1", objective: "Paused task", status: "paused" } as GoalView],
           plannedGoals: [],
           recentDecisions: [],
-          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
         },
       });
       sessionContextQueryHandler.execute.mockResolvedValue(contextView);
@@ -134,7 +132,6 @@ describe("LocalStartSessionGateway", () => {
           pausedGoals: [{ goalId: "g1", objective: "Paused", status: "paused" } as GoalView],
           plannedGoals: [],
           recentDecisions: [],
-          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
         },
       });
       sessionContextQueryHandler.execute.mockResolvedValue(contextView);
@@ -161,7 +158,6 @@ describe("LocalStartSessionGateway", () => {
           pausedGoals: [],
           plannedGoals: [],
           recentDecisions: [],
-          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
         },
       });
       sessionContextQueryHandler.execute.mockResolvedValue(contextView);
@@ -184,7 +180,6 @@ describe("LocalStartSessionGateway", () => {
           pausedGoals: [],
           plannedGoals: [],
           recentDecisions: [],
-          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
         },
       });
       sessionContextQueryHandler.execute.mockResolvedValue(contextView);
@@ -208,7 +203,6 @@ describe("LocalStartSessionGateway", () => {
           pausedGoals: [],
           plannedGoals: [],
           recentDecisions: [],
-          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
         },
       });
       sessionContextQueryHandler.execute.mockResolvedValue(contextView);
@@ -237,7 +231,6 @@ describe("LocalStartSessionGateway", () => {
           pausedGoals: [],
           plannedGoals: [],
           recentDecisions: [],
-          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
         },
       });
       sessionContextQueryHandler.execute.mockResolvedValue(contextView);
@@ -331,7 +324,6 @@ describe("LocalStartSessionGateway", () => {
           pausedGoals: [],
           plannedGoals: [],
           recentDecisions: [],
-          deactivatedRelations: { count: 0, summary: "No deactivated relations." },
         },
       });
       sessionContextQueryHandler.execute.mockResolvedValue(contextView);

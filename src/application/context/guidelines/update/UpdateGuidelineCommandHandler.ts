@@ -50,7 +50,6 @@ export class UpdateGuidelineCommandHandler {
       title?: string;
       description?: string;
       rationale?: string;
-      enforcement?: string;
       examples?: string[];
     } = {};
 
@@ -59,8 +58,6 @@ export class UpdateGuidelineCommandHandler {
     if (command.description !== undefined)
       changes.description = command.description;
     if (command.rationale !== undefined) changes.rationale = command.rationale;
-    if (command.enforcement !== undefined)
-      changes.enforcement = command.enforcement;
     if (command.examples !== undefined) changes.examples = command.examples;
 
     // 3.1 Domain logic produces update event

@@ -16,7 +16,7 @@ Add a project invariant.
 ### Synopsis
 
 ```bash
-> jumbo invariant add --title <text> --description <text> --enforcement <text> [options]
+> jumbo invariant add --title <text> --description <text> [options]
 ```
 
 ### Options
@@ -25,7 +25,6 @@ Add a project invariant.
 |--------|-------------|
 | `-t, --title <text>` | Invariant title (required) |
 | `-d, --description <text>` | Detailed description of the invariant (required) |
-| `--enforcement <text>` | How this invariant is enforced (required) |
 | `-r, --rationale <text>` | Why this invariant is non-negotiable |
 
 ### Examples
@@ -34,7 +33,6 @@ Add a project invariant.
 > jumbo invariant add \
   --title "No direct DB access" \
   --description "All database access must go through repository interfaces" \
-  --enforcement "Code review and architecture tests" \
   --rationale "Maintains clean architecture boundaries"
 ```
 
@@ -76,12 +74,10 @@ Update an existing invariant.
 | `-t, --title <text>` | Updated title |
 | `-d, --description <text>` | Updated description |
 | `-r, --rationale <text>` | Updated rationale |
-| `--enforcement <text>` | Updated enforcement method |
 
 ### Examples
 
 ```bash
-> jumbo invariant update --id inv_abc123 --enforcement "Automated architecture fitness function"
 > jumbo invariant update --id inv_abc123 --title "Repository pattern required" --description "Updated invariant"
 ```
 

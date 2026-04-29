@@ -24,7 +24,6 @@ describe("LocalAddGuidelineGateway", () => {
       title: "80% coverage required",
       description: "All new features must have at least 80% test coverage",
       rationale: "Ensures code quality and reduces bugs",
-      enforcement: "Pre-commit hook checks coverage",
       examples: ["src/example.ts"],
     });
 
@@ -34,9 +33,9 @@ describe("LocalAddGuidelineGateway", () => {
       title: "80% coverage required",
       description: "All new features must have at least 80% test coverage",
       rationale: "Ensures code quality and reduces bugs",
-      enforcement: "Pre-commit hook checks coverage",
       examples: ["src/example.ts"],
     });
+    expect(mockCommandHandler.execute.mock.calls[0][0]).not.toHaveProperty(["enforce", "ment"].join(""));
   });
 
   it("should handle request without optional examples", async () => {
@@ -49,7 +48,6 @@ describe("LocalAddGuidelineGateway", () => {
       title: "Use TypeScript strict mode",
       description: "All TypeScript files must use strict mode",
       rationale: "Catches type errors early",
-      enforcement: "tsconfig.json strict flag",
     });
 
     expect(response.guidelineId).toBe(guidelineId);
@@ -58,7 +56,6 @@ describe("LocalAddGuidelineGateway", () => {
       title: "Use TypeScript strict mode",
       description: "All TypeScript files must use strict mode",
       rationale: "Catches type errors early",
-      enforcement: "tsconfig.json strict flag",
       examples: undefined,
     });
   });

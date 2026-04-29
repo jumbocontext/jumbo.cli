@@ -11,7 +11,6 @@ export interface InvariantRecord {
   readonly title: string;
   readonly description: string;
   readonly rationale: string | null;
-  readonly enforcement: string;
   readonly version: number;
   readonly createdAt: string;
   readonly updatedAt: string;

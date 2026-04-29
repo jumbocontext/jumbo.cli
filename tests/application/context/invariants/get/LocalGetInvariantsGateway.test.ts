@@ -8,7 +8,6 @@ const sampleInvariant: InvariantView = {
   title: "Single Responsibility",
   description: "Each class/module has one reason to change",
   rationale: "Reduces coupling",
-  enforcement: "Code review",
   version: 1,
   createdAt: "2025-01-01T10:00:00Z",
   updatedAt: "2025-01-01T10:00:00Z",

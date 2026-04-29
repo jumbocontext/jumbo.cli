@@ -16,7 +16,6 @@ import { InvariantEventType, InvariantErrorMessages } from "./Constants.js";
 import { TITLE_RULES } from "./rules/TitleRules.js";
 import { DESCRIPTION_RULES } from "./rules/DescriptionRules.js";
 import { RATIONALE_RULES } from "./rules/RationaleRules.js";
-import { ENFORCEMENT_RULES } from "./rules/EnforcementRules.js";
 
 /**
  * Domain state: business properties + aggregate metadata
@@ -26,7 +25,6 @@ export interface InvariantState extends AggregateState {
   title: string;
   description: string;
   rationale: string | null;
-  enforcement: string;
   version: number;
 }
 
@@ -46,7 +44,6 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
         state.title = e.payload.title;
         state.description = e.payload.description;
         state.rationale = e.payload.rationale;
-        state.enforcement = e.payload.enforcement;
         state.version = e.version;
         break;
       }
@@ -55,7 +52,6 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
         if (e.payload.title !== undefined) state.title = e.payload.title;
         if (e.payload.description !== undefined) state.description = e.payload.description;
         if (e.payload.rationale !== undefined) state.rationale = e.payload.rationale;
-        if (e.payload.enforcement !== undefined) state.enforcement = e.payload.enforcement;
         state.version = e.version;
         break;
       }
@@ -76,7 +72,6 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
       title: "",
       description: "",
       rationale: null,
-      enforcement: "",
       version: 0,
     };
     return new Invariant(state);
@@ -92,7 +87,6 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
       title: "",
       description: "",
       rationale: null,
-      enforcement: "",
       version: 0,
     };
 
@@ -109,7 +103,6 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
    *
    * @param title - Invariant title (required)
    * @param description - Detailed description (required)
-   * @param enforcement - How this invariant is enforced (required)
    * @param rationale - Why this invariant is non-negotiable (optional)
    * @returns InvariantAdded event
    * @throws Error if validation fails
@@ -117,13 +110,11 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
   add(
     title: string,
     description: string,
-    enforcement: string,
     rationale?: string
   ): InvariantAddedEvent {
     // Input validation using rule pattern
     ValidationRuleSet.ensure(title, TITLE_RULES);
     ValidationRuleSet.ensure(description, DESCRIPTION_RULES);
-    ValidationRuleSet.ensure(enforcement, ENFORCEMENT_RULES);
     if (rationale) ValidationRuleSet.ensure(rationale, RATIONALE_RULES);
 
     // Use BaseAggregate.makeEvent
@@ -133,7 +124,6 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
         title,
         description,
         rationale: rationale || null,
-        enforcement,
       },
       Invariant.apply
     );
@@ -152,14 +142,12 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
     title?: string;
     description?: string;
     rationale?: string | null;
-    enforcement?: string;
   }): InvariantUpdatedEvent {
     // Validate at least one field provided
     const hasUpdates =
       updates.title !== undefined ||
       updates.description !== undefined ||
-      updates.rationale !== undefined ||
-      updates.enforcement !== undefined;
+      updates.rationale !== undefined;
 
     if (!hasUpdates) {
       throw new Error(InvariantErrorMessages.NO_CHANGES_PROVIDED);
@@ -175,22 +163,16 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
     if (updates.rationale !== undefined && updates.rationale !== null) {
       ValidationRuleSet.ensure(updates.rationale, RATIONALE_RULES);
     }
-    if (updates.enforcement !== undefined) {
-      ValidationRuleSet.ensure(updates.enforcement, ENFORCEMENT_RULES);
-    }
-
     // Create event with only provided fields
     const payload: {
       title?: string;
       description?: string;
       rationale?: string | null;
-      enforcement?: string;
     } = {};
 
     if (updates.title !== undefined) payload.title = updates.title;
     if (updates.description !== undefined) payload.description = updates.description;
     if (updates.rationale !== undefined) payload.rationale = updates.rationale;
-    if (updates.enforcement !== undefined) payload.enforcement = updates.enforcement;
 
     return this.makeEvent<InvariantUpdatedEvent>(
       InvariantEventType.UPDATED,

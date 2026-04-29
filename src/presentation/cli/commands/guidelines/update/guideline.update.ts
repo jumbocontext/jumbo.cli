@@ -41,10 +41,6 @@ export const metadata: CommandMetadata = {
       description: "Updated rationale for the guideline",
     },
     {
-      flags: "--enforcement <enforcement>",
-      description: "Updated enforcement details",
-    },
-    {
       flags: "--example <path...>",
       description: "Updated list of example paths",
     },
@@ -74,7 +70,6 @@ export async function guidelineUpdate(options: {
   title?: string;
   description?: string;
   rationale?: string;
-  enforcement?: string;
   example?: string[];
 }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
@@ -88,9 +83,6 @@ export async function guidelineUpdate(options: {
         description: options.description,
       }),
       ...(options.rationale !== undefined && { rationale: options.rationale }),
-      ...(options.enforcement !== undefined && {
-        enforcement: options.enforcement,
-      }),
       ...(options.example !== undefined && { examples: options.example }),
     });
 

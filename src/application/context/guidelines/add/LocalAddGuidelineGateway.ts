@@ -14,7 +14,6 @@ export class LocalAddGuidelineGateway implements IAddGuidelineGateway {
       title: request.title,
       description: request.description,
       rationale: request.rationale,
-      enforcement: request.enforcement,
       examples: request.examples,
     });
 

@@ -26,7 +26,6 @@ import { CATEGORY_RULES } from "./rules/CategoryRules.js";
 import { TITLE_RULES } from "./rules/TitleRules.js";
 import { DESCRIPTION_RULES } from "./rules/DescriptionRules.js";
 import { RATIONALE_RULES } from "./rules/RationaleRules.js";
-import { ENFORCEMENT_RULES } from "./rules/EnforcementRules.js";
 import { EXAMPLES_RULES } from "./rules/ExamplesRules.js";
 
 /**
@@ -38,7 +37,6 @@ export interface GuidelineState extends AggregateState {
   title: string;
   description: string;
   rationale: string;
-  enforcement: string;
   examples: string[];
   isRemoved: boolean;  // Track removal state
   version: number;
@@ -61,7 +59,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
         state.title = e.payload.title;
         state.description = e.payload.description;
         state.rationale = e.payload.rationale;
-        state.enforcement = e.payload.enforcement;
         state.examples = e.payload.examples;
         state.version = e.version;
         break;
@@ -72,7 +69,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
         if (e.payload.title !== undefined) state.title = e.payload.title;
         if (e.payload.description !== undefined) state.description = e.payload.description;
         if (e.payload.rationale !== undefined) state.rationale = e.payload.rationale;
-        if (e.payload.enforcement !== undefined) state.enforcement = e.payload.enforcement;
         if (e.payload.examples !== undefined) state.examples = e.payload.examples;
         state.version = e.version;
         break;
@@ -96,7 +92,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
       title: "",
       description: "",
       rationale: "",
-      enforcement: "",
       examples: [],
       isRemoved: false,  // Default to not removed
       version: 0,
@@ -115,7 +110,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
       title: "",
       description: "",
       rationale: "",
-      enforcement: "",
       examples: [],
       isRemoved: false,
       version: 0,
@@ -136,7 +130,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
    * @param title - Guideline title (required)
    * @param description - Detailed description (required)
    * @param rationale - Why this guideline is important (required)
-   * @param enforcement - How this guideline is enforced (required)
    * @param examples - Example file paths demonstrating the guideline (optional)
    * @returns GuidelineAdded event
    * @throws Error if validation fails
@@ -146,7 +139,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
     title: string,
     description: string,
     rationale: string,
-    enforcement: string,
     examples?: string[]
   ): GuidelineAddedEvent {
     // Input validation using rule pattern (synchronous validations)
@@ -154,7 +146,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
     ValidationRuleSet.ensure(title, TITLE_RULES);
     ValidationRuleSet.ensure(description, DESCRIPTION_RULES);
     ValidationRuleSet.ensure(rationale, RATIONALE_RULES);
-    ValidationRuleSet.ensure(enforcement, ENFORCEMENT_RULES);
 
     // Validate examples (max count, path length only - file existence checked at read time)
     if (examples && examples.length > 0) {
@@ -169,7 +160,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
         title,
         description,
         rationale,
-        enforcement,
         examples: examples || [],
       },
       Guideline.apply
@@ -189,7 +179,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
     title?: string;
     description?: string;
     rationale?: string;
-    enforcement?: string;
     examples?: string[];
   }): GuidelineUpdatedEvent {
     // Ensure at least one change is provided
@@ -209,9 +198,6 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
     }
     if (changes.rationale !== undefined) {
       ValidationRuleSet.ensure(changes.rationale, RATIONALE_RULES);
-    }
-    if (changes.enforcement !== undefined) {
-      ValidationRuleSet.ensure(changes.enforcement, ENFORCEMENT_RULES);
     }
 
     // Validate examples (max count, path length only - file existence checked at read time)

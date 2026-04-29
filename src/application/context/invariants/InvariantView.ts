@@ -12,7 +12,6 @@ export interface InvariantView {
   title: string;
   description: string;
   rationale: string | null;
-  enforcement: string;
   version: number;
   createdAt: ISO8601;
   updatedAt: ISO8601;

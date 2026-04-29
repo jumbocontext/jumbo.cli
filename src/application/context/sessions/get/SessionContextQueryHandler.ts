@@ -6,7 +6,6 @@ import { GoalStatus } from "../../../../domain/goals/Constants.js";
 import { IProjectContextReader } from "../../project/query/IProjectContextReader.js";
 import { IAudienceContextReader } from "../../audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../audience-pains/query/IAudiencePainContextReader.js";
-import { IRelationViewReader } from "../../relations/get/IRelationViewReader.js";
 import { IValuePropositionContextReader } from "../../value-propositions/query/IValuePropositionContextReader.js";
 
 /**
@@ -23,7 +22,6 @@ export class SessionContextQueryHandler {
     private readonly sessionViewReader: ISessionViewReader,
     private readonly goalStatusReader: IGoalStatusReader,
     private readonly decisionViewReader: IDecisionViewReader,
-    private readonly relationViewReader: IRelationViewReader,
     private readonly projectContextReader?: IProjectContextReader,
     private readonly audienceContextReader?: IAudienceContextReader,
     private readonly audiencePainContextReader?: IAudiencePainContextReader,
@@ -53,7 +51,6 @@ export class SessionContextQueryHandler {
       todoGoals,
       refinedGoals,
       activeDecisions,
-      deactivatedRelations,
       project,
       audiences,
       audiencePains,
@@ -68,7 +65,6 @@ export class SessionContextQueryHandler {
       this.goalStatusReader.findByStatus(GoalStatus.TODO),
       this.goalStatusReader.findByStatus(GoalStatus.REFINED),
       this.decisionViewReader.findAll("active"),
-      this.relationViewReader.findAll({ status: "deactivated" }),
       this.projectContextReader?.getProject() ?? Promise.resolve(null),
       this.audienceContextReader?.findAllActive() ?? Promise.resolve([]),
       this.audiencePainContextReader?.findAllActive() ?? Promise.resolve([]),
@@ -86,22 +82,6 @@ export class SessionContextQueryHandler {
     const recentDecisions = activeDecisions
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 3);
-    const deactivatedRelationsSummary =
-      deactivatedRelations.length === 0
-        ? {
-            count: 0,
-            summary: "No deactivated relations.",
-          }
-        : {
-            count: deactivatedRelations.length,
-            summary: deactivatedRelations
-              .slice(0, 3)
-              .map(
-                (relation) =>
-                  `${relation.fromEntityType}:${relation.fromEntityId} -> ${relation.toEntityType}:${relation.toEntityId}`
-              )
-              .join("; "),
-          };
 
     return {
       session: activeSession ?? null,
@@ -111,7 +91,6 @@ export class SessionContextQueryHandler {
         pausedGoals,
         plannedGoals,
         recentDecisions,
-        deactivatedRelations: deactivatedRelationsSummary,
       },
     };
   }

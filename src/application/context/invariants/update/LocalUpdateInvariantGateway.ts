@@ -17,7 +17,6 @@ export class LocalUpdateInvariantGateway implements IUpdateInvariantGateway {
       title: request.title,
       description: request.description,
       rationale: request.rationale,
-      enforcement: request.enforcement,
     });
 
     // 2. Fetch updated view for response
@@ -28,7 +27,6 @@ export class LocalUpdateInvariantGateway implements IUpdateInvariantGateway {
     if (request.title !== undefined) updatedFields.push("title");
     if (request.description !== undefined) updatedFields.push("description");
     if (request.rationale !== undefined) updatedFields.push("rationale");
-    if (request.enforcement !== undefined) updatedFields.push("enforcement");
 
     return {
       invariantId: request.invariantId,

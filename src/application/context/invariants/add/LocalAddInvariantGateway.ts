@@ -12,7 +12,6 @@ export class LocalAddInvariantGateway implements IAddInvariantGateway {
     const result = await this.commandHandler.execute({
       title: request.title,
       description: request.description,
-      enforcement: request.enforcement,
       rationale: request.rationale,
     });
 

@@ -7,6 +7,5 @@
 export interface AddInvariantCommand {
   title: string;
   description: string;
-  enforcement: string;
   rationale?: string;
 }

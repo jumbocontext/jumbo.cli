@@ -15,7 +15,6 @@ Register an invariant with Jumbo when you discover a non-negotiable constraint �
 jumbo invariant add \
   --title "<Invariant title>" \
   --description "<What must always be true>" \
-  --enforcement "<How compliance is verified>" \
   --rationale "<Why this is non-negotiable>"
 ```
 
@@ -25,7 +24,6 @@ jumbo invariant add \
 jumbo invariant add \
   --title "Session endpoint must validate tokens" \
   --description "The /api/session endpoint must check JWT expiry" \
-  --enforcement "Integration test" \
   --rationale "Security requirement for session management"
 ```
 
@@ -37,8 +35,7 @@ Too narrow — applies to one endpoint. This is a requirement for a specific fea
 jumbo invariant add \
   --title "All API endpoints must validate authentication tokens" \
   --description "Every endpoint that accepts authenticated requests must verify token validity, expiry, and scope before processing the request" \
-  --enforcement "Middleware applied at router level; integration tests verify 401 for expired/invalid tokens" \
   --rationale "Security compliance requirement — unauthenticated access to protected resources is a critical vulnerability"
 ```
 
-Applies to every endpoint, not just one. States the full constraint. Enforcement is structural (middleware) not manual. Rationale explains why violation is unacceptable.
+Applies to every endpoint, not just one. States the full constraint. Rationale explains why violation is unacceptable.

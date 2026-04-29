@@ -32,10 +32,6 @@ export const metadata: CommandMetadata = {
     {
       flags: "--rationale <rationale>",
       description: "Why this guideline is important"
-    },
-    {
-      flags: "--enforcement <enforcement>",
-      description: "How this guideline is enforced"
     }
   ],
   options: [
@@ -46,11 +42,11 @@ export const metadata: CommandMetadata = {
   ],
   examples: [
     {
-      command: "jumbo guideline add --category testing --title '80% coverage required' --description 'All new features must have at least 80% test coverage' --rationale 'Ensures code quality and reduces bugs' --enforcement 'Pre-commit hook checks coverage'",
+      command: "jumbo guideline add --category testing --title '80% coverage required' --description 'All new features must have at least 80% test coverage' --rationale 'Ensures code quality and reduces bugs'",
       description: "Add a testing guideline"
     },
     {
-      command: "jumbo guideline add --category codingStyle --title 'Use TypeScript strict mode' --description 'All TypeScript files must use strict mode' --rationale 'Catches type errors early' --enforcement 'tsconfig.json strict flag' --example tsconfig.json --example src/domain/shared/BaseAggregate.ts",
+      command: "jumbo guideline add --category codingStyle --title 'Use TypeScript strict mode' --description 'All TypeScript files must use strict mode' --rationale 'Catches type errors early' --example tsconfig.json --example src/domain/shared/BaseAggregate.ts",
       description: "Add a coding style guideline with examples"
     }
   ],
@@ -66,7 +62,6 @@ export async function guidelineAdd(options: {
   title: string;
   description: string;
   rationale: string;
-  enforcement: string;
   example?: string[];
 }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
@@ -77,7 +72,6 @@ export async function guidelineAdd(options: {
       title: options.title,
       description: options.description,
       rationale: options.rationale,
-      enforcement: options.enforcement,
       examples: options.example
     };
 
@@ -87,7 +81,6 @@ export async function guidelineAdd(options: {
       guidelineId,
       category: options.category,
       title: options.title,
-      enforcement: options.enforcement,
     };
     if (options.example && options.example.length > 0) {
       data.examples = options.example.length;

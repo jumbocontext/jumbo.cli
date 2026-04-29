@@ -13,7 +13,6 @@ export interface GuidelineRecord {
   readonly title: string;
   readonly description: string;
   readonly rationale: string;
-  readonly enforcement: string;
   readonly examples: string; // JSON array
   readonly isRemoved: number; // SQLite integer (0/1)
   readonly removedAt: string | null;

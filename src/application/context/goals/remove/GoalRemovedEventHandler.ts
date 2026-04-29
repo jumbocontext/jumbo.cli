@@ -2,8 +2,8 @@ import { IEventHandler } from "../../../messaging/IEventHandler.js";
 import { BaseEvent } from "../../../../domain/BaseEvent.js";
 import { GoalRemovedEvent } from "../../../../domain/goals/remove/GoalRemovedEvent.js";
 import { IGoalRemovedProjector } from "./IGoalRemovedProjector.js";
-import { IRelationMaintenanceGoalRegistrar } from "../../relations/maintain/IRelationMaintenanceGoalRegistrar.js";
 import { EntityType } from "../../../../domain/relations/Constants.js";
+import { RelationPruningCascade } from "../../relations/prune/RelationPruningCascade.js";
 
 /**
  * Event handler for GoalRemovedEvent.
@@ -14,16 +14,16 @@ import { EntityType } from "../../../../domain/relations/Constants.js";
 export class GoalRemovedEventHandler implements IEventHandler {
   constructor(
     private readonly projector: IGoalRemovedProjector,
-    private readonly relationMaintenanceGoalRegistrar: IRelationMaintenanceGoalRegistrar
+    private readonly relationPruningCascade: RelationPruningCascade
   ) {}
 
   async handle(event: BaseEvent): Promise<void> {
     const goalRemovedEvent = event as GoalRemovedEvent;
-    await this.relationMaintenanceGoalRegistrar.execute(
+    await this.projector.applyGoalRemoved(goalRemovedEvent);
+    await this.relationPruningCascade.execute(
       EntityType.GOAL,
       goalRemovedEvent.aggregateId,
-      "goal was removed"
+      `Automatically pruned because goal ${goalRemovedEvent.aggregateId} was removed`
     );
-    await this.projector.applyGoalRemoved(goalRemovedEvent);
   }
 }

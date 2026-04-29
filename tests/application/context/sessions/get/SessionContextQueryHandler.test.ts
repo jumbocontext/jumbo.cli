@@ -6,7 +6,6 @@ import { IDecisionViewReader } from "../../../../../src/application/context/deci
 import { IProjectContextReader } from "../../../../../src/application/context/project/query/IProjectContextReader.js";
 import { IAudienceContextReader } from "../../../../../src/application/context/audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../../../../../src/application/context/audience-pains/query/IAudiencePainContextReader.js";
-import { IRelationViewReader } from "../../../../../src/application/context/relations/get/IRelationViewReader.js";
 import { IValuePropositionContextReader } from "../../../../../src/application/context/value-propositions/query/IValuePropositionContextReader.js";
 import { GoalStatus } from "../../../../../src/domain/goals/Constants.js";
 import { GoalView } from "../../../../../src/application/context/goals/GoalView.js";
@@ -16,7 +15,6 @@ describe("SessionContextQueryHandler", () => {
   let sessionViewReader: jest.Mocked<ISessionViewReader>;
   let goalStatusReader: jest.Mocked<IGoalStatusReader>;
   let decisionViewReader: jest.Mocked<IDecisionViewReader>;
-  let relationViewReader: jest.Mocked<IRelationViewReader>;
   let projectContextReader: jest.Mocked<IProjectContextReader>;
   let audienceContextReader: jest.Mocked<IAudienceContextReader>;
   let audiencePainContextReader: jest.Mocked<IAudiencePainContextReader>;
@@ -36,10 +34,6 @@ describe("SessionContextQueryHandler", () => {
       findAll: jest.fn().mockResolvedValue([]),
       findByIds: jest.fn().mockResolvedValue([]),
     } as jest.Mocked<IDecisionViewReader>;
-
-    relationViewReader = {
-      findAll: jest.fn().mockResolvedValue([]),
-    };
 
     projectContextReader = {
       getProject: jest.fn().mockResolvedValue(null),
@@ -63,7 +57,6 @@ describe("SessionContextQueryHandler", () => {
       sessionViewReader,
       goalStatusReader,
       decisionViewReader,
-      relationViewReader,
       projectContextReader,
       audienceContextReader,
       audiencePainContextReader,
@@ -107,10 +100,6 @@ describe("SessionContextQueryHandler", () => {
     const result = await handler.execute();
 
     expect(result.context.projectContext).toBeNull();
-    expect(result.context.deactivatedRelations).toEqual({
-      count: 0,
-      summary: "No deactivated relations.",
-    });
   });
 
   it("should assemble projectContext with audiences, pains, and value propositions", async () => {
@@ -203,32 +192,6 @@ describe("SessionContextQueryHandler", () => {
     expect(decisionViewReader.findAll).toHaveBeenCalledWith("active");
   });
 
-  it("should include deactivated relation summary when present", async () => {
-    relationViewReader.findAll.mockResolvedValue([
-      {
-        relationId: "rel_1",
-        fromEntityType: "decision",
-        fromEntityId: "dec_1",
-        toEntityType: "component",
-        toEntityId: "comp_1",
-        relationType: "depends-on",
-        strength: null,
-        description: "test",
-        status: "deactivated",
-        version: 2,
-        createdAt: "2025-01-01T00:00:00Z",
-        updatedAt: "2025-01-01T00:00:00Z",
-      } as any,
-    ]);
-
-    const handler = createHandler();
-    const result = await handler.execute();
-
-    expect(result.context.deactivatedRelations.count).toBe(1);
-    expect(result.context.deactivatedRelations.summary).toContain("decision:dec_1 -> component:comp_1");
-    expect(relationViewReader.findAll).toHaveBeenCalledWith({ status: "deactivated" });
-  });
-
   it("should limit recent decisions to 10", async () => {
     const decisions = Array.from({ length: 15 }, (_, i) => ({
       decisionId: `d${i}`,
@@ -247,8 +210,7 @@ describe("SessionContextQueryHandler", () => {
     const handler = new SessionContextQueryHandler(
       sessionViewReader,
       goalStatusReader,
-      decisionViewReader,
-      relationViewReader
+      decisionViewReader
     );
 
     const result = await handler.execute();

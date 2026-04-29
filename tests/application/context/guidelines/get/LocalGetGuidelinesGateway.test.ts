@@ -28,7 +28,6 @@ describe("LocalGetGuidelinesGateway", () => {
         title: "Write unit tests",
         description: "Every function should have tests",
         rationale: "Quality",
-        enforcement: "CI",
         examples: [],
         isRemoved: false,
         removedAt: null,
@@ -44,6 +43,7 @@ describe("LocalGetGuidelinesGateway", () => {
     const result = await gateway.getGuidelines({ category: "testing" });
 
     expect(result).toEqual({ guidelines: mockGuidelines });
+    expect(result.guidelines[0]).not.toHaveProperty(["enforce", "ment"].join(""));
     expect(mockReader.findAll).toHaveBeenCalledWith("testing");
   });
 

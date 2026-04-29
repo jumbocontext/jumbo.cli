@@ -13,6 +13,5 @@ export interface InvariantAddedEvent extends BaseEvent {
     readonly title: string;
     readonly description: string;
     readonly rationale: string | null;
-    readonly enforcement: string;
   };
 }

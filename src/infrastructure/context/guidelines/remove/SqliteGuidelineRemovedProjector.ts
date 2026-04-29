@@ -49,7 +49,6 @@ export class SqliteGuidelineRemovedProjector implements IGuidelineRemovedProject
       title: row.title as string,
       description: row.description as string,
       rationale: row.rationale as string,
-      enforcement: row.enforcement as string,
       examples: JSON.parse((row.examples as string) || "[]"),
       isRemoved: (row.isRemoved as number) === 1,
       removedAt: (row.removedAt as string) ?? null,

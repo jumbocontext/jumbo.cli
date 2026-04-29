@@ -49,7 +49,6 @@ describe("UpdateInvariantCommandHandler", () => {
         payload: {
           title: "HTTPS only",
           description: "All API calls must use HTTPS",
-          enforcement: "Linter rule",
           rationale: null,
         },
       };
@@ -90,7 +89,6 @@ describe("UpdateInvariantCommandHandler", () => {
         payload: {
           title: "HTTPS only",
           description: "All API calls must use HTTPS",
-          enforcement: "Linter rule",
           rationale: null,
         },
       };
@@ -139,7 +137,6 @@ describe("UpdateInvariantCommandHandler", () => {
         payload: {
           title: "HTTPS only",
           description: "All API calls must use HTTPS",
-          enforcement: "Linter rule",
           rationale: null,
         },
       };
@@ -168,7 +165,6 @@ describe("UpdateInvariantCommandHandler", () => {
         payload: {
           title: "HTTPS only",
           description: "All API calls must use HTTPS",
-          enforcement: "Linter rule",
           rationale: null,
         },
       };
@@ -198,7 +194,6 @@ describe("UpdateInvariantCommandHandler", () => {
         payload: {
           title: "HTTPS only",
           description: "All API calls must use HTTPS",
-          enforcement: "Linter rule",
           rationale: null,
         },
       };

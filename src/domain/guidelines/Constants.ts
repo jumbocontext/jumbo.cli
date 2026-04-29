@@ -39,8 +39,6 @@ export const GuidelineErrorMessages = {
   DESCRIPTION_TOO_LONG: "Description must be less than {max} characters",
   RATIONALE_REQUIRED: "Guideline rationale must be provided",
   RATIONALE_TOO_LONG: "Rationale must be less than {max} characters",
-  ENFORCEMENT_REQUIRED: "Enforcement method must be provided",
-  ENFORCEMENT_TOO_LONG: "Enforcement must be less than {max} characters",
   EXAMPLE_PATH_TOO_LONG: "Example path must be less than {max} characters",
   TOO_MANY_EXAMPLES: "Cannot have more than {max} example paths",
   NO_CHANGES: "No changes provided for update",
@@ -54,7 +52,6 @@ export const GuidelineLimits = {
   TITLE_MAX_LENGTH: 200,
   DESCRIPTION_MAX_LENGTH: 2000,
   RATIONALE_MAX_LENGTH: 1000,
-  ENFORCEMENT_MAX_LENGTH: 500,
   EXAMPLE_PATH_MAX_LENGTH: 500,
   MAX_EXAMPLES: 10,
 } as const;

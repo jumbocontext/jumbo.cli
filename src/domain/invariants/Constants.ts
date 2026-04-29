@@ -22,8 +22,6 @@ export const InvariantErrorMessages = {
   DESCRIPTION_REQUIRED: "Invariant description must be provided",
   DESCRIPTION_TOO_LONG: "Invariant description must be less than {max} characters",
   RATIONALE_TOO_LONG: "Rationale must be less than {max} characters",
-  ENFORCEMENT_REQUIRED: "Enforcement method must be provided",
-  ENFORCEMENT_TOO_LONG: "Enforcement must be less than {max} characters",
 } as const;
 
 // Numeric limits
@@ -31,7 +29,6 @@ export const InvariantLimits = {
   TITLE_MAX_LENGTH: 100,
   DESCRIPTION_MAX_LENGTH: 1000,
   RATIONALE_MAX_LENGTH: 1000,
-  ENFORCEMENT_MAX_LENGTH: 200,
 } as const;
 
 /**

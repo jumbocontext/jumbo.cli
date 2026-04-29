@@ -46,7 +46,6 @@ export class SqliteInvariantViewReader implements IInvariantViewReader {
       title: row.title as string,
       description: row.description as string,
       rationale: (row.rationale as string) ?? null,
-      enforcement: row.enforcement as string,
       version: row.version as number,
       createdAt: row.createdAt as string,
       updatedAt: row.updatedAt as string,

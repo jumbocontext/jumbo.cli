@@ -18,7 +18,6 @@ export class SqliteInvariantUpdatedProjector implements IInvariantUpdatedProject
       SET title = COALESCE(?, title),
           description = COALESCE(?, description),
           rationale = COALESCE(?, rationale),
-          enforcement = COALESCE(?, enforcement),
           version = ?,
           updatedAt = ?
       WHERE invariantId = ?
@@ -28,7 +27,6 @@ export class SqliteInvariantUpdatedProjector implements IInvariantUpdatedProject
       event.payload.title !== undefined ? event.payload.title : null,
       event.payload.description !== undefined ? event.payload.description : null,
       event.payload.rationale !== undefined ? event.payload.rationale : null,
-      event.payload.enforcement !== undefined ? event.payload.enforcement : null,
       event.version,
       event.timestamp,
       event.aggregateId
@@ -48,7 +46,6 @@ export class SqliteInvariantUpdatedProjector implements IInvariantUpdatedProject
       title: row.title as string,
       description: row.description as string,
       rationale: (row.rationale as string) ?? null,
-      enforcement: row.enforcement as string,
       version: row.version as number,
       createdAt: row.createdAt as string,
       updatedAt: row.updatedAt as string,

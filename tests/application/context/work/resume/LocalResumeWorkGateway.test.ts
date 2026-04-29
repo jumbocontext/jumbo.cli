@@ -55,7 +55,6 @@ describe("LocalResumeWorkGateway", () => {
       pausedGoals: [],
       plannedGoals: [],
       recentDecisions: [],
-      deactivatedRelations: { count: 0, summary: "No deactivated relations." },
     },
   };
 

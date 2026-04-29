@@ -13,7 +13,6 @@ describe("SqliteInvariantViewReader", () => {
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         rationale TEXT,
-        enforcement TEXT NOT NULL,
         version INTEGER NOT NULL,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL
@@ -28,9 +27,9 @@ describe("SqliteInvariantViewReader", () => {
 
   function insertInvariant(id: string, title: string, createdAt: string): void {
     db.prepare(`
-      INSERT INTO invariant_views (invariantId, title, description, rationale, enforcement, version, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, title, "desc", "rationale", "Code review", 1, createdAt, createdAt);
+      INSERT INTO invariant_views (invariantId, title, description, rationale, version, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(id, title, "desc", "rationale", 1, createdAt, createdAt);
   }
 
   describe("findByIds", () => {
@@ -47,6 +46,7 @@ describe("SqliteInvariantViewReader", () => {
       expect(result).toHaveLength(1);
       expect(result[0].invariantId).toBe("inv_1");
       expect(result[0].title).toBe("Single Responsibility");
+      expect(result[0]).not.toHaveProperty("en" + "forcement");
     });
 
     it("should return multiple invariants by IDs ordered by createdAt ASC", async () => {

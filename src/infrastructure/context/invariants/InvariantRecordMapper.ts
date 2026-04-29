@@ -14,7 +14,6 @@ export class InvariantRecordMapper {
       title: record.title,
       description: record.description,
       rationale: record.rationale,
-      enforcement: record.enforcement,
       version: record.version,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,

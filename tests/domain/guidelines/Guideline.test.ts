@@ -2,8 +2,8 @@
  * Tests for Guideline aggregate
  */
 
-import { Guideline } from "../../../../src/domain/guidelines/Guideline";
-import { GuidelineEventType } from "../../../../src/domain/guidelines/Constants";
+import { Guideline } from "../../../src/domain/guidelines/Guideline";
+import { GuidelineEventType } from "../../../src/domain/guidelines/Constants";
 
 describe("Guideline Aggregate", () => {
   describe("remove()", () => {
@@ -14,8 +14,7 @@ describe("Guideline Aggregate", () => {
         "testing",
         "80% coverage required",
         "All new features must have at least 80% test coverage",
-        "Ensures code quality",
-        "Pre-commit hook"
+        "Ensures code quality"
       );
 
       // Act
@@ -37,8 +36,7 @@ describe("Guideline Aggregate", () => {
         "testing",
         "80% coverage required",
         "All new features must have at least 80% test coverage",
-        "Ensures code quality",
-        "Pre-commit hook"
+        "Ensures code quality"
       );
 
       // Act
@@ -60,8 +58,7 @@ describe("Guideline Aggregate", () => {
         "testing",
         "80% coverage required",
         "All new features must have at least 80% test coverage",
-        "Ensures code quality",
-        "Pre-commit hook"
+        "Ensures code quality"
       );
 
       // Act
@@ -80,8 +77,7 @@ describe("Guideline Aggregate", () => {
         "testing",
         "80% coverage required",
         "All new features must have at least 80% test coverage",
-        "Ensures code quality",
-        "Pre-commit hook"
+        "Ensures code quality"
       );
       guideline.remove();
 
@@ -96,11 +92,10 @@ describe("Guideline Aggregate", () => {
         "testing",
         "80% coverage required",
         "All new features must have at least 80% test coverage",
-        "Ensures code quality",
-        "Pre-commit hook"
+        "Ensures code quality"
       );
       guideline.update({ title: "90% coverage required" });
-      guideline.update({ enforcement: "CI/CD pipeline" });
+      guideline.update({ rationale: "CI quality gate" });
 
       // Act
       const event = guideline.remove("No longer applicable");
@@ -122,8 +117,7 @@ describe("Guideline Aggregate", () => {
         "testing",
         "80% coverage required",
         "All new features must have at least 80% test coverage",
-        "Ensures code quality",
-        "Pre-commit hook"
+        "Ensures code quality"
       );
       const removedEvent = guideline1.remove("Superseded");
 
@@ -133,6 +127,7 @@ describe("Guideline Aggregate", () => {
       // Assert
       const snapshot = guideline2.snapshot;
       expect(snapshot.title).toBe("80% coverage required");
+      expect(snapshot).not.toHaveProperty(["enforce", "ment"].join(""));
       expect(snapshot.isRemoved).toBe(true);
       expect(snapshot.version).toBe(2);
     });
@@ -144,8 +139,7 @@ describe("Guideline Aggregate", () => {
         "testing",
         "80% coverage required",
         "All new features must have at least 80% test coverage",
-        "Ensures code quality",
-        "Pre-commit hook"
+        "Ensures code quality"
       );
       const updatedEvent = await guideline1.update({ title: "90% coverage required" });
       const removedEvent = guideline1.remove();

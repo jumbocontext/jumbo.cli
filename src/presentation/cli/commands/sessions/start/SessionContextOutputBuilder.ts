@@ -13,7 +13,7 @@ import {
  * SessionContextOutputBuilder - Builds output for session context orientation.
  *
  * Renders project context (name, purpose, audiences, pains) and session summary
- * (focus, status, paused goals, recent decisions, deactivated relations).
+ * (focus, status, paused goals, recent decisions).
  * Includes brownfield onboarding and paused goals resume @LLM prompts.
  */
 export class SessionContextOutputBuilder {
@@ -175,15 +175,6 @@ export class SessionContextOutputBuilder {
         title: d.title,
         rationale: d.rationale,
       }));
-    }
-
-    if (context.context.deactivatedRelations.count > 0) {
-      sessionCtx.deactivatedRelations = {
-        count: context.context.deactivatedRelations.count,
-        summary: context.context.deactivatedRelations.summary,
-      };
-      sessionCtx.warning =
-        "Deactivated relations detected. Review them before relying on architecture links.";
     }
 
     const llmParts: string[] = [];

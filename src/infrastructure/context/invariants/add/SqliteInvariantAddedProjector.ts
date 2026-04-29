@@ -15,9 +15,9 @@ export class SqliteInvariantAddedProjector implements IInvariantAddedProjector, 
   async applyInvariantAdded(event: InvariantAddedEvent): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO invariant_views (
-        invariantId, title, description, rationale, enforcement,
+        invariantId, title, description, rationale,
         version, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -25,7 +25,6 @@ export class SqliteInvariantAddedProjector implements IInvariantAddedProjector, 
       event.payload.title,
       event.payload.description,
       event.payload.rationale,
-      event.payload.enforcement,
       event.version,
       event.timestamp,
       event.timestamp
@@ -52,7 +51,6 @@ export class SqliteInvariantAddedProjector implements IInvariantAddedProjector, 
       title: row.title as string,
       description: row.description as string,
       rationale: (row.rationale as string) ?? null,
-      enforcement: row.enforcement as string,
       version: row.version as number,
       createdAt: row.createdAt as string,
       updatedAt: row.updatedAt as string,

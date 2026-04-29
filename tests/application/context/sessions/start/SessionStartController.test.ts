@@ -17,7 +17,6 @@ describe("SessionStartController", () => {
         pausedGoals: [],
         plannedGoals: [],
         recentDecisions: [],
-        deactivatedRelations: { count: 0, summary: "No deactivated relations." },
       },
       instructions: [SessionInstructionSignal.GOAL_SELECTION_PROMPT],
       scope: "session-start",

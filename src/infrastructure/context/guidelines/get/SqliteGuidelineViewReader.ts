@@ -47,7 +47,6 @@ export class SqliteGuidelineViewReader implements IGuidelineViewReader {
       title: row.title as string,
       description: row.description as string,
       rationale: row.rationale as string,
-      enforcement: row.enforcement as string,
       examples: (row.examples as string) || "[]",
       isRemoved: row.isRemoved as number,
       removedAt: (row.removedAt as string) ?? null,

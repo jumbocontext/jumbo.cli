@@ -13,7 +13,6 @@ export interface GuidelineView {
   title: string;
   description: string;
   rationale: string;
-  enforcement: string;
   examples: string[];
   isRemoved: boolean;
   removedAt: string | null;

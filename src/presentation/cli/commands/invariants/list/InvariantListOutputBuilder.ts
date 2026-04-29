@@ -35,7 +35,6 @@ export class InvariantListOutputBuilder {
         title: i.title,
         description: i.description,
         rationale: i.rationale,
-        enforcement: i.enforcement,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
       })),

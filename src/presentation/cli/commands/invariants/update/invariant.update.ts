@@ -32,10 +32,6 @@ export const metadata: CommandMetadata = {
     {
       flags: "-r, --rationale <rationale>",
       description: "Updated rationale"
-    },
-    {
-      flags: "--enforcement <enforcement>",
-      description: "Updated enforcement method"
     }
   ],
   examples: [
@@ -44,7 +40,7 @@ export const metadata: CommandMetadata = {
       description: "Update only the title"
     },
     {
-      command: "jumbo invariant update --id inv_123 --title 'HTTPS Only' --description 'All API calls must use HTTPS' --enforcement 'API gateway config'",
+      command: "jumbo invariant update --id inv_123 --title 'HTTPS Only' --description 'All API calls must use HTTPS'",
       description: "Update multiple fields"
     }
   ],
@@ -60,7 +56,6 @@ export async function invariantUpdate(options: {
   title?: string;
   description?: string;
   rationale?: string;
-  enforcement?: string;
 }, container: IApplicationContainer) {
   const renderer = Renderer.getInstance();
 
@@ -70,7 +65,6 @@ export async function invariantUpdate(options: {
       ...(options.title !== undefined && { title: options.title }),
       ...(options.description !== undefined && { description: options.description }),
       ...(options.rationale !== undefined && { rationale: options.rationale }),
-      ...(options.enforcement !== undefined && { enforcement: options.enforcement }),
     });
 
     // Success output

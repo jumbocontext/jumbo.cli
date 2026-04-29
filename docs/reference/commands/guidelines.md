@@ -16,7 +16,7 @@ Add an execution guideline.
 ### Synopsis
 
 ```bash
-> jumbo guideline add --category <category> --title <text> --description <text> --rationale <text> --enforcement <text> [options]
+> jumbo guideline add --category <category> --title <text> --description <text> --rationale <text> [options]
 ```
 
 ### Options
@@ -27,7 +27,6 @@ Add an execution guideline.
 | `-t, --title <text>` | Guideline title (required) |
 | `-d, --description <text>` | Detailed description (required) |
 | `--rationale <text>` | Why this guideline is important (required) |
-| `--enforcement <text>` | How this guideline is enforced (required) |
 | `--example <paths...>` | Example file paths demonstrating the guideline |
 
 ### Examples
@@ -37,8 +36,7 @@ Add an execution guideline.
   --category testing \
   --title "Unit test isolation" \
   --description "Each unit test must be independent" \
-  --rationale "Prevents cascading failures" \
-  --enforcement "Code review and CI checks"
+  --rationale "Prevents cascading failures"
 
 # With examples
 > jumbo guideline add \
@@ -46,7 +44,6 @@ Add an execution guideline.
   --title "Use relative imports" \
   --description "Always use relative paths for local imports" \
   --rationale "Ensures portability" \
-  --enforcement "ESLint rule" \
   --example "./src/services/UserService.ts" "./src/api/routes.ts"
 ```
 
@@ -97,13 +94,12 @@ Update an existing guideline.
 | `-t, --title <text>` | Updated title |
 | `-d, --description <text>` | Updated description |
 | `--rationale <text>` | Updated rationale |
-| `--enforcement <text>` | Updated enforcement details |
 | `--example <paths...>` | Updated example paths (replaces existing) |
 
 ### Examples
 
 ```bash
-> jumbo guideline update --id guide_abc123 --enforcement "Automated linter rule"
+> jumbo guideline update --id guide_abc123 --rationale "Aligned with automated linting"
 > jumbo guideline update --id guide_abc123 --category security --title "Input validation"
 ```
 

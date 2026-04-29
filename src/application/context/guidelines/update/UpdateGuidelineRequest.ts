@@ -6,6 +6,5 @@ export interface UpdateGuidelineRequest {
   readonly title?: string;
   readonly description?: string;
   readonly rationale?: string;
-  readonly enforcement?: string;
   readonly examples?: string[];
 }

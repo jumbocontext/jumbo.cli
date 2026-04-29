@@ -17,7 +17,6 @@ export class GuidelineRecordMapper {
       title: record.title,
       description: record.description,
       rationale: record.rationale,
-      enforcement: record.enforcement,
       examples: JSON.parse(record.examples || "[]"),
       isRemoved: Boolean(record.isRemoved),
       removedAt: record.removedAt,

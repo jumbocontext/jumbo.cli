@@ -6,7 +6,6 @@
  * - Session summary (focus, status, paused goals, recent decisions)
  * - Brownfield onboarding @LLM prompt
  * - Paused goals resume @LLM prompt
- * - Deactivated relations warning
  * - Structured output for JSON mode
  */
 
@@ -51,7 +50,6 @@ describe("SessionContextOutputBuilder", () => {
         pausedGoals: [],
         plannedGoals: [],
         recentDecisions: [],
-        deactivatedRelations: { count: 0, summary: "No deactivated relations." },
         ...contextOverrides,
       },
       instructions,
@@ -317,24 +315,6 @@ describe("SessionContextOutputBuilder", () => {
       const text = builder.renderSessionSummary(context);
 
       expect(text).not.toContain("recentDecisions:");
-    });
-  });
-
-  describe("deactivated relations warning", () => {
-    it("should include warning and summary when deactivated relations exist", () => {
-      const context = createContext({
-        deactivatedRelations: {
-          count: 2,
-          summary: "decision:dec_1 -> component:comp_1; goal:goal_1 -> decision:dec_1",
-        },
-      });
-
-      const text = builder.renderSessionSummary(context);
-
-      expect(text).toContain("deactivatedRelations:");
-      expect(text).toContain("count: 2");
-      expect(text).toContain("warning:");
-      expect(text).toContain("Deactivated relations detected");
     });
   });
 
