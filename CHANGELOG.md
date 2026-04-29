@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-04-29
+
+### BREAKING CHANGES
+
+- **Invariant `--enforcement` removed**: Removed the `--enforcement` field from invariant add/update commands, events, read models, and output. Invariants now consist of title, description, and optional rationale. Update any scripts that pass `--enforcement` to invariant commands.
+- **Guideline `--enforcement` removed**: Removed the `--enforcement` field from guideline add/update commands, events, read models, and output. Guidelines now consist of category, title, description, rationale, and optional examples. Update any scripts that pass `--enforcement` to guideline commands.
+
 ### Changed
 
 - **Relation cleanup on removal**: Removing components or goals now prunes their relations via `RelationRemovedEvent` instead of deactivating them, and `session start` no longer includes the deactivated-relations warning block.
-- **Invariant CLI breaking change**: Removed the `--enforcement` field from invariant add/update commands, events, read models, and output. Invariants now consist of title, description, and optional rationale.
-- **Guideline CLI breaking change**: Removed the `--enforcement` field from guideline add/update commands, events, read models, and output. Guidelines now consist of category, title, description, rationale, and optional examples.
 
 ## [2.15.0] - 2026-04-26
 
