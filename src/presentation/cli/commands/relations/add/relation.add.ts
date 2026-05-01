@@ -58,7 +58,8 @@ export const metadata: CommandMetadata = {
       description: "Link a component to its dependency with strength"
     }
   ],
-  related: ["relation remove"]
+  related: ["relation remove"],
+  requiresProject: true
 };
 
 /**

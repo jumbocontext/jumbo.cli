@@ -65,6 +65,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["components list", "component add", "component show"],
+  requiresProject: true
 };
 
 /**

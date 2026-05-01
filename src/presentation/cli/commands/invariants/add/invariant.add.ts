@@ -40,7 +40,8 @@ export const metadata: CommandMetadata = {
       description: "Add a testing invariant with rationale"
     }
   ],
-  related: ["invariant update", "invariant remove", "guideline add"]
+  related: ["invariant update", "invariant remove", "guideline add"],
+  requiresProject: true
 };
 
 /**

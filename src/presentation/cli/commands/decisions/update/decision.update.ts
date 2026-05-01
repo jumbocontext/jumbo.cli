@@ -47,7 +47,8 @@ export const metadata: CommandMetadata = {
       description: "Update multiple fields"
     }
   ],
-  related: ["decision add", "decision reverse", "decision supersede"]
+  related: ["decision add", "decision reverse", "decision supersede"],
+  requiresProject: true
 };
 
 /**

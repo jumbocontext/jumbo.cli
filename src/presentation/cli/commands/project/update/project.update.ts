@@ -27,7 +27,8 @@ export const metadata: CommandMetadata = {
       description: "Update project purpose"
     }
   ],
-  related: ["project init"]
+  related: ["project init"],
+  requiresProject: true
 };
 
 /**

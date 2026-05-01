@@ -25,6 +25,7 @@ export const metadata: CommandMetadata = {
     { command: "jumbo guidelines list --format json", description: "List guidelines as JSON" },
   ],
   related: ["guideline add", "guideline update", "guideline remove"],
+  requiresProject: true
 };
 
 export async function guidelinesList(

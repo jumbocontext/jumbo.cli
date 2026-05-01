@@ -23,7 +23,8 @@ export const metadata: CommandMetadata = {
       description: "Pause your active goal"
     }
   ],
-  related: ["work resume", "goal pause", "goal start"]
+  related: ["work resume", "goal pause", "goal start"],
+  requiresProject: true
 };
 
 /**

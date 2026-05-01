@@ -26,7 +26,8 @@ export const metadata: CommandMetadata = {
       description: "Show the current architecture definition"
     }
   ],
-  related: ["decision add", "invariant add", "component add", "dependency add"]
+  related: ["decision add", "invariant add", "component add", "dependency add"],
+  requiresProject: true
 };
 
 /**

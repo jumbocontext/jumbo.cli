@@ -28,7 +28,8 @@ export const metadata: CommandMetadata = {
       description: "Show complete goal details"
     }
   ],
-  related: ["goal add", "goal start", "goal update", "goal complete"]
+  related: ["goal add", "goal start", "goal update", "goal complete"],
+  requiresProject: true
 };
 
 /**

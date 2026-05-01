@@ -29,7 +29,8 @@ export const metadata: CommandMetadata = {
       description: "Commit the goal after refinement is complete"
     }
   ],
-  related: ["goal refine", "goal start", "relation add"]
+  related: ["goal refine", "goal start", "relation add"],
+  requiresProject: true
 };
 
 /**

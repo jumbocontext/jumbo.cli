@@ -31,7 +31,8 @@ export const metadata: CommandMetadata = {
       description: "Reverse a decision with reason"
     }
   ],
-  related: ["decision add", "decision update", "decision supersede"]
+  related: ["decision add", "decision update", "decision supersede"],
+  requiresProject: true
 };
 
 /**

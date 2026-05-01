@@ -22,7 +22,8 @@ export const metadata: CommandMetadata = {
       description: "Undeprecate a previously deprecated component"
     }
   ],
-  related: ["component deprecate", "component remove", "component update"]
+  related: ["component deprecate", "component remove", "component update"],
+  requiresProject: true
 };
 
 export async function componentUndeprecate(

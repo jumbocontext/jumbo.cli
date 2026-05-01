@@ -50,7 +50,8 @@ export const metadata: CommandMetadata = {
       description: "Add a coding style guideline with examples"
     }
   ],
-  related: ["guideline update", "guideline remove", "invariant add"]
+  related: ["guideline update", "guideline remove", "invariant add"],
+  requiresProject: true
 };
 
 /**

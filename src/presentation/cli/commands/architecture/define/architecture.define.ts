@@ -51,7 +51,8 @@ export const metadata: CommandMetadata = {
       description: "Define architecture with patterns and stack"
     },
   ],
-  related: ["decision add", "invariant add", "component add", "dependency add"]
+  related: ["decision add", "invariant add", "component add", "dependency add"],
+  requiresProject: true
 };
 
 /**

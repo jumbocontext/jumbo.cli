@@ -41,7 +41,8 @@ export const metadata: CommandMetadata = {
       description: "Component coupling records are managed with relation commands"
     }
   ],
-  related: ["dependency add", "dependency update", "relation remove"]
+  related: ["dependency add", "dependency update", "relation remove"],
+  requiresProject: true
 };
 
 /**

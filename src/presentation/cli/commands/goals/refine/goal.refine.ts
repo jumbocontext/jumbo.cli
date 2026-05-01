@@ -47,7 +47,8 @@ export const metadata: CommandMetadata = {
       description: "Refine with interactive prompts to register relations"
     }
   ],
-  related: ["goal add", "goal commit", "goal start", "relation add"]
+  related: ["goal add", "goal commit", "goal start", "relation add"],
+  requiresProject: true
 };
 
 /**

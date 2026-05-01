@@ -56,6 +56,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["goal review", "goal approve", "goal reject", "work pause", "work resume"],
+  requiresProject: true
 };
 
 interface WorkReviewOptions {

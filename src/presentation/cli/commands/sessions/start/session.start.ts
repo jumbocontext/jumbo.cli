@@ -23,6 +23,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["session end", "session pause", "goal start"],
+  requiresProject: true
 };
 
 /**

@@ -39,7 +39,8 @@ export const metadata: CommandMetadata = {
       description: "Resume a paused goal with a note"
     }
   ],
-  related: ["goal pause", "goal start", "goal complete"]
+  related: ["goal pause", "goal start", "goal complete"],
+  requiresProject: true
 };
 
 /**

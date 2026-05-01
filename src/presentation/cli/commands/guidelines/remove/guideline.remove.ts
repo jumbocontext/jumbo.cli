@@ -38,6 +38,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["guideline add", "guideline update"],
+  requiresProject: true
 };
 
 /**

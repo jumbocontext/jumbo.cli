@@ -83,7 +83,8 @@ export const metadata: CommandMetadata = {
       description: "Add a goal with scope defined"
     }
   ],
-  related: ["goal start", "goal complete", "goal update"]
+  related: ["goal start", "goal complete", "goal update"],
+  requiresProject: true
 };
 
 /**

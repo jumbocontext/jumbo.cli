@@ -31,7 +31,8 @@ export const metadata: CommandMetadata = {
       description: "Rename a component"
     }
   ],
-  related: ["component add", "component update", "component deprecate", "component remove"]
+  related: ["component add", "component update", "component deprecate", "component remove"],
+  requiresProject: true
 };
 
 /**

@@ -58,6 +58,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["dependency add", "dependency update", "dependency remove", "relation list"],
+  requiresProject: true
 };
 
 /**

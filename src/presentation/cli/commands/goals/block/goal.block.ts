@@ -31,7 +31,8 @@ export const metadata: CommandMetadata = {
       description: "Block a goal with a reason"
     }
   ],
-  related: ["goal unblock", "goal start", "goal add"]
+  related: ["goal unblock", "goal start", "goal add"],
+  requiresProject: true
 };
 
 export async function goalBlock(

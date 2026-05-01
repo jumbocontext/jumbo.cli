@@ -47,7 +47,8 @@ export const metadata: CommandMetadata = {
       description: "Add a database component"
     }
   ],
-  related: ["component update", "component deprecate", "component remove"]
+  related: ["component update", "component deprecate", "component remove"],
+  requiresProject: true
 };
 
 /**

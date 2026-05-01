@@ -83,9 +83,9 @@ export function classifyCommand(
     };
   }
 
-  // Use metadata to determine requirements
-  // Default to true if requiresProject not specified
-  const requiresProject = command.metadata.requiresProject ?? true;
+  // Use metadata as the single source of truth — every command must declare
+  // requiresProject explicitly (enforced by the CommandMetadata type).
+  const requiresProject = command.metadata.requiresProject;
 
   // All commands require infrastructure (even project init needs it to create databases)
   // Only help/version/bare command bypass infrastructure

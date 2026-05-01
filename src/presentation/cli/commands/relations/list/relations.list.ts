@@ -38,6 +38,7 @@ export const metadata: CommandMetadata = {
     { command: "jumbo relations list --format json", description: "List relations as JSON" },
   ],
   related: ["relation add", "relation remove"],
+  requiresProject: true
 };
 
 export async function relationsList(

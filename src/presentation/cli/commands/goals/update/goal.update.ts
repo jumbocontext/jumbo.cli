@@ -82,7 +82,8 @@ export const metadata: CommandMetadata = {
       description: "Update multiple fields at once"
     }
   ],
-  related: ["goal add", "goal start", "goal complete"]
+  related: ["goal add", "goal start", "goal complete"],
+  requiresProject: true
 };
 
 /**

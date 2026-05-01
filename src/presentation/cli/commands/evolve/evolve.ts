@@ -18,6 +18,8 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["heal", "project init"],
+  // Updates the project database/event store, so a project must exist
+  requiresProject: true
 };
 
 interface EvolveOptions {

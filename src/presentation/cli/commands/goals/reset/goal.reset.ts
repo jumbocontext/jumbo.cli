@@ -29,7 +29,8 @@ export const metadata: CommandMetadata = {
       description: "Reset a goal to its last waiting state"
     }
   ],
-  related: ["goal start", "goal unblock"]
+  related: ["goal start", "goal unblock"],
+  requiresProject: true
 };
 
 /**

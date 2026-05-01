@@ -37,7 +37,8 @@ export const metadata: CommandMetadata = {
       description: "Unblock a goal with resolution note"
     }
   ],
-  related: ["goal block", "goal start", "goal complete"]
+  related: ["goal block", "goal start", "goal complete"],
+  requiresProject: true
 };
 
 export async function goalUnblock(

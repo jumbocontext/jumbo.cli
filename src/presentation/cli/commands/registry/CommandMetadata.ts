@@ -59,10 +59,12 @@ export interface CommandMetadata {
   topLevelAliases?: string[];
   /**
    * Whether this command requires an initialized Jumbo project to run.
-   * @default true - Most commands require project context
-   * Set to false for commands like "project init" that bootstrap a new project.
+   * Required on every command — the bootstrap-layer guard relies on this as the
+   * single source of truth and does not fall back to a default. Set to false
+   * only for bootstrap commands (e.g. "project init") that operate on
+   * global/user-scope state and produce no project-scoped artifacts.
    */
-  requiresProject?: boolean;
+  requiresProject: boolean;
 }
 
 /**
