@@ -27,3 +27,9 @@ export const ARGV = {
   /** Skip node and script path when parsing commands */
   COMMAND_START_INDEX: 2,
 } as const;
+
+/**
+ * Process exit codes
+ */
+export const SUCCESS_EXIT_CODE = 0;
+export const FAILURE_EXIT_CODE = 1;

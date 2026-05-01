@@ -26,7 +26,12 @@ import {
   showBannerWithContainer,
 } from "./banner/BannerOrchestrator.js";
 import { Renderer } from "./rendering/Renderer.js";
-import { CLI_FLAGS, ARGV } from "./Constants.js";
+import {
+  CLI_FLAGS,
+  ARGV,
+  SUCCESS_EXIT_CODE,
+  FAILURE_EXIT_CODE,
+} from "./Constants.js";
 
 /**
  * Invocation type classification
@@ -35,8 +40,6 @@ type InvocationType = "banner" | "help" | "version" | "command";
 
 const CLI_COMMAND_EXECUTED_EVENT = "cli_command_executed";
 const PROCESS_EXIT_ERROR_TYPE = "ProcessExit";
-const SUCCESS_EXIT_CODE = 0;
-const FAILURE_EXIT_CODE = 1;
 
 class ProcessExitSignal {
   readonly exitCode: number;
@@ -167,15 +170,17 @@ export class AppRunner {
     // Classify command to determine project requirement using metadata
     const classification = classifyCommand(argv, commands);
 
-    // Check project existence if required
-    if (classification.requiresProject && !isSubcommandHelp) {
-      if (!this.container) {
-        const renderer = Renderer.getInstance();
-        renderer.error(
-          "No Jumbo project found. Run `jumbo project init` from your project root."
-        );
-        process.exit(FAILURE_EXIT_CODE);
-      }
+    // Defensive assertion: the bootstrap guard in src/cli.ts owns user-facing
+    // messaging when a project-scoped command runs outside a project root.
+    // Reaching this branch without a container means the guard was bypassed.
+    if (
+      classification.requiresProject &&
+      !isSubcommandHelp &&
+      !this.container
+    ) {
+      throw new Error(
+        "AppRunner reached project-scoped command execution without a container; the cli.ts bootstrap guard should have rejected this invocation before AppRunner was constructed."
+      );
     }
 
     const commandName = this.resolveTelemetryCommandName(
