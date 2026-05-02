@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-05-02
+
+### Fixed
+
+- **npm publish workflow**: Added `npm run build` step before `npm test` in the publish workflow so the `NoProjectGuard` integration test (which spawns the compiled `dist/cli.js`) can run during release. Prior releases failed to publish to npm because the test suite errored out before `npm publish`.
+
 ## [3.0.1] - 2026-05-02
 
 ### Fixed
