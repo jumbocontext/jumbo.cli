@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.3] - 2026-05-02
+
+### Changed
+
+- **Telemetry consent prompt clarity**: The `project init` telemetry consent prompt now enumerates exactly what the telemetry payload contains (command name + a random project ID generated at init) and explicitly states what is not collected (command arguments, file contents, goal data, paths, project names). Replaces the prior vague "anonymous usage data" wording.
+
 ## [3.0.2] - 2026-05-02
 
 ### Fixed
