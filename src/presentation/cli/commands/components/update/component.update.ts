@@ -49,7 +49,8 @@ export const metadata: CommandMetadata = {
       description: "Update multiple fields"
     }
   ],
-  related: ["component add", "component deprecate", "component remove"]
+  related: ["component add", "component deprecate", "component remove"],
+  requiresProject: true
 };
 
 /**

@@ -53,7 +53,8 @@ export const metadata: CommandMetadata = {
       description: "Component coupling belongs in relations"
     }
   ],
-  related: ["dependency add", "dependency remove", "relation add"]
+  related: ["dependency add", "dependency remove", "relation add"],
+  requiresProject: true
 };
 
 /**

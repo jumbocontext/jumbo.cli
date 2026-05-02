@@ -36,6 +36,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["audience add", "audience update", "audience remove"],
+  requiresProject: true
 };
 
 /**

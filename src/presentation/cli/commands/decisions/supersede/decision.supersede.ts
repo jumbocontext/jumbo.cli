@@ -30,7 +30,8 @@ export const metadata: CommandMetadata = {
       description: "Mark a decision as superseded by another"
     }
   ],
-  related: ["decision add", "decision reverse", "decision update"]
+  related: ["decision add", "decision reverse", "decision update"],
+  requiresProject: true
 };
 
 /**

@@ -65,7 +65,8 @@ export const metadata: CommandMetadata = {
       description: "Legacy compatibility path (deprecated, removed in v3.0.0): maps component coupling to relation"
     }
   ],
-  related: ["dependency update", "dependency remove", "relation add"]
+  related: ["dependency update", "dependency remove", "relation add"],
+  requiresProject: true
 };
 
 const LEGACY_FLAGS_WARNING =

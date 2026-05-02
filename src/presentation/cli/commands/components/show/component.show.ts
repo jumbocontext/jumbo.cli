@@ -37,6 +37,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["component add", "component update", "components list"],
+  requiresProject: true
 };
 
 /**

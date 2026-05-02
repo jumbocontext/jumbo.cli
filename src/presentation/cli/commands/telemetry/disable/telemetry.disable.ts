@@ -13,6 +13,8 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["telemetry status", "telemetry enable"],
+  // Telemetry consent settings live in the project-scoped settings store
+  requiresProject: true
 };
 
 export async function telemetryDisable(

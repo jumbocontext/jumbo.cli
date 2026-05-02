@@ -51,6 +51,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["goal refine", "work pause", "work resume"],
+  requiresProject: true
 };
 
 interface WorkRefineOptions {

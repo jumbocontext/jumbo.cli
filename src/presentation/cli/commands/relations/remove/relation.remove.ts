@@ -37,7 +37,8 @@ export const metadata: CommandMetadata = {
       description: "Remove a relation with a reason"
     }
   ],
-  related: ["relation add"]
+  related: ["relation add"],
+  requiresProject: true
 };
 
 /**

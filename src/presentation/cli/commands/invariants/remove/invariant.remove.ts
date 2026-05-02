@@ -26,7 +26,8 @@ export const metadata: CommandMetadata = {
       description: "Remove an invariant by ID"
     }
   ],
-  related: ["invariant add", "invariant update"]
+  related: ["invariant add", "invariant update"],
+  requiresProject: true
 };
 
 /**

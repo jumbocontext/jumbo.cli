@@ -34,7 +34,8 @@ export const metadata: CommandMetadata = {
       description: "Reject a goal with review issues"
     }
   ],
-  related: ["goal review", "goal qualify", "goal start"]
+  related: ["goal review", "goal qualify", "goal start"],
+  requiresProject: true
 };
 
 /**

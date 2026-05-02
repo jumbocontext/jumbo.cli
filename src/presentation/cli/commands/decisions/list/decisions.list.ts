@@ -43,6 +43,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["decision add", "decision update", "decision reverse", "decision supersede"],
+  requiresProject: true
 };
 
 /**

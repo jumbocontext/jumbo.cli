@@ -59,6 +59,7 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["value add", "value remove"],
+  requiresProject: true
 };
 
 /**

@@ -27,7 +27,8 @@ export const metadata: CommandMetadata = {
       description: "Remove a goal"
     }
   ],
-  related: ["goal add", "goal complete"]
+  related: ["goal add", "goal complete"],
+  requiresProject: true
 };
 
 /**

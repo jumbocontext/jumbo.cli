@@ -29,7 +29,8 @@ export const metadata: CommandMetadata = {
       description: "Start codifying an approved goal"
     }
   ],
-  related: ["goal approve", "goal close"]
+  related: ["goal approve", "goal close"],
+  requiresProject: true
 };
 
 /**

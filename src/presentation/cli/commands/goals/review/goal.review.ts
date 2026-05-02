@@ -30,7 +30,8 @@ export const metadata: CommandMetadata = {
       description: "Start QA review on a submitted goal"
     }
   ],
-  related: ["goal submit", "goal qualify", "goal reject"]
+  related: ["goal submit", "goal qualify", "goal reject"],
+  requiresProject: true
 };
 
 /**

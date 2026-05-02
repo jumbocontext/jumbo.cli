@@ -47,7 +47,8 @@ export const metadata: CommandMetadata = {
       command: "jumbo goals list --status doing,blocked",
       description: "List goals that are doing or blocked"
     }
-  ]
+  ],
+  requiresProject: true
 };
 
 /**

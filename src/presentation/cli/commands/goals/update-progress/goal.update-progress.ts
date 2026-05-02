@@ -32,7 +32,8 @@ export const metadata: CommandMetadata = {
       description: "Record progress on a goal"
     }
   ],
-  related: ["goal start", "goal complete", "goal show"]
+  related: ["goal start", "goal complete", "goal show"],
+  requiresProject: true
 };
 
 /**

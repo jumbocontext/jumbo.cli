@@ -22,7 +22,8 @@ export const metadata: CommandMetadata = {
       description: "Restore a reversed or superseded decision"
     }
   ],
-  related: ["decision reverse", "decision supersede", "decision update"]
+  related: ["decision reverse", "decision supersede", "decision update"],
+  requiresProject: true
 };
 
 export async function decisionRestore(

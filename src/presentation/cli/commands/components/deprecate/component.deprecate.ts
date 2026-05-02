@@ -36,7 +36,8 @@ export const metadata: CommandMetadata = {
       description: "Deprecate a component with a reason"
     }
   ],
-  related: ["component add", "component update", "component remove"]
+  related: ["component add", "component update", "component remove"],
+  requiresProject: true
 };
 
 /**

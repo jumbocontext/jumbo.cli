@@ -29,7 +29,8 @@ export const metadata: CommandMetadata = {
       description: "Submit a goal after implementation is complete"
     }
   ],
-  related: ["goal start", "goal review", "goal reject"]
+  related: ["goal start", "goal review", "goal reject"],
+  requiresProject: true
 };
 
 /**

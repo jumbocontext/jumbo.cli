@@ -19,6 +19,7 @@ export const metadata: CommandMetadata = {
     { command: "jumbo invariants list --format json", description: "List invariants as JSON" },
   ],
   related: ["invariant add", "invariant update", "invariant remove"],
+  requiresProject: true
 };
 
 export async function invariantsList(

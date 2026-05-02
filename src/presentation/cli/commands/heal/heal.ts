@@ -22,6 +22,8 @@ export const metadata: CommandMetadata = {
     },
   ],
   related: ["evolve"],
+  // Rebuilds projections from the project event store
+  requiresProject: true
 };
 
 interface HealOptions {

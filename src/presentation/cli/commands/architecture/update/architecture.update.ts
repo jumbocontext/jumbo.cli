@@ -49,7 +49,8 @@ export const metadata: CommandMetadata = {
       description: "Update architecture patterns and principles"
     },
   ],
-  related: ["decision add", "invariant add", "component add", "dependency add"]
+  related: ["decision add", "invariant add", "component add", "dependency add"],
+  requiresProject: true
 };
 
 /**

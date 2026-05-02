@@ -44,7 +44,8 @@ export const metadata: CommandMetadata = {
       description: "Update multiple fields"
     }
   ],
-  related: ["invariant add", "invariant remove"]
+  related: ["invariant add", "invariant remove"],
+  requiresProject: true
 };
 
 /**

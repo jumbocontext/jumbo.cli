@@ -27,7 +27,8 @@ export const metadata: CommandMetadata = {
       description: "Start working on the goal with ID 'abc123'"
     }
   ],
-  related: ["goal update-progress", "goal complete"]
+  related: ["goal update-progress", "goal complete"],
+  requiresProject: true
 };
 
 /**

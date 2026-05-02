@@ -22,7 +22,9 @@ export const metadata: CommandMetadata = {
       description: "Show current worker identity and claim settings"
     }
   ],
-  related: ["goal start", "goal show"]
+  related: ["goal start", "goal show"],
+  // Worker identity is read from the project-scoped settings store
+  requiresProject: true
 };
 
 /**

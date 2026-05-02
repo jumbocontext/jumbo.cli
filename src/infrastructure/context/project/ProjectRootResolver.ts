@@ -23,4 +23,21 @@ export class ProjectRootResolver implements IProjectRootResolver {
       return process.cwd();
     }
   }
+
+  findNearest(): string | null {
+    let dir = process.cwd();
+
+    while (true) {
+      const candidate = path.join(dir, ".jumbo");
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+        return dir;
+      }
+
+      const parent = path.dirname(dir);
+      if (parent === dir) {
+        return null;
+      }
+      dir = parent;
+    }
+  }
 }

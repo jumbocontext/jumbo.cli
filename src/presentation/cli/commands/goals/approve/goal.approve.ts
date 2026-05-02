@@ -32,7 +32,8 @@ export const metadata: CommandMetadata = {
       description: "Approve a goal after QA review passes"
     }
   ],
-  related: ["goal review", "goal complete", "goal start"]
+  related: ["goal review", "goal complete", "goal start"],
+  requiresProject: true
 };
 
 /**
