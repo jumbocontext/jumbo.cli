@@ -512,9 +512,11 @@ async function promptForTelemetryConsentIfNeeded(
 
   const enabled = await confirm({
     message:
-      "Jumbo collects anonymous usage data to help improve the product. " +
+      "Jumbo records the name of each command you run (e.g. 'jumbo goal start') " +
+      "along with a random project ID generated at init, so we can see how many projects are active. " +
+      "No command arguments, file contents, goal data, paths, or project names are collected. " +
       "You can opt out later with 'jumbo telemetry disable' or JUMBO_TELEMETRY_DISABLED=1. " +
-      "Allow anonymous telemetry?",
+      "Allow telemetry?",
     default: true,
   });
 
