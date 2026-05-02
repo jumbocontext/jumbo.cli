@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-05-02
+
 ### Fixed
 
 - **No stray `.jumbo` from project-scoped commands**: Running a `requiresProject:true` command (e.g. `decision add`, `component add`, `session start`, `goal add`) outside a Jumbo project root no longer creates a `.jumbo` directory, `jumbo.db`, event files, or migration artifacts in the current working directory. The CLI now detects "outside a project" before any infrastructure is constructed and exits non-zero with a clear stderr warning that directs the agent either to the existing ancestor project root or to run `jumbo project init` deliberately.
