@@ -14,7 +14,7 @@ export function Footer({ terminalWidth }: FooterProps): React.ReactElement {
       </Text>
       <Box justifyContent="space-between" paddingX={1}>
         <Text color={TuiColors.muted}>
-          ←→ navigate {TuiGlyphs.dot} 1-4 jump {TuiGlyphs.dot} q quit
+          m menu {TuiGlyphs.dot} q quit
         </Text>
         <Text color={TuiColors.muted}>
           {TuiGlyphs.filledCircle} daemons: idle
