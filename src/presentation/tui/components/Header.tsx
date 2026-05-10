@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { TuiColors, TuiGlyphs } from "../../shared/DesignTokens.js";
+import { BaseColors, TuiColors, TuiGlyphs } from "../../shared/DesignTokens.js";
 
 interface HeaderProps {
   projectName: string;
@@ -16,7 +16,7 @@ export function Header({
   return (
     <Box flexDirection="column" width={terminalWidth}>
       <Box justifyContent="space-between" paddingX={1}>
-        <Text color={TuiColors.brand} bold>
+        <Text color={BaseColors.brandBlue} bold>
           {projectName}
         </Text>
         <Text color={TuiColors.muted}>v{version}</Text>

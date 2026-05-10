@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { TuiColors, TuiGlyphs } from "../../shared/DesignTokens.js";
+import { BaseColors, TuiColors, TuiGlyphs } from "../../shared/DesignTokens.js";
 import {
   MEGA_MENU_SECTIONS,
   MAX_MENU_DEPTH,
@@ -64,7 +64,7 @@ function MenuColumn({
             <Text
               color={
                 isHighlighted
-                  ? TuiColors.brand
+                  ? BaseColors.brandBlue
                   : isActiveColumn
                     ? TuiColors.primary
                     : TuiColors.muted

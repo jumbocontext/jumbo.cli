@@ -1,22 +1,32 @@
-export const TuiColors = {
+export const BaseColors = {
   primary: "#ebebeb",
   secondary: "#808080",
   accent: "#40c8c8",
-  headline: "#f0c040",
-
-  success: "#40c840",
-  error: "#e54040",
-  warning: "#f0c040",
-  info: "#c8c0a0",
-
   muted: "#808080",
+  brandBlue: "#66b4f4",
+  brandBlueMuted: "#031c30ff",
+  brandPurple: "#aa00d4",
+  brandRed: "#ff2a2a",
+  brandOrange: "#ff8307",
+  brandYellow: "#ffcc00",
+  brandGreen: "#44aa00",
+  brandMagenta: "#ff00aa",
+} as const;
 
-  brand: "#66b4f4",
-  highlight: "#4080f0",
-
-  gradientA: "#ff5b15",
-  gradientB: "#66b2ff",
-  gradientC: "#dbfbeb",
+export const TuiColors = {
+  primary: BaseColors.primary,
+  secondary: BaseColors.secondary,
+  accent: BaseColors.brandMagenta,
+  muted: BaseColors.muted,
+  headline: BaseColors.brandBlue,
+  success: BaseColors.brandGreen,
+  error: BaseColors.brandRed,
+  warning: BaseColors.brandYellow,
+  info: BaseColors.brandBlue,
+  panelBorder: BaseColors.brandBlue,
+  label: BaseColors.brandBlue,
+  keyBadge: BaseColors.brandBlue,
+  keyBadgeBackground: BaseColors.brandBlueMuted,
 } as const;
 
 export const TuiSpacing = {

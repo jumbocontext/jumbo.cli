@@ -4,11 +4,15 @@ import { render } from "ink-testing-library";
 import { Footer } from "../../../../src/presentation/tui/components/Footer.js";
 
 describe("Footer", () => {
-  it("renders keybinding hints for menu and quit", () => {
+  it("renders keybinding hints for menu, quit, and help", () => {
     const { lastFrame } = render(<Footer terminalWidth={80} />);
     const frame = lastFrame()!;
-    expect(frame).toContain("m menu");
-    expect(frame).toContain("q quit");
+    expect(frame).toContain("│ m │");
+    expect(frame).toContain("menu");
+    expect(frame).toContain("│ q │");
+    expect(frame).toContain("quit");
+    expect(frame).toContain("│ h │");
+    expect(frame).toContain("help");
   });
 
   it("does not render old navigation hints", () => {

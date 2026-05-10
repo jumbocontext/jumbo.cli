@@ -22,8 +22,8 @@ describe("TuiApp", () => {
 
   it("renders footer with keybinding hints", () => {
     const { lastFrame } = render(<TuiApp />);
-    expect(lastFrame()).toContain("m menu");
-    expect(lastFrame()).toContain("q quit");
+    expect(lastFrame()).toContain("│ m │");
+    expect(lastFrame()).toContain("│ q │");
   });
 
   it("renders footer with daemon health placeholder", () => {
@@ -33,7 +33,7 @@ describe("TuiApp", () => {
 
   it("shows Cockpit screen by default", () => {
     const { lastFrame } = render(<TuiApp />);
-    expect(lastFrame()).toContain("Project orientation");
+    expect(lastFrame()).toContain("▓▒▒▒▒▒▒▒▒▒▓");
   });
 
   it("opens MegaMenu on m key press", async () => {
@@ -69,7 +69,7 @@ describe("TuiApp", () => {
     stdin.write("\x1B");
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(lastFrame()).not.toContain("Navigate");
-    expect(lastFrame()).toContain("Project orientation");
+    expect(lastFrame()).toContain("▓▒▒▒▒▒▒▒▒▒▓");
   });
 
   it("does not quit when q is pressed while MegaMenu is open", async () => {

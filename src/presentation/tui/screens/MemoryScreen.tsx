@@ -1,11 +1,11 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { TuiColors, TuiGlyphs } from "../../shared/DesignTokens.js";
+import { BaseColors, TuiColors, TuiGlyphs } from "../../shared/DesignTokens.js";
 
 export function MemoryScreen(): React.ReactElement {
   return (
     <Box flexDirection="column" paddingX={1}>
-      <Text color={TuiColors.brand}>
+      <Text color={BaseColors.brandBlue}>
         {TuiGlyphs.accentBar} Memory
       </Text>
       <Text color={TuiColors.muted}>

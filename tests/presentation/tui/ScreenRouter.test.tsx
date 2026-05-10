@@ -6,7 +6,7 @@ import { ScreenRouter } from "../../../src/presentation/tui/ScreenRouter.js";
 describe("ScreenRouter", () => {
   it("renders the Cockpit screen at index 0", () => {
     const { lastFrame } = render(<ScreenRouter activeScreenIndex={0} />);
-    expect(lastFrame()).toContain("Cockpit");
+    expect(lastFrame()).toContain("▓▒▒▒▒▒▒▒▒▒▓");
   });
 
   it("renders the Goals screen at index 1", () => {
@@ -26,6 +26,6 @@ describe("ScreenRouter", () => {
 
   it("falls back to Cockpit for out-of-bounds index", () => {
     const { lastFrame } = render(<ScreenRouter activeScreenIndex={99} />);
-    expect(lastFrame()).toContain("Cockpit");
+    expect(lastFrame()).toContain("▓▒▒▒▒▒▒▒▒▒▓");
   });
 });
