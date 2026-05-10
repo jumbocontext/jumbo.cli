@@ -110,7 +110,8 @@ function colorizeLineToSegments(
         elephantSegment += line[i];
         i++;
       }
-      segments.push({ text: elephantSegment, color: elephantHex, inverse: true });
+      const vibrant = elephantSegment.replace(/▓/g, "░").replace(/[▒█]/g, " ");
+      segments.push({ text: vibrant, color: elephantHex, inverse: true });
     } else if (char === "█" || char === "░") {
       let textSegment = "";
       while (i < line.length && (line[i] === "█" || line[i] === "░")) {

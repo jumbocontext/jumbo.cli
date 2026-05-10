@@ -14,7 +14,7 @@ export type CockpitState =
   | "primed-empty"
   | "primed";
 
-const PLACEHOLDER_COCKPIT_STATE: CockpitState = "uninitialized";
+const PLACEHOLDER_COCKPIT_STATE: CockpitState = "unprimed";
 const PLACEHOLDER_VERSION = "0.0.0";
 
 interface CockpitScreenProps {
@@ -38,18 +38,26 @@ export function CockpitScreen({
         { label: "Status", value: "Uninitialized" },
       ]);
     }
+    if (state === "unprimed") {
+      return generateCustomInfoBoxLines([
+        { label: "Directory", value: process.cwd() },
+        { label: "Status", value: "Ready" },
+      ]);
+    }
     return undefined;
   }, [state]);
 
   return (
     <Box flexDirection="column" flexGrow={1} alignItems="center">
       {(!bannerComplete || showBanner) && (
+        <Box marginTop={1}>
         <AnimatedBanner
           onComplete={handleBannerComplete}
           persist={showBanner}
           version={PLACEHOLDER_VERSION}
           infoBoxLines={infoBoxLines}
         />
+        </Box>
       )}
       {bannerComplete && (
         <Box flexDirection="column" width={TuiLayout.bannerWidth}>
