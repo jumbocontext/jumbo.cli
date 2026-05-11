@@ -33,7 +33,7 @@ None.
 ### Output
 
 Displays:
-- Project context (name, purpose, audiences)
+- Project header (name, purpose)
 - Previous session summary
 - In-progress goals (status: `doing`)
 - Planned goals (status: `defined`)

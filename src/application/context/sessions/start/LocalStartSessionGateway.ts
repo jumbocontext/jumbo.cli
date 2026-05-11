@@ -56,10 +56,6 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
       instructions.push(SessionInstructionSignal.BROWNFIELD_ONBOARDING);
     }
 
-    if (!isUnprimed && this.hasPrimitiveGaps(view)) {
-      instructions.push(SessionInstructionSignal.PRIMITIVE_GAPS_DETECTED);
-    }
-
     if (view.context.pausedGoals.length > 0) {
       instructions.push(SessionInstructionSignal.PAUSED_GOALS_RESUME);
     }
@@ -71,18 +67,5 @@ export class LocalStartSessionGateway implements IStartSessionGateway {
     instructions.push(SessionInstructionSignal.GOAL_SELECTION_PROMPT);
 
     return instructions;
-  }
-
-  private hasPrimitiveGaps(view: ContextualSessionView): boolean {
-    const projectContext = view.context.projectContext;
-    if (!projectContext) {
-      return false;
-    }
-
-    return (
-      projectContext.audiences.length === 0 ||
-      projectContext.audiencePains.length === 0 ||
-      projectContext.valuePropositions.length === 0
-    );
   }
 }

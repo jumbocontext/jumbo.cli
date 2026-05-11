@@ -1,12 +1,12 @@
 import { GoalView } from "../../goals/GoalView.js";
 import { DecisionView } from "../../decisions/DecisionView.js";
-import { ContextualProjectView } from "../../project/get/ContextualProjectView.js";
+import { ProjectView } from "../../project/ProjectView.js";
 
 /**
  * SessionContext - Pure context container for session orientation.
  *
  * Holds only the contextual data that provides orientation for a session:
- * project context, goals by category, and recent decisions.
+ * project (name and purpose), goals by category, and recent decisions.
  *
  * Does NOT contain the session itself. The composed return type
  * ContextualSessionView pairs a SessionView with its SessionContext.
@@ -16,10 +16,10 @@ import { ContextualProjectView } from "../../project/get/ContextualProjectView.j
  */
 export interface SessionContext {
   /**
-   * Project context with audiences and pains.
+   * Minimal project header (name and purpose).
    * Null if project hasn't been initialized.
    */
-  readonly projectContext: ContextualProjectView | null;
+  readonly projectContext: ProjectView | null;
 
   /**
    * Goals currently being actively worked on (status='doing'/'blocked'/'in-review'/'qualified').

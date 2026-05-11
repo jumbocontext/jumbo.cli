@@ -13,8 +13,8 @@ import { ValuePropositionView } from "../../value-propositions/ValuePropositionV
  * - valuePropositions: Active value propositions
  *
  * Follows the Contextual*View convention for application-layer composed read models.
- * Reusable across session context, project queries, and any consumer needing
- * a project with its related audience data.
+ * Available for consumers needing a project with its related audience and value data.
+ * Session context no longer consumes this view — session start emits only project name and purpose.
  */
 export interface ContextualProjectView {
   readonly project: ProjectView;

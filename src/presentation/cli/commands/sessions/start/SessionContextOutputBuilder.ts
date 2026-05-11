@@ -1,7 +1,7 @@
 import { TerminalOutputBuilder } from "../../../output/TerminalOutputBuilder.js";
 import { TerminalOutput } from "../../../output/TerminalOutput.js";
 import { EnrichedSessionContext } from "../../../../../application/context/sessions/get/EnrichedSessionContext.js";
-import { ContextualProjectView } from "../../../../../application/context/project/get/ContextualProjectView.js";
+import { ProjectView } from "../../../../../application/context/project/ProjectView.js";
 import { YamlFormatter } from "../../../formatting/YamlFormatter.js";
 import { SessionInstructionSignal } from "../../../../../application/context/sessions/SessionInstructionSignal.js";
 import {
@@ -12,7 +12,7 @@ import {
 /**
  * SessionContextOutputBuilder - Builds output for session context orientation.
  *
- * Renders project context (name, purpose, audiences, pains) and session summary
+ * Renders a minimal project header (name, purpose) and session summary
  * (focus, status, paused goals, recent decisions).
  * Includes brownfield onboarding and paused goals resume @LLM prompts.
  */
@@ -60,7 +60,7 @@ export class SessionContextOutputBuilder {
   }
 
   private renderProjectContext(
-    projectContext: ContextualProjectView | null
+    projectContext: ProjectView | null
   ): string {
     const contextData = this.buildProjectContextData(projectContext);
 
@@ -84,41 +84,16 @@ export class SessionContextOutputBuilder {
   }
 
   private buildProjectContextData(
-    projectContext: ContextualProjectView | null
+    projectContext: ProjectView | null
   ): Record<string, unknown> | null {
     if (!projectContext) {
       return null;
     }
 
-    const contextData: Record<string, unknown> = {
-      name: projectContext.project.name,
-      purpose: projectContext.project.purpose || "Not defined",
+    return {
+      name: projectContext.name,
+      purpose: projectContext.purpose || "Not defined",
     };
-
-    if (projectContext.audiences.length > 0) {
-      contextData.audiences = projectContext.audiences.map((a) => ({
-        name: a.name,
-        description: a.description,
-        priority: a.priority,
-      }));
-    }
-
-    if (projectContext.audiencePains.length > 0) {
-      contextData.audiencePains = projectContext.audiencePains.map((p) => ({
-        title: p.title,
-        description: p.description,
-      }));
-    }
-
-    if (projectContext.valuePropositions.length > 0) {
-      contextData.valuePropositions = projectContext.valuePropositions.map((v) => ({
-        title: v.title,
-        description: v.description,
-        benefit: v.benefit,
-      }));
-    }
-
-    return contextData;
   }
 
   private buildSessionContextData(
@@ -179,10 +154,6 @@ export class SessionContextOutputBuilder {
 
     const llmParts: string[] = [];
 
-    if (context.instructions.includes(SessionInstructionSignal.PRIMITIVE_GAPS_DETECTED)) {
-      llmParts.push(this.buildPrimitiveGapsInstruction(context));
-    }
-
     if (context.context.pausedGoals.length > 0) {
       llmParts.push("@LLM: Goals were paused in your workspace. To pick up where you left off, run:\n  jumbo goal resume --id <goal-id>");
     }
@@ -196,30 +167,6 @@ export class SessionContextOutputBuilder {
       : undefined;
 
     return { data: contextData, llmInstruction };
-  }
-
-  private buildPrimitiveGapsInstruction(context: EnrichedSessionContext): string {
-    const projectContext = context.context.projectContext;
-    if (!projectContext) {
-      return "";
-    }
-
-    const PRIMITIVE_CHECKS = [
-      { name: "audiences", items: projectContext.audiences, command: "jumbo audience add --help" },
-      { name: "audience pains", items: projectContext.audiencePains, command: "jumbo audience-pain add --help" },
-      { name: "value propositions", items: projectContext.valuePropositions, command: "jumbo value add --help" },
-    ] as const;
-
-    const missing = PRIMITIVE_CHECKS.filter(p => p.items.length === 0);
-
-    if (missing.length === 0) {
-      return "";
-    }
-
-    const missingNames = missing.map(p => p.name).join(", ");
-    const commands = missing.map(p => p.command).join(", ");
-
-    return `@LLM: This project has gaps in its foundational context. Missing: ${missingNames}. Ask the developer if they would like to register these now. Commands: ${commands}.`;
   }
 
   private buildBrownfieldInstruction(): string {
