@@ -25,12 +25,18 @@ export function Panel({
       paddingX={1}
       width={width}
     >
-      <Text color={titleColor} bold>
-        {title}
-      </Text>
-      <Box flexDirection="column" marginTop={1}>
-        {children}
-      </Box>
+      {title ? (
+        <React.Fragment>
+          <Text color={titleColor} bold>
+            {title}
+          </Text>
+          <Box flexDirection="column" marginTop={1}>
+            {children}
+          </Box>
+        </React.Fragment>
+      ) : (
+        <Box flexDirection="column">{children}</Box>
+      )}
     </Box>
   );
 }

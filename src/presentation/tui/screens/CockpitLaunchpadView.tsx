@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Text } from "ink";
 import { BaseColors, TuiColors, TuiGlyphs } from "../../shared/DesignTokens.js";
+import { SectionHeading } from "../components/SectionHeading.js";
 import { StatusIndicator } from "../components/StatusIndicator.js";
 
 const GOAL_STATUS_COLORS: Record<string, string> = {
@@ -58,20 +59,6 @@ const PLACEHOLDER_SELECTED_GOAL = {
     },
   ],
 };
-
-function SectionHeading({
-  title,
-}: {
-  title: string;
-}): React.ReactElement {
-  return (
-    <Box marginTop={1} marginBottom={0}>
-      <Text color={TuiColors.headline} bold>
-        | {title}
-      </Text>
-    </Box>
-  );
-}
 
 export function CockpitLaunchpadView(): React.ReactElement {
   return (
