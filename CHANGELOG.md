@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-05-11
+
 ### Changed
 
 - **Slimmer session context**: `session start` (and composed flows like work resume) now emits only the project name and purpose in the project header. Audiences, audience pains, and value propositions are no longer included in the session context packet, reducing tokens consumed at session start. The `primitive-gaps-detected` session instruction signal and its prompt have been removed; register these primitives via their dedicated commands instead.
