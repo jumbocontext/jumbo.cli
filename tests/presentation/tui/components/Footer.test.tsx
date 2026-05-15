@@ -1,7 +1,11 @@
 import React from "react";
 import { describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
-import { Footer } from "../../../../src/presentation/tui/components/Footer.js";
+import { BaseColors } from "../../../../src/presentation/shared/DesignTokens.js";
+import {
+  Footer,
+  NOTIFICATION_NOTIFIER_COLOR,
+} from "../../../../src/presentation/tui/components/Footer.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -11,9 +15,24 @@ describe("Footer", () => {
     expect((lastFrame() ?? "").trim().length).toBeGreaterThan(0);
   });
 
-  it("renders a passive notification badge with placeholder unread count", () => {
+  it("renders the notification notifier in the right status slot", () => {
     const { lastFrame } = render(<Footer terminalWidth={80} />);
-    expect(lastFrame()).toContain("notifications (3)");
+    const frame = lastFrame()!;
+
+    expect(frame).toContain("menu");
+    expect(frame).toContain("quit");
+    expect(frame).toContain("help");
+    expect(frame).toContain("n  ● notifications (3)");
+    expect(frame).not.toContain("drawer");
+    expect(frame).toContain("● notifications (3)");
+    expect(frame).not.toContain("daemons: idle");
+    expect(frame.indexOf("help")).toBeLessThan(
+      frame.indexOf("● notifications (3)"),
+    );
+  });
+
+  it("colors the notification notifier with brand yellow", () => {
+    expect(NOTIFICATION_NOTIFIER_COLOR).toBe(BaseColors.brandYellow);
   });
 
   it("toggles the notification drawer with n", async () => {

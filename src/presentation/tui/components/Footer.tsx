@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { SemanticColors, TuiGlyphs } from "../../shared/DesignTokens.js";
+import { BaseColors, TuiGlyphs } from "../../shared/DesignTokens.js";
 import { KeyBadge } from "./KeyBadge.js";
 import { NotificationDrawer } from "./NotificationDrawer.js";
 import type { NotificationDrawerNotification } from "./NotificationDrawer.js";
@@ -29,6 +29,7 @@ const PLACEHOLDER_NOTIFICATIONS: readonly NotificationDrawerNotification[] = [
     unread: true,
   },
 ];
+export const NOTIFICATION_NOTIFIER_COLOR = BaseColors.brandYellow;
 
 export function Footer({ terminalWidth }: FooterProps): React.ReactElement {
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
@@ -73,16 +74,13 @@ export function Footer({ terminalWidth }: FooterProps): React.ReactElement {
       <Box justifyContent="space-between" paddingX={1}>
         <Box gap={2}>
           <KeyBadge char="m" label="menu" />
-          <KeyBadge
-            char="n"
-            label={`notifications (${unreadNotificationCount})`}
-          />
           <KeyBadge char="q" label="quit" />
           <KeyBadge char="h" label="help" />
         </Box>
-        <Box alignItems="center">
-          <Text color={SemanticColors.muted}>
-            {TuiGlyphs.filledCircle} daemons: idle
+        <Box alignItems="center" gap={1}>
+          <KeyBadge char="n" />
+          <Text color={NOTIFICATION_NOTIFIER_COLOR}>
+            {TuiGlyphs.filledCircle} notifications ({unreadNotificationCount})
           </Text>
         </Box>
       </Box>
