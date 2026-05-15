@@ -1,8 +1,12 @@
 import React from "react";
 import { SCREEN_DEFINITIONS } from "./ScreenDefinitions.js";
 import { CockpitScreen } from "./screens/CockpitScreen.js";
+import { ComponentsScreen } from "./screens/ComponentsScreen.js";
+import { DecisionsScreen } from "./screens/DecisionsScreen.js";
+import { DependenciesScreen } from "./screens/DependenciesScreen.js";
 import { GoalsScreen } from "./screens/GoalsScreen.js";
-import { MemoryScreen } from "./screens/MemoryScreen.js";
+import { GuidelinesScreen } from "./screens/GuidelinesScreen.js";
+import { InvariantsScreen } from "./screens/InvariantsScreen.js";
 import { SessionScreen } from "./screens/SessionScreen.js";
 
 interface ScreenRouterProps {
@@ -14,8 +18,12 @@ const SCREEN_COMPONENTS: Record<
   () => React.ReactElement
 > = {
   cockpit: CockpitScreen,
+  components: ComponentsScreen,
+  decisions: DecisionsScreen,
+  dependencies: DependenciesScreen,
   goals: GoalsScreen,
-  memory: MemoryScreen,
+  guidelines: GuidelinesScreen,
+  invariants: InvariantsScreen,
   session: SessionScreen,
 };
 

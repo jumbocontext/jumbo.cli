@@ -5,7 +5,7 @@ import {
 } from "../../../src/presentation/tui/MegaMenuDefinitions.js";
 
 describe("MegaMenuDefinitions", () => {
-  it("defines sections for all four screens", () => {
+  it("defines top-level sections with Memory as a category", () => {
     expect(MEGA_MENU_SECTIONS).toHaveLength(4);
     const keys = MEGA_MENU_SECTIONS.map((s) => s.key);
     expect(keys).toEqual(["cockpit", "goals", "memory", "session"]);
@@ -14,6 +14,21 @@ describe("MegaMenuDefinitions", () => {
   it("assigns sequential shortcut numbers", () => {
     const shortcuts = MEGA_MENU_SECTIONS.map((s) => s.shortcut);
     expect(shortcuts).toEqual(["1", "2", "3", "4"]);
+  });
+
+  it("links Memory submenu items to dedicated entity screens", () => {
+    const memorySection = MEGA_MENU_SECTIONS.find(
+      (section) => section.key === "memory",
+    );
+
+    expect(memorySection?.screenKey).toBeUndefined();
+    expect(memorySection?.children.map((child) => child.screenKey)).toEqual([
+      "decisions",
+      "invariants",
+      "components",
+      "dependencies",
+      "guidelines",
+    ]);
   });
 
   it("every section has at least one child", () => {

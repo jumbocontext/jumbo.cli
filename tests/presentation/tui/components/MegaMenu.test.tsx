@@ -111,7 +111,7 @@ describe("MegaMenu", () => {
       const { lastFrame, stdin } = render(
         <MegaMenu
           {...defaultProps}
-          activeScreenIndex={MEGA_MENU_SECTIONS.length - 1}
+          activeScreenIndex={7}
         />,
       );
       stdin.write("\x1B[B");
@@ -179,6 +179,32 @@ describe("MegaMenu", () => {
       stdin.write("\r");
       await tick();
       expect(onScreenSelect).toHaveBeenCalledWith(1);
+    });
+
+    it("does not select Memory at level 1 and drills into entity pages instead", async () => {
+      const onScreenSelect = jest.fn();
+      const { lastFrame, stdin } = render(
+        <MegaMenu
+          {...defaultProps}
+          onScreenSelect={onScreenSelect}
+          terminalWidth={120}
+        />,
+      );
+
+      stdin.write("\x1B[B");
+      await tick();
+      stdin.write("\x1B[B");
+      await tick();
+      stdin.write("\r");
+      await tick();
+
+      expect(onScreenSelect).not.toHaveBeenCalled();
+      expect(lastFrame()).toContain("▸ Decisions");
+
+      stdin.write("\r");
+      await tick();
+
+      expect(onScreenSelect).toHaveBeenCalledWith(2);
     });
 
     it("does not respond to number key presses", () => {

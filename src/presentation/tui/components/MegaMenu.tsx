@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { BaseColors, SemanticColors, TuiGlyphs } from "../../shared/DesignTokens.js";
+import {
+  BaseColors,
+  SemanticColors,
+  TuiGlyphs,
+} from "../../shared/DesignTokens.js";
+import {
+  SCREEN_DEFINITIONS,
+  type ScreenKey,
+} from "../ScreenDefinitions.js";
 import {
   MEGA_MENU_SECTIONS,
   MAX_MENU_DEPTH,
@@ -15,6 +23,56 @@ interface MegaMenuProps {
 }
 
 const COLUMN_WIDTH = 24;
+
+function screenIndexForKey(screenKey: ScreenKey): number {
+  return SCREEN_DEFINITIONS.findIndex((screen) => screen.key === screenKey);
+}
+
+function activeScreenKeyForIndex(activeScreenIndex: number): ScreenKey {
+  return (
+    SCREEN_DEFINITIONS[activeScreenIndex]?.key ?? SCREEN_DEFINITIONS[0].key
+  );
+}
+
+function itemContainsScreenKey(
+  item: MegaMenuSection | MegaMenuItem,
+  activeScreenKey: ScreenKey,
+): boolean {
+  if (item.screenKey === activeScreenKey) {
+    return true;
+  }
+
+  return item.children?.some((child) =>
+    itemContainsScreenKey(child, activeScreenKey),
+  ) ?? false;
+}
+
+function highlightedPathForScreenKey(
+  activeScreenKey: ScreenKey,
+): [number, number, number] {
+  const sectionIndex = MEGA_MENU_SECTIONS.findIndex((section) =>
+    itemContainsScreenKey(section, activeScreenKey),
+  );
+  if (sectionIndex < 0) {
+    return [0, 0, 0];
+  }
+
+  const section = MEGA_MENU_SECTIONS[sectionIndex];
+  const childIndex = section.children.findIndex((child) =>
+    itemContainsScreenKey(child, activeScreenKey),
+  );
+  const child = childIndex >= 0 ? section.children[childIndex] : undefined;
+  const grandchildIndex =
+    child?.children?.findIndex((grandchild) =>
+      itemContainsScreenKey(grandchild, activeScreenKey),
+    ) ?? -1;
+
+  return [
+    sectionIndex,
+    childIndex < 0 ? 0 : childIndex,
+    grandchildIndex < 0 ? 0 : grandchildIndex,
+  ];
+}
 
 function getItemsAtLevel(
   level: number,
@@ -49,14 +107,15 @@ function MenuColumn({
   activeScreenIndex: number;
 }): React.ReactElement {
   const isActiveColumn = columnLevel === activeLevel;
+  const activeScreenKey = activeScreenKeyForIndex(activeScreenIndex);
 
   return (
     <Box flexDirection="column" width={COLUMN_WIDTH}>
       {items.map((item, index) => {
         const isHighlighted = isActiveColumn && index === highlightedIndex;
-        const isCurrentScreen =
-          columnLevel === 0 && index === activeScreenIndex;
-        const hasChildren = "children" in item && item.children && item.children.length > 0;
+        const isCurrentScreen = itemContainsScreenKey(item, activeScreenKey);
+        const hasChildren =
+          "children" in item && item.children && item.children.length > 0;
 
         return (
           <Box key={item.key}>
@@ -89,12 +148,14 @@ export function MegaMenu({
   onClose,
   terminalWidth,
 }: MegaMenuProps): React.ReactElement {
+  const activeScreenKey = activeScreenKeyForIndex(activeScreenIndex);
   const [activeLevel, setActiveLevel] = useState(0);
   const [highlightedIndices, setHighlightedIndices] = useState<
     [number, number, number]
-  >([activeScreenIndex, 0, 0]);
+  >(highlightedPathForScreenKey(activeScreenKey));
 
   const currentItems = getItemsAtLevel(activeLevel, highlightedIndices);
+  const highlightedItem = currentItems[highlightedIndices[activeLevel]];
 
   useInput((input, key) => {
     if (key.escape) {
@@ -107,8 +168,22 @@ export function MegaMenu({
     }
 
     if (key.return) {
-      if (activeLevel === 0) {
-        onScreenSelect(highlightedIndices[0]);
+      if (highlightedItem?.screenKey) {
+        const screenIndex = screenIndexForKey(highlightedItem.screenKey);
+        if (screenIndex >= 0) {
+          onScreenSelect(screenIndex);
+        }
+        return;
+      }
+
+      if (
+        highlightedItem &&
+        "children" in highlightedItem &&
+        highlightedItem.children &&
+        highlightedItem.children.length > 0 &&
+        activeLevel < MAX_MENU_DEPTH - 1
+      ) {
+        setActiveLevel((prev) => prev + 1);
       }
       return;
     }

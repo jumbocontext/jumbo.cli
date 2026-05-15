@@ -7,7 +7,7 @@ const frameAt = (i: number) => render(<ScreenRouter activeScreenIndex={i} />).la
 
 describe("ScreenRouter", () => {
   it("renders distinct output for each screen index", () => {
-    const frames = [0, 1, 2, 3].map(frameAt);
+    const frames = [0, 1, 2, 3, 4, 5, 6, 7].map(frameAt);
     const unique = new Set(frames);
     expect(unique.size).toBe(frames.length);
   });

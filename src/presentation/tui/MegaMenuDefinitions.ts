@@ -1,12 +1,16 @@
+import type { ScreenKey } from "./ScreenDefinitions.js";
+
 export interface MegaMenuItem {
   readonly key: string;
   readonly label: string;
+  readonly screenKey?: ScreenKey;
   readonly children?: readonly MegaMenuItem[];
 }
 
 export interface MegaMenuSection {
   readonly key: string;
   readonly label: string;
+  readonly screenKey?: ScreenKey;
   readonly shortcut: string;
   readonly children: readonly MegaMenuItem[];
 }
@@ -15,6 +19,7 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
   {
     key: "cockpit",
     label: "Cockpit",
+    screenKey: "cockpit",
     shortcut: "1",
     children: [
       {
@@ -49,6 +54,7 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
   {
     key: "goals",
     label: "Goals",
+    screenKey: "goals",
     shortcut: "2",
     children: [
       {
@@ -87,6 +93,7 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
       {
         key: "decisions",
         label: "Decisions",
+        screenKey: "decisions",
         children: [
           { key: "active", label: "Active" },
           { key: "superseded", label: "Superseded" },
@@ -96,6 +103,7 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
       {
         key: "invariants",
         label: "Invariants",
+        screenKey: "invariants",
         children: [
           { key: "architecture", label: "Architecture" },
           { key: "process", label: "Process" },
@@ -105,6 +113,7 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
       {
         key: "components",
         label: "Components",
+        screenKey: "components",
         children: [
           { key: "services", label: "Services" },
           { key: "ui", label: "UI" },
@@ -114,6 +123,7 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
       {
         key: "dependencies",
         label: "Dependencies",
+        screenKey: "dependencies",
         children: [
           { key: "runtime", label: "Runtime" },
           { key: "dev", label: "Dev" },
@@ -122,6 +132,7 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
       {
         key: "guidelines",
         label: "Guidelines",
+        screenKey: "guidelines",
         children: [
           { key: "coding-style", label: "Coding Style" },
           { key: "testing", label: "Testing" },
@@ -133,6 +144,7 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
   {
     key: "session",
     label: "Session",
+    screenKey: "session",
     shortcut: "4",
     children: [
       {

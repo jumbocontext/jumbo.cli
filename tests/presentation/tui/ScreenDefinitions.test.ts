@@ -5,8 +5,17 @@ import {
 } from "../../../src/presentation/tui/ScreenDefinitions.js";
 
 describe("ScreenDefinitions", () => {
-  it("defines four screens", () => {
-    expect(SCREEN_DEFINITIONS).toHaveLength(4);
+  it("defines dedicated navigation screens", () => {
+    expect(SCREEN_DEFINITIONS.map((screen) => screen.key)).toEqual([
+      "cockpit",
+      "goals",
+      "decisions",
+      "invariants",
+      "components",
+      "dependencies",
+      "guidelines",
+      "session",
+    ]);
   });
 
   it("assigns unique shortcut keys", () => {
