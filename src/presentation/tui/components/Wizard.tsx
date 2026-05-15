@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Box, Text, useInput } from "ink";
+import React, { useState, useRef, useLayoutEffect } from "react";
+import { Box, Text, useInput, measureElement, type DOMElement } from "ink";
 import {
   BaseColors,
   SemanticColors,
@@ -45,6 +45,18 @@ export function Wizard({
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
+  const panelRef = useRef<DOMElement | null>(null);
+  const [innerWidth, setInnerWidth] = useState(OVERLAY_MIN_WIDTH - 8);
+
+  useLayoutEffect(() => {
+    if (panelRef.current) {
+      const { width } = measureElement(panelRef.current);
+      const inner = Math.max(1, width - 8);
+      if (inner !== innerWidth) {
+        setInnerWidth(inner);
+      }
+    }
+  });
 
   const currentStep = steps[currentStepIndex];
   const isFirstStep = currentStepIndex === 0;
@@ -145,25 +157,21 @@ export function Wizard({
     >
       <Box
         flexDirection="column"
-        borderStyle="round"
-        borderColor={OVERLAY_BORDER_COLOR}
-        paddingX={2}
-        paddingY={1}
+        backgroundColor={BaseColors.black}
+        paddingX={4}
+        paddingY={2}
         minWidth={OVERLAY_MIN_WIDTH}
+        ref={panelRef}
       >
         <Box flexDirection="column" gap={0}>
           <Text color={SemanticColors.headline} bold>
             {TuiGlyphs.accentBar} {title}
           </Text>
-          <Text color={BaseColors.shade4}>
-            {"  "}Step {currentStepIndex + 1} of {totalSteps}
-            {"  "}{TuiGlyphs.dot} {currentStep.title}
-          </Text>
         </Box>
 
         {currentStep.description !== undefined && (
           <Box marginTop={1}>
-            <Text color={SemanticColors.primary} wrap="wrap">
+            <Text color={SemanticColors.secondary} wrap="wrap">
               {currentStep.description}
             </Text>
           </Box>
@@ -187,17 +195,26 @@ export function Wizard({
           })}
         </Box>
 
-        <Box marginTop={1}>
-          <Text color={BaseColors.shade5}>
-            {TuiGlyphs.divider.repeat(50)}
+        <Box marginTop={1} width={innerWidth}>
+          <Text
+            color={BaseColors.shade5}
+            backgroundColor={BaseColors.black}
+          >
+            {TuiGlyphs.divider.repeat(innerWidth)}
           </Text>
         </Box>
 
-        <Box marginTop={1} gap={2}>
-          {!isFirstStep && <KeyBadge char="←" label="Back" />}
-          <KeyBadge char="⏎" label={isLastStep ? "Confirm" : "Next"} />
-          <KeyBadge char="esc" label="Cancel" />
-          <KeyBadge char="tab" label="Next field" />
+        <Box marginTop={1} width={innerWidth}>
+          <Box gap={2}>
+            {!isFirstStep && <KeyBadge char="←" label="Back" />}
+            <KeyBadge char="⏎" label={isLastStep ? "Confirm" : "Next"} />
+            <KeyBadge char="esc" label="Cancel" />
+            <KeyBadge char="tab" label="Next field" />
+          </Box>
+          <Box flexGrow={1} />
+          <Text color={SemanticColors.secondary}>
+            {currentStepIndex + 1}/{totalSteps}
+          </Text>
         </Box>
       </Box>
     </Box>

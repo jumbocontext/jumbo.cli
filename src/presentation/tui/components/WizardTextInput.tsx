@@ -2,6 +2,9 @@ import React from "react";
 import { Box, Text, useInput } from "ink";
 import { SemanticColors, BaseColors, TuiGlyphs } from "../../shared/DesignTokens.js";
 
+const INPUT_BACKGROUND = SemanticColors.inputField;
+const INPUT_MIN_WIDTH = 42;
+
 interface WizardTextInputProps {
   label: string;
   value: string;
@@ -52,22 +55,37 @@ export function WizardTextInput({
   return (
     <Box flexDirection="column" gap={0}>
       <Text
-        color={focused ? SemanticColors.label : BaseColors.shade2}
+        color={SemanticColors.inputLabel}
         bold={focused}
-      >
+        dimColor>
         {label}
       </Text>
-      <Box marginLeft={2}>
-        <Text color={SemanticColors.headline}>{"> "}</Text>
+      <Box
+        marginLeft={0}
+        backgroundColor={INPUT_BACKGROUND}
+        paddingX={1}
+        minWidth={INPUT_MIN_WIDTH}
+      >
         {showPlaceholder ? (
-          <Text color={BaseColors.shade4}>{placeholder}</Text>
+          <Text color={SemanticColors.inputPlaceholderText} backgroundColor={INPUT_BACKGROUND}>
+            {placeholder}
+          </Text>
         ) : (
-          <Text color={SemanticColors.primary}>{value}</Text>
+          <Text
+            color={SemanticColors.inputText}
+            backgroundColor={INPUT_BACKGROUND}
+          >
+            {value}
+          </Text>
         )}
-        {focused && <Text color={SemanticColors.headline}>▎</Text>}
+        {focused && (
+          <Text color={SemanticColors.inputText} backgroundColor={INPUT_BACKGROUND}>
+            ▎
+          </Text>
+        )}
       </Box>
       {error !== undefined && (
-        <Box marginLeft={2}>
+        <Box marginLeft={0}>
           <Text color={SemanticColors.error}>{TuiGlyphs.cross} {error}</Text>
         </Box>
       )}

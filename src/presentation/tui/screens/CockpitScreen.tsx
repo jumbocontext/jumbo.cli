@@ -13,7 +13,7 @@ export type CockpitState =
   | "primed-empty"
   | "primed";
 
-const PLACEHOLDER_COCKPIT_STATE: CockpitState = "primed";
+const PLACEHOLDER_COCKPIT_STATE: CockpitState = "uninitialized";
 const PLACEHOLDER_VERSION = "0.0.0";
 
 interface CockpitScreenProps {

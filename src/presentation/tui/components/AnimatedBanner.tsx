@@ -18,7 +18,7 @@ const TOTAL_FRAMES = getFrameCount();
 const MID_POINT = Math.floor(TOTAL_FRAMES / 2);
 const FRAME_DURATION_MS = 9;
 const TICK_MS = 4;
-const HOLD_DELAY_MS = 1520;
+const HOLD_DELAY_MS = 1120;
 const ERASE_INTERVAL_MS = 15;
 
 type BannerPhase = "walking" | "holding" | "erasing" | "persisted" | "complete";

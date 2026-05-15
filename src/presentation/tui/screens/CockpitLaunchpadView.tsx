@@ -43,6 +43,7 @@ const CODIFIER_ALPHANUMERIC_GLYPHS = [
 ] as const;
 
 const REFINER_GLYPH_COLORS = [
+  BaseColors.tint1,
   BaseColors.primary,
   BaseColors.shade1,
   BaseColors.shade2,
@@ -50,17 +51,16 @@ const REFINER_GLYPH_COLORS = [
   BaseColors.shade4,
   BaseColors.shade5,
   BaseColors.shade6,
-  BaseColors.shade7,
 ] as const;
 
 const DEFAULT_CODIFIER_GLYPH_COLORS: GlyphColorMap = {
-  "█": BaseColors.shade2,
-  "░": BaseColors.shade3,
+  "█": BaseColors.shade1,
+  "░": BaseColors.shade2,
 };
 const DEFAULT_REVIEWER_GLYPH_COLORS: GlyphColorMap = {
-  "█": BaseColors.shade1,
-  "░": BaseColors.shade4,
-  "│": BaseColors.shade7,
+  "█": BaseColors.primary,
+  "░": BaseColors.shade3,
+  "│": BaseColors.shade6,
 };
 
 interface CockpitLaunchpadViewProps {
@@ -132,16 +132,16 @@ export function CockpitLaunchpadView({
           height="100%"
           padding={1}>
             <Text color={BaseColors.shade3} bold>
-              PROJECT// <Text color={BaseColors.shade4}>{currentDirectory}</Text>
+              PROJECT// <Text color={BaseColors.shade3}>{currentDirectory}</Text>
             </Text>
             <Box flexDirection="column" marginTop={1}>
-              <Text color={BaseColors.shade4}>
+              <Text color={BaseColors.shade3}>
                 Name: <Text color={BaseColors.shade2}>My Project</Text>
               </Text>
-              <Text color={BaseColors.shade4}>
+              <Text color={BaseColors.shade3}>
                 Purpose: 
               </Text>
-              <Text color={BaseColors.shade2}>
+              <Text color={BaseColors.shade1}>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
               </Text>
             </Box>
@@ -152,7 +152,7 @@ export function CockpitLaunchpadView({
           flexBasis={0}
           height="100%"
           padding={1}>
-          <Text color={BaseColors.shade3} bold>
+          <Text color={BaseColors.shade2} bold>
             SESSION//
           </Text>
         </Box>
@@ -167,8 +167,8 @@ export function CockpitLaunchpadView({
           alignItems="center"
           padding={1}>
           <Box width={35} alignItems="center">
-            <Text color={BaseColors.shade4} bold>
-              REVIEWER// <Text color={BaseColors.shade5}>(idle)</Text>
+            <Text color={BaseColors.shade3} bold>
+              REVIEWER// <Text color={BaseColors.shade4}>(idle)</Text>
             </Text>
           </Box>
           <Box flexDirection="column" flexWrap="nowrap" width={35}>
@@ -194,8 +194,8 @@ export function CockpitLaunchpadView({
           alignItems="center"
           padding={1}>
           <Box width={35} alignItems="center">
-            <Text color={BaseColors.shade4} bold>
-              REFINER// <Text color={BaseColors.shade5}>(idle)</Text>
+            <Text color={BaseColors.shade3} bold>
+              REFINER// <Text color={BaseColors.shade4}>(idle)</Text>
             </Text>
           </Box>
           <Box flexDirection="column" flexWrap="nowrap" width={35}>
@@ -220,7 +220,7 @@ export function CockpitLaunchpadView({
           alignItems="center"
           padding={1}>
           <Box width={35} alignItems="center">
-            <Text color={BaseColors.shade4} bold>
+            <Text color={BaseColors.shade3} bold>
               CODIFIER//
             </Text>
           </Box>
