@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Bare command TUI launch**: Running `jumbo` with no arguments now opens the Ink TUI instead of ending at the legacy static banner path, using project-backed state readers when a Jumbo project is available and an uninitialized TUI path otherwise.
 - **TUI foundation**: Ink + React terminal UI with app shell (header/body/footer flexbox layout), screen router (Cockpit, Goals, Memory, Session), keyboard navigation (arrow keys, number keys 1-4, q to quit), and shared design tokens (colors, spacing, glyphs). All screens are placeholder stubs awaiting content in future goals.
 - **TUI notification prototype**: Footer notification badge with placeholder unread count, N-key drawer toggle, placeholder notification list, and individual dismiss actions.
 - **TUI dedicated memory entity screens**: Memory navigation now groups Decisions, Invariants, Components, Dependencies, and Guidelines under a first-level Memory menu category, with each entity type opening a focused placeholder list/detail screen and static event replay controls.
@@ -16,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **TUI notification footer priority**: Moved the placeholder notification notifier into the right footer status slot with an adjacent `n` key badge, replacing the previous daemon idle mockup.
+- **TUI footer notifications**: Removed placeholder notification rows from the footer drawer until real notification sources are wired.
 
 ## [3.0.3] - 2026-05-02
 

@@ -1,11 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
-import { BaseColors } from "../../../../src/presentation/shared/DesignTokens.js";
-import {
-  Footer,
-  NOTIFICATION_NOTIFIER_COLOR,
-} from "../../../../src/presentation/tui/components/Footer.js";
+import { Footer } from "../../../../src/presentation/tui/components/Footer.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -27,15 +23,14 @@ describe("Footer", () => {
     expect(lastFrame()).not.toContain("Notifications");
   });
 
-  it("updates the notification count when a notification is dismissed", async () => {
+  it("renders an empty notification drawer without placeholder daemon alerts", async () => {
     const { lastFrame, stdin } = render(<Footer terminalWidth={80} />);
 
     stdin.write("n");
     await tick();
-    stdin.write("d");
-    await tick();
 
-    expect(lastFrame()).toContain("notifications (2)");
-    expect(lastFrame()).not.toContain("New CLI version available");
+    expect(lastFrame()).toContain("No notifications");
+    expect(lastFrame()).toContain("notifications (0)");
+    expect(lastFrame()).not.toContain("Daemon failure detected");
   });
 });

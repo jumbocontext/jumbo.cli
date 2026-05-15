@@ -23,9 +23,9 @@ import { attachGlobalOptions } from "./program/GlobalOptionsHandler.js";
 import { classifyCommand } from "./commands/CommandClassifier.js";
 import {
   isBareCommand,
-  showBannerWithContainer,
 } from "./banner/BannerOrchestrator.js";
 import { Renderer } from "./rendering/Renderer.js";
+import { TuiApplicationLauncher } from "../tui/TuiApplicationLauncher.js";
 import {
   CLI_FLAGS,
   ARGV,
@@ -121,10 +121,10 @@ export class AppRunner {
     const argv = process.argv;
     const invocationType = classifyInvocation(argv);
 
-    // Handle bare 'jumbo' command - show banner and exit
+    // Handle bare 'jumbo' command - launch the Ink TUI.
     if (invocationType === "banner") {
-      await showBannerWithContainer(this.version, this.container);
-      return; // showBannerWithContainer calls process.exit
+      await new TuiApplicationLauncher(this.version, this.container).launch();
+      return;
     }
 
     // Create program with categorized help

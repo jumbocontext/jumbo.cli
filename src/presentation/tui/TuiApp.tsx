@@ -14,7 +14,6 @@ import {
 } from "./state/TuiStateReader.js";
 
 const PLACEHOLDER_PROJECT_NAME = "Jumbo";
-const PLACEHOLDER_VERSION = "0.0.0";
 
 function useTerminalDimensions(): { columns: number; rows: number } {
   const { stdout } = useStdout();
@@ -40,11 +39,13 @@ function useTerminalDimensions(): { columns: number; rows: number } {
 }
 
 interface TuiAppProps {
+  readonly version?: string;
   readonly stateReaderControllers?: TuiStateReaderControllers;
   readonly stateReaderOptions?: TuiStateReaderOptions;
 }
 
 export function TuiApp({
+  version = "",
   stateReaderControllers,
   stateReaderOptions,
 }: TuiAppProps = {}): React.ReactElement {
@@ -53,12 +54,16 @@ export function TuiApp({
       controllers={stateReaderControllers}
       options={stateReaderOptions}
     >
-      <TuiAppFrame />
+      <TuiAppFrame version={version} />
     </TuiStateReaderProvider>
   );
 }
 
-function TuiAppFrame(): React.ReactElement {
+interface TuiAppFrameProps {
+  readonly version: string;
+}
+
+function TuiAppFrame({ version }: TuiAppFrameProps): React.ReactElement {
   const { exit } = useApp();
   const { columns, rows } = useTerminalDimensions();
   const projectContext = useProjectContext();
@@ -105,7 +110,7 @@ function TuiAppFrame(): React.ReactElement {
       <Box flexShrink={0}>
         <Header
           projectName={projectContext.data?.name ?? PLACEHOLDER_PROJECT_NAME}
-          version={PLACEHOLDER_VERSION}
+          version={version}
           terminalWidth={columns}
         />
       </Box>
@@ -121,7 +126,9 @@ function TuiAppFrame(): React.ReactElement {
           ) : (
             <ScreenRouter
               activeScreenIndex={activeScreenIndex}
-              projectLifecycleState={projectContext.data?.lifecycleState}
+              projectLifecycleState={
+                projectContext.data?.lifecycleState ?? "uninitialized"
+              }
             />
           )}
         </Box>

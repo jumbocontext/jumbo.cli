@@ -9,26 +9,7 @@ interface FooterProps {
   terminalWidth: number;
 }
 
-const PLACEHOLDER_NOTIFICATIONS: readonly NotificationDrawerNotification[] = [
-  {
-    id: "version-check",
-    title: "New CLI version available",
-    body: "A placeholder update notice will connect to version checks later.",
-    unread: true,
-  },
-  {
-    id: "daemon-health",
-    title: "Daemon failure detected",
-    body: "A placeholder daemon alert will connect to process events later.",
-    unread: true,
-  },
-  {
-    id: "missed-summary",
-    title: "What you missed",
-    body: "A placeholder session summary will connect to recent events later.",
-    unread: true,
-  },
-];
+const CURRENT_NOTIFICATIONS: readonly NotificationDrawerNotification[] = [];
 export const NOTIFICATION_NOTIFIER_COLOR = BaseColors.brandYellow;
 
 export function Footer({ terminalWidth }: FooterProps): React.ReactElement {
@@ -39,7 +20,7 @@ export function Footer({ terminalWidth }: FooterProps): React.ReactElement {
 
   const visibleNotifications = useMemo(
     () =>
-      PLACEHOLDER_NOTIFICATIONS.filter(
+      CURRENT_NOTIFICATIONS.filter(
         (notification) => !dismissedNotificationIds.includes(notification.id),
       ),
     [dismissedNotificationIds],

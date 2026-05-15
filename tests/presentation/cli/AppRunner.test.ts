@@ -8,6 +8,14 @@ jest.unstable_mockModule("../../../src/presentation/cli/program/GlobalOptionsHan
   attachGlobalOptions: jest.fn(),
 }));
 
+const mockLaunchTui = jest.fn<() => Promise<void>>().mockResolvedValue();
+
+jest.unstable_mockModule("../../../src/presentation/tui/TuiApplicationLauncher.js", () => ({
+  TuiApplicationLauncher: jest.fn().mockImplementation(() => ({
+    launch: mockLaunchTui,
+  })),
+}));
+
 jest.unstable_mockModule(
   "../../../src/presentation/cli/commands/registry/CommanderApplicator.js",
   () => ({
@@ -56,6 +64,16 @@ describe("AppRunner", () => {
     Renderer.reset();
     jest.clearAllMocks();
     jest.restoreAllMocks();
+  });
+
+  it("launches the Ink TUI for bare jumbo invocations", async () => {
+    process.argv = ["node", "jumbo"];
+
+    const runner = new AppRunner("1.2.3", null);
+    await runner.run();
+
+    expect(mockLaunchTui).toHaveBeenCalledTimes(1);
+    expect(createProgram).not.toHaveBeenCalled();
   });
 
   it("tracks successful command execution with command metadata", async () => {
