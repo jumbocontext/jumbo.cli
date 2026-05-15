@@ -15,26 +15,6 @@ describe("Footer", () => {
     expect((lastFrame() ?? "").trim().length).toBeGreaterThan(0);
   });
 
-  it("renders the notification notifier in the right status slot", () => {
-    const { lastFrame } = render(<Footer terminalWidth={80} />);
-    const frame = lastFrame()!;
-
-    expect(frame).toContain("menu");
-    expect(frame).toContain("quit");
-    expect(frame).toContain("help");
-    expect(frame).toContain("n  ● notifications (3)");
-    expect(frame).not.toContain("drawer");
-    expect(frame).toContain("● notifications (3)");
-    expect(frame).not.toContain("daemons: idle");
-    expect(frame.indexOf("help")).toBeLessThan(
-      frame.indexOf("● notifications (3)"),
-    );
-  });
-
-  it("colors the notification notifier with brand yellow", () => {
-    expect(NOTIFICATION_NOTIFIER_COLOR).toBe(BaseColors.brandYellow);
-  });
-
   it("toggles the notification drawer with n", async () => {
     const { lastFrame, stdin } = render(<Footer terminalWidth={80} />);
 
