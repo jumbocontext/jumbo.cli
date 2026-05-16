@@ -39,6 +39,25 @@ describe("InitFlow", () => {
     expect(lastFrame()).not.toBe(before);
   });
 
+  it("renders yes/no audience gate as a toggle", async () => {
+    const { lastFrame, stdin } = render(
+      <InitFlow onComplete={() => {}} onCancel={() => {}} />,
+    );
+
+    stdin.write("MyProject");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+
+    expect(lastFrame()).toContain("Add an audience?");
+    expect(lastFrame()).toContain("Yes");
+    expect(lastFrame()).toContain("▸ No");
+    expect(lastFrame()).toContain("2/7");
+    expect(lastFrame()).not.toContain("1/1");
+  });
+
   it("calls onCancel when escape is pressed", async () => {
     const handleCancel = jest.fn();
     const { stdin } = render(
@@ -96,7 +115,7 @@ describe("InitFlow", () => {
     await tick();
     stdin.write("\r");
     await tick();
-    stdin.write("yes");
+    stdin.write("\x1B[D");
     await tick();
     stdin.write("\r");
     await tick();
@@ -112,11 +131,9 @@ describe("InitFlow", () => {
     await tick();
     stdin.write("\r");
     await tick();
-    stdin.write("no");
-    await tick();
     stdin.write("\r");
     await tick();
-    stdin.write("yes");
+    stdin.write("\x1B[D");
     await tick();
     stdin.write("\r");
     await tick();
@@ -134,11 +151,7 @@ describe("InitFlow", () => {
     await tick();
     stdin.write("\r");
     await tick();
-    stdin.write("no");
-    await tick();
     stdin.write("\r");
-    await tick();
-    stdin.write("yes");
     await tick();
     stdin.write("\r");
     await tick();
@@ -418,6 +431,70 @@ describe("InitFlow", () => {
       purpose: undefined,
       projectRoot: process.cwd(),
       selectedAgentIds: ["claude", "codex"],
+    });
+  });
+
+  it("allows available agents to be toggled before initialization", async () => {
+    const availableAgents = [
+      { id: "claude", name: "Claude" },
+      { id: "codex", name: "Codex" },
+    ] as const;
+    const actionControllers = {
+      planProjectInitController: {
+        handle: jest.fn().mockResolvedValue({
+          availableAgents,
+          plannedChanges: [],
+        }),
+      },
+      initializeProjectController: {
+        handle: jest.fn().mockResolvedValue({
+          projectId: "project_123",
+          changes: [],
+        }),
+      },
+    };
+
+    const { lastFrame, stdin } = render(
+      <InitFlow
+        actionControllers={actionControllers}
+        onComplete={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+
+    stdin.write("MyProject");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+
+    expect(lastFrame()).toContain("Agents");
+    expect(lastFrame()).toContain("▸ [x] Claude (claude)");
+    expect(lastFrame()).toContain("[x] Codex (codex)");
+    expect(lastFrame()).toContain("6/7");
+    expect(lastFrame()).not.toContain("1/1");
+
+    stdin.write(" ");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+
+    expect(actionControllers.planProjectInitController.handle).toHaveBeenNthCalledWith(2, {
+      projectRoot: process.cwd(),
+      selectedAgentIds: ["codex"],
+    });
+    expect(actionControllers.initializeProjectController.handle).toHaveBeenCalledWith({
+      name: "MyProject",
+      purpose: undefined,
+      projectRoot: process.cwd(),
+      selectedAgentIds: ["codex"],
     });
   });
 });

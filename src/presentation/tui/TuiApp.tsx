@@ -82,6 +82,10 @@ function TuiAppFrame({
   );
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [initFlowOpen, setInitFlowOpen] = useState(false);
+  const projectLifecycleState =
+    projectContext.data?.lifecycleState ?? "uninitialized";
+  const initShortcutEnabled =
+    !projectContext.loading && projectLifecycleState === "uninitialized";
 
   useInput((input) => {
     if (megaMenuOpen || initFlowOpen) {
@@ -93,7 +97,7 @@ function TuiAppFrame({
     if (input === "m" || input === "M") {
       setMegaMenuOpen(true);
     }
-    if (input === "i" || input === "I") {
+    if (initShortcutEnabled && (input === "i" || input === "I")) {
       setInitFlowOpen(true);
     }
   });
@@ -140,9 +144,7 @@ function TuiAppFrame({
           ) : (
             <ScreenRouter
               activeScreenIndex={activeScreenIndex}
-              projectLifecycleState={
-                projectContext.data?.lifecycleState ?? "uninitialized"
-              }
+              projectLifecycleState={projectLifecycleState}
             />
           )}
         </Box>

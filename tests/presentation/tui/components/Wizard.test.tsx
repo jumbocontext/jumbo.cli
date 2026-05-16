@@ -37,6 +37,38 @@ const MULTI_FIELD_CONFIG: WizardStepDefinition[] = [
   },
 ];
 
+const YES_NO_CONFIG: WizardStepDefinition[] = [
+  {
+    title: "Question",
+    fields: [
+      {
+        key: "enabled",
+        label: "Enable feature?",
+        kind: "yes-no",
+        defaultValue: "no",
+      },
+    ],
+  },
+];
+
+const MULTI_SELECT_CONFIG: WizardStepDefinition[] = [
+  {
+    title: "Choices",
+    fields: [
+      {
+        key: "choices",
+        label: "Choices",
+        kind: "multi-select",
+        options: [
+          { value: "alpha", label: "Alpha" },
+          { value: "beta", label: "Beta" },
+        ],
+        defaultValue: "alpha,beta",
+      },
+    ],
+  },
+];
+
 describe("Wizard", () => {
   it("renders the wizard title", () => {
     const { lastFrame } = render(
@@ -50,7 +82,7 @@ describe("Wizard", () => {
     expect(lastFrame()).toContain("Test Wizard");
   });
 
-  it("renders step counter", () => {
+  it("does not render redundant step counter text in the header", () => {
     const { lastFrame } = render(
       <Wizard
         title="Setup"
@@ -59,10 +91,11 @@ describe("Wizard", () => {
         onCancel={() => {}}
       />,
     );
-    expect(lastFrame()).toContain("Step 1 of 2");
+    expect(lastFrame()).not.toContain("Step 1 of 2");
+    expect(lastFrame()).toContain("1/2");
   });
 
-  it("renders the current step title", () => {
+  it("does not duplicate the current step title in the header", () => {
     const { lastFrame } = render(
       <Wizard
         title="Setup"
@@ -71,7 +104,7 @@ describe("Wizard", () => {
         onCancel={() => {}}
       />,
     );
-    expect(lastFrame()).toContain("First Step");
+    expect(lastFrame()).not.toContain("First Step");
   });
 
   it("renders step description when provided", () => {
@@ -151,8 +184,8 @@ describe("Wizard", () => {
     await tick();
     stdin.write("\r");
     await tick();
-    expect(lastFrame()).toContain("Step 2 of 2");
-    expect(lastFrame()).toContain("Second Step");
+    expect(lastFrame()).toContain("2/2");
+    expect(lastFrame()).toContain("Email");
   });
 
   it("calls onCancel when escape is pressed", async () => {
@@ -224,7 +257,7 @@ describe("Wizard", () => {
     );
     const frame = lastFrame()!;
     expect(frame).toContain("Setup");
-    expect(frame).toContain("First Step");
+    expect(frame).toContain("Enter your name");
     expect(frame).toContain("──");
   });
 
@@ -310,6 +343,30 @@ describe("Wizard", () => {
     expect(lastFrame()).toContain("Smith");
   });
 
+  it("moves back to the previous field with up arrow", async () => {
+    const { lastFrame, stdin } = render(
+      <Wizard
+        title="Setup"
+        steps={MULTI_FIELD_CONFIG}
+        onConfirm={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+    stdin.write("Alice");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("Smith");
+    await tick();
+    stdin.write("\x1B[A");
+    await tick();
+    stdin.write("a");
+    await tick();
+
+    expect(lastFrame()).toContain("Alicea");
+    expect(lastFrame()).toContain("Smith");
+  });
+
   it("shows Back hint on second step", async () => {
     const { lastFrame, stdin } = render(
       <Wizard
@@ -324,6 +381,21 @@ describe("Wizard", () => {
     stdin.write("\r");
     await tick();
     expect(lastFrame()).toContain("Back");
+  });
+
+  it("uses a supplied progress label instead of local step count", () => {
+    const { lastFrame } = render(
+      <Wizard
+        title="Setup"
+        steps={SINGLE_STEP_CONFIG}
+        progressLabel="2/7"
+        onConfirm={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+
+    expect(lastFrame()).toContain("2/7");
+    expect(lastFrame()).not.toContain("1/1");
   });
 
   it("collects values across multiple steps", async () => {
@@ -348,5 +420,77 @@ describe("Wizard", () => {
       name: "Alice",
       email: "alice@test.com",
     });
+  });
+
+  it("renders yes/no fields as toggles instead of text inputs", () => {
+    const { lastFrame } = render(
+      <Wizard
+        title="Setup"
+        steps={YES_NO_CONFIG}
+        onConfirm={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+
+    expect(lastFrame()).toContain("Enable feature?");
+    expect(lastFrame()).toContain("Yes");
+    expect(lastFrame()).toContain("▸ No");
+    expect(lastFrame()).toContain("space");
+    expect(lastFrame()).toContain("Toggle");
+  });
+
+  it("toggles yes/no fields with arrow keys and submits the selected value", async () => {
+    const handleConfirm = jest.fn();
+    const { stdin } = render(
+      <Wizard
+        title="Setup"
+        steps={YES_NO_CONFIG}
+        onConfirm={handleConfirm}
+        onCancel={() => {}}
+      />,
+    );
+
+    stdin.write("\x1B[D");
+    await tick();
+    stdin.write("\r");
+    await tick();
+
+    expect(handleConfirm).toHaveBeenCalledWith({ enabled: "yes" });
+  });
+
+  it("renders multi-select fields with selected options", () => {
+    const { lastFrame } = render(
+      <Wizard
+        title="Setup"
+        steps={MULTI_SELECT_CONFIG}
+        onConfirm={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+
+    expect(lastFrame()).toContain("Choices");
+    expect(lastFrame()).toContain("▸ [x] Alpha");
+    expect(lastFrame()).toContain("[x] Beta");
+    expect(lastFrame()).toContain("space");
+    expect(lastFrame()).toContain("Toggle");
+  });
+
+  it("toggles multi-select options with space and submits selected values", async () => {
+    const handleConfirm = jest.fn();
+    const { stdin } = render(
+      <Wizard
+        title="Setup"
+        steps={MULTI_SELECT_CONFIG}
+        onConfirm={handleConfirm}
+        onCancel={() => {}}
+      />,
+    );
+
+    stdin.write(" ");
+    await tick();
+    stdin.write("\r");
+    await tick();
+
+    expect(handleConfirm).toHaveBeenCalledWith({ choices: "beta" });
   });
 });

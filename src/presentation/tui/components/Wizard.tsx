@@ -12,8 +12,16 @@ export interface WizardStepField {
   readonly key: string;
   readonly label: string;
   readonly placeholder?: string;
+  readonly kind?: "text" | "yes-no" | "multi-select";
+  readonly options?: readonly WizardStepFieldOption[];
+  readonly defaultValue?: string;
   readonly required?: boolean;
   readonly validate?: (value: string, values: Record<string, string>) => string | null;
+}
+
+export interface WizardStepFieldOption {
+  readonly value: string;
+  readonly label: string;
 }
 
 export interface WizardStepDefinition {
@@ -29,9 +37,14 @@ export interface WizardProps {
   readonly onCancel: () => void;
   readonly dispatchError?: string | null;
   readonly disabled?: boolean;
+  readonly progressLabel?: string;
 }
 
 const OVERLAY_MIN_WIDTH = 60;
+const YES_NO_VALUES = {
+  yes: "yes",
+  no: "no",
+} as const;
 
 export function Wizard({
   title,
@@ -40,6 +53,7 @@ export function Wizard({
   onCancel,
   dispatchError = null,
   disabled = false,
+  progressLabel,
 }: WizardProps): React.ReactElement {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -47,6 +61,10 @@ export function Wizard({
   const [activeFieldIndex, setActiveFieldIndex] = useState(0);
   const activeFieldRef = useRef(0);
   const stepIndexRef = useRef(0);
+  const [focusedOptionIndexes, setFocusedOptionIndexes] = useState<
+    Record<string, number>
+  >({});
+  const focusedOptionIndexesRef = useRef<Record<string, number>>({});
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
@@ -68,6 +86,11 @@ export function Wizard({
   const isLastStep = currentStepIndex === steps.length - 1;
   const totalSteps = steps.length;
   const currentFields = currentStep.fields;
+  const activeField = currentFields[activeFieldIndex];
+  const showSpaceToggleHint =
+    activeField?.kind === "multi-select" || activeField?.kind === "yes-no";
+  const footerProgressLabel =
+    progressLabel ?? `${currentStepIndex + 1}/${totalSteps}`;
 
   const clearFieldError = (fieldKey: string) => {
     if (validationErrors[fieldKey] !== undefined) {
@@ -81,6 +104,17 @@ export function Wizard({
     valuesRef.current = { ...valuesRef.current, [fieldKey]: nextValue };
     setValues({ ...valuesRef.current });
     clearFieldError(fieldKey);
+  };
+
+  const handleFocusedOptionIndexChange = (
+    fieldKey: string,
+    nextIndex: number,
+  ) => {
+    focusedOptionIndexesRef.current = {
+      ...focusedOptionIndexesRef.current,
+      [fieldKey]: nextIndex,
+    };
+    setFocusedOptionIndexes({ ...focusedOptionIndexesRef.current });
   };
 
   useInput((input, key) => {
@@ -97,6 +131,7 @@ export function Wizard({
     const step = steps[stepIdx];
     const fields = step.fields;
     const fieldIdx = activeFieldRef.current;
+    const activeField = fields[fieldIdx];
     const lastStep = stepIdx === steps.length - 1;
 
     if (key.tab && !key.shift) {
@@ -115,16 +150,87 @@ export function Wizard({
       return;
     }
 
+    if (activeField?.kind !== "multi-select" && key.upArrow) {
+      if (fieldIdx > 0) {
+        activeFieldRef.current = fieldIdx - 1;
+        setActiveFieldIndex(fieldIdx - 1);
+      }
+      return;
+    }
+
+    if (activeField?.kind !== "multi-select" && key.downArrow) {
+      if (fieldIdx < fields.length - 1) {
+        activeFieldRef.current = fieldIdx + 1;
+        setActiveFieldIndex(fieldIdx + 1);
+      }
+      return;
+    }
+
+    if (activeField?.kind === "yes-no") {
+      if (key.leftArrow || input === "y" || input === "Y") {
+        handleFieldChange(activeField.key, YES_NO_VALUES.yes);
+        return;
+      }
+
+      if (key.rightArrow || input === "n" || input === "N") {
+        handleFieldChange(activeField.key, YES_NO_VALUES.no);
+        return;
+      }
+
+      if (input === " ") {
+        handleFieldChange(
+          activeField.key,
+          resolveFieldValue(activeField, valuesRef.current) === YES_NO_VALUES.yes
+            ? YES_NO_VALUES.no
+            : YES_NO_VALUES.yes,
+        );
+        return;
+      }
+    }
+
+    if (activeField?.kind === "multi-select") {
+      const options = activeField.options ?? [];
+      const currentOptionIndex =
+        focusedOptionIndexesRef.current[activeField.key] ?? 0;
+
+      if (key.upArrow && options.length > 0) {
+        handleFocusedOptionIndexChange(
+          activeField.key,
+          Math.max(currentOptionIndex - 1, 0),
+        );
+        return;
+      }
+
+      if (key.downArrow && options.length > 0) {
+        handleFocusedOptionIndexChange(
+          activeField.key,
+          Math.min(currentOptionIndex + 1, options.length - 1),
+        );
+        return;
+      }
+
+      if (input === " " && options[currentOptionIndex] !== undefined) {
+        handleFieldChange(
+          activeField.key,
+          toggleMultiSelectValue(
+            resolveFieldValue(activeField, valuesRef.current),
+            options[currentOptionIndex].value,
+          ),
+        );
+        return;
+      }
+    }
+
     if (key.return) {
       if (fieldIdx < fields.length - 1) {
         activeFieldRef.current = fieldIdx + 1;
         setActiveFieldIndex(fieldIdx + 1);
         return;
       }
-      const currentValues = valuesRef.current;
+      const currentValues = withStepDefaultValues(fields, valuesRef.current);
       const errors: Record<string, string> = {};
       for (const field of fields) {
-        const fieldValue = currentValues[field.key] ?? "";
+        const fieldValue = resolveFieldValue(field, currentValues);
         if (field.required !== false && fieldValue.trim().length === 0) {
           errors[field.key] = "Required";
           continue;
@@ -181,12 +287,6 @@ export function Wizard({
           <Text color={SemanticColors.headline} bold>
             {TuiGlyphs.accentBar} {title}
           </Text>
-          <Text color={SemanticColors.primary} bold>
-            {currentStep.title}
-          </Text>
-          <Text color={SemanticColors.secondary}>
-            Step {currentStepIndex + 1} of {totalSteps}
-          </Text>
         </Box>
 
         {currentStep.description !== undefined && (
@@ -199,8 +299,34 @@ export function Wizard({
 
         <Box flexDirection="column" marginTop={1} gap={1}>
           {currentFields.map((field, fieldIndex) => {
-            const fieldValue = values[field.key] ?? "";
+            const fieldValue = resolveFieldValue(field, values);
             const isFocused = fieldIndex === activeFieldIndex;
+            if (field.kind === "yes-no") {
+              return (
+              <WizardYesNoToggle
+                key={field.key}
+                label={field.label}
+                value={fieldValue}
+                focused={isFocused}
+                error={validationErrors[field.key]}
+              />
+              );
+            }
+
+            if (field.kind === "multi-select") {
+              return (
+                <WizardMultiSelect
+                  key={field.key}
+                  label={field.label}
+                  value={fieldValue}
+                  options={field.options ?? []}
+                  focused={isFocused}
+                  focusedOptionIndex={focusedOptionIndexes[field.key] ?? 0}
+                  error={validationErrors[field.key]}
+                />
+              );
+            }
+
             return (
               <WizardTextInput
                 key={field.key}
@@ -240,14 +366,172 @@ export function Wizard({
               label={disabled ? "Working" : isLastStep ? "Confirm" : "Next"}
             />
             <KeyBadge char="esc" label="Cancel" />
-            <KeyBadge char="tab" label="Next field" />
+            {currentFields.length > 1 && <KeyBadge char="↑↓" label="Field" />}
+            {showSpaceToggleHint && <KeyBadge char="space" label="Toggle" />}
           </Box>
           <Box flexGrow={1} />
           <Text color={SemanticColors.secondary}>
-            {currentStepIndex + 1}/{totalSteps}
+            {footerProgressLabel}
           </Text>
         </Box>
       </Box>
     </Box>
   );
+}
+
+interface WizardMultiSelectProps {
+  readonly label: string;
+  readonly value: string;
+  readonly options: readonly WizardStepFieldOption[];
+  readonly focused: boolean;
+  readonly focusedOptionIndex: number;
+  readonly error?: string;
+}
+
+function WizardMultiSelect({
+  label,
+  value,
+  options,
+  focused,
+  focusedOptionIndex,
+  error,
+}: WizardMultiSelectProps): React.ReactElement {
+  const selectedValues = parseMultiSelectValue(value);
+
+  return (
+    <Box flexDirection="column" gap={0}>
+      <Text color={SemanticColors.inputLabel} bold={focused} dimColor>
+        {label}
+      </Text>
+      <Box flexDirection="column">
+        {options.map((option, index) => {
+          const optionFocused = focused && index === focusedOptionIndex;
+          const selected = selectedValues.includes(option.value);
+          return (
+            <Text
+              key={option.value}
+              color={optionFocused ? BaseColors.brandBlue : SemanticColors.primary}
+              bold={optionFocused}
+            >
+              {optionFocused ? TuiGlyphs.selector : " "} [{selected ? "x" : " "}]{" "}
+              {option.label}
+            </Text>
+          );
+        })}
+      </Box>
+      {error !== undefined && (
+        <Box marginLeft={0}>
+          <Text color={SemanticColors.error}>
+            {TuiGlyphs.cross} {error}
+          </Text>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+interface WizardYesNoToggleProps {
+  readonly label: string;
+  readonly value: string;
+  readonly focused: boolean;
+  readonly error?: string;
+}
+
+function WizardYesNoToggle({
+  label,
+  value,
+  focused,
+  error,
+}: WizardYesNoToggleProps): React.ReactElement {
+  return (
+    <Box flexDirection="column" gap={0}>
+      <Text color={SemanticColors.inputLabel} bold={focused} dimColor>
+        {label}
+      </Text>
+      <Box gap={2}>
+        <WizardYesNoOption
+          label="Yes"
+          selected={value === YES_NO_VALUES.yes}
+          focused={focused}
+        />
+        <WizardYesNoOption
+          label="No"
+          selected={value !== YES_NO_VALUES.yes}
+          focused={focused}
+        />
+      </Box>
+      {error !== undefined && (
+        <Box marginLeft={0}>
+          <Text color={SemanticColors.error}>
+            {TuiGlyphs.cross} {error}
+          </Text>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+interface WizardYesNoOptionProps {
+  readonly label: string;
+  readonly selected: boolean;
+  readonly focused: boolean;
+}
+
+function WizardYesNoOption({
+  label,
+  selected,
+  focused,
+}: WizardYesNoOptionProps): React.ReactElement {
+  const color = selected
+    ? focused
+      ? BaseColors.brandBlue
+      : SemanticColors.primary
+    : SemanticColors.muted;
+
+  return (
+    <Text color={color} bold={selected}>
+      {selected ? TuiGlyphs.selector : " "} {label}
+    </Text>
+  );
+}
+
+function resolveFieldValue(
+  field: WizardStepField,
+  values: Record<string, string>,
+): string {
+  return values[field.key] ?? field.defaultValue ?? "";
+}
+
+function withStepDefaultValues(
+  fields: readonly WizardStepField[],
+  values: Record<string, string>,
+): Record<string, string> {
+  return fields.reduce<Record<string, string>>(
+    (nextValues, field) => {
+      if (
+        nextValues[field.key] === undefined &&
+        field.defaultValue !== undefined
+      ) {
+        nextValues[field.key] = field.defaultValue;
+      }
+      return nextValues;
+    },
+    { ...values },
+  );
+}
+
+function parseMultiSelectValue(value: string): readonly string[] {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+function toggleMultiSelectValue(value: string, optionValue: string): string {
+  const selectedValues = parseMultiSelectValue(value);
+  const nextValues = selectedValues.includes(optionValue)
+    ? selectedValues.filter((selectedValue) => selectedValue !== optionValue)
+    : [...selectedValues, optionValue];
+
+  return nextValues.join(",");
 }

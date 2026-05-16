@@ -36,6 +36,25 @@ type InitFlowStage =
   | "confirmation"
   | "success";
 
+const INIT_FLOW_STAGES_WITH_AGENT_SELECTION: readonly InitFlowStage[] = [
+  "project",
+  "audience-gate",
+  "audience",
+  "value-gate",
+  "value",
+  "agent-selection",
+  "confirmation",
+] as const;
+
+const INIT_FLOW_STAGES_WITHOUT_AGENT_SELECTION: readonly InitFlowStage[] = [
+  "project",
+  "audience-gate",
+  "audience",
+  "value-gate",
+  "value",
+  "confirmation",
+] as const;
+
 interface ProjectDetails {
   readonly name: string;
   readonly purpose: string | undefined;
@@ -103,7 +122,8 @@ const AUDIENCE_GATE_STEPS: readonly WizardStepDefinition[] = [
       {
         key: "addAudience",
         label: "Add an audience?",
-        placeholder: "no",
+        kind: "yes-no",
+        defaultValue: "no",
         required: false,
         validate: validateOptionalYesNo,
       },
@@ -136,7 +156,8 @@ const AUDIENCE_STEPS: readonly WizardStepDefinition[] = [
       {
         key: "addAnotherAudience",
         label: "Add another audience?",
-        placeholder: "no",
+        kind: "yes-no",
+        defaultValue: "no",
         required: false,
         validate: validateOptionalYesNo,
       },
@@ -153,7 +174,8 @@ const VALUE_GATE_STEPS: readonly WizardStepDefinition[] = [
       {
         key: "addValueProposition",
         label: "Add a value proposition?",
-        placeholder: "no",
+        kind: "yes-no",
+        defaultValue: "no",
         required: false,
         validate: validateOptionalYesNo,
       },
@@ -191,7 +213,8 @@ const VALUE_STEPS: readonly WizardStepDefinition[] = [
       {
         key: "addAnotherValueProposition",
         label: "Add another value proposition?",
-        placeholder: "no",
+        kind: "yes-no",
+        defaultValue: "no",
         required: false,
         validate: validateOptionalYesNo,
       },
@@ -301,7 +324,6 @@ export function InitFlow({
   const handleAgentSelectionConfirm = async (values: Record<string, string>) => {
     const parsedAgentIds = parseAgentSelection(
       values.selectedAgentIds ?? "",
-      planResponse?.availableAgents.map((agent) => agent.id) ?? [],
     );
     setSelectedAgentIds(parsedAgentIds);
     await planProjectInit(parsedAgentIds);
@@ -422,6 +444,7 @@ export function InitFlow({
       onCancel={onCancel}
       dispatchError={dispatchError}
       disabled={working}
+      progressLabel={resolveProgressLabel(stage, planResponse)}
     />
   );
 }
@@ -469,18 +492,20 @@ function buildAgentSelectionSteps(
   planResponse: PlanProjectInitResponse | null,
 ): readonly WizardStepDefinition[] {
   const availableAgents = planResponse?.availableAgents ?? [];
-  const agentList = availableAgents
-    .map((agent) => `${agent.id} (${agent.name})`)
-    .join(", ");
   return [
     {
       title: "Agent Selection",
-      description: `Select agents to configure: ${agentList}`,
+      description: "Select agents to configure.",
       fields: [
         {
           key: "selectedAgentIds",
-          label: "Agent ids",
-          placeholder: availableAgents.map((agent) => agent.id).join(","),
+          label: "Agents",
+          kind: "multi-select",
+          options: availableAgents.map((agent) => ({
+            value: agent.id,
+            label: `${agent.name} (${agent.id})`,
+          })),
+          defaultValue: availableAgents.map((agent) => agent.id).join(","),
           required: false,
           validate: (value) =>
             validateAgentSelection(value, availableAgents.map((agent) => agent.id)),
@@ -501,13 +526,30 @@ function buildConfirmationSteps(
         {
           key: "confirmInitialization",
           label: "Proceed with initialization?",
-          placeholder: "yes",
+          kind: "yes-no",
+          defaultValue: "yes",
           required: false,
           validate: validateOptionalYesNo,
         },
       ],
     },
   ];
+}
+
+function resolveProgressLabel(
+  stage: InitFlowStage,
+  planResponse: PlanProjectInitResponse | null,
+): string | undefined {
+  const stages =
+    planResponse !== null && planResponse.availableAgents.length === 0
+      ? INIT_FLOW_STAGES_WITHOUT_AGENT_SELECTION
+      : INIT_FLOW_STAGES_WITH_AGENT_SELECTION;
+  const stageIndex = stages.indexOf(stage);
+  if (stageIndex < 0) {
+    return undefined;
+  }
+
+  return `${stageIndex + 1}/${stages.length}`;
 }
 
 function formatPlannedChanges(plannedChanges: readonly PlannedFileChange[]): string {
@@ -551,7 +593,7 @@ function validateAgentSelection(
   value: string,
   availableAgentIds: readonly AgentId[],
 ): string | null {
-  const selectedAgentIds = parseAgentSelection(value, availableAgentIds);
+  const selectedAgentIds = parseAgentSelection(value);
   if (selectedAgentIds.length === 0) {
     return "Select at least one agent";
   }
@@ -564,14 +606,7 @@ function validateAgentSelection(
   return null;
 }
 
-function parseAgentSelection(
-  value: string,
-  availableAgentIds: readonly AgentId[],
-): readonly AgentId[] {
-  if (value.trim().length === 0) {
-    return availableAgentIds;
-  }
-
+function parseAgentSelection(value: string): readonly AgentId[] {
   return value
     .split(",")
     .map((agentId) => agentId.trim())
