@@ -35,9 +35,22 @@ describe("TuiApplicationLauncher", () => {
     const element = mockRender.mock.calls[0][0] as React.ReactElement<{
       version: string;
       stateReaderControllers: object;
+      initialFlow: string;
     }>;
     expect(element.props.version).toBe("1.2.3");
     expect(element.props.stateReaderControllers).toEqual({});
+    expect(element.props.initialFlow).toBe("cockpit");
+  });
+
+  it("passes through the requested initial flow", async () => {
+    const launcher = new TuiApplicationLauncher("1.2.3", null, "init");
+
+    await launcher.launch();
+
+    const element = mockRender.mock.calls[0][0] as React.ReactElement<{
+      initialFlow: string;
+    }>;
+    expect(element.props.initialFlow).toBe("init");
   });
 
   it("maps container controllers into TUI state reader controllers", async () => {

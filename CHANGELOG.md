@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TUI notification footer priority**: Moved the placeholder notification notifier into the right footer status slot with an adjacent `n` key badge, replacing the previous daemon idle mockup.
 - **TUI footer notifications**: Removed placeholder notification rows from the footer drawer until real notification sources are wired.
 
+### Fixed
+
+- **TUI project initialization**: Running bare `jumbo` from an uninitialized directory now opens a controller-backed Init wizard that creates `.jumbo` state and project files, refreshes the TUI after success, and preserves existing `jumbo init` / `jumbo project init` CLI behavior.
+
 ## [3.0.3] - 2026-05-02
 
 ### Changed

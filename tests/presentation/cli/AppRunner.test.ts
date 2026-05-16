@@ -43,6 +43,9 @@ jest.unstable_mockModule(
 
 const { createProgram } = await import("../../../src/presentation/cli/program/ProgramFactory.js");
 import type { IApplicationContainer } from "../../../src/application/host/IApplicationContainer.js";
+const { TuiApplicationLauncher } = await import(
+  "../../../src/presentation/tui/TuiApplicationLauncher.js"
+);
 const { AppRunner } = await import("../../../src/presentation/cli/AppRunner.js");
 import { Renderer } from "../../../src/presentation/cli/rendering/Renderer.js";
 
@@ -73,7 +76,18 @@ describe("AppRunner", () => {
     await runner.run();
 
     expect(mockLaunchTui).toHaveBeenCalledTimes(1);
+    expect(TuiApplicationLauncher).toHaveBeenCalledWith("1.2.3", null, "cockpit");
     expect(createProgram).not.toHaveBeenCalled();
+  });
+
+  it("passes initial init flow to the TUI launcher for uninitialized bare invocations", async () => {
+    process.argv = ["node", "jumbo"];
+
+    const runner = new AppRunner("1.2.3", null, "init");
+    await runner.run();
+
+    expect(TuiApplicationLauncher).toHaveBeenCalledWith("1.2.3", null, "init");
+    expect(mockLaunchTui).toHaveBeenCalledTimes(1);
   });
 
   it("tracks successful command execution with command metadata", async () => {

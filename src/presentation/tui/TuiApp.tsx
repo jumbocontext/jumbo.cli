@@ -104,13 +104,11 @@ function TuiAppFrame({
   });
 
   const handleInitComplete = useCallback(
-    (_values: Record<string, string>) => {
+    async (_values: Record<string, string>) => {
+      await projectContext.refresh();
       setInitFlowOpen(false);
-      if (initialFlow === "init") {
-        exit();
-      }
     },
-    [exit, initialFlow],
+    [projectContext],
   );
 
   const handleInitCancel = useCallback(() => {

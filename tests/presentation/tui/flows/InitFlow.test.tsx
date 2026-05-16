@@ -1,11 +1,25 @@
 import React from "react";
-import { describe, expect, it, jest } from "@jest/globals";
+import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { render } from "ink-testing-library";
+import fs from "fs-extra";
+import * as os from "node:os";
+import * as path from "node:path";
 import { InitFlow } from "../../../../src/presentation/tui/flows/InitFlow.js";
+import { Host } from "../../../../src/infrastructure/host/Host.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 
 describe("InitFlow", () => {
+  const originalCwd = process.cwd();
+  const tempDirs: string[] = [];
+
+  afterEach(async () => {
+    process.chdir(originalCwd);
+    for (const dir of tempDirs.splice(0)) {
+      await fs.remove(dir);
+    }
+  });
+
   it("renders a non-empty frame on mount", () => {
     const { lastFrame } = render(
       <InitFlow onComplete={() => {}} onCancel={() => {}} />,
@@ -190,6 +204,100 @@ describe("InitFlow", () => {
 
     expect(lastFrame()).toContain("Planning failed");
     expect(handleComplete).not.toHaveBeenCalled();
+  });
+
+  it("shows an inline error when required initialization controllers are missing", async () => {
+    const handleComplete = jest.fn();
+
+    const { lastFrame, stdin } = render(
+      <InitFlow onComplete={handleComplete} onCancel={() => {}} />,
+    );
+
+    stdin.write("MyProject");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+
+    expect(lastFrame()).toContain("Project initialization planning is unavailable");
+    expect(handleComplete).not.toHaveBeenCalled();
+  });
+
+  it("initializes project state and project files through the real composed controllers", async () => {
+    const projectRoot = await fs.realpath(
+      await fs.mkdtemp(path.join(os.tmpdir(), "jumbo-tui-init-")),
+    );
+    tempDirs.push(projectRoot);
+    process.chdir(projectRoot);
+
+    const host = new Host(path.join(projectRoot, ".jumbo"));
+    const container = await host.createBuilder().build();
+    const handleComplete = jest.fn();
+
+    const { stdin, unmount } = render(
+      <InitFlow
+        actionControllers={{
+          planProjectInitController: container.planProjectInitController,
+          initializeProjectController: container.initializeProjectController,
+          addAudienceController: container.addAudienceController,
+          addValuePropositionController:
+            container.addValuePropositionController,
+        }}
+        onComplete={handleComplete}
+        onCancel={() => {}}
+      />,
+    );
+
+    stdin.write("TuiProject");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("Created from TUI");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("\r");
+    await tick();
+
+    for (let attempt = 0; attempt < 20 && handleComplete.mock.calls.length === 0; attempt += 1) {
+      await tick();
+    }
+
+    expect(handleComplete).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectId: expect.any(String),
+        projectName: "TuiProject",
+      }),
+    );
+    await expect(fs.pathExists(path.join(projectRoot, ".jumbo"))).resolves.toBe(
+      true,
+    );
+    await expect(fs.pathExists(path.join(projectRoot, "JUMBO.md"))).resolves.toBe(
+      true,
+    );
+    await expect(fs.pathExists(path.join(projectRoot, "AGENTS.md"))).resolves.toBe(
+      true,
+    );
+    await expect(
+      fs.pathExists(path.join(projectRoot, ".gitignore")),
+    ).resolves.toBe(true);
+    await expect(container.projectContextReader.getProject()).resolves.toEqual(
+      expect.objectContaining({ name: "TuiProject" }),
+    );
+
+    unmount();
+    host.dispose();
   });
 
   it("allows optional audience and value proposition collection to be skipped with enter", async () => {

@@ -17,7 +17,14 @@ import type { PlannedFileChange } from "../../../application/context/project/ini
 import { SemanticColors } from "../../shared/DesignTokens.js";
 
 const YES_NO_MESSAGE = "Enter yes or no";
-const PROJECT_ROOT = process.cwd();
+const REQUIRED_PLAN_CONTROLLER_ERROR =
+  "Project initialization planning is unavailable. Restart Jumbo and try again.";
+const REQUIRED_INIT_CONTROLLER_ERROR =
+  "Project initialization is unavailable. Restart Jumbo and try again.";
+const REQUIRED_AUDIENCE_CONTROLLER_ERROR =
+  "Audience registration is unavailable. Restart Jumbo and try again.";
+const REQUIRED_VALUE_PROPOSITION_CONTROLLER_ERROR =
+  "Value proposition registration is unavailable. Restart Jumbo and try again.";
 
 type InitFlowStage =
   | "project"
@@ -55,7 +62,7 @@ export interface InitFlowActionControllers {
 
 interface InitFlowProps {
   readonly actionControllers?: InitFlowActionControllers;
-  readonly onComplete: (values: Record<string, string>) => void;
+  readonly onComplete: (values: Record<string, string>) => void | Promise<void>;
   readonly onCancel: () => void;
 }
 
@@ -314,14 +321,14 @@ export function InitFlow({
   ) => {
     const controller = actionControllers.planProjectInitController;
     if (controller === undefined) {
-      onComplete(flattenCollectedValues(projectDetails, audiences, valuePropositions));
+      setDispatchError(REQUIRED_PLAN_CONTROLLER_ERROR);
       return;
     }
 
     setWorking(true);
     setDispatchError(null);
     const result = await dispatchTuiAction(controller, {
-      projectRoot: PROJECT_ROOT,
+      projectRoot: process.cwd(),
       selectedAgentIds: nextSelectedAgentIds,
     });
     setWorking(false);
@@ -350,7 +357,7 @@ export function InitFlow({
     }
     const initializeController = actionControllers.initializeProjectController;
     if (initializeController === undefined) {
-      onComplete(flattenCollectedValues(projectDetails, audiences, valuePropositions));
+      setDispatchError(REQUIRED_INIT_CONTROLLER_ERROR);
       return;
     }
 
@@ -359,7 +366,7 @@ export function InitFlow({
     const initResult = await dispatchTuiAction(initializeController, {
       name: projectDetails.name,
       purpose: projectDetails.purpose,
-      projectRoot: PROJECT_ROOT,
+      projectRoot: process.cwd(),
       selectedAgentIds,
     });
 
@@ -382,7 +389,7 @@ export function InitFlow({
     }
 
     setStage("success");
-    onComplete({
+    await onComplete({
       ...flattenCollectedValues(projectDetails, audiences, valuePropositions),
       projectId: initResult.response.projectId,
     });
@@ -592,7 +599,10 @@ async function persistCollectedPrimitives(
 ): Promise<{ readonly ok: true } | { readonly ok: false; readonly error: Error }> {
   for (const audience of audiences) {
     if (controllers.addAudienceController === undefined) {
-      continue;
+      return {
+        ok: false,
+        error: new Error(REQUIRED_AUDIENCE_CONTROLLER_ERROR),
+      };
     }
     const result = await dispatchTuiAction(
       controllers.addAudienceController,
@@ -605,7 +615,10 @@ async function persistCollectedPrimitives(
 
   for (const valueProposition of valuePropositions) {
     if (controllers.addValuePropositionController === undefined) {
-      continue;
+      return {
+        ok: false,
+        error: new Error(REQUIRED_VALUE_PROPOSITION_CONTROLLER_ERROR),
+      };
     }
     const result = await dispatchTuiAction(
       controllers.addValuePropositionController,

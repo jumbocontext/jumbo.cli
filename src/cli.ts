@@ -22,6 +22,7 @@ import { classifyCommand } from "./presentation/cli/commands/CommandClassifier.j
 import { commands } from "./presentation/cli/commands/registry/generated-commands.js";
 import { ARGV, FAILURE_EXIT_CODE } from "./presentation/cli/Constants.js";
 import { ProjectRootResolver } from "./infrastructure/context/project/ProjectRootResolver.js";
+import { planCliBootstrap } from "./presentation/cli/CliBootstrapPlan.js";
 
 /**
  * Determines if the invocation requires full infrastructure.
@@ -92,23 +93,32 @@ async function main(): Promise<void> {
   const argv = process.argv;
   const resolver = new ProjectRootResolver();
   enforceProjectRootGuard(argv, resolver);
+  const nearestProjectRoot = resolver.findNearest();
 
   // Step 3: Determine if we need full infrastructure
-  const requiresInfra = await needsInfrastructure(argv, resolver);
+  const bootstrapPlan = planCliBootstrap({
+    argv,
+    cwd: process.cwd(),
+    nearestProjectRoot,
+    commandRequiresInfrastructure: await needsInfrastructure(argv, resolver),
+  });
 
   // Step 4: Build container if needed
   let container: IApplicationContainer | null = null;
 
-  if (requiresInfra) {
-    const projectRoot = resolver.resolveOrDefault();
-    const jumboRoot = path.join(projectRoot, ".jumbo");
+  if (bootstrapPlan.requiresInfrastructure) {
+    const jumboRoot = path.join(bootstrapPlan.projectRoot!, ".jumbo");
     const host = new Host(jumboRoot);
     const builder = host.createBuilder();
     container = await builder.build();
   }
 
   // Step 5: Run the application
-  const appRunner = new AppRunner(version, container);
+  const appRunner = new AppRunner(
+    version,
+    container,
+    bootstrapPlan.initialTuiFlow
+  );
   await appRunner.run();
 }
 
