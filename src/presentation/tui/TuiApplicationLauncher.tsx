@@ -10,7 +10,6 @@ export class TuiApplicationLauncher {
   constructor(
     private readonly version: string,
     private readonly container: IApplicationContainer | null,
-    private readonly initialFlow: "cockpit" | "init" = "cockpit",
   ) {}
 
   async launch(): Promise<void> {
@@ -19,7 +18,6 @@ export class TuiApplicationLauncher {
         version={this.version}
         stateReaderControllers={this.buildStateReaderControllers()}
         actionControllers={this.buildActionControllers()}
-        initialFlow={this.initialFlow}
       />,
     );
 

@@ -76,18 +76,8 @@ describe("AppRunner", () => {
     await runner.run();
 
     expect(mockLaunchTui).toHaveBeenCalledTimes(1);
-    expect(TuiApplicationLauncher).toHaveBeenCalledWith("1.2.3", null, "cockpit");
+    expect(TuiApplicationLauncher).toHaveBeenCalledWith("1.2.3", null);
     expect(createProgram).not.toHaveBeenCalled();
-  });
-
-  it("passes initial init flow to the TUI launcher for uninitialized bare invocations", async () => {
-    process.argv = ["node", "jumbo"];
-
-    const runner = new AppRunner("1.2.3", null, "init");
-    await runner.run();
-
-    expect(TuiApplicationLauncher).toHaveBeenCalledWith("1.2.3", null, "init");
-    expect(mockLaunchTui).toHaveBeenCalledTimes(1);
   });
 
   it("tracks successful command execution with command metadata", async () => {

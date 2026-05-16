@@ -114,11 +114,7 @@ async function main(): Promise<void> {
   }
 
   // Step 5: Run the application
-  const appRunner = new AppRunner(
-    version,
-    container,
-    bootstrapPlan.initialTuiFlow
-  );
+  const appRunner = new AppRunner(version, container);
   await appRunner.run();
 }
 

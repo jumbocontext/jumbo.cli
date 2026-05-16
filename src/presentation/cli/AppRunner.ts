@@ -100,7 +100,6 @@ function classifyInvocation(argv: string[]): InvocationType {
 export class AppRunner {
   private readonly container: IApplicationContainer | null;
   private readonly version: string;
-  private readonly initialTuiFlow: "cockpit" | "init";
 
   /**
    * Creates a new AppRunner.
@@ -110,12 +109,10 @@ export class AppRunner {
    */
   constructor(
     version: string,
-    container: IApplicationContainer | null = null,
-    initialTuiFlow: "cockpit" | "init" = "cockpit"
+    container: IApplicationContainer | null = null
   ) {
     this.version = version;
     this.container = container;
-    this.initialTuiFlow = initialTuiFlow;
   }
 
   /**
@@ -129,11 +126,7 @@ export class AppRunner {
 
     // Handle bare 'jumbo' command - launch the Ink TUI.
     if (invocationType === "banner") {
-      await new TuiApplicationLauncher(
-        this.version,
-        this.container,
-        this.initialTuiFlow
-      ).launch();
+      await new TuiApplicationLauncher(this.version, this.container).launch();
       return;
     }
 

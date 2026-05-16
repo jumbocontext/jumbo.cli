@@ -11,13 +11,12 @@ describe("planCliBootstrap", () => {
     });
 
     expect(plan).toEqual({
-      initialTuiFlow: "cockpit",
       requiresInfrastructure: true,
       projectRoot: "/repo",
     });
   });
 
-  it("opens the init wizard against cwd for bare jumbo when only an ancestor project exists", () => {
+  it("opens the cockpit against the nearest project root for bare jumbo when only an ancestor project exists", () => {
     const plan = planCliBootstrap({
       argv: ["node", "jumbo"],
       cwd: "/repo/test",
@@ -26,13 +25,12 @@ describe("planCliBootstrap", () => {
     });
 
     expect(plan).toEqual({
-      initialTuiFlow: "init",
       requiresInfrastructure: true,
-      projectRoot: "/repo/test",
+      projectRoot: "/repo",
     });
   });
 
-  it("opens the init wizard against cwd for bare jumbo when no project exists", () => {
+  it("opens the cockpit against cwd for bare jumbo when no project exists", () => {
     const plan = planCliBootstrap({
       argv: ["node", "jumbo"],
       cwd: "/repo/test",
@@ -41,7 +39,6 @@ describe("planCliBootstrap", () => {
     });
 
     expect(plan).toEqual({
-      initialTuiFlow: "init",
       requiresInfrastructure: true,
       projectRoot: "/repo/test",
     });
@@ -56,7 +53,6 @@ describe("planCliBootstrap", () => {
     });
 
     expect(plan).toEqual({
-      initialTuiFlow: "cockpit",
       requiresInfrastructure: true,
       projectRoot: "/repo",
     });

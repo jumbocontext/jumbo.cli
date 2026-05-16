@@ -44,7 +44,6 @@ interface TuiAppProps {
   readonly stateReaderControllers?: TuiStateReaderControllers;
   readonly stateReaderOptions?: TuiStateReaderOptions;
   readonly actionControllers?: InitFlowActionControllers;
-  readonly initialFlow?: "cockpit" | "init";
 }
 
 export function TuiApp({
@@ -52,7 +51,6 @@ export function TuiApp({
   stateReaderControllers,
   stateReaderOptions,
   actionControllers,
-  initialFlow = "cockpit",
 }: TuiAppProps = {}): React.ReactElement {
   return (
     <TuiStateReaderProvider
@@ -62,7 +60,6 @@ export function TuiApp({
       <TuiAppFrame
         version={version}
         actionControllers={actionControllers}
-        initialFlow={initialFlow}
       />
     </TuiStateReaderProvider>
   );
@@ -71,13 +68,11 @@ export function TuiApp({
 interface TuiAppFrameProps {
   readonly version: string;
   readonly actionControllers?: InitFlowActionControllers;
-  readonly initialFlow: "cockpit" | "init";
 }
 
 function TuiAppFrame({
   version,
   actionControllers,
-  initialFlow,
 }: TuiAppFrameProps): React.ReactElement {
   const { exit } = useApp();
   const { columns, rows } = useTerminalDimensions();
@@ -86,7 +81,7 @@ function TuiAppFrame({
     DEFAULT_SCREEN_INDEX,
   );
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
-  const [initFlowOpen, setInitFlowOpen] = useState(initialFlow === "init");
+  const [initFlowOpen, setInitFlowOpen] = useState(false);
 
   useInput((input) => {
     if (megaMenuOpen || initFlowOpen) {
@@ -113,10 +108,7 @@ function TuiAppFrame({
 
   const handleInitCancel = useCallback(() => {
     setInitFlowOpen(false);
-    if (initialFlow === "init") {
-      exit();
-    }
-  }, [exit, initialFlow]);
+  }, []);
 
   const handleScreenSelect = (index: number) => {
     setActiveScreenIndex(index);
