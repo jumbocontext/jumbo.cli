@@ -3,7 +3,6 @@ import { Box, Text, useInput } from "ink";
 import {
   BaseColors,
   SemanticColors,
-  TuiGlyphs,
   TuiLayout,
 } from "../../shared/DesignTokens.js";
 import type { GoalStatusType } from "../../../domain/goals/Constants.js";
@@ -11,6 +10,7 @@ import type { GoalView } from "../../../application/context/goals/GoalView.js";
 import { DetailPane } from "../components/DetailPane.js";
 import { KeyBadge } from "../components/KeyBadge.js";
 import { Panel } from "../components/Panel.js";
+import { Tumbler } from "../components/Tumbler.js";
 import { GoalAuthoringFlow } from "../flows/GoalAuthoringFlow.js";
 import { useGoalsList } from "../state/TuiStateReader.js";
 
@@ -73,6 +73,7 @@ const STATUS_COLORS: Record<DisplayGoalStatus, string> = {
 
 const DETAIL_JOIN_SEPARATOR = "\n";
 const EMPTY_FIELD_VALUE = "None";
+const GOAL_TUMBLER_MAX_DISPLAY_LENGTH = 44;
 
 export function GoalsScreen(): React.ReactElement {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -99,16 +100,6 @@ export function GoalsScreen(): React.ReactElement {
 
   useInput((input, key) => {
     if (authoringOpen) {
-      return;
-    }
-
-    if (key.downArrow && selectedIndex < visibleGoals.length - 1) {
-      setSelectedIndex(selectedIndex + 1);
-      return;
-    }
-
-    if (key.upArrow && selectedIndex > 0) {
-      setSelectedIndex(selectedIndex - 1);
       return;
     }
 
@@ -140,6 +131,20 @@ export function GoalsScreen(): React.ReactElement {
     setAuthoringOpen(false);
   };
 
+  const tumblerItems = visibleGoals.map((goal) => ({
+    key: goal.id,
+    value: `${goal.title} ${goal.status}`,
+  }));
+
+  const handleFocusedGoalChange = (item: { key: string }) => {
+    const nextSelectedIndex = visibleGoals.findIndex(
+      (goal) => goal.id === item.key,
+    );
+    if (nextSelectedIndex >= 0) {
+      setSelectedIndex(nextSelectedIndex);
+    }
+  };
+
   if (authoringOpen) {
     return (
       <GoalAuthoringFlow
@@ -151,55 +156,28 @@ export function GoalsScreen(): React.ReactElement {
 
   return (
     <Box flexDirection="column" paddingX={1} paddingTop={1} gap={1}>
-      <Box justifyContent="space-between">
-        <Box flexDirection="column">
-          <Text color={SemanticColors.headline} bold>
-            Goals
-          </Text>
-          <Text color={SemanticColors.secondary}>
-            Backlog and lifecycle management
-          </Text>
-        </Box>
-        <Text color={SemanticColors.muted}>
-          Filter: <Text color={SemanticColors.accent}>{activeFilter}</Text>
-        </Text>
-      </Box>
 
       <Box gap={2}>
-        <Panel title="Goal List" width={TuiLayout.listPanelWidth}>
-          {goalsList.loading && goalsList.data === null && (
+        {goalsList.loading && goalsList.data === null ? (
+          <Panel title="Goal List" width={TuiLayout.listPanelWidth}>
             <Text color={SemanticColors.muted}>Loading goals</Text>
-          )}
-          {goalsList.error !== null && (
+          </Panel>
+        ) : goalsList.error !== null ? (
+          <Panel title="Goal List" width={TuiLayout.listPanelWidth}>
             <Text color={SemanticColors.error}>{goalsList.error.message}</Text>
-          )}
-          {!goalsList.loading &&
-            goalsList.error === null &&
-            visibleGoals.length === 0 && (
-              <Text color={SemanticColors.muted}>No goals available</Text>
-            )}
-          {visibleGoals.map((goal, goalIndex) => {
-            const isSelected = goal.id === selectedGoal?.id;
-            return (
-              <Box key={goal.id}>
-                <Text
-                  color={isSelected ? SemanticColors.accent : SemanticColors.muted}
-                >
-                  {isSelected ? TuiGlyphs.selector : " "}
-                </Text>
-                <Text color={STATUS_COLORS[goal.status]}>
-                  {" "}
-                  {TuiGlyphs.filledCircle}{" "}
-                </Text>
-                <Text color={SemanticColors.primary}>{goal.title}</Text>
-                <Text color={SemanticColors.muted}> {goal.status}</Text>
-                {goalIndex === selectedIndex && (
-                  <Text color={SemanticColors.muted}> selected</Text>
-                )}
-              </Box>
-            );
-          })}
-        </Panel>
+          </Panel>
+        ) : (
+          <Tumbler
+            key={activeFilter}
+            title="Goal List"
+            items={tumblerItems}
+            initialFocusedKey={selectedGoal?.id}
+            maxDisplayLength={GOAL_TUMBLER_MAX_DISPLAY_LENGTH}
+            width={TuiLayout.listPanelWidth}
+            emptyMessage="No goals available"
+            onFocusedItemChange={handleFocusedGoalChange}
+          />
+        )}
 
         {selectedGoal && (
           <DetailPane
