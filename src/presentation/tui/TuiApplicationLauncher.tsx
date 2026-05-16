@@ -10,6 +10,7 @@ export class TuiApplicationLauncher {
   constructor(
     private readonly version: string,
     private readonly container: IApplicationContainer | null,
+    private readonly fallbackActionControllers: InitFlowActionControllers = {},
   ) {}
 
   async launch(): Promise<void> {
@@ -45,7 +46,7 @@ export class TuiApplicationLauncher {
 
   private buildActionControllers(): InitFlowActionControllers {
     if (this.container === null) {
-      return {};
+      return this.fallbackActionControllers;
     }
 
     return {

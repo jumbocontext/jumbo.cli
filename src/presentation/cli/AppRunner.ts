@@ -26,6 +26,7 @@ import {
 } from "./banner/BannerOrchestrator.js";
 import { Renderer } from "./rendering/Renderer.js";
 import { TuiApplicationLauncher } from "../tui/TuiApplicationLauncher.js";
+import type { InitFlowActionControllers } from "../tui/flows/InitFlow.js";
 import {
   CLI_FLAGS,
   ARGV,
@@ -100,6 +101,7 @@ function classifyInvocation(argv: string[]): InvocationType {
 export class AppRunner {
   private readonly container: IApplicationContainer | null;
   private readonly version: string;
+  private readonly bareTuiActionControllers: InitFlowActionControllers;
 
   /**
    * Creates a new AppRunner.
@@ -109,10 +111,12 @@ export class AppRunner {
    */
   constructor(
     version: string,
-    container: IApplicationContainer | null = null
+    container: IApplicationContainer | null = null,
+    bareTuiActionControllers: InitFlowActionControllers = {},
   ) {
     this.version = version;
     this.container = container;
+    this.bareTuiActionControllers = bareTuiActionControllers;
   }
 
   /**
@@ -126,7 +130,11 @@ export class AppRunner {
 
     // Handle bare 'jumbo' command - launch the Ink TUI.
     if (invocationType === "banner") {
-      await new TuiApplicationLauncher(this.version, this.container).launch();
+      await new TuiApplicationLauncher(
+        this.version,
+        this.container,
+        this.bareTuiActionControllers,
+      ).launch();
       return;
     }
 

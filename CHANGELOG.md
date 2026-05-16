@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Bare TUI bootstrap side effects**: Running bare `jumbo` from a non-project directory or from a subdirectory beneath an ancestor Jumbo project no longer creates `.jumbo` storage just by opening the TUI; storage is created only after project initialization is confirmed.
+- **Cockpit lifecycle routing**: Cockpit now resolves lifecycle state for the current working directory, treats any existing goal as evidence of prior goal use, and routes to the primed-with-goals view instead of showing the goals tutorial once goals exist in any status.
 - **TUI project initialization**: Running bare `jumbo` from an uninitialized directory now opens a controller-backed Init wizard that creates `.jumbo` state and project files, refreshes the TUI after success, and preserves existing `jumbo init` / `jumbo project init` CLI behavior.
 
 ## [3.0.3] - 2026-05-02

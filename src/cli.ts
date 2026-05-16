@@ -23,6 +23,18 @@ import { commands } from "./presentation/cli/commands/registry/generated-command
 import { ARGV, FAILURE_EXIT_CODE } from "./presentation/cli/Constants.js";
 import { ProjectRootResolver } from "./infrastructure/context/project/ProjectRootResolver.js";
 import { planCliBootstrap } from "./presentation/cli/CliBootstrapPlan.js";
+import type { InitFlowActionControllers } from "./presentation/tui/flows/InitFlow.js";
+import type { InitializeProjectRequest } from "./application/context/project/init/InitializeProjectRequest.js";
+import type { InitializeProjectResponse } from "./application/context/project/init/InitializeProjectResponse.js";
+import type { AddAudienceRequest } from "./application/context/audiences/add/AddAudienceRequest.js";
+import type { AddAudienceResponse } from "./application/context/audiences/add/AddAudienceResponse.js";
+import type { AddValuePropositionRequest } from "./application/context/value-propositions/add/AddValuePropositionRequest.js";
+import type { AddValuePropositionResponse } from "./application/context/value-propositions/add/AddValuePropositionResponse.js";
+import { AgentFileProtocol } from "./infrastructure/context/project/init/AgentFileProtocol.js";
+import { FsGitignoreProtocol } from "./infrastructure/context/project/init/FsGitignoreProtocol.js";
+import { FsSettingsInitializer } from "./infrastructure/settings/FsSettingsInitializer.js";
+import { LocalPlanProjectInitGateway } from "./application/context/project/init/LocalPlanProjectInitGateway.js";
+import { PlanProjectInitController } from "./application/context/project/init/PlanProjectInitController.js";
 
 /**
  * Determines if the invocation requires full infrastructure.
@@ -105,17 +117,69 @@ async function main(): Promise<void> {
 
   // Step 4: Build container if needed
   let container: IApplicationContainer | null = null;
+  let bareTuiActionControllers: InitFlowActionControllers = {};
 
   if (bootstrapPlan.requiresInfrastructure) {
     const jumboRoot = path.join(bootstrapPlan.projectRoot!, ".jumbo");
     const host = new Host(jumboRoot);
     const builder = host.createBuilder();
     container = await builder.build();
+  } else if (argv.length === ARGV.NODE_AND_SCRIPT_ARG_COUNT) {
+    bareTuiActionControllers = buildBareTuiActionControllers(process.cwd());
   }
 
   // Step 5: Run the application
-  const appRunner = new AppRunner(version, container);
+  const appRunner = new AppRunner(version, container, bareTuiActionControllers);
   await appRunner.run();
+}
+
+function buildBareTuiActionControllers(cwd: string): InitFlowActionControllers {
+  const jumboRoot = path.join(cwd, ".jumbo");
+  const planProjectInitController = new PlanProjectInitController(
+    new LocalPlanProjectInitGateway(
+      new AgentFileProtocol(),
+      new FsSettingsInitializer(jumboRoot),
+      new FsGitignoreProtocol(),
+    ),
+  );
+
+  return {
+    planProjectInitController,
+    initializeProjectController: {
+      handle: async (
+        request: InitializeProjectRequest,
+      ): Promise<InitializeProjectResponse> => {
+        const container = await buildContainerForProjectRoot(
+          request.projectRoot,
+        );
+        return container.initializeProjectController.handle(request);
+      },
+    },
+    addAudienceController: {
+      handle: async (
+        request: AddAudienceRequest,
+      ): Promise<AddAudienceResponse> => {
+        const container = await buildContainerForProjectRoot(cwd);
+        return container.addAudienceController.handle(request);
+      },
+    },
+    addValuePropositionController: {
+      handle: async (
+        request: AddValuePropositionRequest,
+      ): Promise<AddValuePropositionResponse> => {
+        const container = await buildContainerForProjectRoot(cwd);
+        return container.addValuePropositionController.handle(request);
+      },
+    },
+  };
+}
+
+async function buildContainerForProjectRoot(
+  projectRoot: string,
+): Promise<IApplicationContainer> {
+  const host = new Host(path.join(projectRoot, ".jumbo"));
+  const container = await host.createBuilder().build();
+  return container;
 }
 
 main();

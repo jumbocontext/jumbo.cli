@@ -22,6 +22,14 @@ export function planCliBootstrap({
   const requiresInfrastructure =
     commandRequiresInfrastructure || isBareTuiInvocation;
 
+  if (isBareTuiInvocation) {
+    const cwdIsProjectRoot = nearestProjectRoot === cwd;
+    return {
+      requiresInfrastructure: cwdIsProjectRoot,
+      projectRoot: cwdIsProjectRoot ? cwd : null,
+    };
+  }
+
   if (!requiresInfrastructure) {
     return {
       requiresInfrastructure,

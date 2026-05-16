@@ -80,22 +80,20 @@ describe("SqliteProjectContextReader", () => {
     await expect(reader.getProjectLifecycleState()).resolves.toBe("unprimed");
   });
 
-  it("derives primed-empty state when solution context exists without a refined goal", async () => {
+  it("derives primed-empty state when solution context exists without any goals", async () => {
     insertProject();
     db.prepare("INSERT INTO component_views (componentId, status) VALUES (?, ?)")
       .run("component_1", ComponentStatus.ACTIVE);
-    db.prepare("INSERT INTO goal_views (goalId, status) VALUES (?, ?)")
-      .run("goal_1", GoalStatus.TODO);
 
     await expect(reader.getProjectLifecycleState()).resolves.toBe("primed-empty");
   });
 
-  it("derives primed state when solution context and a refined goal exist", async () => {
+  it("derives primed state when solution context and any goal exist", async () => {
     insertProject();
     db.prepare("INSERT INTO decision_views (decisionId, status) VALUES (?, ?)")
       .run("decision_1", DecisionStatus.ACTIVE);
     db.prepare("INSERT INTO goal_views (goalId, status) VALUES (?, ?)")
-      .run("goal_1", GoalStatus.REFINED);
+      .run("goal_1", GoalStatus.DONE);
 
     await expect(reader.getProjectLifecycleState()).resolves.toBe("primed");
   });

@@ -10,7 +10,6 @@ import { ProjectLifecycleState } from "../../../../application/context/project/P
 import { ProjectLifecycleClassifier } from "../../../../application/context/project/query/ProjectLifecycleClassifier.js";
 import { ComponentStatus } from "../../../../domain/components/Constants.js";
 import { DecisionStatus } from "../../../../domain/decisions/Constants.js";
-import { GoalStatus } from "../../../../domain/goals/Constants.js";
 
 export class SqliteProjectContextReader implements IProjectContextReader {
   private readonly lifecycleClassifier = new ProjectLifecycleClassifier();
@@ -47,12 +46,11 @@ export class SqliteProjectContextReader implements IProjectContextReader {
              (SELECT COUNT(*) FROM invariant_views) +
              (SELECT COUNT(*) FROM guideline_views WHERE isRemoved = 0)
            ) AS solutionContextItemCount,
-           (SELECT COUNT(*) FROM goal_views WHERE status = ?) AS launchpadReadyGoalCount`
+           (SELECT COUNT(*) FROM goal_views) AS launchpadReadyGoalCount`
       )
       .get(
         ComponentStatus.ACTIVE,
         DecisionStatus.ACTIVE,
-        GoalStatus.REFINED
       ) as Record<string, unknown>;
 
     return {

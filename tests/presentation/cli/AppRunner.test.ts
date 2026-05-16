@@ -76,8 +76,24 @@ describe("AppRunner", () => {
     await runner.run();
 
     expect(mockLaunchTui).toHaveBeenCalledTimes(1);
-    expect(TuiApplicationLauncher).toHaveBeenCalledWith("1.2.3", null);
+    expect(TuiApplicationLauncher).toHaveBeenCalledWith("1.2.3", null, {});
     expect(createProgram).not.toHaveBeenCalled();
+  });
+
+  it("passes fallback init action controllers to bare TUI launches", async () => {
+    process.argv = ["node", "jumbo"];
+    const actionControllers = {
+      planProjectInitController: { handle: jest.fn() },
+    };
+
+    const runner = new AppRunner("1.2.3", null, actionControllers);
+    await runner.run();
+
+    expect(TuiApplicationLauncher).toHaveBeenCalledWith(
+      "1.2.3",
+      null,
+      actionControllers,
+    );
   });
 
   it("tracks successful command execution with command metadata", async () => {

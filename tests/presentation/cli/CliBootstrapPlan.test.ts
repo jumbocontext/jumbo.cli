@@ -16,7 +16,7 @@ describe("planCliBootstrap", () => {
     });
   });
 
-  it("opens the cockpit against the nearest project root for bare jumbo when only an ancestor project exists", () => {
+  it("opens the cockpit without infrastructure for bare jumbo when only an ancestor project exists", () => {
     const plan = planCliBootstrap({
       argv: ["node", "jumbo"],
       cwd: "/repo/test",
@@ -25,12 +25,12 @@ describe("planCliBootstrap", () => {
     });
 
     expect(plan).toEqual({
-      requiresInfrastructure: true,
-      projectRoot: "/repo",
+      requiresInfrastructure: false,
+      projectRoot: null,
     });
   });
 
-  it("opens the cockpit against cwd for bare jumbo when no project exists", () => {
+  it("opens the cockpit without infrastructure for bare jumbo when no project exists", () => {
     const plan = planCliBootstrap({
       argv: ["node", "jumbo"],
       cwd: "/repo/test",
@@ -39,8 +39,8 @@ describe("planCliBootstrap", () => {
     });
 
     expect(plan).toEqual({
-      requiresInfrastructure: true,
-      projectRoot: "/repo/test",
+      requiresInfrastructure: false,
+      projectRoot: null,
     });
   });
 
