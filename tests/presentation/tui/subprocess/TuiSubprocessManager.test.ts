@@ -137,7 +137,7 @@ describe("TuiSubprocessManager", () => {
     expect(testLogger.error).toHaveBeenCalledWith(
       "Daemon subprocess error",
       expect.any(Error),
-      { daemon: "refiner" },
+      { daemon: "refiner", stopRequested: false, status: "failed" },
     );
   });
 
@@ -174,8 +174,90 @@ describe("TuiSubprocessManager", () => {
     expect(testLogger.error).toHaveBeenCalledWith(
       "Daemon subprocess termination failed",
       expect.any(Error),
-      { daemon: "refiner", pid: 789 },
+      { daemon: "refiner", pid: 789, stopRequested: false },
     );
+  });
+
+  it("reports a requested Windows taskkill close as stopped even when the child exits non-zero", async () => {
+    if (process.platform !== "win32") {
+      return;
+    }
+    const child = childProcess(456);
+    spawnMock.mockReturnValue(child);
+    const testLogger = logger();
+    const manager = new TuiSubprocessManager(testLogger);
+
+    await manager.spawn("reviewer");
+    const terminated = await manager.terminate("reviewer");
+    child.emit("close", 1, null);
+
+    expect(terminated.status).toBe("stopped");
+    expect(manager.getStatus("reviewer")).toEqual(expect.objectContaining({
+      status: "stopped",
+      exitCode: 1,
+      exitSignal: null,
+      stopRequested: true,
+    }));
+    expect(testLogger.info).toHaveBeenCalledWith("Daemon subprocess closed", {
+      daemon: "reviewer",
+      exitCode: 1,
+      signal: null,
+      stopRequested: true,
+      status: "stopped",
+    });
+  });
+
+  it("keeps a requested stop stopped when child error and close events arrive after termination", async () => {
+    const killMock = jest.spyOn(process, "kill").mockImplementation(() => true);
+    const child = childProcess(321);
+    spawnMock.mockReturnValue(child);
+    const testLogger = logger();
+    const manager = new TuiSubprocessManager(testLogger);
+
+    await manager.spawn("codifier");
+    await manager.terminate("codifier");
+    child.emit("error", new Error("process already terminated"));
+    child.emit("close", null, "SIGTERM");
+
+    expect(manager.getStatus("codifier")).toEqual(expect.objectContaining({
+      status: "stopped",
+      exitCode: null,
+      exitSignal: "SIGTERM",
+      stopRequested: true,
+      stderr: expect.arrayContaining(["process already terminated"]),
+    }));
+    expect(testLogger.error).toHaveBeenCalledWith(
+      "Daemon subprocess error",
+      expect.any(Error),
+      { daemon: "codifier", stopRequested: true, status: "stopped" },
+    );
+    if (process.platform !== "win32") {
+      expect(killMock).toHaveBeenCalledWith(-321, "SIGTERM");
+    }
+  });
+
+  it("reports unexpected signal exits as failed when no stop was requested", async () => {
+    const child = childProcess(654);
+    spawnMock.mockReturnValue(child);
+    const testLogger = logger();
+    const manager = new TuiSubprocessManager(testLogger);
+
+    await manager.spawn("refiner");
+    child.emit("close", null, "SIGTERM");
+
+    expect(manager.getStatus("refiner")).toEqual(expect.objectContaining({
+      status: "failed",
+      exitCode: null,
+      exitSignal: "SIGTERM",
+      stopRequested: false,
+    }));
+    expect(testLogger.info).toHaveBeenCalledWith("Daemon subprocess closed", {
+      daemon: "refiner",
+      exitCode: null,
+      signal: "SIGTERM",
+      stopRequested: false,
+      status: "failed",
+    });
   });
 
   it("defines Unix process-group signaling for non-Windows hosts", () => {

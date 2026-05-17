@@ -31,6 +31,8 @@ interface ManagedSubprocess {
   readonly events: TuiDaemonEventSnapshot[];
   status: "running" | "failed" | "stopped";
   exitCode?: number | null;
+  exitSignal?: NodeJS.Signals | null;
+  stopRequested: boolean;
 }
 
 export class TuiSubprocessManager implements ISubprocessManager {
@@ -73,6 +75,7 @@ export class TuiSubprocessManager implements ISubprocessManager {
       stderr: [],
       events: [],
       status: "running",
+      stopRequested: false,
     };
     this.processes.set(name, managed);
     this.logger.info("Daemon subprocess started", {
@@ -94,19 +97,26 @@ export class TuiSubprocessManager implements ISubprocessManager {
       this.appendLines(managed.stderr, text);
       this.logger.warn("Daemon subprocess stderr", { daemon: name, text });
     });
-    child.on("close", (code) => {
+    child.on("close", (code, signal) => {
       managed.exitCode = code;
-      managed.status = code === 0 || code === null ? "stopped" : "failed";
+      managed.exitSignal = signal;
+      managed.status = this.resolveClosedStatus(managed, code);
       this.logger.info("Daemon subprocess closed", {
         daemon: name,
         exitCode: code,
+        signal,
+        stopRequested: managed.stopRequested,
         status: managed.status,
       });
     });
     child.on("error", (error) => {
-      managed.status = "failed";
+      managed.status = managed.stopRequested ? "stopped" : "failed";
       this.appendLines(managed.stderr, error.message);
-      this.logger.error("Daemon subprocess error", error, { daemon: name });
+      this.logger.error("Daemon subprocess error", error, {
+        daemon: name,
+        stopRequested: managed.stopRequested,
+        status: managed.status,
+      });
     });
 
     return this.toSnapshot(managed);
@@ -119,17 +129,24 @@ export class TuiSubprocessManager implements ISubprocessManager {
     }
 
     try {
+      managed.stopRequested = true;
+      const strategy = managed.child.pid === undefined
+        ? { kind: "no-pid" as const }
+        : getTerminationStrategy(process.platform, managed.child.pid);
       this.logger.info("Daemon subprocess termination requested", {
         daemon: name,
         pid: managed.child.pid,
+        strategy,
       });
       await this.terminateProcess(managed.child);
       managed.status = "stopped";
       this.logger.info("Daemon subprocess termination completed", {
         daemon: name,
         pid: managed.child.pid,
+        stopRequested: managed.stopRequested,
       });
     } catch (error) {
+      managed.stopRequested = false;
       managed.status = "failed";
       this.appendLines(
         managed.stderr,
@@ -138,6 +155,7 @@ export class TuiSubprocessManager implements ISubprocessManager {
       this.logger.error("Daemon subprocess termination failed", error, {
         daemon: name,
         pid: managed.child.pid,
+        stopRequested: managed.stopRequested,
       });
     }
     return this.toSnapshot(managed);
@@ -192,6 +210,17 @@ export class TuiSubprocessManager implements ISubprocessManager {
     };
   }
 
+  private resolveClosedStatus(
+    process: ManagedSubprocess,
+    code: number | null,
+  ): "failed" | "stopped" {
+    if (process.stopRequested) {
+      return "stopped";
+    }
+
+    return code === 0 ? "stopped" : "failed";
+  }
+
   private appendLines(buffer: string[], value: string): string[] {
     const lines = value.split(/\r?\n/).filter((line) => line.length > 0);
     buffer.push(...lines);
@@ -211,6 +240,8 @@ export class TuiSubprocessManager implements ISubprocessManager {
       stderr: [...process.stderr],
       events: [...process.events],
       exitCode: process.exitCode,
+      exitSignal: process.exitSignal,
+      stopRequested: process.stopRequested,
     };
   }
 }

@@ -26,6 +26,8 @@ export interface TuiSubprocessSnapshot {
   readonly stderr: readonly string[];
   readonly events: readonly TuiDaemonEventSnapshot[];
   readonly exitCode?: number | null;
+  readonly exitSignal?: NodeJS.Signals | null;
+  readonly stopRequested?: boolean;
 }
 
 export interface TuiDaemonCounts {

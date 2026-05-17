@@ -43,7 +43,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
       getAllStatuses: jest.fn(() => Array.from(snapshots.values())),
     };
 
-    const { lastFrame, stdin } = render(
+    const { lastFrame, stdin, unmount } = render(
       <SubprocessManagerProvider manager={manager}>
         <CockpitLaunchpadView
           reviewerFrameDurationMs={0}
@@ -68,6 +68,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
     stdin.write("r");
     await tick();
     expect(manager.terminate).toHaveBeenCalledWith("refiner");
+    unmount();
   });
 
   it("ports legacy daemon flags into visible TUI controls before spawning", async () => {
@@ -88,7 +89,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
       getAllStatuses: jest.fn(() => Array.from(snapshots.values())),
     };
 
-    const { lastFrame, stdin } = render(
+    const { lastFrame, stdin, unmount } = render(
       <SubprocessManagerProvider manager={manager}>
         <CockpitLaunchpadView
           reviewerFrameDurationMs={0}
@@ -113,5 +114,6 @@ describe("CockpitLaunchpadView daemon controls", () => {
       pollIntervalMs: 60000,
       maxRetries: 5,
     });
+    unmount();
   });
 });
