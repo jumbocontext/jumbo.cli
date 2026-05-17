@@ -10,11 +10,17 @@ import { spawn } from "node:child_process";
 export const SUPPORTED_AGENTS = ["claude", "gemini", "copilot", "codex", "cursor", "vibe"] as const;
 export type AgentId = typeof SUPPORTED_AGENTS[number];
 
-export const AGENT_COMMANDS: Record<AgentId, { executable: string; promptFlag: string }> = {
+export interface AgentCommand {
+  readonly executable: string;
+  readonly args?: readonly string[];
+  readonly promptFlag?: string;
+}
+
+export const AGENT_COMMANDS: Record<AgentId, AgentCommand> = {
   claude:  { executable: "claude",     promptFlag: "-p" },
   gemini:  { executable: "gemini",     promptFlag: "-p" },
   copilot: { executable: "gh copilot", promptFlag: "-p" },
-  codex:   { executable: "codex",      promptFlag: "-p" },
+  codex:   { executable: "codex",      args: ["exec"] },
   cursor:  { executable: "cursor",     promptFlag: "-p" },
   vibe:    { executable: "vibe",       promptFlag: "-p" },
 };
@@ -24,9 +30,7 @@ export const AGENT_COMMANDS: Record<AgentId, { executable: string; promptFlag: s
  * Returns the exit code (0 = success, non-zero = failure).
  */
 export function spawnAgent(agentId: AgentId, prompt: string): Promise<number> {
-  const { executable, promptFlag } = AGENT_COMMANDS[agentId];
-  const escaped = prompt.replace(/"/g, '\\"');
-  const command = `${executable} ${promptFlag} "${escaped}"`;
+  const command = buildAgentCommandLine(AGENT_COMMANDS[agentId], prompt);
 
   return new Promise((resolve) => {
     const child = spawn(command, [], {
@@ -37,4 +41,14 @@ export function spawnAgent(agentId: AgentId, prompt: string): Promise<number> {
     child.on("close", (code) => resolve(code ?? 1));
     child.on("error", () => resolve(1));
   });
+}
+
+export function buildAgentCommandLine(command: AgentCommand, prompt: string): string {
+  const escaped = prompt.replace(/"/g, '\\"');
+  return [
+    command.executable,
+    ...(command.args ?? []),
+    ...(command.promptFlag === undefined ? [] : [command.promptFlag]),
+    `"${escaped}"`,
+  ].join(" ");
 }

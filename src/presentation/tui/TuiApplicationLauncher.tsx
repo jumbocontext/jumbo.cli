@@ -5,6 +5,7 @@ import { GetProjectSummaryQueryHandler } from "../../application/context/project
 import { TuiApp } from "./TuiApp.js";
 import type { TuiStateReaderControllers } from "./state/TuiStateReader.js";
 import type { InitFlowActionControllers } from "./flows/InitFlow.js";
+import { TuiSubprocessManager } from "./subprocess/TuiSubprocessManager.js";
 
 export class TuiApplicationLauncher {
   constructor(
@@ -21,6 +22,7 @@ export class TuiApplicationLauncher {
         stateReaderControllers={this.buildStateReaderControllers()}
         actionControllers={this.buildActionControllers()}
         onProjectInitialized={this.fallbackStateReaderControllerFactory}
+        subprocessManager={new TuiSubprocessManager(this.container?.logger)}
       />,
     );
 

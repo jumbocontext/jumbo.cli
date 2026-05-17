@@ -1,0 +1,198 @@
+import { IAgentGateway } from "../../../agents/IAgentGateway.js";
+import { ITelemetryClient } from "../../../telemetry/ITelemetryClient.js";
+import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
+import { IGoalStatusReader } from "../IGoalStatusReader.js";
+import { GoalView } from "../GoalView.js";
+import { GoalStatus } from "../../../../domain/goals/Constants.js";
+import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
+import { CodifyGoalController } from "./CodifyGoalController.js";
+import { IGoalCodifyReader } from "./IGoalCodifyReader.js";
+
+export type CodifierProcessStatus =
+  | "idle"
+  | "codifying"
+  | "completed"
+  | "skipped"
+  | "exhausted"
+  | "failed";
+
+export interface CodifierProcessEvent {
+  readonly daemon: "codifier";
+  readonly status: CodifierProcessStatus;
+  readonly goalId?: string;
+  readonly attempt?: number;
+  readonly maxRetries?: number;
+  readonly exitCode?: number;
+  readonly errorType?: string;
+  readonly errorMessage?: string;
+}
+
+export interface CodifierProcessOptions {
+  readonly agentId: string;
+  readonly maxRetries: number;
+  readonly emit?: (event: CodifierProcessEvent) => void;
+}
+
+export interface CodifierProcessResult {
+  readonly status: CodifierProcessStatus;
+  readonly goalId?: string;
+  readonly attempts: number;
+}
+
+export class CodifierProcessManager {
+  constructor(
+    private readonly goalStatusReader: IGoalStatusReader,
+    private readonly goalReader: IGoalCodifyReader,
+    private readonly claimPolicy: GoalClaimPolicy,
+    private readonly workerIdentityReader: IWorkerIdentityReader,
+    private readonly codifyGoalController: CodifyGoalController,
+    private readonly agentGateway: IAgentGateway,
+    private readonly telemetryClient: ITelemetryClient,
+  ) {}
+
+  async processNext(options: CodifierProcessOptions): Promise<CodifierProcessResult> {
+    const startedAt = process.hrtime.bigint();
+    const goals = await this.selectEligibleGoals();
+
+    if (goals.length === 0) {
+      this.emit(options, { daemon: "codifier", status: "idle" });
+      this.track("codifier_process_completed", startedAt, { status: "idle", attempts: 0 });
+      return { status: "idle", attempts: 0 };
+    }
+
+    const goal = goals[0];
+
+    try {
+      await this.codifyGoalController.handle({ goalId: goal.goalId });
+    } catch (error) {
+      this.emitFailure(options, goal.goalId, error);
+      this.track("codifier_process_completed", startedAt, {
+        status: "failed",
+        attempts: 0,
+        goalId: goal.goalId,
+        ...this.errorProperties(error),
+      });
+      return { status: "failed", goalId: goal.goalId, attempts: 0 };
+    }
+
+    for (let attempt = 1; attempt <= options.maxRetries; attempt++) {
+      this.emit(options, {
+        daemon: "codifier",
+        status: "codifying",
+        goalId: goal.goalId,
+        attempt,
+        maxRetries: options.maxRetries,
+      });
+
+      const result = await this.agentGateway.invoke({
+        agentId: options.agentId,
+        prompt: this.buildPrompt(goal.goalId),
+      });
+
+      if (await this.isGoalDone(goal.goalId)) {
+        this.emit(options, {
+          daemon: "codifier",
+          status: "completed",
+          goalId: goal.goalId,
+          attempt,
+          maxRetries: options.maxRetries,
+          exitCode: result.exitCode,
+        });
+        this.track("codifier_process_completed", startedAt, {
+          status: "completed",
+          attempts: attempt,
+          goalId: goal.goalId,
+          agentExitCode: result.exitCode,
+        });
+        return { status: "completed", goalId: goal.goalId, attempts: attempt };
+      }
+
+      this.emit(options, {
+        daemon: "codifier",
+        status: attempt === options.maxRetries ? "exhausted" : "skipped",
+        goalId: goal.goalId,
+        attempt,
+        maxRetries: options.maxRetries,
+        exitCode: result.exitCode,
+      });
+    }
+
+    this.track("codifier_process_completed", startedAt, {
+      status: "exhausted",
+      attempts: options.maxRetries,
+      goalId: goal.goalId,
+    });
+    return { status: "exhausted", goalId: goal.goalId, attempts: options.maxRetries };
+  }
+
+  async selectEligibleGoals(): Promise<GoalView[]> {
+    const goals = await this.goalStatusReader.findByStatus(GoalStatus.QUALIFIED);
+    const workerId = this.workerIdentityReader.workerId;
+
+    return goals
+      .filter((goal) => this.claimPolicy.canClaim(goal.goalId, workerId).allowed)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  buildPrompt(goalId: string): string {
+    return [
+      `Run the Jumbo codification workflow for goal ${goalId}.`,
+      `Execute: jumbo goal codify --id ${goalId}`,
+      "Review the codification instructions, reconcile any architectural context changes, then close the goal with:",
+      `jumbo goal close --id ${goalId}`,
+    ].join(" ");
+  }
+
+  private async isGoalDone(goalId: string): Promise<boolean> {
+    const goal = await this.goalReader.findById(goalId);
+    return goal?.status === GoalStatus.DONE;
+  }
+
+  private emit(options: CodifierProcessOptions, event: CodifierProcessEvent): void {
+    options.emit?.(event);
+  }
+
+  private emitFailure(
+    options: CodifierProcessOptions,
+    goalId: string,
+    error: unknown,
+  ): void {
+    this.emit(options, {
+      daemon: "codifier",
+      status: "failed",
+      goalId,
+      ...this.errorProperties(error),
+    });
+  }
+
+  private track(
+    eventName: string,
+    startedAt: bigint,
+    properties: Record<string, unknown>,
+  ): void {
+    this.telemetryClient.track(eventName, {
+      daemon: "codifier",
+      durationMs: Number((process.hrtime.bigint() - startedAt) / BigInt(1_000_000)),
+      ...properties,
+    });
+  }
+
+  private errorProperties(error: unknown): {
+    errorType: string;
+    errorMessage: string;
+    errorStack?: string;
+  } {
+    if (error instanceof Error) {
+      return {
+        errorType: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack,
+      };
+    }
+
+    return {
+      errorType: "UnknownError",
+      errorMessage: String(error),
+    };
+  }
+}

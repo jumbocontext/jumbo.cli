@@ -8,14 +8,21 @@ import type { NotificationDrawerNotification } from "./NotificationDrawer.js";
 interface FooterProps {
   terminalWidth: number;
   shortcutsEnabled?: boolean;
+  daemonCounts?: {
+    readonly running: number;
+    readonly stopped: number;
+    readonly failed: number;
+  };
+  notifications?: readonly NotificationDrawerNotification[];
 }
 
-const CURRENT_NOTIFICATIONS: readonly NotificationDrawerNotification[] = [];
 export const NOTIFICATION_NOTIFIER_COLOR = BaseColors.brandYellow;
 
 export function Footer({
   terminalWidth,
   shortcutsEnabled = true,
+  daemonCounts = { running: 0, stopped: 3, failed: 0 },
+  notifications = [],
 }: FooterProps): React.ReactElement {
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
   const [dismissedNotificationIds, setDismissedNotificationIds] = useState<
@@ -24,10 +31,10 @@ export function Footer({
 
   const visibleNotifications = useMemo(
     () =>
-      CURRENT_NOTIFICATIONS.filter(
+      notifications.filter(
         (notification) => !dismissedNotificationIds.includes(notification.id),
       ),
-    [dismissedNotificationIds],
+    [dismissedNotificationIds, notifications],
   );
   const unreadNotificationCount = visibleNotifications.filter(
     (notification) => notification.unread,
@@ -63,6 +70,9 @@ export function Footer({
           <KeyBadge char="q" label="quit" />
           <KeyBadge char="h" label="help" />
         </Box>
+        <Text color={BaseColors.shade4}>
+          daemons {daemonCounts.running} run {daemonCounts.stopped} stop {daemonCounts.failed} fail
+        </Text>
         {unreadNotificationCount > 0 && (
           <Box alignItems="center" gap={1}>
             <KeyBadge char="n" />

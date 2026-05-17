@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Box, Text } from "ink";
+import { Box, Text, useInput } from "ink";
 import { SectionHeading } from "../components/SectionHeading.js";
 import { BaseColors } from "../../shared/DesignTokens.js";
 import { useProjectContext } from "../state/TuiStateReader.js";
+import { useSubprocessManager } from "../subprocess/SubprocessManagerContext.js";
+import type { ISubprocessManager, TuiDaemonConfig, TuiDaemonName, TuiSubprocessSnapshot } from "../subprocess/ISubprocessManager.js";
 
 interface GlyphStyle {
   color: string;
@@ -34,6 +36,9 @@ const DEFAULT_CODIFIER_GLYPH_STYLE: GlyphStyle = {
   color: BaseColors.shade3,
   dimColor: false,
 };
+const AGENT_OPTIONS = ["codex", "claude", "gemini", "copilot", "cursor", "vibe"] as const;
+const POLL_INTERVAL_OPTIONS_MS = [10_000, 30_000, 60_000, 120_000] as const;
+const RETRY_OPTIONS = [1, 2, 3, 5] as const;
 
 const REFINER_GLYPHS = [
   "•",
@@ -82,6 +87,7 @@ export function CockpitLaunchpadView({
   codifierFrameDurationMs = DEFAULT_CODIFIER_FRAME_DURATION_MS,
 }: CockpitLaunchpadViewProps = {}): React.ReactElement {
   const currentDirectory = process.cwd();
+  const subprocessManager = useSubprocessManager();
   const projectContext = useProjectContext();
   const projectName = projectContext.data?.name ?? "Jumbo";
   const projectPurpose =
@@ -89,6 +95,14 @@ export function CockpitLaunchpadView({
   const [reviewerFrameIndex, setReviewerFrameIndex] = useState(0);
   const [refinerFrameIndex, setRefinerFrameIndex] = useState(0);
   const [codifierFrameIndex, setCodifierFrameIndex] = useState(0);
+  const [daemonConfig, setDaemonConfig] = useState<TuiDaemonConfig>({
+    agentId: "codex",
+    pollIntervalMs: 30_000,
+    maxRetries: 3,
+  });
+  const [daemonStatuses, setDaemonStatuses] = useState<readonly TuiSubprocessSnapshot[]>(
+    subprocessManager.getAllStatuses(),
+  );
 
   useEffect(() => {
     if (reviewerFrameDurationMs <= 0) return;
@@ -125,6 +139,39 @@ export function CockpitLaunchpadView({
 
     return () => clearInterval(timer);
   }, [codifierFrameDurationMs]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDaemonStatuses(subprocessManager.getAllStatuses());
+    }, 500);
+
+    return () => clearInterval(timer);
+  }, [subprocessManager]);
+
+  useInput((input) => {
+    if (input === "v" || input === "V") {
+      void toggleDaemon("reviewer", subprocessManager, daemonConfig, setDaemonStatuses);
+    }
+    if (input === "r" || input === "R") {
+      void toggleDaemon("refiner", subprocessManager, daemonConfig, setDaemonStatuses);
+    }
+    if (input === "c" || input === "C") {
+      void toggleDaemon("codifier", subprocessManager, daemonConfig, setDaemonStatuses);
+    }
+    if (input === "a" || input === "A") {
+      setDaemonConfig((config) => nextAgentConfig(config));
+    }
+    if (input === "p" || input === "P") {
+      setDaemonConfig((config) => nextPollConfig(config));
+    }
+    if (input === "x" || input === "X") {
+      setDaemonConfig((config) => nextRetryConfig(config));
+    }
+  });
+
+  const reviewerStatus = findDaemonStatus(daemonStatuses, "reviewer");
+  const refinerStatus = findDaemonStatus(daemonStatuses, "refiner");
+  const codifierStatus = findDaemonStatus(daemonStatuses, "codifier");
 
   return (
     <Box flexDirection="column" width="100%" height="100%">
@@ -173,9 +220,10 @@ export function CockpitLaunchpadView({
           padding={1}>
           <Box width={35} alignItems="center">
             <Text color={BaseColors.shade3} bold>
-              REVIEWER// <Text color={BaseColors.shade4}>(idle)</Text>
+              REVIEWER// <Text color={BaseColors.shade4}>({reviewerStatus.status})</Text>
             </Text>
           </Box>
+          <DaemonControlLine shortcut="v" snapshot={reviewerStatus} pendingConfig={daemonConfig} />
           <Box flexDirection="column" flexWrap="nowrap" width={35}>
             {getReviewerFrame(reviewerFrameIndex).map((line, lineIndex) => (
               <Text key={`${reviewerFrameIndex}-${lineIndex}`}>
@@ -200,9 +248,10 @@ export function CockpitLaunchpadView({
           padding={1}>
           <Box width={35} alignItems="center">
             <Text color={BaseColors.shade3} bold>
-              REFINER// <Text color={BaseColors.shade4}>(idle)</Text>
+              REFINER// <Text color={BaseColors.shade4}>({refinerStatus.status})</Text>
             </Text>
           </Box>
+          <DaemonControlLine shortcut="r" snapshot={refinerStatus} pendingConfig={daemonConfig} />
           <Box flexDirection="column" flexWrap="nowrap" width={35}>
             {getRefinerFrame(refinerFrameIndex, refinerGlyphPalette).map((line, lineIndex) => (
               <Text key={`${refinerFrameIndex}-${lineIndex}`}>
@@ -226,9 +275,10 @@ export function CockpitLaunchpadView({
           padding={1}>
           <Box width={35} alignItems="center">
             <Text color={BaseColors.shade3} bold>
-              CODIFIER//
+              CODIFIER// <Text color={BaseColors.shade4}>({codifierStatus.status})</Text>
             </Text>
           </Box>
+          <DaemonControlLine shortcut="c" snapshot={codifierStatus} pendingConfig={daemonConfig} />
           <Box flexDirection="column" flexWrap="nowrap" width={35}>
             {getCodifierFrame(codifierFrameIndex).map((line, lineIndex) => (
               <Text key={`${codifierFrameIndex}-${lineIndex}`}>
@@ -247,6 +297,152 @@ export function CockpitLaunchpadView({
       </Box>
     </Box>
   );
+}
+
+function DaemonControlLine({
+  shortcut,
+  snapshot,
+  pendingConfig,
+}: {
+  readonly shortcut: string;
+  readonly snapshot: TuiSubprocessSnapshot;
+  readonly pendingConfig: TuiDaemonConfig;
+}): React.ReactElement {
+  const action = snapshot.status === "running" ? "stop" : "start";
+  const config = snapshot.status === "running" ? snapshot.config : pendingConfig;
+  const activity = formatDaemonActivity(snapshot);
+  const tail = snapshot.stderr[snapshot.stderr.length - 1] ?? snapshot.stdout[snapshot.stdout.length - 1] ?? "";
+
+  return (
+    <Box width={35} flexDirection="column">
+      <Text color={BaseColors.shade4}>
+        [{shortcut}] {action} pid {snapshot.pid ?? "-"}
+      </Text>
+      <Text color={BaseColors.shade4}>
+        [a] {config.agentId} [p] {Math.round(config.pollIntervalMs / 1000)}s [x] {config.maxRetries}
+      </Text>
+      <Text color={activity.color}>
+        {activity.label}
+      </Text>
+      {tail.length > 0 && (
+        <Text color={snapshot.status === "failed" ? BaseColors.brandRed : BaseColors.shade5}>
+          {truncateTail(tail)}
+        </Text>
+      )}
+    </Box>
+  );
+}
+
+async function toggleDaemon(
+  name: TuiDaemonName,
+  manager: ISubprocessManager,
+  config: TuiDaemonConfig,
+  setDaemonStatuses: (statuses: readonly TuiSubprocessSnapshot[]) => void,
+): Promise<void> {
+  const snapshot = manager.getStatus(name);
+  if (snapshot.status === "running") {
+    await manager.terminate(name);
+  } else {
+    await manager.spawn(name, config);
+  }
+  setDaemonStatuses(manager.getAllStatuses());
+}
+
+function findDaemonStatus(
+  statuses: readonly TuiSubprocessSnapshot[],
+  name: TuiDaemonName,
+): TuiSubprocessSnapshot {
+  return statuses.find((status) => status.name === name) ?? {
+    name,
+    status: "stopped",
+    config: {
+      agentId: "codex",
+      pollIntervalMs: 30_000,
+      maxRetries: 3,
+    },
+    stdout: [],
+    stderr: [],
+    events: [],
+  };
+}
+
+function formatDaemonActivity(snapshot: TuiSubprocessSnapshot): { label: string; color: string } {
+  const latestEvent = snapshot.events[snapshot.events.length - 1];
+  if (latestEvent === undefined) {
+    if (snapshot.status === "running") {
+      return { label: "starting daemon", color: BaseColors.brandBlue };
+    }
+    return { label: "idle", color: BaseColors.shade5 };
+  }
+
+  if (latestEvent.status === "idle") {
+    return { label: "foraging for goals", color: BaseColors.shade4 };
+  }
+  if (latestEvent.status === "processing" || latestEvent.status === "codifying") {
+    return {
+      label: `${daemonVerb(snapshot.name)} ${shortGoalId(latestEvent.goalId)} ${latestEvent.attempt ?? "-"} / ${latestEvent.maxRetries ?? "-"}`,
+      color: BaseColors.brandBlue,
+    };
+  }
+  if (latestEvent.status === "completed") {
+    return {
+      label: `refined ${shortGoalId(latestEvent.goalId)} in ${latestEvent.attempt ?? 1} attempt`,
+      color: BaseColors.brandGreen,
+    };
+  }
+  if (latestEvent.status === "skipped" || latestEvent.status === "exhausted") {
+    return {
+      label: `${latestEvent.status} ${shortGoalId(latestEvent.goalId)} after ${latestEvent.maxRetries ?? snapshot.config.maxRetries}`,
+      color: BaseColors.brandYellow,
+    };
+  }
+  if (latestEvent.status === "failed") {
+    return {
+      label: truncateTail(latestEvent.errorMessage ?? "daemon failed"),
+      color: BaseColors.brandRed,
+    };
+  }
+
+  return { label: latestEvent.status, color: BaseColors.shade4 };
+}
+
+function shortGoalId(goalId: string | undefined): string {
+  if (goalId === undefined) {
+    return "-";
+  }
+  return goalId.length > 8 ? goalId.slice(0, 8) : goalId;
+}
+
+function daemonVerb(name: TuiDaemonName): string {
+  if (name === "reviewer") {
+    return "reviewing";
+  }
+  if (name === "codifier") {
+    return "codifying";
+  }
+  return "refining";
+}
+
+function nextAgentConfig(config: TuiDaemonConfig): TuiDaemonConfig {
+  const currentIndex = AGENT_OPTIONS.indexOf(config.agentId as typeof AGENT_OPTIONS[number]);
+  const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % AGENT_OPTIONS.length;
+  return { ...config, agentId: AGENT_OPTIONS[nextIndex] };
+}
+
+function nextPollConfig(config: TuiDaemonConfig): TuiDaemonConfig {
+  const currentIndex = POLL_INTERVAL_OPTIONS_MS.indexOf(config.pollIntervalMs as typeof POLL_INTERVAL_OPTIONS_MS[number]);
+  const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % POLL_INTERVAL_OPTIONS_MS.length;
+  return { ...config, pollIntervalMs: POLL_INTERVAL_OPTIONS_MS[nextIndex] };
+}
+
+function nextRetryConfig(config: TuiDaemonConfig): TuiDaemonConfig {
+  const currentIndex = RETRY_OPTIONS.indexOf(config.maxRetries as typeof RETRY_OPTIONS[number]);
+  const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % RETRY_OPTIONS.length;
+  return { ...config, maxRetries: RETRY_OPTIONS[nextIndex] };
+}
+
+function truncateTail(text: string, max = 35): string {
+  return text.length <= max ? text : text.slice(0, max - 3) + "...";
 }
 
 export function getCodifierFrame(index: number): string[] {

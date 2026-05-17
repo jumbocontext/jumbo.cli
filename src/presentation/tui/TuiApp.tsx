@@ -13,6 +13,9 @@ import {
   type TuiStateReaderControllers,
   type TuiStateReaderOptions,
 } from "./state/TuiStateReader.js";
+import { SubprocessManagerProvider, useSubprocessManager } from "./subprocess/SubprocessManagerContext.js";
+import type { ISubprocessManager, TuiSubprocessSnapshot } from "./subprocess/ISubprocessManager.js";
+import type { NotificationDrawerNotification } from "./components/NotificationDrawer.js";
 
 const PLACEHOLDER_PROJECT_NAME = "Jumbo";
 
@@ -45,6 +48,7 @@ interface TuiAppProps {
   readonly stateReaderOptions?: TuiStateReaderOptions;
   readonly actionControllers?: InitFlowActionControllers;
   readonly onProjectInitialized?: () => Promise<TuiStateReaderControllers>;
+  readonly subprocessManager?: ISubprocessManager;
 }
 
 export function TuiApp({
@@ -53,6 +57,7 @@ export function TuiApp({
   stateReaderOptions,
   actionControllers,
   onProjectInitialized,
+  subprocessManager,
 }: TuiAppProps = {}): React.ReactElement {
   const [activeStateReaderControllers, setActiveStateReaderControllers] =
     useState(stateReaderControllers);
@@ -66,16 +71,30 @@ export function TuiApp({
     return true;
   }, [onProjectInitialized]);
 
+  const activeSubprocessManager = subprocessManager;
+
   return (
     <TuiStateReaderProvider
       controllers={activeStateReaderControllers}
       options={stateReaderOptions}
     >
-      <TuiAppFrame
-        version={version}
-        actionControllers={actionControllers}
-        onProjectInitialized={handleProjectInitialized}
-      />
+      {activeSubprocessManager === undefined ? (
+        <TuiAppFrame
+          version={version}
+          actionControllers={actionControllers}
+          onProjectInitialized={handleProjectInitialized}
+          subprocessManagerEnabled={false}
+        />
+      ) : (
+        <SubprocessManagerProvider manager={activeSubprocessManager}>
+          <TuiAppFrame
+            version={version}
+            actionControllers={actionControllers}
+            onProjectInitialized={handleProjectInitialized}
+            subprocessManagerEnabled={true}
+          />
+        </SubprocessManagerProvider>
+      )}
     </TuiStateReaderProvider>
   );
 }
@@ -84,14 +103,17 @@ interface TuiAppFrameProps {
   readonly version: string;
   readonly actionControllers?: InitFlowActionControllers;
   readonly onProjectInitialized: () => Promise<boolean>;
+  readonly subprocessManagerEnabled: boolean;
 }
 
 function TuiAppFrame({
   version,
   actionControllers,
   onProjectInitialized,
+  subprocessManagerEnabled,
 }: TuiAppFrameProps): React.ReactElement {
   const { exit } = useApp();
+  const subprocessManager = useSubprocessManager();
   const { columns, rows } = useTerminalDimensions();
   const projectContext = useProjectContext();
   const [activeScreenIndex, setActiveScreenIndex] = useState(
@@ -100,6 +122,9 @@ function TuiAppFrame({
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [initFlowOpen, setInitFlowOpen] = useState(false);
   const [unprimedSkipped, setUnprimedSkipped] = useState(false);
+  const [daemonStatuses, setDaemonStatuses] = useState<readonly TuiSubprocessSnapshot[]>(
+    subprocessManager.getAllStatuses(),
+  );
   const projectLifecycleState =
     projectContext.data?.lifecycleState ?? "uninitialized";
   const routedProjectLifecycleState =
@@ -114,6 +139,21 @@ function TuiAppFrame({
       setUnprimedSkipped(false);
     }
   }, [projectLifecycleState]);
+
+  useEffect(() => {
+    if (!subprocessManagerEnabled) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setDaemonStatuses(subprocessManager.getAllStatuses());
+    }, 500);
+
+    return () => {
+      clearInterval(timer);
+      void subprocessManager.terminateAll();
+    };
+  }, [subprocessManager, subprocessManagerEnabled]);
 
   useInput((input) => {
     if (megaMenuOpen || initFlowOpen) {
@@ -205,8 +245,35 @@ function TuiAppFrame({
         <Footer
           terminalWidth={columns}
           shortcutsEnabled={!megaMenuOpen && !initFlowOpen}
+          daemonCounts={countDaemons(daemonStatuses)}
+          notifications={buildDaemonFailureNotifications(daemonStatuses)}
         />
       </Box>
     </Box>
   );
+}
+
+function countDaemons(statuses: readonly TuiSubprocessSnapshot[]): {
+  running: number;
+  stopped: number;
+  failed: number;
+} {
+  return {
+    running: statuses.filter((status) => status.status === "running").length,
+    stopped: statuses.filter((status) => status.status === "stopped").length,
+    failed: statuses.filter((status) => status.status === "failed").length,
+  };
+}
+
+function buildDaemonFailureNotifications(
+  statuses: readonly TuiSubprocessSnapshot[],
+): readonly NotificationDrawerNotification[] {
+  return statuses
+    .filter((status) => status.status === "failed")
+    .map((status) => ({
+      id: `daemon-${status.name}-failed`,
+      title: `${status.name.toUpperCase()} daemon failed`,
+      body: status.stderr[status.stderr.length - 1] ?? "The daemon process exited with a failure status.",
+      unread: true,
+    }));
 }
