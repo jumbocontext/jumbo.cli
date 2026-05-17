@@ -16,19 +16,19 @@ describe("FileLogger", () => {
   });
 
   describe("buildDailyLogFileName", () => {
-    it("formats date as yyyyddmm.log", () => {
+    it("formats date as yyyymmdd.log", () => {
       const date = new Date(2026, 2, 26); // March 26, 2026
-      expect(FileLogger.buildDailyLogFileName(date)).toBe("20262603.log");
+      expect(FileLogger.buildDailyLogFileName(date)).toBe("20260326.log");
     });
 
     it("pads single-digit day and month with leading zeros", () => {
       const date = new Date(2026, 0, 5); // January 5, 2026
-      expect(FileLogger.buildDailyLogFileName(date)).toBe("20260501.log");
+      expect(FileLogger.buildDailyLogFileName(date)).toBe("20260105.log");
     });
 
     it("handles end of year", () => {
       const date = new Date(2026, 11, 31); // December 31, 2026
-      expect(FileLogger.buildDailyLogFileName(date)).toBe("20263112.log");
+      expect(FileLogger.buildDailyLogFileName(date)).toBe("20261231.log");
     });
   });
 
