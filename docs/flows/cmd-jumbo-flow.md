@@ -18,7 +18,8 @@ changing bootstrap or TUI behavior.
 - `ProjectLifecycleState` is resolved for the current working directory before
   Cockpit chooses what to render.
 - Cockpit's Events panel renders bounded recent daemon activity from current
-  TUI subprocess snapshots; it does not create a separate persisted event stream.
+  TUI subprocess snapshots, including waiting and lifecycle transition states;
+  it does not create a separate persisted event stream.
 - An ancestor Jumbo project must not make the current directory appear initialized
   for a bare `jumbo` launch.
 - If the current working directory is not an initialized Jumbo project, Cockpit

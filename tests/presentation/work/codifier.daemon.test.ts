@@ -52,7 +52,13 @@ describe("codifier.daemon", () => {
       telemetryClient: {},
     });
     processNextMock.mockImplementation(async ({ emit }) => {
-      emit({ daemon: "codifier", status: "idle" });
+      emit({
+        daemon: "codifier",
+        status: "idle",
+        source: "codifier",
+        category: "waiting",
+        message: "awaiting approved goals",
+      });
       return { status: "idle", attempts: 0 };
     });
   });
@@ -76,7 +82,7 @@ describe("codifier.daemon", () => {
       maxRetries: 2,
       emit: expect.any(Function),
     }));
-    expect(stdoutSpy).toHaveBeenCalledWith("{\"daemon\":\"codifier\",\"status\":\"idle\"}\n");
+    expect(stdoutSpy).toHaveBeenCalledWith("{\"daemon\":\"codifier\",\"status\":\"idle\",\"source\":\"codifier\",\"category\":\"waiting\",\"message\":\"awaiting approved goals\"}\n");
   });
 
   it("does not construct infrastructure outside a project root", async () => {

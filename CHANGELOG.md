@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bare TUI bootstrap side effects**: Running bare `jumbo` from a non-project directory or from a subdirectory beneath an ancestor Jumbo project no longer creates `.jumbo` storage just by opening the TUI; storage is created only after project initialization is confirmed.
 - **Cockpit lifecycle routing**: Cockpit now resolves lifecycle state for the current working directory, treats any existing goal as evidence of prior goal use, and routes to the primed-with-goals view instead of showing the goals tutorial once goals exist in any status.
 - **TUI daemon stop status**: Stopping refiner, reviewer, or codifier daemons from the TUI now reports `stopped` instead of `failed` when termination produces a signal or taskkill-style non-zero exit.
+- **Cockpit daemon waiting states**: Running refiner, reviewer, and codifier daemons now show waiting, idle, stopped, and failure state transitions in the Cockpit Events panel, including the refiner's `foraging` state when no defined goals are available.
 - **TUI component memory isolation**: Component add, list, and detail views no longer collect or display component source paths as user-facing component metadata.
 - **TUI project initialization**: Running bare `jumbo` from an uninitialized directory now opens a controller-backed Init wizard that creates `.jumbo` state and project files, refreshes the TUI after success, and preserves existing `jumbo init` / `jumbo project init` CLI behavior.
 

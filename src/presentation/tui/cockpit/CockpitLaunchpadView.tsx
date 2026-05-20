@@ -29,6 +29,8 @@ interface DaemonEventRow {
 
 const RENDERED_DAEMON_EVENT_LIMIT = 10;
 const RENDERED_DAEMON_FRAME_HEIGHT = 5;
+const DAEMON_EVENT_SOURCE_WIDTH = 8;
+const DAEMON_EVENT_CATEGORY_WIDTH = 12;
 const REFINER_FRAME_COUNT = 9;
 const REFINER_GRID_WIDTH = 35;
 const REFINER_GRID_HEIGHT = 10;
@@ -68,6 +70,11 @@ const DAEMON_ACTIVE_VERBS = {
   reviewer: "reviewing",
   refiner: "refining",
   codifier: "codifying",
+} as const satisfies Record<TuiDaemonName, string>;
+const DAEMON_IDLE_VERBS = {
+  reviewer: "awaiting submissions",
+  refiner: "foraging",
+  codifier: "awaiting approvals",
 } as const satisfies Record<TuiDaemonName, string>;
 const DAEMON_INFO_COPY = {
   reviewer: {
@@ -391,7 +398,7 @@ export function CockpitLaunchpadView({
           <DaemonInfoOverlay name={infoDaemon} />
         )}
         <Text color={BaseColors.shade2} bold>
-          EVENTS// <Text color={BaseColors.shade4}>time     source   category   message</Text>
+          EVENTS// <Text color={BaseColors.shade4}>{getDaemonEventsHeader()}</Text>
         </Text>
         <Box flexDirection="column" marginTop={1}>
           {daemonEventRows.map((row) => (
@@ -534,6 +541,11 @@ function DaemonConfigWizard({
 }
 
 function getDaemonPanelStatusLabel(snapshot: TuiSubprocessSnapshot): string {
+  const latestEvent = getLatestDaemonActivityEvent(snapshot);
+  if (snapshot.status === "running" && latestEvent?.status === "idle") {
+    return `[ ${DAEMON_IDLE_VERBS[snapshot.name]} ]`;
+  }
+
   const status = snapshot.status === "running"
     ? DAEMON_ACTIVE_VERBS[snapshot.name]
     : snapshot.status;
@@ -686,7 +698,6 @@ function getSnapshotEventRows(
   observedAtMs: number,
 ): readonly DaemonEventRow[] {
   const eventRows = snapshot.events
-    .filter((event) => event.status !== "idle")
     .map((event, eventIndex) =>
       toDaemonEventRow(snapshot, event, eventIndex, observedAtMs)
     );
@@ -712,6 +723,12 @@ function getLifecycleEventRow(
   }
   if (snapshot.status === "failed") {
     return createDaemonEventRow(snapshot, "failed", eventIndex, observedAtMs);
+  }
+  if (
+    snapshot.status === "stopped"
+    && (snapshot.stopRequested === true || snapshot.exitCode !== undefined || snapshot.exitSignal !== undefined)
+  ) {
+    return createDaemonEventRow(snapshot, "stopped", eventIndex, observedAtMs);
   }
   return undefined;
 }
@@ -758,7 +775,7 @@ function toDaemonEventRow(
 }
 
 function normalizeDaemonEventStatus(status: string): TuiDaemonEventStatus {
-  if (status === "starting" || status === "stopping" || status === "failed" || status === "idle" || status === "processing" || status === "completed" || status === "skipped" || status === "exhausted" || status === "codifying") {
+  if (status === "starting" || status === "stopping" || status === "stopped" || status === "failed" || status === "idle" || status === "processing" || status === "completed" || status === "skipped" || status === "exhausted" || status === "codifying") {
     return status;
   }
 
@@ -768,7 +785,11 @@ function normalizeDaemonEventStatus(status: string): TuiDaemonEventStatus {
 function formatDaemonEventRow(row: DaemonEventRow): string {
   const message = row.message.length > 0 ? ` ${row.message}` : "";
 
-  return `${formatEventTimestamp(row.timestampMs)} ${row.source.padEnd(8)} ${row.category.padEnd(10)}${message}`;
+  return `${formatEventTimestamp(row.timestampMs)} ${row.source.padEnd(DAEMON_EVENT_SOURCE_WIDTH)} ${row.category.padEnd(DAEMON_EVENT_CATEGORY_WIDTH)}${message}`;
+}
+
+function getDaemonEventsHeader(): string {
+  return `time     ${"source".padEnd(DAEMON_EVENT_SOURCE_WIDTH)} ${"category".padEnd(DAEMON_EVENT_CATEGORY_WIDTH)} message`;
 }
 
 function formatEventTimestamp(timestampMs: number): string {
@@ -791,18 +812,15 @@ function normalizeDaemonEventCategory(
   event: TuiDaemonEventSnapshot,
   status: TuiDaemonEventStatus,
 ): string {
-  return truncateTail(event.category ?? status, 10);
+  return truncateTail(event.category ?? status, DAEMON_EVENT_CATEGORY_WIDTH);
 }
 
 function formatDaemonEventMessage(
   snapshot: TuiSubprocessSnapshot,
   event: TuiDaemonEventSnapshot,
 ): string {
-  if (event.message !== undefined && event.message.trim().length > 0) {
-    return truncateTail(event.message.trim(), 52);
-  }
-
   const parts = [
+    event.message === undefined || event.message.trim().length === 0 ? undefined : event.message.trim(),
     event.goalId === undefined ? undefined : shortGoalId(event.goalId),
     formatAttemptDetails(event),
     formatExitDetails(event),
@@ -839,6 +857,12 @@ function getDaemonEventColor(status: TuiDaemonEventStatus): string {
   }
 
   return BaseColors.shade4;
+}
+
+function getLatestDaemonActivityEvent(
+  snapshot: TuiSubprocessSnapshot,
+): TuiDaemonEventSnapshot | undefined {
+  return snapshot.events[snapshot.events.length - 1];
 }
 
 function shortGoalId(goalId: string | undefined): string {

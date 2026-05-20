@@ -2,7 +2,13 @@ import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals
 
 const processNextMock = jest.fn();
 const pollingRunMock = jest.fn(async ({ processOptions }) => {
-  processOptions.emit({ daemon: "refiner", status: "idle" });
+  processOptions.emit({
+    daemon: "refiner",
+    status: "idle",
+    source: "refiner",
+    category: "foraging",
+    message: "foraging for defined goals",
+  });
 });
 const buildMock = jest.fn();
 const createBuilderMock = jest.fn(() => ({ build: buildMock }));
@@ -51,6 +57,6 @@ describe("refiner.daemon", () => {
     expect(pollingRunMock).toHaveBeenCalledWith(expect.objectContaining({
       processOptions: expect.objectContaining({ agentId: "codex" }),
     }));
-    expect(stdoutSpy).toHaveBeenCalledWith("{\"daemon\":\"refiner\",\"status\":\"idle\"}\n");
+    expect(stdoutSpy).toHaveBeenCalledWith("{\"daemon\":\"refiner\",\"status\":\"idle\",\"source\":\"refiner\",\"category\":\"foraging\",\"message\":\"foraging for defined goals\"}\n");
   });
 });

@@ -10,6 +10,33 @@ import { ReviewGoalController } from "./ReviewGoalController.js";
 import { IGoalSubmitForReviewReader } from "./IGoalSubmitForReviewReader.js";
 
 const REVIEW_COMPLETE_STATUSES = new Set<string>([GoalStatus.QUALIFIED, GoalStatus.REJECTED]);
+const REVIEWER_EVENT_SOURCE = "reviewer";
+const REVIEWER_EVENT_COPY = {
+  noWork: {
+    category: "waiting",
+    message: "awaiting submitted goals",
+  },
+  workStarted: {
+    category: "work-started",
+    message: "reviewing goal",
+  },
+  completed: {
+    category: "completed",
+    message: "review completed",
+  },
+  skipped: {
+    category: "skipped",
+    message: "review not completed after agent attempt",
+  },
+  exhausted: {
+    category: "exhausted",
+    message: "review attempts exhausted",
+  },
+  failed: {
+    category: "failed",
+    message: "review failed",
+  },
+} as const;
 
 export class ReviewerProcessManager implements IProcessManager {
   constructor(
@@ -27,7 +54,12 @@ export class ReviewerProcessManager implements IProcessManager {
     const goals = await this.selectEligibleGoals();
 
     if (goals.length === 0) {
-      this.emit(options, { daemon: "reviewer", status: "idle" });
+      this.emit(options, {
+        daemon: REVIEWER_EVENT_SOURCE,
+        status: "idle",
+        source: REVIEWER_EVENT_SOURCE,
+        ...REVIEWER_EVENT_COPY.noWork,
+      });
       this.track(startedAt, { status: "idle", attempts: 0 });
       return { status: "idle", attempts: 0 };
     }
@@ -37,23 +69,58 @@ export class ReviewerProcessManager implements IProcessManager {
     try {
       await this.reviewGoalController.handle({ goalId: goal.goalId });
     } catch (error) {
-      this.emit(options, { daemon: "reviewer", status: "failed", goalId: goal.goalId, ...this.errorProperties(error) });
-      this.track(startedAt, { status: "failed", attempts: 0, goalId: goal.goalId, ...this.errorProperties(error) });
+      const errorProperties = this.errorProperties(error);
+      this.emit(options, {
+        daemon: REVIEWER_EVENT_SOURCE,
+        status: "failed",
+        source: REVIEWER_EVENT_SOURCE,
+        goalId: goal.goalId,
+        ...REVIEWER_EVENT_COPY.failed,
+        ...errorProperties,
+      });
+      this.track(startedAt, { status: "failed", attempts: 0, goalId: goal.goalId, ...errorProperties });
       return { status: "failed", goalId: goal.goalId, attempts: 0 };
     }
 
     for (let attempt = 1; attempt <= options.maxRetries; attempt++) {
-      this.emit(options, { daemon: "reviewer", status: "processing", goalId: goal.goalId, attempt, maxRetries: options.maxRetries });
+      this.emit(options, {
+        daemon: REVIEWER_EVENT_SOURCE,
+        status: "processing",
+        source: REVIEWER_EVENT_SOURCE,
+        goalId: goal.goalId,
+        attempt,
+        maxRetries: options.maxRetries,
+        ...REVIEWER_EVENT_COPY.workStarted,
+      });
       const result = await this.agentGateway.invoke({ agentId: options.agentId, prompt: this.buildPrompt(goal.goalId) });
       this.emitModelOutput(options, goal.goalId, result.stdout);
 
       if (await this.isReviewComplete(goal.goalId)) {
-        this.emit(options, { daemon: "reviewer", status: "completed", goalId: goal.goalId, attempt, maxRetries: options.maxRetries, exitCode: result.exitCode });
+        this.emit(options, {
+          daemon: REVIEWER_EVENT_SOURCE,
+          status: "completed",
+          source: REVIEWER_EVENT_SOURCE,
+          goalId: goal.goalId,
+          attempt,
+          maxRetries: options.maxRetries,
+          exitCode: result.exitCode,
+          ...REVIEWER_EVENT_COPY.completed,
+        });
         this.track(startedAt, { status: "completed", attempts: attempt, goalId: goal.goalId, agentExitCode: result.exitCode });
         return { status: "completed", goalId: goal.goalId, attempts: attempt };
       }
 
-      this.emit(options, { daemon: "reviewer", status: attempt === options.maxRetries ? "exhausted" : "skipped", goalId: goal.goalId, attempt, maxRetries: options.maxRetries, exitCode: result.exitCode });
+      const retryExhausted = attempt === options.maxRetries;
+      this.emit(options, {
+        daemon: REVIEWER_EVENT_SOURCE,
+        status: retryExhausted ? "exhausted" : "skipped",
+        source: REVIEWER_EVENT_SOURCE,
+        goalId: goal.goalId,
+        attempt,
+        maxRetries: options.maxRetries,
+        exitCode: result.exitCode,
+        ...(retryExhausted ? REVIEWER_EVENT_COPY.exhausted : REVIEWER_EVENT_COPY.skipped),
+      });
     }
 
     this.track(startedAt, { status: "exhausted", attempts: options.maxRetries, goalId: goal.goalId });
@@ -97,9 +164,9 @@ export class ReviewerProcessManager implements IProcessManager {
 
     for (const line of lines) {
       this.emit(options, {
-        daemon: "reviewer",
+        daemon: REVIEWER_EVENT_SOURCE,
         status: "processing",
-        source: "reviewer",
+        source: REVIEWER_EVENT_SOURCE,
         category: "model-output",
         message: line,
         goalId,

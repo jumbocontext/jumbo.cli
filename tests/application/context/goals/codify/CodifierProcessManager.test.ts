@@ -100,8 +100,20 @@ describe("CodifierProcessManager", () => {
       prompt: expect.stringContaining("jumbo goal codify --id goal_1"),
     });
     expect(agentGateway.invoke.mock.calls[0][0].prompt).toContain("jumbo goal close --id goal_1");
-    expect(events).toContainEqual(expect.objectContaining({ status: "codifying", goalId: "goal_1" }));
-    expect(events).toContainEqual(expect.objectContaining({ status: "completed", goalId: "goal_1" }));
+    expect(events).toContainEqual(expect.objectContaining({
+      status: "processing",
+      source: "codifier",
+      category: "work-started",
+      message: "codifying goal",
+      goalId: "goal_1",
+    }));
+    expect(events).toContainEqual(expect.objectContaining({
+      status: "completed",
+      source: "codifier",
+      category: "completed",
+      message: "goal codified",
+      goalId: "goal_1",
+    }));
     expect(telemetryClient.track).toHaveBeenCalledWith(
       "codifier_process_completed",
       expect.objectContaining({ daemon: "codifier", status: "completed", goalId: "goal_1" }),
@@ -124,11 +136,30 @@ describe("CodifierProcessManager", () => {
   it("reports exhausted when the goal never reaches done", async () => {
     goalStatusReader.findByStatus.mockResolvedValue([goal()]);
     goalReader.findById.mockResolvedValue(goal({ status: GoalStatus.CODIFYING }));
+    const events: unknown[] = [];
 
-    const result = await manager().processNext({ agentId: "codex", maxRetries: 2 });
+    const result = await manager().processNext({
+      agentId: "codex",
+      maxRetries: 2,
+      emit: (event) => events.push(event),
+    });
 
     expect(result).toEqual({ status: "exhausted", goalId: "goal_1", attempts: 2 });
     expect(agentGateway.invoke).toHaveBeenCalledTimes(2);
+    expect(events).toContainEqual(expect.objectContaining({
+      status: "skipped",
+      source: "codifier",
+      category: "skipped",
+      message: "goal not codified after agent attempt",
+      attempt: 1,
+    }));
+    expect(events).toContainEqual(expect.objectContaining({
+      status: "exhausted",
+      source: "codifier",
+      category: "exhausted",
+      message: "codification attempts exhausted",
+      attempt: 2,
+    }));
     expect(telemetryClient.track).toHaveBeenCalledWith(
       "codifier_process_completed",
       expect.objectContaining({ status: "exhausted", attempts: 2, goalId: "goal_1" }),
@@ -137,10 +168,24 @@ describe("CodifierProcessManager", () => {
 
   it("returns idle when no eligible goals exist", async () => {
     goalStatusReader.findByStatus.mockResolvedValue([]);
+    const events: unknown[] = [];
 
-    const result = await manager().processNext({ agentId: "codex", maxRetries: 1 });
+    const result = await manager().processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => events.push(event),
+    });
 
     expect(result).toEqual({ status: "idle", attempts: 0 });
+    expect(events).toEqual([
+      {
+        daemon: "codifier",
+        status: "idle",
+        source: "codifier",
+        category: "waiting",
+        message: "awaiting approved goals",
+      },
+    ]);
     expect(codifyGoalController.handle).not.toHaveBeenCalled();
     expect(agentGateway.invoke).not.toHaveBeenCalled();
   });
@@ -148,11 +193,26 @@ describe("CodifierProcessManager", () => {
   it("emits failure telemetry when codification cannot acquire the goal", async () => {
     goalStatusReader.findByStatus.mockResolvedValue([goal()]);
     codifyGoalController.handle.mockRejectedValue(new Error("Goal is claimed by another worker"));
+    const events: unknown[] = [];
 
-    const result = await manager().processNext({ agentId: "codex", maxRetries: 1 });
+    const result = await manager().processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => events.push(event),
+    });
 
     expect(result).toEqual({ status: "failed", goalId: "goal_1", attempts: 0 });
     expect(agentGateway.invoke).not.toHaveBeenCalled();
+    expect(events).toContainEqual(expect.objectContaining({
+      daemon: "codifier",
+      status: "failed",
+      source: "codifier",
+      category: "failed",
+      message: "codification failed",
+      goalId: "goal_1",
+      errorType: "Error",
+      errorMessage: "Goal is claimed by another worker",
+    }));
     expect(telemetryClient.track).toHaveBeenCalledWith(
       "codifier_process_completed",
       expect.objectContaining({

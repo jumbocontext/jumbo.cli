@@ -9,6 +9,34 @@ import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
 import { RefineGoalController } from "./RefineGoalController.js";
 import { IGoalRefineReader } from "./IGoalRefineReader.js";
 
+const REFINER_EVENT_SOURCE = "refiner";
+const REFINER_EVENT_COPY = {
+  noWork: {
+    category: "foraging",
+    message: "foraging for defined goals",
+  },
+  workStarted: {
+    category: "work-started",
+    message: "refining goal",
+  },
+  completed: {
+    category: "completed",
+    message: "goal refined",
+  },
+  skipped: {
+    category: "skipped",
+    message: "goal not refined after agent attempt",
+  },
+  exhausted: {
+    category: "exhausted",
+    message: "refinement attempts exhausted",
+  },
+  failed: {
+    category: "failed",
+    message: "refinement failed",
+  },
+} as const;
+
 export class RefinerProcessManager implements IProcessManager {
   constructor(
     private readonly goalStatusReader: IGoalStatusReader,
@@ -25,7 +53,12 @@ export class RefinerProcessManager implements IProcessManager {
     const goals = await this.selectEligibleGoals();
 
     if (goals.length === 0) {
-      this.emit(options, { daemon: "refiner", status: "idle" });
+      this.emit(options, {
+        daemon: REFINER_EVENT_SOURCE,
+        status: "idle",
+        source: REFINER_EVENT_SOURCE,
+        ...REFINER_EVENT_COPY.noWork,
+      });
       this.track(startedAt, { status: "idle", attempts: 0 });
       return { status: "idle", attempts: 0 };
     }
@@ -35,28 +68,56 @@ export class RefinerProcessManager implements IProcessManager {
     try {
       await this.refineGoalController.handle({ goalId: goal.goalId });
     } catch (error) {
-      this.emit(options, { daemon: "refiner", status: "failed", goalId: goal.goalId, ...this.errorProperties(error) });
-      this.track(startedAt, { status: "failed", attempts: 0, goalId: goal.goalId, ...this.errorProperties(error) });
+      const errorProperties = this.errorProperties(error);
+      this.emit(options, {
+        daemon: REFINER_EVENT_SOURCE,
+        status: "failed",
+        source: REFINER_EVENT_SOURCE,
+        goalId: goal.goalId,
+        ...REFINER_EVENT_COPY.failed,
+        ...errorProperties,
+      });
+      this.track(startedAt, { status: "failed", attempts: 0, goalId: goal.goalId, ...errorProperties });
       return { status: "failed", goalId: goal.goalId, attempts: 0 };
     }
 
     for (let attempt = 1; attempt <= options.maxRetries; attempt++) {
-      this.emit(options, { daemon: "refiner", status: "processing", goalId: goal.goalId, attempt, maxRetries: options.maxRetries });
+      this.emit(options, {
+        daemon: REFINER_EVENT_SOURCE,
+        status: "processing",
+        source: REFINER_EVENT_SOURCE,
+        goalId: goal.goalId,
+        attempt,
+        maxRetries: options.maxRetries,
+        ...REFINER_EVENT_COPY.workStarted,
+      });
       const result = await this.agentGateway.invoke({ agentId: options.agentId, prompt: this.buildPrompt(goal.goalId) });
 
       if (await this.isGoalRefined(goal.goalId)) {
-        this.emit(options, { daemon: "refiner", status: "completed", goalId: goal.goalId, attempt, maxRetries: options.maxRetries, exitCode: result.exitCode });
+        this.emit(options, {
+          daemon: REFINER_EVENT_SOURCE,
+          status: "completed",
+          source: REFINER_EVENT_SOURCE,
+          goalId: goal.goalId,
+          attempt,
+          maxRetries: options.maxRetries,
+          exitCode: result.exitCode,
+          ...REFINER_EVENT_COPY.completed,
+        });
         this.track(startedAt, { status: "completed", attempts: attempt, goalId: goal.goalId, agentExitCode: result.exitCode });
         return { status: "completed", goalId: goal.goalId, attempts: attempt };
       }
 
+      const retryExhausted = attempt === options.maxRetries;
       this.emit(options, {
-        daemon: "refiner",
-        status: attempt === options.maxRetries ? "exhausted" : "skipped",
+        daemon: REFINER_EVENT_SOURCE,
+        status: retryExhausted ? "exhausted" : "skipped",
+        source: REFINER_EVENT_SOURCE,
         goalId: goal.goalId,
         attempt,
         maxRetries: options.maxRetries,
         exitCode: result.exitCode,
+        ...(retryExhausted ? REFINER_EVENT_COPY.exhausted : REFINER_EVENT_COPY.skipped),
         ...this.agentFailureProperties(result),
       });
     }

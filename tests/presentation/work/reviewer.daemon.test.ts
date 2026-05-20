@@ -1,7 +1,13 @@
 import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 
 const pollingRunMock = jest.fn(async ({ processOptions }) => {
-  processOptions.emit({ daemon: "reviewer", status: "idle" });
+  processOptions.emit({
+    daemon: "reviewer",
+    status: "idle",
+    source: "reviewer",
+    category: "waiting",
+    message: "awaiting submitted goals",
+  });
 });
 const buildMock = jest.fn();
 const createBuilderMock = jest.fn(() => ({ build: buildMock }));
@@ -47,6 +53,6 @@ describe("reviewer.daemon", () => {
     expect(pollingRunMock).toHaveBeenCalledWith(expect.objectContaining({
       processOptions: expect.objectContaining({ agentId: "codex" }),
     }));
-    expect(stdoutSpy).toHaveBeenCalledWith("{\"daemon\":\"reviewer\",\"status\":\"idle\"}\n");
+    expect(stdoutSpy).toHaveBeenCalledWith("{\"daemon\":\"reviewer\",\"status\":\"idle\",\"source\":\"reviewer\",\"category\":\"waiting\",\"message\":\"awaiting submitted goals\"}\n");
   });
 });

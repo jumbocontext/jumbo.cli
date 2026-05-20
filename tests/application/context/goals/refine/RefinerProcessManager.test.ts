@@ -49,6 +49,67 @@ describe("RefinerProcessManager", () => {
     });
   });
 
+  it("emits a structured foraging event when no goals are eligible", async () => {
+    goalStatusReader.findByStatus.mockResolvedValue([]);
+    const events: unknown[] = [];
+    const manager = new RefinerProcessManager(
+      goalStatusReader,
+      goalReader,
+      claimPolicy as any,
+      { workerId: "worker_1" },
+      refineGoalController as any,
+      agentGateway,
+      telemetryClient,
+    );
+
+    await expect(manager.processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => events.push(event),
+    })).resolves.toEqual({ status: "idle", attempts: 0 });
+
+    expect(events).toEqual([
+      {
+        daemon: "refiner",
+        status: "idle",
+        source: "refiner",
+        category: "foraging",
+        message: "foraging for defined goals",
+      },
+    ]);
+  });
+
+  it("emits a structured failure event when refinement cannot start", async () => {
+    refineGoalController.handle.mockRejectedValue(new Error("Goal is claimed by another worker"));
+    const events: unknown[] = [];
+    const manager = new RefinerProcessManager(
+      goalStatusReader,
+      goalReader,
+      claimPolicy as any,
+      { workerId: "worker_1" },
+      refineGoalController as any,
+      agentGateway,
+      telemetryClient,
+    );
+
+    await expect(manager.processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => events.push(event),
+    })).resolves.toEqual({ status: "failed", goalId: "goal_1", attempts: 0 });
+
+    expect(events).toContainEqual(expect.objectContaining({
+      daemon: "refiner",
+      status: "failed",
+      source: "refiner",
+      category: "failed",
+      message: "refinement failed",
+      goalId: "goal_1",
+      errorType: "Error",
+      errorMessage: "Goal is claimed by another worker",
+    }));
+  });
+
   it("includes agent stderr in skipped and exhausted events when invocation fails", async () => {
     goalReader.findById.mockResolvedValue({ ...goal, status: GoalStatus.TODO });
     agentGateway.invoke.mockResolvedValue({
@@ -77,15 +138,33 @@ describe("RefinerProcessManager", () => {
     });
 
     expect(events).toEqual([
-      expect.objectContaining({ status: "processing", attempt: 1 }),
+      expect.objectContaining({
+        status: "processing",
+        source: "refiner",
+        category: "work-started",
+        message: "refining goal",
+        attempt: 1,
+      }),
       expect.objectContaining({
         status: "skipped",
+        source: "refiner",
+        category: "skipped",
+        message: "goal not refined after agent attempt",
         attempt: 1,
         errorMessage: "Error loading configuration: config profile `prompt` not found",
       }),
-      expect.objectContaining({ status: "processing", attempt: 2 }),
+      expect.objectContaining({
+        status: "processing",
+        source: "refiner",
+        category: "work-started",
+        message: "refining goal",
+        attempt: 2,
+      }),
       expect.objectContaining({
         status: "exhausted",
+        source: "refiner",
+        category: "exhausted",
+        message: "refinement attempts exhausted",
         attempt: 2,
         errorMessage: "Error loading configuration: config profile `prompt` not found",
       }),

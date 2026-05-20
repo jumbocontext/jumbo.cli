@@ -3,6 +3,7 @@ export type TuiSubprocessStatus = "stopped" | "running" | "failed";
 export type TuiDaemonEventStatus =
   | "starting"
   | "stopping"
+  | "stopped"
   | "failed"
   | "idle"
   | "processing"

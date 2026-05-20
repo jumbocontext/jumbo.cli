@@ -8,8 +8,37 @@ import { GoalClaimPolicy } from "../claims/GoalClaimPolicy.js";
 import { CodifyGoalController } from "./CodifyGoalController.js";
 import { IGoalCodifyReader } from "./IGoalCodifyReader.js";
 
+const CODIFIER_EVENT_SOURCE = "codifier";
+const CODIFIER_EVENT_COPY = {
+  noWork: {
+    category: "waiting",
+    message: "awaiting approved goals",
+  },
+  workStarted: {
+    category: "work-started",
+    message: "codifying goal",
+  },
+  completed: {
+    category: "completed",
+    message: "goal codified",
+  },
+  skipped: {
+    category: "skipped",
+    message: "goal not codified after agent attempt",
+  },
+  exhausted: {
+    category: "exhausted",
+    message: "codification attempts exhausted",
+  },
+  failed: {
+    category: "failed",
+    message: "codification failed",
+  },
+} as const;
+
 export type CodifierProcessStatus =
   | "idle"
+  | "processing"
   | "codifying"
   | "completed"
   | "skipped"
@@ -19,6 +48,9 @@ export type CodifierProcessStatus =
 export interface CodifierProcessEvent {
   readonly daemon: "codifier";
   readonly status: CodifierProcessStatus;
+  readonly source?: string;
+  readonly category?: string;
+  readonly message?: string;
   readonly goalId?: string;
   readonly attempt?: number;
   readonly maxRetries?: number;
@@ -55,7 +87,12 @@ export class CodifierProcessManager {
     const goals = await this.selectEligibleGoals();
 
     if (goals.length === 0) {
-      this.emit(options, { daemon: "codifier", status: "idle" });
+      this.emit(options, {
+        daemon: CODIFIER_EVENT_SOURCE,
+        status: "idle",
+        source: CODIFIER_EVENT_SOURCE,
+        ...CODIFIER_EVENT_COPY.noWork,
+      });
       this.track("codifier_process_completed", startedAt, { status: "idle", attempts: 0 });
       return { status: "idle", attempts: 0 };
     }
@@ -77,11 +114,13 @@ export class CodifierProcessManager {
 
     for (let attempt = 1; attempt <= options.maxRetries; attempt++) {
       this.emit(options, {
-        daemon: "codifier",
-        status: "codifying",
+        daemon: CODIFIER_EVENT_SOURCE,
+        status: "processing",
+        source: CODIFIER_EVENT_SOURCE,
         goalId: goal.goalId,
         attempt,
         maxRetries: options.maxRetries,
+        ...CODIFIER_EVENT_COPY.workStarted,
       });
 
       const result = await this.agentGateway.invoke({
@@ -91,12 +130,14 @@ export class CodifierProcessManager {
 
       if (await this.isGoalDone(goal.goalId)) {
         this.emit(options, {
-          daemon: "codifier",
+          daemon: CODIFIER_EVENT_SOURCE,
           status: "completed",
+          source: CODIFIER_EVENT_SOURCE,
           goalId: goal.goalId,
           attempt,
           maxRetries: options.maxRetries,
           exitCode: result.exitCode,
+          ...CODIFIER_EVENT_COPY.completed,
         });
         this.track("codifier_process_completed", startedAt, {
           status: "completed",
@@ -107,13 +148,16 @@ export class CodifierProcessManager {
         return { status: "completed", goalId: goal.goalId, attempts: attempt };
       }
 
+      const retryExhausted = attempt === options.maxRetries;
       this.emit(options, {
-        daemon: "codifier",
-        status: attempt === options.maxRetries ? "exhausted" : "skipped",
+        daemon: CODIFIER_EVENT_SOURCE,
+        status: retryExhausted ? "exhausted" : "skipped",
+        source: CODIFIER_EVENT_SOURCE,
         goalId: goal.goalId,
         attempt,
         maxRetries: options.maxRetries,
         exitCode: result.exitCode,
+        ...(retryExhausted ? CODIFIER_EVENT_COPY.exhausted : CODIFIER_EVENT_COPY.skipped),
       });
     }
 
@@ -158,9 +202,11 @@ export class CodifierProcessManager {
     error: unknown,
   ): void {
     this.emit(options, {
-      daemon: "codifier",
+      daemon: CODIFIER_EVENT_SOURCE,
       status: "failed",
+      source: CODIFIER_EVENT_SOURCE,
       goalId,
+      ...CODIFIER_EVENT_COPY.failed,
       ...this.errorProperties(error),
     });
   }

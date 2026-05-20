@@ -72,7 +72,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
 
     expect(lastFrame()).toContain("COCKPIT//");
     expect(lastFrame()).toContain("EVENTS//");
-    expect(lastFrame()).toContain("time     source   category   message");
+    expect(lastFrame()).toContain("time     source   category");
     expect(lastFrame()).not.toContain("SESSION//");
     expect(lastFrame()).not.toContain("PROJECT//");
     expect(lastFrame()).toContain("REVIEWER//");
@@ -107,7 +107,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
     expect(lastFrame()).toContain("[ refining ]");
     expect(lastFrame()).toContain("•");
     expect(lastFrame()).not.toContain("refining goal_123");
-    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 refiner  processing goal_123 1/3")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 refiner  processing   goal_123 1/3")).toBeGreaterThanOrEqual(0);
 
     stdin.write("s");
     await tick();
@@ -285,18 +285,18 @@ describe("CockpitLaunchpadView daemon controls", () => {
       status: "running",
       config: defaultConfig,
       pid: 789,
-      stdout: ["{\"daemon\":\"codifier\",\"status\":\"codifying\",\"goalId\":\"goal_codify\",\"attempt\":1,\"maxRetries\":3}"],
+      stdout: ["{\"daemon\":\"codifier\",\"status\":\"processing\",\"goalId\":\"goal_codify\",\"attempt\":1,\"maxRetries\":3}"],
       stderr: [],
       events: [
-        { daemon: "codifier", status: "codifying", timestampMs: eventTimestampMs, goalId: "goal_codify", attempt: 1, maxRetries: 3 },
+        { daemon: "codifier", status: "processing", timestampMs: eventTimestampMs, goalId: "goal_codify", attempt: 1, maxRetries: 3 },
       ],
     });
 
     await pollTick();
 
-    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 reviewer processing goal_rev 1/3")).toBeGreaterThanOrEqual(0);
-    expect(renderedTextPosition(lastFrame() ?? "", "12:00:01 reviewer completed  goal_rev 2/3")).toBeGreaterThanOrEqual(0);
-    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 codifier codifying  goal_cod 1/3")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 reviewer processing   goal_rev 1/3")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:01 reviewer completed    goal_rev 2/3")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 codifier processing   goal_cod 1/3")).toBeGreaterThanOrEqual(0);
     unmount();
   });
 
@@ -367,7 +367,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
     });
 
     await pollTick();
-    expect(renderedTextPosition(lastFrame() ?? "", "12:00:01 reviewer completed  goal_rev 2/3")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:01 reviewer completed    goal_rev 2/3")).toBeGreaterThanOrEqual(0);
 
     snapshots.set("reviewer", {
       name: "reviewer",
@@ -379,7 +379,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
     });
 
     await pollTick();
-    expect(renderedTextPosition(lastFrame() ?? "", "12:00:01 reviewer completed  goal_rev 2/3")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:01 reviewer completed    goal_rev 2/3")).toBeGreaterThanOrEqual(0);
     unmount();
   });
 
@@ -444,6 +444,43 @@ describe("CockpitLaunchpadView daemon controls", () => {
     unmount();
   });
 
+  it("renders stopped daemon transition rows without showing initial stopped snapshots", () => {
+    const snapshots = createSnapshots();
+    snapshots.set("reviewer", {
+      name: "reviewer",
+      status: "stopped",
+      config: defaultConfig,
+      stdout: [],
+      stderr: [],
+      events: [],
+      exitCode: 0,
+      stopRequested: true,
+    });
+    const manager: ISubprocessManager = {
+      spawn: jest.fn(async (name: TuiDaemonName) => snapshots.get(name)!),
+      terminate: jest.fn(async (name: TuiDaemonName) => snapshots.get(name)!),
+      terminateAll: jest.fn(async () => {}),
+      getStatus: jest.fn((name: TuiDaemonName) => snapshots.get(name)!),
+      getAllStatuses: jest.fn(() => Array.from(snapshots.values())),
+    };
+
+    const { lastFrame, unmount } = render(
+      <SubprocessManagerProvider manager={manager}>
+        <CockpitLaunchpadView
+          reviewerFrameDurationMs={0}
+          refinerFrameDurationMs={0}
+          codifierFrameDurationMs={0}
+        />
+      </SubprocessManagerProvider>,
+    );
+
+    expect(renderedTextPosition(lastFrame() ?? "", "reviewer stopped")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "exit 0")).toBeGreaterThanOrEqual(0);
+    expect(lastFrame()).not.toContain("refiner  stopped");
+    expect(lastFrame()).not.toContain("codifier stopped");
+    unmount();
+  });
+
   it("does not duplicate synthetic starting events across snapshot polls", async () => {
     const snapshots = createSnapshots();
     snapshots.set("reviewer", {
@@ -481,7 +518,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
     unmount();
   });
 
-  it("filters idle polling events out of the Events panel", async () => {
+  it("renders idle polling events and refiner foraging activity in the Events panel", async () => {
     const snapshots = createSnapshots();
     snapshots.set("reviewer", {
       name: "reviewer",
@@ -493,6 +530,24 @@ describe("CockpitLaunchpadView daemon controls", () => {
       events: [
         { daemon: "reviewer", status: "idle", timestampMs: eventTimestampMs },
         { daemon: "reviewer", status: "processing", timestampMs: laterEventTimestampMs, goalId: "goal_reviewed", attempt: 1, maxRetries: 3 },
+      ],
+    });
+    snapshots.set("refiner", {
+      name: "refiner",
+      status: "running",
+      config: defaultConfig,
+      pid: 123,
+      stdout: [],
+      stderr: [],
+      events: [
+        {
+          daemon: "refiner",
+          status: "idle",
+          source: "refiner",
+          category: "foraging",
+          message: "foraging for defined goals",
+          timestampMs: eventTimestampMs,
+        },
       ],
     });
     const manager: ISubprocessManager = {
@@ -515,8 +570,11 @@ describe("CockpitLaunchpadView daemon controls", () => {
 
     await tick();
 
-    expect(lastFrame()).not.toContain("reviewer idle");
-    expect(renderedTextPosition(lastFrame() ?? "", "12:00:01 reviewer processing goal_rev 1/3")).toBeGreaterThanOrEqual(0);
+    expect(lastFrame()).toContain("[ foraging ]");
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 reviewer idle")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 refiner  foraging")).toBeGreaterThanOrEqual(0);
+    expect(lastFrame()).toContain("foraging for defined goals");
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:01 reviewer processing   goal_rev 1/3")).toBeGreaterThanOrEqual(0);
     unmount();
   });
 
@@ -560,7 +618,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
 
     await tick();
 
-    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 agent    retry      retrying review after non-zero agent exit")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 agent    retry        retrying review after non-zero agent exit")).toBeGreaterThanOrEqual(0);
     unmount();
   });
 
@@ -602,9 +660,10 @@ describe("CockpitLaunchpadView daemon controls", () => {
 
     await tick();
 
-    expect(lastFrame()).toContain("reviewer processing goal_11 1/3");
-    expect(lastFrame()).not.toContain("reviewer processing goal_0 1/3");
-    expect(lastFrame()).not.toContain("reviewer processing goal_1 1/3");
+    expect(lastFrame()).toContain("reviewer processing");
+    expect(lastFrame()).toContain("goal_11 1/3");
+    expect(lastFrame()).not.toContain("goal_0 1/3");
+    expect(lastFrame()).not.toContain("goal_1 1/3");
     unmount();
   });
 

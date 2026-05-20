@@ -49,6 +49,67 @@ describe("ReviewerProcessManager", () => {
     });
   });
 
+  it("emits a structured waiting event when no goals are eligible", async () => {
+    goalStatusReader.findByStatus.mockResolvedValue([]);
+    const emittedEvents: unknown[] = [];
+    const manager = new ReviewerProcessManager(
+      goalStatusReader,
+      goalReader,
+      claimPolicy as any,
+      { workerId: "worker_1" },
+      reviewGoalController as any,
+      agentGateway,
+      telemetryClient,
+    );
+
+    await expect(manager.processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => emittedEvents.push(event),
+    })).resolves.toEqual({ status: "idle", attempts: 0 });
+
+    expect(emittedEvents).toEqual([
+      {
+        daemon: "reviewer",
+        status: "idle",
+        source: "reviewer",
+        category: "waiting",
+        message: "awaiting submitted goals",
+      },
+    ]);
+  });
+
+  it("emits a structured failure event when review cannot start", async () => {
+    reviewGoalController.handle.mockRejectedValue(new Error("Goal is already claimed"));
+    const emittedEvents: unknown[] = [];
+    const manager = new ReviewerProcessManager(
+      goalStatusReader,
+      goalReader,
+      claimPolicy as any,
+      { workerId: "worker_1" },
+      reviewGoalController as any,
+      agentGateway,
+      telemetryClient,
+    );
+
+    await expect(manager.processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => emittedEvents.push(event),
+    })).resolves.toEqual({ status: "failed", goalId: "goal_1", attempts: 0 });
+
+    expect(emittedEvents).toContainEqual(expect.objectContaining({
+      daemon: "reviewer",
+      status: "failed",
+      source: "reviewer",
+      category: "failed",
+      message: "review failed",
+      goalId: "goal_1",
+      errorType: "Error",
+      errorMessage: "Goal is already claimed",
+    }));
+  });
+
   it("emits reviewer agent stdout lines as model-output events", async () => {
     const emittedEvents: unknown[] = [];
     agentGateway.invoke.mockResolvedValue({
@@ -75,6 +136,9 @@ describe("ReviewerProcessManager", () => {
       {
         daemon: "reviewer",
         status: "processing",
+        source: "reviewer",
+        category: "work-started",
+        message: "reviewing goal",
         goalId: "goal_1",
         attempt: 1,
         maxRetries: 1,
@@ -98,6 +162,9 @@ describe("ReviewerProcessManager", () => {
       {
         daemon: "reviewer",
         status: "completed",
+        source: "reviewer",
+        category: "completed",
+        message: "review completed",
         goalId: "goal_1",
         attempt: 1,
         maxRetries: 1,

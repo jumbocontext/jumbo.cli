@@ -209,6 +209,7 @@ describe("TuiSubprocessManager", () => {
   it("logs daemon stderr and child process failures through ILogger", async () => {
     const child = childProcess();
     spawnMock.mockReturnValue(child);
+    jest.spyOn(Date, "now").mockReturnValue(1767272400000);
     const testLogger = logger();
     const manager = new TuiSubprocessManager(testLogger);
 
@@ -225,6 +226,17 @@ describe("TuiSubprocessManager", () => {
       expect.any(Error),
       { daemon: "refiner", stopRequested: false, status: "failed" },
     );
+    expect(manager.getStatus("refiner").events).toEqual([
+      {
+        daemon: "refiner",
+        status: "failed",
+        source: "refiner",
+        category: "failed",
+        message: "process failed",
+        timestampMs: 1767272400000,
+        errorMessage: "spawn failed",
+      },
+    ]);
   });
 
   it("uses Windows taskkill tree termination on the current Windows host", async () => {
@@ -262,6 +274,41 @@ describe("TuiSubprocessManager", () => {
       expect.any(Error),
       { daemon: "refiner", pid: 789, stopRequested: false },
     );
+  });
+
+  it("records stopping and stopped lifecycle events in subprocess snapshots", async () => {
+    const killMock = process.platform === "win32"
+      ? undefined
+      : jest.spyOn(process, "kill").mockImplementation(() => true);
+    const child = childProcess(456);
+    spawnMock.mockReturnValue(child);
+    jest.spyOn(Date, "now").mockReturnValue(1767272400000);
+    const manager = new TuiSubprocessManager();
+
+    await manager.spawn("reviewer");
+    const terminated = await manager.terminate("reviewer");
+
+    expect(terminated.events).toEqual([
+      {
+        daemon: "reviewer",
+        status: "stopping",
+        source: "reviewer",
+        category: "stopping",
+        message: "termination requested",
+        timestampMs: 1767272400000,
+      },
+      {
+        daemon: "reviewer",
+        status: "stopped",
+        source: "reviewer",
+        category: "stopped",
+        message: "process stopped",
+        timestampMs: 1767272400000,
+      },
+    ]);
+    if (process.platform !== "win32") {
+      expect(killMock).toHaveBeenCalledWith(-456, "SIGTERM");
+    }
   });
 
   it("reports a requested Windows taskkill close as stopped even when the child exits non-zero", async () => {
