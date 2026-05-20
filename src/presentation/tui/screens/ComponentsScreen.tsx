@@ -25,6 +25,5 @@ function toComponentEntityRow(component: ComponentView) {
     type: component.type,
     description: component.description,
     responsibility: component.responsibility,
-    path: component.path,
   };
 }

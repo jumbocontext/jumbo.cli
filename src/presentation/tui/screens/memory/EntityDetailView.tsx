@@ -101,7 +101,6 @@ function buildEntries(
         { label: "Type", value: component.type },
         { label: "Description", value: component.description },
         { label: "Responsibility", value: component.responsibility },
-        { label: "Path", value: component.path },
       ];
     }
     case "dependency": {

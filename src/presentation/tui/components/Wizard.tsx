@@ -92,13 +92,19 @@ export function Wizard({
     Math.max(initialStepIndex, 0),
     Math.max(steps.length - 1, 0),
   );
+  const initialValuesWithDefaults = withStepDefaultValues(
+    steps[boundedInitialStepIndex]?.fields ?? [],
+    { ...initialValues },
+  );
   const [currentStepIndex, setCurrentStepIndex] = useState(
     boundedInitialStepIndex,
   );
   const [values, setValues] = useState<Record<string, string>>({
-    ...initialValues,
+    ...initialValuesWithDefaults,
   });
-  const valuesRef = useRef<Record<string, string>>({ ...initialValues });
+  const valuesRef = useRef<Record<string, string>>({
+    ...initialValuesWithDefaults,
+  });
   const [activeFieldIndex, setActiveFieldIndex] = useState(0);
   const activeFieldRef = useRef(0);
   const stepIndexRef = useRef(boundedInitialStepIndex);
@@ -111,6 +117,28 @@ export function Wizard({
   >({});
   const panelRef = useRef<DOMElement | null>(null);
   const [innerWidth, setInnerWidth] = useState(OVERLAY_MIN_WIDTH - 8);
+  const initialValuesKey = JSON.stringify(initialValues);
+
+  useLayoutEffect(() => {
+    const nextStepIndex = Math.min(
+      Math.max(initialStepIndex, 0),
+      Math.max(steps.length - 1, 0),
+    );
+    const nextValues = withStepDefaultValues(
+      steps[nextStepIndex]?.fields ?? [],
+      { ...initialValues },
+    );
+
+    stepIndexRef.current = nextStepIndex;
+    activeFieldRef.current = 0;
+    valuesRef.current = nextValues;
+    focusedOptionIndexesRef.current = {};
+    setCurrentStepIndex(nextStepIndex);
+    setActiveFieldIndex(0);
+    setValues({ ...nextValues });
+    setFocusedOptionIndexes({});
+    setValidationErrors({});
+  }, [initialStepIndex, initialValuesKey, steps]);
 
   useLayoutEffect(() => {
     if (panelRef.current) {
@@ -122,9 +150,13 @@ export function Wizard({
     }
   });
 
-  const currentStep = steps[currentStepIndex];
-  const isFirstStep = currentStepIndex === 0;
-  const isLastStep = currentStepIndex === steps.length - 1;
+  const renderedStepIndex = Math.min(
+    Math.max(currentStepIndex, 0),
+    Math.max(steps.length - 1, 0),
+  );
+  const currentStep = steps[renderedStepIndex];
+  const isFirstStep = renderedStepIndex === 0;
+  const isLastStep = renderedStepIndex === steps.length - 1;
   const totalSteps = steps.length;
   const currentFields = currentStep.fields;
   const activeField = currentFields[activeFieldIndex];
@@ -135,9 +167,9 @@ export function Wizard({
   const showBackHint = !isFirstStep || onBack !== undefined;
   const footerProgressLabel =
     typeof progressLabel === "function"
-      ? progressLabel(currentStepIndex, totalSteps) ??
-        `${currentStepIndex + 1}/${totalSteps}`
-      : progressLabel ?? `${currentStepIndex + 1}/${totalSteps}`;
+      ? progressLabel(renderedStepIndex, totalSteps) ??
+        `${renderedStepIndex + 1}/${totalSteps}`
+      : progressLabel ?? `${renderedStepIndex + 1}/${totalSteps}`;
   const footerProgressWidth = footerProgressLabel.length;
   const footerHintsWidth = Math.max(1, innerWidth - footerProgressWidth - 2);
   const footerHints = [

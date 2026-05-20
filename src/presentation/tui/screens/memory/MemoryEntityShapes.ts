@@ -27,7 +27,6 @@ export interface ComponentEntityRow {
   readonly type: string;
   readonly description: string;
   readonly responsibility: string;
-  readonly path: string;
 }
 
 export interface DependencyEntityRow {

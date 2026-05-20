@@ -7,7 +7,6 @@ export interface ComponentAddValues {
   readonly type: string;
   readonly description: string;
   readonly responsibility: string;
-  readonly path: string;
 }
 
 const COMPONENT_ADD_STEPS: readonly WizardStepDefinition[] = [
@@ -46,17 +45,6 @@ const COMPONENT_ADD_STEPS: readonly WizardStepDefinition[] = [
         key: "responsibility",
         label: "Responsibility",
         placeholder: "e.g. Invoke aggregate logic and persist events",
-      },
-    ],
-  },
-  {
-    title: "Location",
-    description: "Provide the source path for the component.",
-    fields: [
-      {
-        key: "path",
-        label: "Path",
-        placeholder: "e.g. src/application/context/decisions/add",
       },
     ],
   },

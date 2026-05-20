@@ -271,7 +271,6 @@ export function InitFlow({
   >(undefined);
   const [dispatchError, setDispatchError] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
-  const [wizardKey, setWizardKey] = useState(0);
   const [restoreStepIndex, setRestoreStepIndex] = useState(0);
   const [confirmationReviewOpen, setConfirmationReviewOpen] = useState(false);
   const [confirmationReviewOffset, setConfirmationReviewOffset] = useState(0);
@@ -290,7 +289,6 @@ export function InitFlow({
     [confirmationReviewOffset, confirmationReviewOpen, planResponse],
   );
 
-  const resetWizard = () => setWizardKey((current) => current + 1);
   const navigateToStage = (
     nextStage: InitFlowStage,
     rollback?: InitFlowRollback,
@@ -305,7 +303,6 @@ export function InitFlow({
     ]);
     setStage(nextStage);
     setRestoreStepIndex(0);
-    resetWizard();
   };
 
   const handleWizardBack = () => {
@@ -317,7 +314,6 @@ export function InitFlow({
     applyRollback(previousEntry.rollback);
     setStage(previousEntry.stage);
     setRestoreStepIndex(previousEntry.restoreStepIndex);
-    resetWizard();
   };
 
   const applyRollback = (rollback: InitFlowRollback | undefined) => {
@@ -541,7 +537,6 @@ export function InitFlow({
 
   return (
     <Wizard
-      key={`${stage}-${wizardKey}`}
       title="Initialize Project"
       steps={resolveSteps(stage, agentSelectionSteps, confirmationSteps)}
       onConfirm={resolveConfirmHandler(stage, {

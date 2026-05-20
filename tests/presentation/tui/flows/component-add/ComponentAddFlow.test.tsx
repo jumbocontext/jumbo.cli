@@ -11,7 +11,8 @@ describe("ComponentAddFlow", () => {
 
     const frame = lastFrame() ?? "";
     expect(frame).toContain("Add Component");
-    expect(frame).toContain("1/4");
+    expect(frame).toContain("1/3");
+    expect(frame).not.toContain("Path");
     unmount();
   });
 

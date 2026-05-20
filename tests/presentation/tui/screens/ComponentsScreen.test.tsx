@@ -46,6 +46,7 @@ describe("ComponentsScreen", () => {
     expect(frame).toContain("Components List");
     expect(frame).toContain("Component Detail");
     expect(frame).toContain("component_real");
+    expect(frame).not.toContain("src/presentation/tui/screens/ComponentsScreen.tsx");
     expect(frame).not.toContain("Dependencies List");
     unmount();
   });
