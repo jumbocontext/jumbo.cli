@@ -7,6 +7,10 @@ interface PanelProps {
   titleColor?: string;
   borderColor?: string;
   width?: number;
+  flexGrow?: number;
+  flexBasis?: number;
+  height?: string | number;
+  bordered?: boolean;
   children: React.ReactNode;
 }
 
@@ -15,16 +19,23 @@ export function Panel({
   titleColor = SemanticColors.headline,
   borderColor = SemanticColors.muted,
   width,
+  flexGrow,
+  flexBasis,
+  height,
+  bordered = true,
   children,
 }: PanelProps): React.ReactElement {
   return (
     <Box
       flexDirection="column"
-      borderStyle="round"
+      borderStyle={bordered ? "round" : undefined}
       borderColor={borderColor}
-      paddingX={1}
+      paddingX={bordered ? 1 : 0}
       minWidth={TuiLayout.panelMinWidth}
       width={width}
+      flexGrow={flexGrow}
+      flexBasis={flexBasis}
+      height={height}
     >
       {title ? (
         <React.Fragment>

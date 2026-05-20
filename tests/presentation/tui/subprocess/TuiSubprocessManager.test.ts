@@ -79,6 +79,27 @@ describe("TuiSubprocessManager", () => {
     });
   });
 
+  it("emits non-json stdout lines as model-output events", async () => {
+    const child = childProcess();
+    spawnMock.mockReturnValue(child);
+    jest.spyOn(Date, "now").mockReturnValue(1767272400000);
+    const manager = new TuiSubprocessManager();
+
+    await manager.spawn("codifier");
+    child.stdout.emit("data", Buffer.from("Model proposed a codification summary.\n"));
+
+    expect(manager.getStatus("codifier").events).toEqual([
+      {
+        daemon: "codifier",
+        status: "processing",
+        source: "codifier",
+        category: "model-output",
+        message: "Model proposed a codification summary.",
+        timestampMs: 1767272400000,
+      },
+    ]);
+  });
+
   it("passes configured agent, poll interval, and retry flags, parses daemon events, and logs them", async () => {
     const child = childProcess();
     spawnMock.mockReturnValue(child);
@@ -132,6 +153,33 @@ describe("TuiSubprocessManager", () => {
         maxRetries: 5,
       },
     });
+  });
+
+  it("preserves normalized daemon event source, category, and message fields from stdout", async () => {
+    const child = childProcess();
+    spawnMock.mockReturnValue(child);
+    jest.spyOn(Date, "now").mockReturnValue(1767272400000);
+    const manager = new TuiSubprocessManager();
+
+    await manager.spawn("reviewer");
+    child.stdout.emit("data", Buffer.from(JSON.stringify({
+      daemon: "reviewer",
+      status: "processing",
+      source: "agent",
+      category: "retry",
+      message: "retrying after failed review attempt",
+    }) + "\n"));
+
+    expect(manager.getStatus("reviewer").events).toEqual([
+      {
+        daemon: "reviewer",
+        status: "processing",
+        source: "agent",
+        category: "retry",
+        message: "retrying after failed review attempt",
+        timestampMs: 1767272400000,
+      },
+    ]);
   });
 
   it("keeps only the latest 50 parsed daemon events in memory", async () => {

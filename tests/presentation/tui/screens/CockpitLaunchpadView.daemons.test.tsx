@@ -70,14 +70,26 @@ describe("CockpitLaunchpadView daemon controls", () => {
       </SubprocessManagerProvider>,
     );
 
-    expect(lastFrame()).toContain("PROJECT//");
+    expect(lastFrame()).toContain("COCKPIT//");
     expect(lastFrame()).toContain("EVENTS//");
+    expect(lastFrame()).toContain("time     source   category   message");
     expect(lastFrame()).not.toContain("SESSION//");
+    expect(lastFrame()).not.toContain("PROJECT//");
     expect(lastFrame()).toContain("REVIEWER//");
     expect(lastFrame()).toContain("CODIFIER//");
-    expect(renderedTextPosition(lastFrame() ?? "", "[r] start pid -")).toBeGreaterThanOrEqual(0);
-    expect(renderedTextPosition(lastFrame() ?? "", "[v] select pid -")).toBeGreaterThanOrEqual(0);
-    expect(lastFrame()).toContain("[a] codex [p] 30s [x] 3");
+    expect(lastFrame()).not.toContain("╭");
+    expect(lastFrame()).not.toContain("╯");
+    expect(lastFrame()).toContain("•");
+    expect(lastFrame()).toMatch(/[◇◆□■△▽○]/);
+    expect(lastFrame()).toMatch(/[A-Z0-9]{4}\./);
+    expect(renderedTextPosition(lastFrame() ?? "", "[s] start")).toBeGreaterThanOrEqual(0);
+    expect(lastFrame()).not.toContain("[r] focus");
+    expect(lastFrame()).not.toContain("[v] focus");
+    expect(lastFrame()).not.toContain("[c] focus");
+    expect(lastFrame()).toContain("[i] info");
+    expect(lastFrame()).toContain("[@] config");
+    expect(lastFrame()).toContain("[ stopped ]");
+    expect(lastFrame()).not.toContain("[a] codex [p] 30s [x] 3");
 
     const frame = lastFrame() ?? "";
     const refinerPosition = renderedTextPosition(frame, "REFINER//");
@@ -87,28 +99,139 @@ describe("CockpitLaunchpadView daemon controls", () => {
     expect(refinerPosition).toBeLessThan(reviewerPosition);
     expect(reviewerPosition).toBeLessThan(codifierPosition);
 
-    stdin.write("r");
+    stdin.write("s");
     await tick();
     expect(manager.spawn).toHaveBeenCalledWith("refiner", defaultConfig);
-    expect(renderedTextPosition(lastFrame() ?? "", "REFINER// (running)")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "REFINER//")).toBeGreaterThanOrEqual(0);
+    expect(lastFrame()).not.toContain("REFINER// (running)");
+    expect(lastFrame()).toContain("[ refining ]");
+    expect(lastFrame()).toContain("•");
     expect(lastFrame()).not.toContain("refining goal_123");
     expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 refiner  processing goal_123 1/3")).toBeGreaterThanOrEqual(0);
 
-    stdin.write("r");
+    stdin.write("s");
     await tick();
     expect(manager.terminate).toHaveBeenCalledWith("refiner");
+    expect(lastFrame()).toContain("[ stopped ]");
 
-    stdin.write("v");
+    stdin.write("\t");
     await tick();
-    stdin.write("v");
+    stdin.write("s");
     await tick();
     expect(manager.spawn).toHaveBeenCalledWith("reviewer", defaultConfig);
 
-    stdin.write("c");
+    stdin.write("\t");
     await tick();
-    stdin.write("c");
+    stdin.write("s");
     await tick();
     expect(manager.spawn).toHaveBeenCalledWith("codifier", defaultConfig);
+    unmount();
+  });
+
+  it("renders static daemon glyph grids for stopped daemons", () => {
+    const { lastFrame, unmount } = render(
+      <CockpitLaunchpadView
+        reviewerFrameDurationMs={0}
+        refinerFrameDurationMs={0}
+        codifierFrameDurationMs={0}
+      />,
+    );
+
+    expect(lastFrame()).toContain("•");
+    expect(lastFrame()).toMatch(/[◇◆□■△▽○]/);
+    expect(lastFrame()).toMatch(/[A-Z0-9]{4}\./);
+    unmount();
+  });
+
+  it("uses animated frame indexes only for daemons that are running", () => {
+    const snapshots = createSnapshots();
+    snapshots.set("reviewer", {
+      name: "reviewer",
+      status: "running",
+      config: defaultConfig,
+      pid: 456,
+      stdout: [],
+      stderr: [],
+      events: [],
+    });
+    const manager: ISubprocessManager = {
+      spawn: jest.fn(async (name: TuiDaemonName) => snapshots.get(name)!),
+      terminate: jest.fn(async (name: TuiDaemonName) => snapshots.get(name)!),
+      terminateAll: jest.fn(async () => {}),
+      getStatus: jest.fn((name: TuiDaemonName) => snapshots.get(name)!),
+      getAllStatuses: jest.fn(() => Array.from(snapshots.values())),
+    };
+
+    const { lastFrame, unmount } = render(
+      <SubprocessManagerProvider manager={manager}>
+        <CockpitLaunchpadView
+          reviewerFrameDurationMs={0}
+          refinerFrameDurationMs={0}
+          codifierFrameDurationMs={0}
+        />
+      </SubprocessManagerProvider>,
+    );
+
+    expect(lastFrame()).toMatch(/[◇◆□■△▽○]/);
+    expect(lastFrame()).toContain("•");
+    expect(lastFrame()).toMatch(/[A-Z0-9]{4}\./);
+    unmount();
+  });
+
+  it("cycles focused daemon panels with tab, toggles focused daemon with s, and shows focused daemon info", async () => {
+    const snapshots = createSnapshots();
+    const manager: ISubprocessManager = {
+      spawn: jest.fn(async (name: TuiDaemonName, config = defaultConfig) => {
+        const next = { name, status: "running" as const, config: { ...defaultConfig, ...config }, pid: 123, stdout: [], stderr: [], events: [] };
+        snapshots.set(name, next);
+        return next;
+      }),
+      terminate: jest.fn(async (name: TuiDaemonName) => {
+        const next = { name, status: "stopped" as const, config: defaultConfig, stdout: ["stopped"], stderr: [], events: [] };
+        snapshots.set(name, next);
+        return next;
+      }),
+      terminateAll: jest.fn(async () => {}),
+      getStatus: jest.fn((name: TuiDaemonName) => snapshots.get(name)!),
+      getAllStatuses: jest.fn(() => Array.from(snapshots.values())),
+    };
+
+    const { lastFrame, stdin, unmount } = render(
+      <SubprocessManagerProvider manager={manager}>
+        <CockpitLaunchpadView
+          reviewerFrameDurationMs={0}
+          refinerFrameDurationMs={0}
+          codifierFrameDurationMs={0}
+        />
+      </SubprocessManagerProvider>,
+    );
+
+    expect(lastFrame()).toContain("selected refiner");
+
+    stdin.write("\t");
+    await tick();
+    expect(lastFrame()).toContain("selected reviewer");
+
+    stdin.write("s");
+    await tick();
+    expect(manager.spawn).toHaveBeenCalledWith("reviewer", defaultConfig);
+    expect(lastFrame()).toContain("[ reviewing ]");
+
+    stdin.write("i");
+    await tick();
+    expect(lastFrame()).toContain("REVIEWER// validates completed goal work");
+    expect(lastFrame()).toContain("Runs the QA review loop for submitted goals.");
+    expect(lastFrame()).toContain("open");
+
+    stdin.write("\t");
+    await tick();
+    expect(lastFrame()).toContain("selected codifier");
+    expect(lastFrame()).toContain("CODIFIER// reconciles approved work");
+
+    stdin.write("s");
+    await tick();
+    expect(manager.spawn).toHaveBeenCalledWith("codifier", defaultConfig);
+    expect(lastFrame()).toContain("[ codifying ]");
     unmount();
   });
 
@@ -173,8 +296,41 @@ describe("CockpitLaunchpadView daemon controls", () => {
 
     expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 reviewer processing goal_rev 1/3")).toBeGreaterThanOrEqual(0);
     expect(renderedTextPosition(lastFrame() ?? "", "12:00:01 reviewer completed  goal_rev 2/3")).toBeGreaterThanOrEqual(0);
-    expect(renderedTextPosition(lastFrame() ?? "", "refiner  failed     agent refused task")).toBeGreaterThanOrEqual(0);
     expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 codifier codifying  goal_cod 1/3")).toBeGreaterThanOrEqual(0);
+    unmount();
+  });
+
+  it("renders failed daemon lifecycle rows with stderr context", () => {
+    const snapshots = createSnapshots();
+    snapshots.set("refiner", {
+      name: "refiner",
+      status: "failed",
+      config: defaultConfig,
+      stdout: [],
+      stderr: ["agent refused task"],
+      events: [],
+      exitCode: 1,
+    });
+    const manager: ISubprocessManager = {
+      spawn: jest.fn(async (name: TuiDaemonName) => snapshots.get(name)!),
+      terminate: jest.fn(async (name: TuiDaemonName) => snapshots.get(name)!),
+      terminateAll: jest.fn(async () => {}),
+      getStatus: jest.fn((name: TuiDaemonName) => snapshots.get(name)!),
+      getAllStatuses: jest.fn(() => Array.from(snapshots.values())),
+    };
+
+    const { lastFrame, unmount } = render(
+      <SubprocessManagerProvider manager={manager}>
+        <CockpitLaunchpadView
+          reviewerFrameDurationMs={0}
+          refinerFrameDurationMs={0}
+          codifierFrameDurationMs={0}
+        />
+      </SubprocessManagerProvider>,
+    );
+
+    expect(renderedTextPosition(lastFrame() ?? "", "refiner  failed")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "agent refused task")).toBeGreaterThanOrEqual(0);
     unmount();
   });
 
@@ -364,6 +520,50 @@ describe("CockpitLaunchpadView daemon controls", () => {
     unmount();
   });
 
+  it("renders normalized source, category, and message fields when daemon events provide them", async () => {
+    const snapshots = createSnapshots();
+    snapshots.set("reviewer", {
+      name: "reviewer",
+      status: "running",
+      config: defaultConfig,
+      pid: 456,
+      stdout: [],
+      stderr: [],
+      events: [
+        {
+          daemon: "reviewer",
+          status: "processing",
+          source: "agent",
+          category: "retry",
+          message: "retrying review after non-zero agent exit",
+          timestampMs: eventTimestampMs,
+        },
+      ],
+    });
+    const manager: ISubprocessManager = {
+      spawn: jest.fn(async (name: TuiDaemonName) => snapshots.get(name)!),
+      terminate: jest.fn(async (name: TuiDaemonName) => snapshots.get(name)!),
+      terminateAll: jest.fn(async () => {}),
+      getStatus: jest.fn((name: TuiDaemonName) => snapshots.get(name)!),
+      getAllStatuses: jest.fn(() => Array.from(snapshots.values())),
+    };
+
+    const { lastFrame, unmount } = render(
+      <SubprocessManagerProvider manager={manager}>
+        <CockpitLaunchpadView
+          reviewerFrameDurationMs={0}
+          refinerFrameDurationMs={0}
+          codifierFrameDurationMs={0}
+        />
+      </SubprocessManagerProvider>,
+    );
+
+    await tick();
+
+    expect(renderedTextPosition(lastFrame() ?? "", "12:00:00 agent    retry      retrying review after non-zero agent exit")).toBeGreaterThanOrEqual(0);
+    unmount();
+  });
+
   it("keeps the rendered Events panel capped to the latest 10 rows", async () => {
     const snapshots = createSnapshots();
     snapshots.set("reviewer", {
@@ -439,29 +639,46 @@ describe("CockpitLaunchpadView daemon controls", () => {
     stdin.write("x");
     await tick();
 
-    expect(renderedTextPosition(lastFrame() ?? "", "[a] claude [p] 60s [x] 5")).toBeGreaterThanOrEqual(0);
-    expect(renderedTextPosition(lastFrame() ?? "", "[v] select pid -")).toBeGreaterThanOrEqual(0);
-    stdin.write("v");
+    expect(lastFrame()).not.toContain("[a] claude [p] 60s [x] 5");
+    stdin.write("@");
     await tick();
-    expect(renderedTextPosition(lastFrame() ?? "", "[v] start pid -")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "[a] codex [p] 30s [x] 3")).toBeGreaterThanOrEqual(0);
+    stdin.write("a");
+    await tick();
+    stdin.write("p");
+    await tick();
+    stdin.write("x");
+    await tick();
+    expect(renderedTextPosition(lastFrame() ?? "", "[a] claude [p] 60s [x] 5")).toBeGreaterThanOrEqual(0);
+    expect(renderedTextPosition(lastFrame() ?? "", "[s] start")).toBeGreaterThanOrEqual(0);
+    stdin.write("\t");
+    await tick();
+    expect(lastFrame()).toContain("selected reviewer");
+    expect(lastFrame()).not.toContain("[a] codex [p] 30s [x] 3");
+    stdin.write("@");
+    await tick();
     expect(lastFrame()).toContain("[a] codex [p] 30s [x] 3");
     stdin.write("a");
     await tick();
     expect(renderedTextPosition(lastFrame() ?? "", "[a] claude [p] 30s [x] 3")).toBeGreaterThanOrEqual(0);
-    stdin.write("r");
+    stdin.write("\t");
     await tick();
-    expect(renderedTextPosition(lastFrame() ?? "", "[r] start pid -")).toBeGreaterThanOrEqual(0);
+    stdin.write("\t");
+    await tick();
+    expect(lastFrame()).toContain("selected refiner");
+    stdin.write("@");
+    await tick();
     expect(renderedTextPosition(lastFrame() ?? "", "[a] claude [p] 60s [x] 5")).toBeGreaterThanOrEqual(0);
-    stdin.write("r");
+    stdin.write("s");
     await tick();
     expect(manager.spawn).toHaveBeenCalledWith("refiner", {
       agentId: "claude",
       pollIntervalMs: 60000,
       maxRetries: 5,
     });
-    stdin.write("v");
+    stdin.write("\t");
     await tick();
-    stdin.write("v");
+    stdin.write("s");
     await tick();
     expect(manager.spawn).toHaveBeenCalledWith("reviewer", {
       agentId: "claude",
@@ -469,8 +686,8 @@ describe("CockpitLaunchpadView daemon controls", () => {
       maxRetries: 3,
     });
     expect(manager.spawn).not.toHaveBeenCalledWith("codifier", expect.anything());
-    expect(renderedTextPosition(lastFrame() ?? "", "[c] select pid -")).toBeGreaterThanOrEqual(0);
-    expect(lastFrame()).toContain("[a] codex [p] 30s [x] 3");
+    expect(renderedTextPosition(lastFrame() ?? "", "[s] start")).toBeGreaterThanOrEqual(0);
+    expect(lastFrame()).toContain("[a] claude [p] 60s [x] 5");
     unmount();
   });
 
@@ -507,17 +724,19 @@ describe("CockpitLaunchpadView daemon controls", () => {
       </SubprocessManagerProvider>,
     );
 
+    stdin.write("@");
+    await tick();
     stdin.write("a");
     await tick();
     stdin.write("p");
     await tick();
     stdin.write("x");
     await tick();
-    stdin.write("r");
+    stdin.write("s");
     await tick();
     expect(manager.spawn).toHaveBeenCalledWith("refiner", runningConfig);
 
-    stdin.write("r");
+    stdin.write("s");
     await tick();
     expect(manager.terminate).toHaveBeenCalledWith("refiner");
     expect(renderedTextPosition(lastFrame() ?? "", "[a] claude [p] 60s [x] 5")).toBeGreaterThanOrEqual(0);

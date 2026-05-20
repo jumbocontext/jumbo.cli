@@ -1,5 +1,4 @@
 import React from "react";
-import path from "node:path";
 import { describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { CockpitLaunchpadView } from "../../../../src/presentation/tui/screens/CockpitLaunchpadView.js";
@@ -22,14 +21,16 @@ async function waitForFrame(
   return readFrame() ?? "";
 }
 
-describe("CockpitLaunchpadView project panel", () => {
-  it("renders the current working directory", () => {
+describe("CockpitLaunchpadView launchpad header", () => {
+  it("removes the project panel from the primed launchpad", () => {
     const { lastFrame, unmount } = render(<CockpitLaunchpadView />);
-    expect(lastFrame()!).toContain(path.basename(process.cwd()));
+    expect(lastFrame()!).toContain("COCKPIT//");
+    expect(lastFrame()!).not.toContain("PROJECT//");
+    expect(lastFrame()!).not.toContain(process.cwd());
     unmount();
   });
 
-  it("renders project summary from the state reader", async () => {
+  it("does not render project summary copy from the state reader", async () => {
     const { lastFrame, unmount } = render(
       <TuiStateReaderProvider
         controllers={{
@@ -47,10 +48,11 @@ describe("CockpitLaunchpadView project panel", () => {
       </TuiStateReaderProvider>,
     );
 
-    const frame = await waitForFrame(lastFrame, "Project Atlas");
+    const frame = await waitForFrame(lastFrame, "COCKPIT//");
 
-    expect(frame).toContain("Project Atlas");
-    expect(frame).toContain("Map context into the TUI");
+    expect(frame).toContain("COCKPIT//");
+    expect(frame).not.toContain("Project Atlas");
+    expect(frame).not.toContain("Map context into the TUI");
     unmount();
   });
 });

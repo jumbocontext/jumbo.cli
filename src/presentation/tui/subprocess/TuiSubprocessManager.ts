@@ -88,7 +88,7 @@ export class TuiSubprocessManager implements ISubprocessManager {
       const text = chunk.toString();
       const lines = this.appendLines(managed.stdout, text);
       this.logger.info("Daemon subprocess stdout", { daemon: name, text });
-      const events = lines.map(parseDaemonEvent).filter((event): event is TuiDaemonEventSnapshot => event !== null);
+      const events = lines.map((line) => parseDaemonOutputEvent(name, line));
       for (const event of events) {
         this.logger.info("Daemon subprocess event", { daemon: name, event });
       }
@@ -249,6 +249,26 @@ export class TuiSubprocessManager implements ISubprocessManager {
       stopRequested: process.stopRequested,
     };
   }
+}
+
+function parseDaemonOutputEvent(
+  daemon: TuiDaemonName,
+  line: string,
+): TuiDaemonEventSnapshot {
+  const parsedEvent = parseDaemonEvent(line);
+
+  if (parsedEvent !== null) {
+    return parsedEvent;
+  }
+
+  return {
+    daemon,
+    status: "processing",
+    source: daemon,
+    category: "model-output",
+    message: line,
+    timestampMs: Date.now(),
+  };
 }
 
 function parseDaemonEvent(line: string): TuiDaemonEventSnapshot | null {

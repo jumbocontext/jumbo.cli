@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { SectionHeading } from "../components/SectionHeading.js";
+import { Panel } from "../components/Panel.js";
 import { BaseColors } from "../../shared/DesignTokens.js";
-import { useProjectContext } from "../state/TuiStateReader.js";
 import { useSubprocessManager } from "../subprocess/SubprocessManagerContext.js";
 import type { ISubprocessManager, TuiDaemonConfig, TuiDaemonConfigs, TuiDaemonEventSnapshot, TuiDaemonEventStatus, TuiDaemonName, TuiSubprocessSnapshot } from "../subprocess/ISubprocessManager.js";
 
@@ -21,14 +20,15 @@ interface RefinerGlyphCell {
 
 interface DaemonEventRow {
   readonly key: string;
-  readonly daemon: TuiDaemonName;
-  readonly status: TuiDaemonEventStatus;
+  readonly source: string;
+  readonly category: string;
   readonly timestampMs: number;
-  readonly details: string;
+  readonly message: string;
   readonly color: string;
 }
 
 const RENDERED_DAEMON_EVENT_LIMIT = 10;
+const RENDERED_DAEMON_FRAME_HEIGHT = 5;
 const REFINER_FRAME_COUNT = 9;
 const REFINER_GRID_WIDTH = 35;
 const REFINER_GRID_HEIGHT = 10;
@@ -63,6 +63,35 @@ const DEFAULT_DAEMON_CONFIGS: TuiDaemonConfigs = {
   refiner: DEFAULT_DAEMON_CONFIG,
   codifier: DEFAULT_DAEMON_CONFIG,
 };
+const DAEMON_FOCUS_ORDER = ["refiner", "reviewer", "codifier"] as const satisfies readonly TuiDaemonName[];
+const DAEMON_ACTIVE_VERBS = {
+  reviewer: "reviewing",
+  refiner: "refining",
+  codifier: "codifying",
+} as const satisfies Record<TuiDaemonName, string>;
+const DAEMON_INFO_COPY = {
+  reviewer: {
+    title: "REVIEWER// validates completed goal work",
+    lines: [
+      "Runs the QA review loop for submitted goals.",
+      "Use it to catch regressions, missing tests, and unmet criteria before codification.",
+    ],
+  },
+  refiner: {
+    title: "REFINER// prepares goals for implementation",
+    lines: [
+      "Turns rough goal intent into concrete scope, criteria, and architectural context.",
+      "Use it before implementation when a goal needs sharper boundaries or better relations.",
+    ],
+  },
+  codifier: {
+    title: "CODIFIER// reconciles approved work",
+    lines: [
+      "Captures durable architecture context after QA approval.",
+      "Use it to record decisions, components, guidelines, and project memory before closure.",
+    ],
+  },
+} as const satisfies Record<TuiDaemonName, { readonly title: string; readonly lines: readonly string[] }>;
 
 const REFINER_GLYPHS = [
   "•",
@@ -124,16 +153,13 @@ export function CockpitLaunchpadView({
   reviewerFrameDurationMs = DEFAULT_REVIEWER_FRAME_DURATION_MS,
   codifierFrameDurationMs = DEFAULT_CODIFIER_FRAME_DURATION_MS,
 }: CockpitLaunchpadViewProps = {}): React.ReactElement {
-  const currentDirectory = process.cwd();
   const subprocessManager = useSubprocessManager();
-  const projectContext = useProjectContext();
-  const projectName = projectContext.data?.name ?? "Jumbo";
-  const projectPurpose =
-    projectContext.data?.purpose ?? "Project context has not been loaded.";
   const [reviewerFrameIndex, setReviewerFrameIndex] = useState(0);
   const [refinerFrameIndex, setRefinerFrameIndex] = useState(0);
   const [codifierFrameIndex, setCodifierFrameIndex] = useState(0);
   const [selectedDaemon, setSelectedDaemon] = useState<TuiDaemonName>("refiner");
+  const [configuredDaemon, setConfiguredDaemon] = useState<TuiDaemonName | undefined>(undefined);
+  const [infoDaemon, setInfoDaemon] = useState<TuiDaemonName | undefined>(undefined);
   const [daemonConfigs, setDaemonConfigs] = useState<TuiDaemonConfigs>(DEFAULT_DAEMON_CONFIGS);
   const [daemonStatuses, setDaemonStatuses] = useState<readonly TuiSubprocessSnapshot[]>(
     subprocessManager.getAllStatuses(),
@@ -190,95 +216,90 @@ export function CockpitLaunchpadView({
     return () => clearInterval(timer);
   }, [subprocessManager]);
 
-  useInput((input) => {
-    if (input === "v" || input === "V") {
-      handleDaemonShortcut("reviewer", selectedDaemon, setSelectedDaemon, subprocessManager, daemonConfigs, setDaemonStatuses, setDaemonEventRows);
+  useInput((input, key) => {
+    if (key.tab || input === "\t") {
+      setSelectedDaemon((currentDaemon) => {
+        const nextDaemon = getNextFocusedDaemon(currentDaemon);
+        setInfoDaemon((currentInfoDaemon) =>
+          currentInfoDaemon === undefined ? undefined : nextDaemon
+        );
+        return nextDaemon;
+      });
     }
-    if (input === "r" || input === "R") {
-      handleDaemonShortcut("refiner", selectedDaemon, setSelectedDaemon, subprocessManager, daemonConfigs, setDaemonStatuses, setDaemonEventRows);
+    if (input === "s" || input === "S") {
+      void toggleDaemon(selectedDaemon, subprocessManager, daemonConfigs[selectedDaemon], setDaemonStatuses, setDaemonEventRows);
     }
-    if (input === "c" || input === "C") {
-      handleDaemonShortcut("codifier", selectedDaemon, setSelectedDaemon, subprocessManager, daemonConfigs, setDaemonStatuses, setDaemonEventRows);
+    if (input === "@") {
+      setConfiguredDaemon((currentDaemon) =>
+        currentDaemon === selectedDaemon ? undefined : selectedDaemon
+      );
+    }
+    if (input === "i" || input === "I") {
+      setInfoDaemon((currentDaemon) =>
+        currentDaemon === selectedDaemon ? undefined : selectedDaemon
+      );
     }
     if (input === "a" || input === "A") {
-      setDaemonConfigs((configs) => nextDaemonConfigs(configs, selectedDaemon, nextAgentConfig));
+      if (configuredDaemon !== undefined) {
+        setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextAgentConfig));
+      }
     }
     if (input === "p" || input === "P") {
-      setDaemonConfigs((configs) => nextDaemonConfigs(configs, selectedDaemon, nextPollConfig));
+      if (configuredDaemon !== undefined) {
+        setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextPollConfig));
+      }
     }
     if (input === "x" || input === "X") {
-      setDaemonConfigs((configs) => nextDaemonConfigs(configs, selectedDaemon, nextRetryConfig));
+      if (configuredDaemon !== undefined) {
+        setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextRetryConfig));
+      }
     }
   });
 
   const reviewerStatus = findDaemonStatus(daemonStatuses, "reviewer");
   const refinerStatus = findDaemonStatus(daemonStatuses, "refiner");
   const codifierStatus = findDaemonStatus(daemonStatuses, "codifier");
+  const renderedRefinerFrameIndex = getRenderedFrameIndex(refinerStatus, refinerFrameIndex);
+  const renderedReviewerFrameIndex = getRenderedFrameIndex(reviewerStatus, reviewerFrameIndex);
+  const renderedCodifierFrameIndex = getRenderedFrameIndex(codifierStatus, codifierFrameIndex);
 
   return (
-    <Box flexDirection="column" width="100%" height="100%">
-      {/* Top row */}
-      <Box flexDirection="row" flexGrow={1} flexBasis={0} width="100%">
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          flexBasis={0}
-          height="100%"
-          padding={1}>
-            <Text color={BaseColors.shade3} bold>
-              PROJECT// <Text color={BaseColors.shade3}>{currentDirectory}</Text>
-            </Text>
-            <Box flexDirection="column" marginTop={1}>
-              <Text color={BaseColors.shade3}>
-              Name: <Text color={BaseColors.shade2}>{projectName}</Text>
-            </Text>
-            <Text color={BaseColors.shade3}>
-              Purpose: 
-            </Text>
-            <Text color={BaseColors.shade1}>
-                {projectPurpose}
-            </Text>
-            </Box>
-        </Box>
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          flexBasis={0}
-          height="100%"
-          padding={1}>
-          <Text color={BaseColors.shade2} bold>
-            EVENTS//
-          </Text>
-          <Box flexDirection="column" marginTop={1}>
-            {daemonEventRows.map((row) => (
-              <Text key={row.key} color={row.color}>
-                {formatDaemonEventRow(row)}
-              </Text>
-            ))}
-          </Box>
-        </Box>
+    <Box flexDirection="column" width="100%" height="100%" paddingX={1}>
+      <Box flexShrink={0} paddingY={1}>
+        <Text color={BaseColors.shade2} bold>
+          COCKPIT// daily daemon control
+        </Text>
+        <Text color={BaseColors.shade4}>
+          {"  "}selected {selectedDaemon}
+        </Text>
       </Box>
-      {/* Bottom row */}
-      <Box flexDirection="row" flexGrow={1} flexBasis={0} width="100%">
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          flexBasis={0}
-          height="100%"
-          alignItems="center"
-          padding={1}>
-          <Box width={35} alignItems="center">
-            <Text color={selectedDaemon === "refiner" ? BaseColors.brandBlue : BaseColors.shade3} bold>
-              REFINER// <Text color={BaseColors.shade4}>({refinerStatus.status})</Text>
-            </Text>
-          </Box>
-          <DaemonControlLine shortcut="r" snapshot={refinerStatus} pendingConfig={daemonConfigs.refiner} selected={selectedDaemon === "refiner"} />
+      <Box flexDirection="row" flexShrink={0} height={13} width="100%" gap={1}>
+        <DaemonPanel
+          title="REFINER//"
+          selected={selectedDaemon === "refiner"}
+          configuring={configuredDaemon === "refiner"}
+          infoVisible={infoDaemon === "refiner"}
+          snapshot={refinerStatus}
+          pendingConfig={daemonConfigs.refiner}
+        >
           <Box flexDirection="column" flexWrap="nowrap" width={35}>
-            {getRefinerFrame(refinerFrameIndex, refinerGlyphPalette).map((line, lineIndex) => (
-              <Text key={`${refinerFrameIndex}-${lineIndex}`}>
-                {getRefinerGlyphSegments(line).map((segment, segmentIndex) => (
+            {getRenderedDaemonFrame(getRefinerFrame(renderedRefinerFrameIndex, refinerGlyphPalette)).map((line, lineIndex) => (
+              <Text key={`${renderedRefinerFrameIndex}-${lineIndex}`}>
+                {getRefinerGlyphSegments(getRefinerLinePrefix(line, refinerStatus, lineIndex), refinerStatus).map((segment, segmentIndex) => (
                   <Text
-                    key={`${refinerFrameIndex}-${lineIndex}-${segmentIndex}`}
+                    key={`${renderedRefinerFrameIndex}-${lineIndex}-prefix-${segmentIndex}`}
+                    color={segment.color}>
+                    {segment.text}
+                  </Text>
+                ))}
+                {isDaemonStatusLine(lineIndex) && (
+                  <Text color={getDaemonStatusColor(refinerStatus)} bold>
+                    {getDaemonPanelStatusLabel(refinerStatus)}
+                  </Text>
+                )}
+                {getRefinerGlyphSegments(getRefinerLineSuffix(line, refinerStatus, lineIndex), refinerStatus).map((segment, segmentIndex) => (
+                  <Text
+                    key={`${renderedRefinerFrameIndex}-${lineIndex}-suffix-${segmentIndex}`}
                     color={segment.color}>
                     {segment.text}
                   </Text>
@@ -286,26 +307,34 @@ export function CockpitLaunchpadView({
               </Text>
             ))}
           </Box>
-        </Box>
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          flexBasis={0}
-          height="100%"
-          alignItems="center"
-          padding={1}>
-          <Box width={35} alignItems="center">
-            <Text color={selectedDaemon === "reviewer" ? BaseColors.brandBlue : BaseColors.shade3} bold>
-              REVIEWER// <Text color={BaseColors.shade4}>({reviewerStatus.status})</Text>
-            </Text>
-          </Box>
-          <DaemonControlLine shortcut="v" snapshot={reviewerStatus} pendingConfig={daemonConfigs.reviewer} selected={selectedDaemon === "reviewer"} />
+        </DaemonPanel>
+        <DaemonPanel
+          title="REVIEWER//"
+          selected={selectedDaemon === "reviewer"}
+          configuring={configuredDaemon === "reviewer"}
+          infoVisible={infoDaemon === "reviewer"}
+          snapshot={reviewerStatus}
+          pendingConfig={daemonConfigs.reviewer}
+        >
           <Box flexDirection="column" flexWrap="nowrap" width={35}>
-            {getReviewerFrame(reviewerFrameIndex).map((line, lineIndex) => (
-              <Text key={`${reviewerFrameIndex}-${lineIndex}`}>
-                {getStyledGlyphSegments(line, reviewerGlyphColors).map((segment, segmentIndex) => (
+            {getRenderedDaemonFrame(getReviewerFrame(renderedReviewerFrameIndex)).map((line, lineIndex) => (
+              <Text key={`${renderedReviewerFrameIndex}-${lineIndex}`}>
+                {getStyledGlyphSegments(getGlyphLinePrefix(line, reviewerStatus, lineIndex), reviewerGlyphColors, reviewerStatus).map((segment, segmentIndex) => (
                   <Text
-                    key={`${reviewerFrameIndex}-${lineIndex}-${segmentIndex}`}
+                    key={`${renderedReviewerFrameIndex}-${lineIndex}-prefix-${segmentIndex}`}
+                    color={segment.color}
+                    dimColor={segment.dimColor}>
+                    {segment.text}
+                  </Text>
+                ))}
+                {isDaemonStatusLine(lineIndex) && (
+                  <Text color={getDaemonStatusColor(reviewerStatus)} bold>
+                    {getDaemonPanelStatusLabel(reviewerStatus)}
+                  </Text>
+                )}
+                {getStyledGlyphSegments(getGlyphLineSuffix(line, reviewerStatus, lineIndex), reviewerGlyphColors, reviewerStatus).map((segment, segmentIndex) => (
+                  <Text
+                    key={`${renderedReviewerFrameIndex}-${lineIndex}-suffix-${segmentIndex}`}
                     color={segment.color}
                     dimColor={segment.dimColor}>
                     {segment.text}
@@ -314,26 +343,34 @@ export function CockpitLaunchpadView({
               </Text>
             ))}
           </Box>
-        </Box>
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          flexBasis={0}
-          height="100%"
-          alignItems="center"
-          padding={1}>
-          <Box width={35} alignItems="center">
-            <Text color={selectedDaemon === "codifier" ? BaseColors.brandBlue : BaseColors.shade3} bold>
-              CODIFIER// <Text color={BaseColors.shade4}>({codifierStatus.status})</Text>
-            </Text>
-          </Box>
-          <DaemonControlLine shortcut="c" snapshot={codifierStatus} pendingConfig={daemonConfigs.codifier} selected={selectedDaemon === "codifier"} />
+        </DaemonPanel>
+        <DaemonPanel
+          title="CODIFIER//"
+          selected={selectedDaemon === "codifier"}
+          configuring={configuredDaemon === "codifier"}
+          infoVisible={infoDaemon === "codifier"}
+          snapshot={codifierStatus}
+          pendingConfig={daemonConfigs.codifier}
+        >
           <Box flexDirection="column" flexWrap="nowrap" width={35}>
-            {getCodifierFrame(codifierFrameIndex).map((line, lineIndex) => (
-              <Text key={`${codifierFrameIndex}-${lineIndex}`}>
-                {getStyledGlyphSegments(line, codifierGlyphColors).map((segment, segmentIndex) => (
+            {getRenderedDaemonFrame(getCodifierFrame(renderedCodifierFrameIndex)).map((line, lineIndex) => (
+              <Text key={`${renderedCodifierFrameIndex}-${lineIndex}`}>
+                {getStyledGlyphSegments(getGlyphLinePrefix(line, codifierStatus, lineIndex), codifierGlyphColors, codifierStatus).map((segment, segmentIndex) => (
                   <Text
-                    key={`${codifierFrameIndex}-${lineIndex}-${segmentIndex}`}
+                    key={`${renderedCodifierFrameIndex}-${lineIndex}-prefix-${segmentIndex}`}
+                    color={segment.color}
+                    dimColor={segment.dimColor}>
+                    {segment.text}
+                  </Text>
+                ))}
+                {isDaemonStatusLine(lineIndex) && (
+                  <Text color={getDaemonStatusColor(codifierStatus)} bold>
+                    {getDaemonPanelStatusLabel(codifierStatus)}
+                  </Text>
+                )}
+                {getStyledGlyphSegments(getGlyphLineSuffix(line, codifierStatus, lineIndex), codifierGlyphColors, codifierStatus).map((segment, segmentIndex) => (
+                  <Text
+                    key={`${renderedCodifierFrameIndex}-${lineIndex}-suffix-${segmentIndex}`}
                     color={segment.color}
                     dimColor={segment.dimColor}>
                     {segment.text}
@@ -342,30 +379,147 @@ export function CockpitLaunchpadView({
               </Text>
             ))}
           </Box>
+        </DaemonPanel>
+      </Box>
+      <Box flexDirection="column" flexGrow={1} flexBasis={0} width="100%" paddingY={1}>
+        {infoDaemon !== undefined && (
+          <DaemonInfoOverlay name={infoDaemon} />
+        )}
+        <Text color={BaseColors.shade2} bold>
+          EVENTS// <Text color={BaseColors.shade4}>time     source   category   message</Text>
+        </Text>
+        <Box flexDirection="column" marginTop={1}>
+          {daemonEventRows.map((row) => (
+            <Text key={row.key} color={row.color}>
+              {formatDaemonEventRow(row)}
+            </Text>
+          ))}
         </Box>
       </Box>
     </Box>
   );
 }
 
-function DaemonControlLine({
-  shortcut,
+function DaemonPanel({
+  title,
   snapshot,
   pendingConfig,
   selected,
+  configuring,
+  infoVisible,
+  children,
 }: {
-  readonly shortcut: string;
+  readonly title: string;
   readonly snapshot: TuiSubprocessSnapshot;
   readonly pendingConfig: TuiDaemonConfig;
   readonly selected: boolean;
+  readonly configuring: boolean;
+  readonly infoVisible: boolean;
+  readonly children: React.ReactNode;
+}): React.ReactElement {
+  return (
+    <Panel
+      title={title}
+      titleColor={selected ? BaseColors.brandBlue : BaseColors.shade3}
+      borderColor={selected ? BaseColors.brandBlue : BaseColors.shade5}
+      flexGrow={3}
+      flexBasis={0}
+      height="100%"
+      bordered={false}
+    >
+      <Box alignItems="center" flexDirection="column">
+        {children}
+        <DaemonActionLine
+          snapshot={snapshot}
+          selected={selected}
+          infoVisible={infoVisible}
+        />
+        {configuring && (
+          <DaemonConfigWizard
+            snapshot={snapshot}
+            pendingConfig={pendingConfig}
+          />
+        )}
+      </Box>
+    </Panel>
+  );
+}
+
+function getRenderedDaemonFrame<T>(frame: readonly T[]): readonly T[] {
+  return frame.slice(0, RENDERED_DAEMON_FRAME_HEIGHT);
+}
+
+function getRenderedFrameIndex(
+  snapshot: TuiSubprocessSnapshot,
+  animatedFrameIndex: number,
+): number {
+  return snapshot.status === "running" ? animatedFrameIndex : 0;
+}
+
+function DaemonActionLine({
+  snapshot,
+  selected,
+  infoVisible,
+}: {
+  readonly snapshot: TuiSubprocessSnapshot;
+  readonly selected: boolean;
+  readonly infoVisible: boolean;
 }): React.ReactElement {
   const action = snapshot.status === "running" ? "stop" : "start";
+
+  return (
+    <Box width={35} flexDirection="column" marginTop={1}>
+      <Text color={BaseColors.shade4}>
+        [s] {action}   [@] config   [i] info{infoVisible ? " open" : ""}
+      </Text>
+    </Box>
+  );
+}
+
+function DaemonInfoOverlay({
+  name,
+}: {
+  readonly name: TuiDaemonName;
+}): React.ReactElement {
+  const info = DAEMON_INFO_COPY[name];
+
+  return (
+    <Box
+      borderStyle="round"
+      borderColor={BaseColors.brandBlue}
+      flexDirection="column"
+      marginBottom={1}
+      paddingX={1}
+      width="100%"
+    >
+      <Text color={BaseColors.brandBlue} bold>
+        {info.title}
+      </Text>
+      {info.lines.map((line) => (
+        <Text key={line} color={BaseColors.shade2}>
+          {line}
+        </Text>
+      ))}
+      <Text color={BaseColors.shade4}>
+        [i] close
+      </Text>
+    </Box>
+  );
+}
+
+function DaemonConfigWizard({
+  snapshot,
+  pendingConfig,
+}: {
+  readonly snapshot: TuiSubprocessSnapshot;
+  readonly pendingConfig: TuiDaemonConfig;
+}): React.ReactElement {
   const config = snapshot.status === "running" ? snapshot.config : pendingConfig;
 
   return (
     <Box width={35} flexDirection="column">
       <Text color={BaseColors.shade4}>
-        [{shortcut}] {selected ? action : "select"} pid {snapshot.pid ?? "-"}
+        pid {snapshot.pid ?? "-"}
       </Text>
       <Text color={BaseColors.shade4}>
         [a] {config.agentId} [p] {Math.round(config.pollIntervalMs / 1000)}s [x] {config.maxRetries}
@@ -374,21 +528,91 @@ function DaemonControlLine({
   );
 }
 
-function handleDaemonShortcut(
-  name: TuiDaemonName,
-  selectedDaemon: TuiDaemonName,
-  setSelectedDaemon: (name: TuiDaemonName) => void,
-  manager: ISubprocessManager,
-  configs: TuiDaemonConfigs,
-  setDaemonStatuses: (statuses: readonly TuiSubprocessSnapshot[]) => void,
-  setDaemonEventRows: (update: (currentRows: readonly DaemonEventRow[]) => readonly DaemonEventRow[]) => void,
-): void {
-  if (selectedDaemon !== name) {
-    setSelectedDaemon(name);
-    return;
+function getDaemonPanelStatusLabel(snapshot: TuiSubprocessSnapshot): string {
+  const status = snapshot.status === "running"
+    ? DAEMON_ACTIVE_VERBS[snapshot.name]
+    : snapshot.status;
+
+  return `[ ${status} ]`;
+}
+
+function getDaemonStatusColor(_snapshot: TuiSubprocessSnapshot): string {
+  return BaseColors.shade3;
+}
+
+function isDaemonStatusLine(lineIndex: number): boolean {
+  return lineIndex === Math.floor(RENDERED_DAEMON_FRAME_HEIGHT / 2);
+}
+
+function getRefinerLinePrefix(
+  line: readonly RefinerGlyphCell[],
+  snapshot: TuiSubprocessSnapshot,
+  lineIndex: number,
+): readonly RefinerGlyphCell[] {
+  if (!isDaemonStatusLine(lineIndex)) {
+    return line;
   }
 
-  void toggleDaemon(name, manager, configs[name], setDaemonStatuses, setDaemonEventRows);
+  return line.slice(0, getDaemonStatusOverlayStart(line.length, snapshot));
+}
+
+function getRefinerLineSuffix(
+  line: readonly RefinerGlyphCell[],
+  snapshot: TuiSubprocessSnapshot,
+  lineIndex: number,
+): readonly RefinerGlyphCell[] {
+  if (!isDaemonStatusLine(lineIndex)) {
+    return [];
+  }
+
+  return line.slice(getDaemonStatusOverlayEnd(line.length, snapshot));
+}
+
+function getGlyphLinePrefix(
+  line: string,
+  snapshot: TuiSubprocessSnapshot,
+  lineIndex: number,
+): string {
+  if (!isDaemonStatusLine(lineIndex)) {
+    return line;
+  }
+
+  return line.slice(0, getDaemonStatusOverlayStart(line.length, snapshot));
+}
+
+function getGlyphLineSuffix(
+  line: string,
+  snapshot: TuiSubprocessSnapshot,
+  lineIndex: number,
+): string {
+  if (!isDaemonStatusLine(lineIndex)) {
+    return "";
+  }
+
+  return line.slice(getDaemonStatusOverlayEnd(line.length, snapshot));
+}
+
+function getDaemonStatusOverlayStart(
+  lineLength: number,
+  snapshot: TuiSubprocessSnapshot,
+): number {
+  return Math.max(0, Math.floor((lineLength - getDaemonPanelStatusLabel(snapshot).length) / 2));
+}
+
+function getDaemonStatusOverlayEnd(
+  lineLength: number,
+  snapshot: TuiSubprocessSnapshot,
+): number {
+  return Math.min(lineLength, getDaemonStatusOverlayStart(lineLength, snapshot) + getDaemonPanelStatusLabel(snapshot).length);
+}
+
+function getNextFocusedDaemon(currentDaemon: TuiDaemonName): TuiDaemonName {
+  const currentIndex = DAEMON_FOCUS_ORDER.indexOf(currentDaemon);
+  const nextIndex = currentIndex === -1
+    ? 0
+    : (currentIndex + 1) % DAEMON_FOCUS_ORDER.length;
+
+  return DAEMON_FOCUS_ORDER[nextIndex];
 }
 
 async function toggleDaemon(
@@ -520,10 +744,10 @@ function toDaemonEventRow(
 
   return {
     key,
-    daemon: snapshot.name,
-    status,
+    source: normalizeDaemonEventSource(snapshot, event),
+    category: normalizeDaemonEventCategory(event, status),
     timestampMs,
-    details: formatDaemonEventDetails(snapshot, event),
+    message: formatDaemonEventMessage(snapshot, event),
     color: getDaemonEventColor(status),
   };
 }
@@ -537,9 +761,9 @@ function normalizeDaemonEventStatus(status: string): TuiDaemonEventStatus {
 }
 
 function formatDaemonEventRow(row: DaemonEventRow): string {
-  const details = row.details.length > 0 ? ` ${row.details}` : "";
+  const message = row.message.length > 0 ? ` ${row.message}` : "";
 
-  return `${formatEventTimestamp(row.timestampMs)} ${row.daemon.padEnd(8)} ${row.status.padEnd(10)}${details}`;
+  return `${formatEventTimestamp(row.timestampMs)} ${row.source.padEnd(8)} ${row.category.padEnd(10)}${message}`;
 }
 
 function formatEventTimestamp(timestampMs: number): string {
@@ -551,17 +775,36 @@ function formatEventTimestamp(timestampMs: number): string {
   return `${hours}:${minutes}:${seconds}`;
 }
 
-function formatDaemonEventDetails(
+function normalizeDaemonEventSource(
   snapshot: TuiSubprocessSnapshot,
   event: TuiDaemonEventSnapshot,
 ): string {
+  return truncateTail(event.source ?? event.daemon ?? snapshot.name, 8);
+}
+
+function normalizeDaemonEventCategory(
+  event: TuiDaemonEventSnapshot,
+  status: TuiDaemonEventStatus,
+): string {
+  return truncateTail(event.category ?? status, 10);
+}
+
+function formatDaemonEventMessage(
+  snapshot: TuiSubprocessSnapshot,
+  event: TuiDaemonEventSnapshot,
+): string {
+  if (event.message !== undefined && event.message.trim().length > 0) {
+    return truncateTail(event.message.trim(), 52);
+  }
+
   const parts = [
     event.goalId === undefined ? undefined : shortGoalId(event.goalId),
     formatAttemptDetails(event),
+    formatExitDetails(event),
     event.errorMessage ?? snapshot.stderr[snapshot.stderr.length - 1],
   ].filter((part): part is string => part !== undefined && part.length > 0);
 
-  return truncateTail(parts.join(" "), 48);
+  return truncateTail(parts.join(" "), 52);
 }
 
 function formatAttemptDetails(event: TuiDaemonEventSnapshot): string | undefined {
@@ -570,6 +813,10 @@ function formatAttemptDetails(event: TuiDaemonEventSnapshot): string | undefined
   }
 
   return `${event.attempt ?? "-"}/${event.maxRetries ?? "-"}`;
+}
+
+function formatExitDetails(event: TuiDaemonEventSnapshot): string | undefined {
+  return event.exitCode === undefined ? undefined : `exit ${event.exitCode}`;
 }
 
 function getDaemonEventColor(status: TuiDaemonEventStatus): string {
@@ -689,19 +936,21 @@ function getRefinerFrame(
 }
 
 function getRefinerGlyphSegments(
-  line: RefinerGlyphCell[],
+  line: readonly RefinerGlyphCell[],
+  snapshot: TuiSubprocessSnapshot,
 ): Array<{ text: string; color: string }> {
   const segments: Array<{ text: string; color: string }> = [];
 
   for (const cell of line) {
+    const color = getDaemonGlyphColor(snapshot, cell.color);
     const previousSegment = segments[segments.length - 1];
 
-    if (previousSegment !== undefined && previousSegment.color === cell.color) {
+    if (previousSegment !== undefined && previousSegment.color === color) {
       previousSegment.text += cell.glyph;
       continue;
     }
 
-    segments.push({ text: cell.glyph, color: cell.color });
+    segments.push({ text: cell.glyph, color });
   }
 
   return segments;
@@ -710,11 +959,12 @@ function getRefinerGlyphSegments(
 function getStyledGlyphSegments(
   line: string,
   glyphColors: GlyphColorMap,
+  snapshot: TuiSubprocessSnapshot,
 ): Array<GlyphStyle & { text: string }> {
   const segments: Array<GlyphStyle & { text: string }> = [];
 
   for (const character of line) {
-    const glyphStyle = getGlyphStyle(character, glyphColors);
+    const glyphStyle = getGlyphStyle(character, glyphColors, snapshot);
     const previousSegment = segments[segments.length - 1];
 
     if (
@@ -739,14 +989,25 @@ function getStyledGlyphSegments(
 function getGlyphStyle(
   character: string,
   glyphColors: GlyphColorMap,
+  snapshot: TuiSubprocessSnapshot,
 ): GlyphStyle {
   const color = glyphColors[character];
 
   if (color === undefined) {
-    return DEFAULT_CODIFIER_GLYPH_STYLE;
+    return {
+      ...DEFAULT_CODIFIER_GLYPH_STYLE,
+      color: getDaemonGlyphColor(snapshot, DEFAULT_CODIFIER_GLYPH_STYLE.color),
+    };
   }
 
-  return { color };
+  return { color: getDaemonGlyphColor(snapshot, color) };
+}
+
+function getDaemonGlyphColor(
+  snapshot: TuiSubprocessSnapshot,
+  animatedColor: string,
+): string {
+  return snapshot.status === "running" ? animatedColor : BaseColors.shade6;
 }
 
 function createRefinerGlyphGrid(

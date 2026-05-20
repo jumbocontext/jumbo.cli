@@ -137,6 +137,22 @@ describe("TuiApp", () => {
     unmount();
   });
 
+  it("shows the cockpit panel tab footer badge only on the primed cockpit launchpad", async () => {
+    const { lastFrame, unmount } = render(
+      <TuiApp
+        stateReaderControllers={{
+          getProjectSummaryQueryHandler: projectSummaryController("primed"),
+        }}
+      />,
+    );
+
+    await waitForFrame(lastFrame, (frame) => frame.includes("EVENTS//"));
+
+    expect(lastFrame()).toContain(" tab ");
+    expect(lastFrame()).toContain("panels");
+    unmount();
+  }, 10000);
+
   it("skips the unprimed cockpit screen for the current TUI session", async () => {
     const { stdin, lastFrame, unmount } = render(
       <TuiApp

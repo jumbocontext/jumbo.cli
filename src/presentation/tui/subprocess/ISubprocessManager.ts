@@ -22,6 +22,9 @@ export type TuiDaemonConfigs = Readonly<Record<TuiDaemonName, TuiDaemonConfig>>;
 export interface TuiDaemonEventSnapshot {
   readonly daemon: string;
   readonly status: TuiDaemonEventStatus | (string & {});
+  readonly source?: string;
+  readonly category?: string;
+  readonly message?: string;
   readonly timestampMs?: number;
   readonly goalId?: string;
   readonly attempt?: number;

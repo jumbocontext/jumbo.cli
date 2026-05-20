@@ -45,6 +45,7 @@ export class ReviewerProcessManager implements IProcessManager {
     for (let attempt = 1; attempt <= options.maxRetries; attempt++) {
       this.emit(options, { daemon: "reviewer", status: "processing", goalId: goal.goalId, attempt, maxRetries: options.maxRetries });
       const result = await this.agentGateway.invoke({ agentId: options.agentId, prompt: this.buildPrompt(goal.goalId) });
+      this.emitModelOutput(options, goal.goalId, result.stdout);
 
       if (await this.isReviewComplete(goal.goalId)) {
         this.emit(options, { daemon: "reviewer", status: "completed", goalId: goal.goalId, attempt, maxRetries: options.maxRetries, exitCode: result.exitCode });
@@ -78,6 +79,32 @@ export class ReviewerProcessManager implements IProcessManager {
 
   private emit(options: ProcessManagerOptions, event: ProcessManagerEvent): void {
     options.emit?.(event);
+  }
+
+  private emitModelOutput(
+    options: ProcessManagerOptions,
+    goalId: string,
+    stdout: string | undefined,
+  ): void {
+    if (stdout === undefined) {
+      return;
+    }
+
+    const lines = stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    for (const line of lines) {
+      this.emit(options, {
+        daemon: "reviewer",
+        status: "processing",
+        source: "reviewer",
+        category: "model-output",
+        message: line,
+        goalId,
+      });
+    }
   }
 
   private track(startedAt: bigint, properties: Record<string, unknown>): void {

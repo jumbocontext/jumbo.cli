@@ -15,6 +15,9 @@ export type ProcessManagerStatus =
 export interface ProcessManagerEvent {
   readonly daemon: string;
   readonly status: ProcessManagerStatus;
+  readonly source?: string;
+  readonly category?: string;
+  readonly message?: string;
   readonly goalId?: string;
   readonly attempt?: number;
   readonly maxRetries?: number;

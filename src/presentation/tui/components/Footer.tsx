@@ -8,6 +8,7 @@ import type { NotificationDrawerNotification } from "./NotificationDrawer.js";
 interface FooterProps {
   terminalWidth: number;
   shortcutsEnabled?: boolean;
+  contextualShortcuts?: readonly FooterShortcut[];
   daemonCounts?: {
     readonly running: number;
     readonly stopped: number;
@@ -16,11 +17,17 @@ interface FooterProps {
   notifications?: readonly NotificationDrawerNotification[];
 }
 
+interface FooterShortcut {
+  readonly char: string;
+  readonly label: string;
+}
+
 export const NOTIFICATION_NOTIFIER_COLOR = BaseColors.brandYellow;
 
 export function Footer({
   terminalWidth,
   shortcutsEnabled = true,
+  contextualShortcuts = [],
   daemonCounts = { running: 0, stopped: 3, failed: 0 },
   notifications = [],
 }: FooterProps): React.ReactElement {
@@ -69,6 +76,13 @@ export function Footer({
           <KeyBadge char="m" label="menu" />
           <KeyBadge char="q" label="quit" />
           <KeyBadge char="h" label="help" />
+          {contextualShortcuts.map((shortcut) => (
+            <KeyBadge
+              key={`${shortcut.char}-${shortcut.label}`}
+              char={shortcut.char}
+              label={shortcut.label}
+            />
+          ))}
         </Box>
         <Text color={BaseColors.shade4}>
           daemons {daemonCounts.running} run {daemonCounts.stopped} stop {daemonCounts.failed} fail

@@ -48,4 +48,61 @@ describe("ReviewerProcessManager", () => {
       prompt: "Run the Jumbo review workflow for goal goal_1. Execute: jumbo goal review --id goal_1",
     });
   });
+
+  it("emits reviewer agent stdout lines as model-output events", async () => {
+    const emittedEvents: unknown[] = [];
+    agentGateway.invoke.mockResolvedValue({
+      exitCode: 0,
+      stdout: "Review found a missing assertion.\nRecommend changes before approval.\n",
+    });
+    const manager = new ReviewerProcessManager(
+      goalStatusReader,
+      goalReader,
+      claimPolicy as any,
+      { workerId: "worker_1" },
+      reviewGoalController as any,
+      agentGateway,
+      telemetryClient,
+    );
+
+    await manager.processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => emittedEvents.push(event),
+    });
+
+    expect(emittedEvents).toEqual([
+      {
+        daemon: "reviewer",
+        status: "processing",
+        goalId: "goal_1",
+        attempt: 1,
+        maxRetries: 1,
+      },
+      {
+        daemon: "reviewer",
+        status: "processing",
+        source: "reviewer",
+        category: "model-output",
+        message: "Review found a missing assertion.",
+        goalId: "goal_1",
+      },
+      {
+        daemon: "reviewer",
+        status: "processing",
+        source: "reviewer",
+        category: "model-output",
+        message: "Recommend changes before approval.",
+        goalId: "goal_1",
+      },
+      {
+        daemon: "reviewer",
+        status: "completed",
+        goalId: "goal_1",
+        attempt: 1,
+        maxRetries: 1,
+        exitCode: 0,
+      },
+    ]);
+  });
 });

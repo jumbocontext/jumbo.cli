@@ -27,6 +27,9 @@ import type { ProjectLifecycleState } from "../../application/context/project/Pr
 const PLACEHOLDER_PROJECT_NAME = "Jumbo";
 const GOAL_AUTHORING_UNAVAILABLE_ERROR =
   "Goal registration is unavailable. Restart Jumbo and try again.";
+const COCKPIT_FOOTER_SHORTCUTS = [
+  { char: "tab", label: "panels" },
+] as const;
 
 function useTerminalDimensions(): { columns: number; rows: number } {
   const { stdout } = useStdout();
@@ -159,6 +162,12 @@ function TuiAppFrame({
     !projectContext.loading &&
     activeScreenIndex === DEFAULT_SCREEN_INDEX &&
     routedProjectLifecycleState === "primed-empty";
+  const cockpitLaunchpadVisible =
+    !megaMenuOpen &&
+    !initFlowOpen &&
+    !goalAuthoringOpen &&
+    activeScreenIndex === DEFAULT_SCREEN_INDEX &&
+    routedProjectLifecycleState === "primed";
 
   useEffect(() => {
     if (projectLifecycleState !== "unprimed") {
@@ -359,6 +368,7 @@ function TuiAppFrame({
         <Footer
           terminalWidth={columns}
           shortcutsEnabled={!megaMenuOpen && !initFlowOpen && !goalAuthoringOpen}
+          contextualShortcuts={cockpitLaunchpadVisible ? COCKPIT_FOOTER_SHORTCUTS : []}
           daemonCounts={countDaemons(daemonStatuses)}
           notifications={buildDaemonFailureNotifications(daemonStatuses)}
         />
