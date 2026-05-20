@@ -18,10 +18,12 @@ const PLACEHOLDER_VERSION = "0.0.0";
 
 interface CockpitScreenProps {
   state?: CockpitState;
+  shortcutsEnabled?: boolean;
 }
 
 export function CockpitScreen({
   state = PLACEHOLDER_COCKPIT_STATE,
+  shortcutsEnabled = true,
 }: CockpitScreenProps = {}): React.ReactElement {
   const [bannerComplete, setBannerComplete] = useState(false);
   const showBanner = state === "uninitialized" || state === "unprimed";
@@ -63,7 +65,9 @@ export function CockpitScreen({
           {state === "uninitialized" && <CockpitGreeterView />}
           {state === "unprimed" && <CockpitUnprimedView />}
           {state === "primed-empty" && <CockpitPrimedEmptyView />}
-          {state === "primed" && <CockpitLaunchpadView />}
+          {state === "primed" && (
+            <CockpitLaunchpadView shortcutsEnabled={shortcutsEnabled} />
+          )}
         </Box>
       )}
     </Box>

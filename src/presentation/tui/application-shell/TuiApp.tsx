@@ -29,6 +29,7 @@ const GOAL_AUTHORING_UNAVAILABLE_ERROR =
   "Goal registration is unavailable. Restart Jumbo and try again.";
 const COCKPIT_FOOTER_SHORTCUTS = [
   { char: "tab", label: "panels" },
+  { char: "g", label: "create goal" },
 ] as const;
 
 function useTerminalDimensions(): { columns: number; rows: number } {
@@ -158,16 +159,18 @@ function TuiAppFrame({
       : projectLifecycleState);
   const initShortcutEnabled =
     !projectContext.loading && projectLifecycleState === "uninitialized";
-  const goalAuthoringShortcutEnabled =
-    !projectContext.loading &&
-    activeScreenIndex === DEFAULT_SCREEN_INDEX &&
-    routedProjectLifecycleState === "primed-empty";
+  const frameShortcutsEnabled =
+    !megaMenuOpen && !initFlowOpen && !goalAuthoringOpen;
   const cockpitLaunchpadVisible =
     !megaMenuOpen &&
     !initFlowOpen &&
     !goalAuthoringOpen &&
     activeScreenIndex === DEFAULT_SCREEN_INDEX &&
     routedProjectLifecycleState === "primed";
+  const goalAuthoringShortcutEnabled =
+    !projectContext.loading &&
+    activeScreenIndex === DEFAULT_SCREEN_INDEX &&
+    (routedProjectLifecycleState === "primed-empty" || cockpitLaunchpadVisible);
 
   useEffect(() => {
     if (projectLifecycleState !== "unprimed") {
@@ -331,6 +334,7 @@ function TuiAppFrame({
             <ScreenRouter
               activeScreenIndex={activeScreenIndex}
               projectLifecycleState={routedProjectLifecycleState}
+              shortcutsEnabled={frameShortcutsEnabled}
             />
           )}
         </Box>
@@ -367,7 +371,7 @@ function TuiAppFrame({
       <Box flexShrink={0}>
         <Footer
           terminalWidth={columns}
-          shortcutsEnabled={!megaMenuOpen && !initFlowOpen && !goalAuthoringOpen}
+          shortcutsEnabled={frameShortcutsEnabled}
           contextualShortcuts={cockpitLaunchpadVisible ? COCKPIT_FOOTER_SHORTCUTS : []}
           daemonCounts={countDaemons(daemonStatuses)}
           notifications={buildDaemonFailureNotifications(daemonStatuses)}

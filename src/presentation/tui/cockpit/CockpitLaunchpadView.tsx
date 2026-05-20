@@ -137,6 +137,7 @@ const DEFAULT_REVIEWER_GLYPH_COLORS: GlyphColorMap = {
 };
 
 interface CockpitLaunchpadViewProps {
+  shortcutsEnabled?: boolean;
   refinerGlyphPalette?: GlyphPalette;
   reviewerGlyphColors?: GlyphColorMap;
   codifierGlyphColors?: GlyphColorMap;
@@ -146,6 +147,7 @@ interface CockpitLaunchpadViewProps {
 }
 
 export function CockpitLaunchpadView({
+  shortcutsEnabled = true,
   refinerGlyphPalette = REFINER_GLYPH_COLORS,
   reviewerGlyphColors = DEFAULT_REVIEWER_GLYPH_COLORS,
   codifierGlyphColors = DEFAULT_CODIFIER_GLYPH_COLORS,
@@ -216,45 +218,48 @@ export function CockpitLaunchpadView({
     return () => clearInterval(timer);
   }, [subprocessManager]);
 
-  useInput((input, key) => {
-    if (key.tab || input === "\t") {
-      setSelectedDaemon((currentDaemon) => {
-        const nextDaemon = getNextFocusedDaemon(currentDaemon);
-        setInfoDaemon((currentInfoDaemon) =>
-          currentInfoDaemon === undefined ? undefined : nextDaemon
+  useInput(
+    (input, key) => {
+      if (key.tab || input === "\t") {
+        setSelectedDaemon((currentDaemon) => {
+          const nextDaemon = getNextFocusedDaemon(currentDaemon);
+          setInfoDaemon((currentInfoDaemon) =>
+            currentInfoDaemon === undefined ? undefined : nextDaemon
+          );
+          return nextDaemon;
+        });
+      }
+      if (input === "s" || input === "S") {
+        void toggleDaemon(selectedDaemon, subprocessManager, daemonConfigs[selectedDaemon], setDaemonStatuses, setDaemonEventRows);
+      }
+      if (input === "@") {
+        setConfiguredDaemon((currentDaemon) =>
+          currentDaemon === selectedDaemon ? undefined : selectedDaemon
         );
-        return nextDaemon;
-      });
-    }
-    if (input === "s" || input === "S") {
-      void toggleDaemon(selectedDaemon, subprocessManager, daemonConfigs[selectedDaemon], setDaemonStatuses, setDaemonEventRows);
-    }
-    if (input === "@") {
-      setConfiguredDaemon((currentDaemon) =>
-        currentDaemon === selectedDaemon ? undefined : selectedDaemon
-      );
-    }
-    if (input === "i" || input === "I") {
-      setInfoDaemon((currentDaemon) =>
-        currentDaemon === selectedDaemon ? undefined : selectedDaemon
-      );
-    }
-    if (input === "a" || input === "A") {
-      if (configuredDaemon !== undefined) {
-        setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextAgentConfig));
       }
-    }
-    if (input === "p" || input === "P") {
-      if (configuredDaemon !== undefined) {
-        setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextPollConfig));
+      if (input === "i" || input === "I") {
+        setInfoDaemon((currentDaemon) =>
+          currentDaemon === selectedDaemon ? undefined : selectedDaemon
+        );
       }
-    }
-    if (input === "x" || input === "X") {
-      if (configuredDaemon !== undefined) {
-        setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextRetryConfig));
+      if (input === "a" || input === "A") {
+        if (configuredDaemon !== undefined) {
+          setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextAgentConfig));
+        }
       }
-    }
-  });
+      if (input === "p" || input === "P") {
+        if (configuredDaemon !== undefined) {
+          setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextPollConfig));
+        }
+      }
+      if (input === "x" || input === "X") {
+        if (configuredDaemon !== undefined) {
+          setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextRetryConfig));
+        }
+      }
+    },
+    { isActive: shortcutsEnabled },
+  );
 
   const reviewerStatus = findDaemonStatus(daemonStatuses, "reviewer");
   const refinerStatus = findDaemonStatus(daemonStatuses, "refiner");

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Wizard } from "../wizard/Wizard.js";
 import type { WizardStepDefinition } from "../wizard/Wizard.js";
 
@@ -160,6 +160,10 @@ export function GoalAuthoringFlow({
   });
 
   const criterionNumber = criteriaEditIndex + 1;
+  const criteriaSteps = useMemo(
+    () => buildCriteriaSteps(criterionNumber),
+    [criterionNumber],
+  );
 
   const handleDetailsConfirm = (values: Record<string, string>) => {
     setTitle(values.title ?? "");
@@ -260,7 +264,7 @@ export function GoalAuthoringFlow({
       <Wizard
         key={`criteria-${wizardKey}`}
         title="Author Goal"
-        steps={buildCriteriaSteps(criterionNumber)}
+        steps={criteriaSteps}
         onConfirm={handleCriteriaConfirm}
         onCancel={onCancel}
         onBack={handleCriteriaBack}

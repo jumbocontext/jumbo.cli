@@ -11,6 +11,18 @@ describe("Footer", () => {
     expect((lastFrame() ?? "").trim().length).toBeGreaterThan(0);
   });
 
+  it("renders contextual shortcut badges", () => {
+    const { lastFrame } = render(
+      <Footer
+        terminalWidth={80}
+        contextualShortcuts={[{ char: "g", label: "create goal" }]}
+      />,
+    );
+
+    expect(lastFrame()).toContain(" g ");
+    expect(lastFrame()).toContain("create goal");
+  });
+
   it("toggles the notification drawer with n", async () => {
     const { lastFrame, stdin } = render(<Footer terminalWidth={80} />);
 

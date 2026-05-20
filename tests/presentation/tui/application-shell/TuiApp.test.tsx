@@ -1,5 +1,5 @@
 import React from "react";
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it, jest } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { TuiApp } from "../../../../src/presentation/tui/application-shell/TuiApp.js";
 import type {
@@ -10,6 +10,7 @@ import type {
 import type { AddGoalRequest } from "../../../../src/application/context/goals/add/AddGoalRequest.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const waitForFrame = async (
   lastFrame: () => string | undefined,
   predicate: (frame: string) => boolean,
@@ -140,7 +141,7 @@ describe("TuiApp", () => {
     unmount();
   });
 
-  it("shows the cockpit panel tab footer badge only on the primed cockpit launchpad", async () => {
+  it("shows the cockpit launchpad footer badges only on the primed cockpit launchpad", async () => {
     const { lastFrame, unmount } = render(
       <TuiApp
         stateReaderControllers={{
@@ -153,6 +154,48 @@ describe("TuiApp", () => {
 
     expect(lastFrame()).toContain(" tab ");
     expect(lastFrame()).toContain("panels");
+    expect(lastFrame()).toContain(" g ");
+    expect(lastFrame()).toContain("create goal");
+    unmount();
+  }, 10000);
+
+  it("does not show the create-goal footer badge outside the primed cockpit launchpad", async () => {
+    const { stdin, lastFrame, unmount } = render(
+      <TuiApp
+        stateReaderControllers={{
+          getProjectSummaryQueryHandler:
+            projectSummaryController("primed-empty"),
+        }}
+      />,
+    );
+
+    await waitForFrame(lastFrame, (frame) =>
+      frame.includes("Ready to create your first goal."),
+    );
+    expect(lastFrame()).not.toContain("create goal");
+
+    stdin.write("g");
+    await waitForFrame(lastFrame, (frame) => frame.includes("Author Goal"));
+    expect(lastFrame()).not.toContain("create goal");
+    unmount();
+  }, 10000);
+
+  it("hides the create-goal footer badge while the menu owns input", async () => {
+    const { stdin, lastFrame, unmount } = render(
+      <TuiApp
+        stateReaderControllers={{
+          getProjectSummaryQueryHandler: projectSummaryController("primed"),
+        }}
+      />,
+    );
+
+    await waitForFrame(lastFrame, (frame) => frame.includes("EVENTS//"));
+    expect(lastFrame()).toContain("create goal");
+
+    stdin.write("m");
+    await waitForFrame(lastFrame, (frame) => frame.includes("Navigate"));
+
+    expect(lastFrame()).not.toContain("create goal");
     unmount();
   }, 10000);
 
@@ -195,14 +238,69 @@ describe("TuiApp", () => {
 
     expect(lastFrame()).toContain("Author Goal");
     expect(lastFrame()).toContain("Objective");
+    expect(lastFrame()).not.toContain("create goal");
     unmount();
   }, 10000);
 
-  it("does not open goal authoring from non-primed cockpit states", async () => {
+  it("opens goal authoring from the primed cockpit shortcut", async () => {
     const { stdin, lastFrame, unmount } = render(
       <TuiApp
         stateReaderControllers={{
           getProjectSummaryQueryHandler: projectSummaryController("primed"),
+        }}
+      />,
+    );
+
+    await waitForFrame(lastFrame, (frame) => frame.includes("Test Project"));
+
+    stdin.write("g");
+    await waitForFrame(lastFrame, (frame) => frame.includes("Author Goal"));
+
+    expect(lastFrame()).toContain("Author Goal");
+    expect(lastFrame()).toContain("Objective");
+    unmount();
+  }, 10000);
+
+  it("keeps success criterion text while daemon polling re-renders the primed cockpit", async () => {
+    const { stdin, lastFrame, unmount } = render(
+      <TuiApp
+        stateReaderControllers={{
+          getProjectSummaryQueryHandler: projectSummaryController("primed"),
+        }}
+        subprocessManager={subprocessManagerWithFailedDaemon}
+      />,
+    );
+
+    await waitForFrame(lastFrame, (frame) => frame.includes("EVENTS//"));
+    stdin.write("g");
+    await waitForFrame(lastFrame, (frame) => frame.includes("Author Goal"));
+
+    stdin.write("Prototype Cockpit goal authoring");
+    await tick();
+    stdin.write("\r");
+    await tick();
+    stdin.write("Open goal authoring from Cockpit");
+    await tick();
+    stdin.write("\r");
+    await waitForFrame(lastFrame, (frame) =>
+      frame.includes("Success criterion"),
+    );
+
+    stdin.write("Criterion survives daemon polling");
+    await tick();
+    expect(lastFrame()).toContain("Criterion survives daemon polling");
+
+    await wait(650);
+    expect(lastFrame()).toContain("Criterion survives daemon polling");
+    unmount();
+  }, 10000);
+
+  it("does not open goal authoring from uninitialized cockpit state", async () => {
+    const { stdin, lastFrame, unmount } = render(
+      <TuiApp
+        stateReaderControllers={{
+          getProjectSummaryQueryHandler:
+            projectSummaryController("uninitialized"),
         }}
       />,
     );
@@ -241,6 +339,52 @@ describe("TuiApp", () => {
     expect(lastFrame()).toContain("Author Goal");
     expect(lastFrame()).not.toContain("Navigate");
     expect(lastFrame()).not.toContain("Notifications");
+    unmount();
+  }, 10000);
+
+  it("does not pass daemon hotkeys to the cockpit while goal authoring is open", async () => {
+    const stoppedDaemonSnapshot = {
+      name: "refiner" as const,
+      status: "stopped" as const,
+      config: {
+        agentId: "codex",
+        pollIntervalMs: 30000,
+        maxRetries: 3,
+      },
+      stdout: [],
+      stderr: [],
+      events: [],
+    };
+    const subprocessManager: ISubprocessManager = {
+      spawn: jest.fn(async () => stoppedDaemonSnapshot),
+      terminate: jest.fn(async () => stoppedDaemonSnapshot),
+      terminateAll: jest.fn(async () => {}),
+      getStatus: jest.fn((_name: TuiDaemonName) => stoppedDaemonSnapshot),
+      getAllStatuses: jest.fn(() => [stoppedDaemonSnapshot]),
+    };
+    const { stdin, lastFrame, unmount } = render(
+      <TuiApp
+        stateReaderControllers={{
+          getProjectSummaryQueryHandler: projectSummaryController("primed"),
+        }}
+        subprocessManager={subprocessManager}
+      />,
+    );
+
+    await waitForFrame(lastFrame, (frame) => frame.includes("EVENTS//"));
+    stdin.write("g");
+    await waitForFrame(lastFrame, (frame) => frame.includes("Author Goal"));
+
+    stdin.write("s");
+    await tick();
+    stdin.write("\t");
+    await tick();
+    stdin.write("s");
+    await tick();
+
+    expect(lastFrame()).toContain("Author Goal");
+    expect(subprocessManager.spawn).not.toHaveBeenCalled();
+    expect(subprocessManager.terminate).not.toHaveBeenCalled();
     unmount();
   }, 10000);
 

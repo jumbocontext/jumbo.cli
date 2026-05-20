@@ -13,6 +13,7 @@ import type { ProjectLifecycleState } from "../../../application/context/project
 interface ScreenRouterProps {
   activeScreenIndex: number;
   projectLifecycleState?: ProjectLifecycleState;
+  shortcutsEnabled?: boolean;
 }
 
 const SCREEN_COMPONENTS: Record<
@@ -32,6 +33,7 @@ const SCREEN_COMPONENTS: Record<
 export function ScreenRouter({
   activeScreenIndex,
   projectLifecycleState,
+  shortcutsEnabled = true,
 }: ScreenRouterProps): React.ReactElement {
   const definition = SCREEN_DEFINITIONS[activeScreenIndex];
   const ScreenComponent = definition
@@ -39,7 +41,12 @@ export function ScreenRouter({
     : SCREEN_COMPONENTS.cockpit;
 
   if ((definition?.key ?? "cockpit") === "cockpit") {
-    return <CockpitScreen state={projectLifecycleState} />;
+    return (
+      <CockpitScreen
+        state={projectLifecycleState}
+        shortcutsEnabled={shortcutsEnabled}
+      />
+    );
   }
 
   return <ScreenComponent />;

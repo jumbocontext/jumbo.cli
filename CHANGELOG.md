@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Cockpit create-goal footer shortcut**: The primed Cockpit launchpad footer now shows a contextual `g` / create goal badge that opens the existing goal authoring wizard.
 - **Cockpit goal authoring**: The primed-empty Cockpit `g` shortcut now opens the goal authoring wizard, registers the goal through the existing goal-add action path, suppresses surrounding shortcuts while typing, and routes to the launchpad after goal creation.
 - **Bare command TUI launch**: Running `jumbo` with no arguments now opens the Ink TUI instead of ending at the legacy static banner path, using project-backed state readers when a Jumbo project is available and an uninitialized TUI path otherwise.
 - **TUI foundation**: Ink + React terminal UI with app shell (header/body/footer flexbox layout), screen router (Cockpit, Goals, Memory, Session), keyboard navigation (arrow keys, number keys 1-4, q to quit), and shared design tokens (colors, spacing, glyphs). All screens are placeholder stubs awaiting content in future goals.
@@ -26,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **TUI wizard input ownership**: Goal authoring text fields now keep daemon launchpad hotkeys disabled while the wizard is open, preventing typed characters such as `s` or tab from starting or switching daemons.
+- **Goal authoring criteria input**: Success criterion text no longer clears during Cockpit daemon polling or other parent re-renders.
 - **Bare TUI bootstrap side effects**: Running bare `jumbo` from a non-project directory or from a subdirectory beneath an ancestor Jumbo project no longer creates `.jumbo` storage just by opening the TUI; storage is created only after project initialization is confirmed.
 - **Cockpit lifecycle routing**: Cockpit now resolves lifecycle state for the current working directory, treats any existing goal as evidence of prior goal use, and routes to the primed-with-goals view instead of showing the goals tutorial once goals exist in any status.
 - **TUI daemon stop status**: Stopping refiner, reviewer, or codifier daemons from the TUI now reports `stopped` instead of `failed` when termination produces a signal or taskkill-style non-zero exit.
