@@ -28,7 +28,7 @@ const PLACEHOLDER_PROJECT_NAME = "Jumbo";
 const GOAL_AUTHORING_UNAVAILABLE_ERROR =
   "Goal registration is unavailable. Restart Jumbo and try again.";
 const COCKPIT_FOOTER_SHORTCUTS = [
-  { char: "tab", label: "change focus" },
+  { char: "tab", label: "toggle worker" },
   { char: "g", label: "create goal" },
 ] as const;
 const TUI_FRAME_CHROME_ROWS = 2;
