@@ -11,6 +11,14 @@ describe("Footer", () => {
     expect((lastFrame() ?? "").trim().length).toBeGreaterThan(0);
   });
 
+  it("does not advertise menu or help shortcuts", () => {
+    const { lastFrame } = render(<Footer terminalWidth={80} />);
+
+    expect(lastFrame()).not.toContain("menu");
+    expect(lastFrame()).not.toContain("help");
+    expect(lastFrame()).not.toContain(" h ");
+  });
+
   it("renders contextual shortcut badges", () => {
     const { lastFrame } = render(
       <Footer

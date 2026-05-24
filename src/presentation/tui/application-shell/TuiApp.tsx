@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Box, useApp, useInput, useStdout } from "ink";
 import { Header } from "./Header.js";
 import { Footer } from "./Footer.js";
-import { MegaMenu } from "../navigation/MegaMenu.js";
 import { ScreenRouter } from "../navigation/ScreenRouter.js";
 import { InitFlow } from "../project-initialization/InitFlow.js";
 import type { InitFlowActionControllers } from "../project-initialization/InitFlow.js";
@@ -153,7 +152,6 @@ function TuiAppFrame({
   const [activeScreenIndex, setActiveScreenIndex] = useState(
     DEFAULT_SCREEN_INDEX,
   );
-  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [initFlowOpen, setInitFlowOpen] = useState(false);
   const [goalAuthoringOpen, setGoalAuthoringOpen] = useState(false);
   const [goalAuthoringError, setGoalAuthoringError] = useState<string | null>(null);
@@ -180,9 +178,8 @@ function TuiAppFrame({
   const initShortcutEnabled =
     !projectContext.loading && projectLifecycleState === "uninitialized";
   const frameShortcutsEnabled =
-    !megaMenuOpen && !initFlowOpen && !goalAuthoringOpen;
+    !initFlowOpen && !goalAuthoringOpen;
   const cockpitLaunchpadVisible =
-    !megaMenuOpen &&
     !initFlowOpen &&
     !goalAuthoringOpen &&
     activeScreenIndex === DEFAULT_SCREEN_INDEX &&
@@ -230,15 +227,16 @@ function TuiAppFrame({
   }, [subprocessManager, subprocessManagerEnabled]);
 
   useInput((input) => {
-    if (megaMenuOpen || initFlowOpen || goalAuthoringOpen) {
+    if (initFlowOpen || goalAuthoringOpen) {
       return;
     }
     if (input === "q") {
       exit();
     }
-    if (input === "m" || input === "M") {
-      setMegaMenuOpen(true);
-    }
+    // MegaMenu is preserved for iteration but hidden from production users.
+    // if (input === "m" || input === "M") {
+    //   setMegaMenuOpen(true);
+    // }
     if (initShortcutEnabled && (input === "i" || input === "I")) {
       setInitFlowOpen(true);
     }
@@ -330,15 +328,6 @@ function TuiAppFrame({
     setGoalAuthoringOpen(false);
   }, []);
 
-  const handleScreenSelect = (index: number) => {
-    setActiveScreenIndex(index);
-    setMegaMenuOpen(false);
-  };
-
-  const handleMegaMenuClose = () => {
-    setMegaMenuOpen(false);
-  };
-
   const handleBannerAnimationComplete = useCallback(() => {
     setBannerAnimationComplete(true);
   }, []);
@@ -358,28 +347,19 @@ function TuiAppFrame({
       </Box>
       <Box flexGrow={1} flexDirection="column" position="relative">
         <Box flexGrow={1} flexDirection="column">
-          {megaMenuOpen ? (
-            <MegaMenu
-              activeScreenIndex={activeScreenIndex}
-              onScreenSelect={handleScreenSelect}
-              onClose={handleMegaMenuClose}
-              terminalWidth={columns}
-            />
-          ) : (
-            <ScreenRouter
-              activeScreenIndex={activeScreenIndex}
-              projectLifecycleState={routedProjectLifecycleState}
-              shortcutsEnabled={frameShortcutsEnabled}
-              terminalWidth={columns}
-              terminalHeight={Math.max(1, rows - TUI_FRAME_CHROME_ROWS)}
-              settingsReader={settingsReader}
-              launchAnimationEnabled={launchAnimationEnabled}
-              bannerAnimationComplete={bannerAnimationComplete}
-              billboardAnimationComplete={billboardAnimationComplete}
-              onBannerAnimationComplete={handleBannerAnimationComplete}
-              onBillboardAnimationComplete={handleBillboardAnimationComplete}
-            />
-          )}
+          <ScreenRouter
+            activeScreenIndex={activeScreenIndex}
+            projectLifecycleState={routedProjectLifecycleState}
+            shortcutsEnabled={frameShortcutsEnabled}
+            terminalWidth={columns}
+            terminalHeight={Math.max(1, rows - TUI_FRAME_CHROME_ROWS)}
+            settingsReader={settingsReader}
+            launchAnimationEnabled={launchAnimationEnabled}
+            bannerAnimationComplete={bannerAnimationComplete}
+            billboardAnimationComplete={billboardAnimationComplete}
+            onBannerAnimationComplete={handleBannerAnimationComplete}
+            onBillboardAnimationComplete={handleBillboardAnimationComplete}
+          />
         </Box>
         {initFlowOpen && (
           <Box

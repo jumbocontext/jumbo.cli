@@ -85,46 +85,15 @@ describe("TuiApp", () => {
     unmount();
   });
 
-  it("changes frame when m is pressed (MegaMenu toggles open)", async () => {
+  it("does not open the MegaMenu when m is pressed", async () => {
     const { stdin, lastFrame, unmount } = render(
       <TuiApp settingsReader={hiddenLaunchpadWelcomeSettingsReader()} />,
     );
     const before = lastFrame();
     stdin.write("m");
     await tick();
-    expect(lastFrame()).not.toBe(before);
-    unmount();
-  });
-
-  it("MegaMenu closes on escape and returns to prior frame", async () => {
-    const { stdin, lastFrame, unmount } = render(
-      <TuiApp settingsReader={hiddenLaunchpadWelcomeSettingsReader()} />,
-    );
-    const initial = lastFrame();
-    stdin.write("m");
-    await tick();
-    expect(lastFrame()).not.toBe(initial);
-    stdin.write("\x1B");
-    await waitForFrame(
-      lastFrame,
-      (frame) => frame.includes("menu") && !frame.includes("Navigate"),
-    );
-    expect(lastFrame()).toContain("menu");
-    expect(lastFrame()).not.toContain("Memory");
-    expect(initial).toContain("menu");
-    unmount();
-  });
-
-  it("q does not quit while MegaMenu is open", async () => {
-    const { stdin, lastFrame, unmount } = render(
-      <TuiApp settingsReader={hiddenLaunchpadWelcomeSettingsReader()} />,
-    );
-    stdin.write("m");
-    await tick();
-    expect(lastFrame()).toContain("Memory");
-    stdin.write("q");
-    await tick();
-    expect(lastFrame()).toContain("Memory");
+    expect(lastFrame()).toBe(before);
+    expect(lastFrame()).not.toContain("Navigate");
     unmount();
   });
 
@@ -140,7 +109,7 @@ describe("TuiApp", () => {
     );
 
     await waitForFrame(lastFrame, (frame) => frame.includes("Test Project"));
-    expect(lastFrame()).not.toContain("init");
+    expect(lastFrame()).not.toContain("Initialize Project");
 
     stdin.write("i");
     await waitForFrame(lastFrame, (frame) =>
@@ -210,7 +179,7 @@ describe("TuiApp", () => {
     unmount();
   }, 10000);
 
-  it("hides the create-goal footer badge while the menu owns input", async () => {
+  it("keeps launchpad footer badges visible when the disabled menu key is pressed", async () => {
     const { stdin, lastFrame, unmount } = render(
       <TuiApp
         settingsReader={hiddenLaunchpadWelcomeSettingsReader()}
@@ -224,9 +193,10 @@ describe("TuiApp", () => {
     expect(lastFrame()).toContain("create goal");
 
     stdin.write("m");
-    await waitForFrame(lastFrame, (frame) => frame.includes("Navigate"));
+    await tick();
 
-    expect(lastFrame()).not.toContain("create goal");
+    expect(lastFrame()).not.toContain("Navigate");
+    expect(lastFrame()).toContain("create goal");
     unmount();
   }, 10000);
 

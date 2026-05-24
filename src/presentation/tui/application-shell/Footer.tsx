@@ -67,9 +67,7 @@ export function Footer({
       )}
       <Box justifyContent="space-between" paddingX={1}>
         <Box gap={2}>
-          <KeyBadge char="m" label="menu" />
           <KeyBadge char="q" label="quit" />
-          <KeyBadge char="h" label="help" />
           {contextualShortcuts.map((shortcut) => (
             <KeyBadge
               key={`${shortcut.char}-${shortcut.label}`}
