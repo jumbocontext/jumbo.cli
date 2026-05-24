@@ -17,12 +17,14 @@ export class TuiApplicationLauncher {
     private readonly fallbackActionControllers: TuiAppActionControllers = {},
     private readonly fallbackStateReaderControllerFactory?: () => Promise<TuiStateReaderControllers>,
     private readonly subprocessManagerFactory?: TuiSubprocessManagerFactory,
+    private readonly directoryPath: string = process.cwd(),
   ) {}
 
   async launch(): Promise<void> {
     const application = render(
       <TuiApp
         version={this.version}
+        directoryPath={this.directoryPath}
         stateReaderControllers={this.buildStateReaderControllers()}
         actionControllers={this.buildActionControllers()}
         onProjectInitialized={this.fallbackStateReaderControllerFactory}

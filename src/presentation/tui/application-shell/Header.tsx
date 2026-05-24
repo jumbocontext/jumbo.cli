@@ -4,26 +4,83 @@ import { BaseColors, SemanticColors, TuiGlyphs } from "../../shared/DesignTokens
 
 interface HeaderProps {
   projectName: string;
+  directoryPath: string;
   version: string;
   terminalWidth: number;
 }
 
 export function Header({
   projectName,
+  directoryPath,
   version,
   terminalWidth,
 }: HeaderProps): React.ReactElement {
+  const versionText = `v${version}`;
+  const displayedDirectoryPath = fitDirectoryPath({
+    directoryPath,
+    projectName,
+    terminalWidth,
+    versionText,
+  });
+
   return (
     <Box flexDirection="column" width={terminalWidth}>
       <Box justifyContent="space-between" paddingX={1}>
-        <Text color={BaseColors.brandBlue} bold>
-          {projectName}
-        </Text>
-        <Text color={BaseColors.brandBlue}>v{version}</Text>
+        <Box flexShrink={1}>
+          <Text color={BaseColors.brandBlue} bold>
+            {projectName}
+          </Text>
+          {displayedDirectoryPath.length > 0 && (
+            <Text color={SemanticColors.muted} dimColor>
+              {" "}
+              {displayedDirectoryPath}
+            </Text>
+          )}
+        </Box>
+        <Box flexShrink={0}>
+          <Text color={BaseColors.brandBlue}>{versionText}</Text>
+        </Box>
       </Box>
       {/* <Text color={SemanticColors.muted} dimColor>
         {TuiGlyphs.divider.repeat(terminalWidth)}
       </Text> */}
     </Box>
   );
+}
+
+function fitDirectoryPath({
+  directoryPath,
+  projectName,
+  terminalWidth,
+  versionText,
+}: {
+  readonly directoryPath: string;
+  readonly projectName: string;
+  readonly terminalWidth: number;
+  readonly versionText: string;
+}): string {
+  const horizontalPadding = 2;
+  const minimumGapBeforeVersion = 1;
+  const projectPathSeparator = 1;
+  const availablePathWidth =
+    terminalWidth -
+    horizontalPadding -
+    minimumGapBeforeVersion -
+    projectName.length -
+    projectPathSeparator -
+    versionText.length;
+
+  if (availablePathWidth <= 0) {
+    return "";
+  }
+
+  if (directoryPath.length <= availablePathWidth) {
+    return directoryPath;
+  }
+
+  if (availablePathWidth <= 3) {
+    return directoryPath.slice(0, availablePathWidth);
+  }
+
+  return `${directoryPath.slice(0, availablePathWidth - 3)}...`;
 }

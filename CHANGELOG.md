@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TUI notification prototype**: Footer notification badge with placeholder unread count, N-key drawer toggle, placeholder notification list, and individual dismiss actions.
 - **TUI dedicated memory entity screens**: Memory navigation now groups Decisions, Invariants, Components, Dependencies, and Guidelines under a first-level Memory menu category, with each entity type opening a focused placeholder list/detail screen and static event replay controls.
 - **Cockpit daemon Events panel**: Renamed the upper-right Cockpit panel from Session to Events and added bounded, timestamped daemon activity rows derived from refiner, reviewer, and codifier subprocess snapshots.
+- **TUI header directory context**: The TUI header now shows the launch directory path beside the project label while preserving the right-aligned CLI version.
 
 ### Changed
 

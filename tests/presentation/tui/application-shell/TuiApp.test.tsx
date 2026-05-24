@@ -1,7 +1,7 @@
 import React from "react";
-import { describe, expect, it, jest } from "@jest/globals";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { Box, Text } from "ink";
 import { render } from "ink-testing-library";
-import { TuiApp as ProductionTuiApp } from "../../../../src/presentation/tui/application-shell/TuiApp.js";
 import type {
   ISubprocessManager,
   TuiDaemonName,
@@ -9,6 +9,34 @@ import type {
 } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 import type { AddGoalRequest } from "../../../../src/application/context/goals/add/AddGoalRequest.js";
 import type { Settings } from "../../../../src/application/settings/Settings.js";
+
+interface HeaderProps {
+  readonly projectName: string;
+  readonly directoryPath: string;
+  readonly version: string;
+  readonly terminalWidth: number;
+}
+
+const mockHeader = jest.fn<(props: HeaderProps) => React.ReactElement>(
+  (props) => (
+    <Box>
+      <Text>{props.projectName}</Text>
+      <Text>{props.directoryPath}</Text>
+      <Text>{props.version}</Text>
+    </Box>
+  ),
+);
+
+jest.unstable_mockModule(
+  "../../../../src/presentation/tui/application-shell/Header.js",
+  () => ({
+    Header: mockHeader,
+  }),
+);
+
+const { TuiApp: ProductionTuiApp } = await import(
+  "../../../../src/presentation/tui/application-shell/TuiApp.js"
+);
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -33,6 +61,10 @@ function TuiApp(
 }
 
 describe("TuiApp", () => {
+  beforeEach(() => {
+    mockHeader.mockClear();
+  });
+
   const projectSummaryController = (
     lifecycleState: "uninitialized" | "unprimed" | "primed-empty" | "primed",
   ) => ({
@@ -82,6 +114,24 @@ describe("TuiApp", () => {
       <TuiApp settingsReader={hiddenLaunchpadWelcomeSettingsReader()} />,
     );
     expect((lastFrame() ?? "").length).toBeGreaterThan(0);
+    unmount();
+  });
+
+  it("passes the directory path to Header without deriving it in Header", () => {
+    const { unmount } = render(
+      <TuiApp
+        directoryPath={"C:\\projects\\jumbo\\cli"}
+        settingsReader={hiddenLaunchpadWelcomeSettingsReader()}
+      />,
+    );
+    const headerProps = mockHeader.mock.calls[0][0];
+
+    expect(headerProps).toMatchObject({
+      projectName: "Jumbo",
+      directoryPath: "C:\\projects\\jumbo\\cli",
+      version: "",
+      terminalWidth: expect.any(Number),
+    });
     unmount();
   });
 

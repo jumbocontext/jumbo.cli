@@ -75,6 +75,24 @@ describe("TuiApplicationLauncher", () => {
     expect(element.props.onProjectInitialized).toBe(factory);
   });
 
+  it("passes the launcher directory path into TuiApp", async () => {
+    const launcher = new TuiApplicationLauncher(
+      "1.2.3",
+      null,
+      {},
+      undefined,
+      undefined,
+      "C:\\projects\\jumbo\\cli",
+    );
+
+    await launcher.launch();
+
+    const element = mockRender.mock.calls[0][0] as React.ReactElement<{
+      directoryPath: string;
+    }>;
+    expect(element.props.directoryPath).toBe("C:\\projects\\jumbo\\cli");
+  });
+
   it("receives the subprocess manager through a launcher factory", async () => {
     const subprocessManager = {
       spawn: jest.fn(),

@@ -58,6 +58,7 @@ function useTerminalDimensions(): { columns: number; rows: number } {
 
 interface TuiAppProps {
   readonly version?: string;
+  readonly directoryPath?: string;
   readonly stateReaderControllers?: TuiStateReaderControllers;
   readonly stateReaderOptions?: TuiStateReaderOptions;
   readonly actionControllers?: TuiAppActionControllers;
@@ -76,6 +77,7 @@ export interface TuiAppActionControllers extends InitFlowActionControllers {
 
 export function TuiApp({
   version = "",
+  directoryPath = "",
   stateReaderControllers,
   stateReaderOptions,
   actionControllers,
@@ -106,6 +108,7 @@ export function TuiApp({
       {activeSubprocessManager === undefined ? (
         <TuiAppFrame
           version={version}
+          directoryPath={directoryPath}
           actionControllers={actionControllers}
           onProjectInitialized={handleProjectInitialized}
           subprocessManagerEnabled={false}
@@ -116,6 +119,7 @@ export function TuiApp({
         <SubprocessManagerProvider manager={activeSubprocessManager}>
           <TuiAppFrame
             version={version}
+            directoryPath={directoryPath}
             actionControllers={actionControllers}
             onProjectInitialized={handleProjectInitialized}
             subprocessManagerEnabled={true}
@@ -130,6 +134,7 @@ export function TuiApp({
 
 interface TuiAppFrameProps {
   readonly version: string;
+  readonly directoryPath: string;
   readonly actionControllers?: TuiAppActionControllers;
   readonly onProjectInitialized: () => Promise<boolean>;
   readonly subprocessManagerEnabled: boolean;
@@ -139,6 +144,7 @@ interface TuiAppFrameProps {
 
 function TuiAppFrame({
   version,
+  directoryPath,
   actionControllers,
   onProjectInitialized,
   subprocessManagerEnabled,
@@ -341,6 +347,7 @@ function TuiAppFrame({
       <Box flexShrink={0}>
         <Header
           projectName={projectContext.data?.name ?? PLACEHOLDER_PROJECT_NAME}
+          directoryPath={directoryPath}
           version={version}
           terminalWidth={columns}
         />
