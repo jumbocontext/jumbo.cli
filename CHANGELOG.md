@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-05-25
+
+### Fixed
+
+- **Release test stability**: Stabilized TUI and daemon tests by removing brittle long-form interactive TUI expectations and using platform-aware path expectations in daemon tests.
+
 ## [3.2.0] - 2026-05-25
 
 ### Added
