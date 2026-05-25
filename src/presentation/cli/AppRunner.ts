@@ -23,9 +23,12 @@ import { attachGlobalOptions } from "./program/GlobalOptionsHandler.js";
 import { classifyCommand } from "./commands/CommandClassifier.js";
 import {
   isBareCommand,
-  showBannerWithContainer,
 } from "./banner/BannerOrchestrator.js";
 import { Renderer } from "./rendering/Renderer.js";
+import { TuiApplicationLauncher } from "../tui/application-shell/TuiApplicationLauncher.js";
+import type { TuiSubprocessManagerFactory } from "../tui/application-shell/TuiApplicationLauncher.js";
+import type { TuiStateReaderControllers } from "../tui/state-reading/TuiStateReader.js";
+import type { InitFlowActionControllers } from "../tui/project-initialization/InitFlow.js";
 import {
   CLI_FLAGS,
   ARGV,
@@ -100,6 +103,9 @@ function classifyInvocation(argv: string[]): InvocationType {
 export class AppRunner {
   private readonly container: IApplicationContainer | null;
   private readonly version: string;
+  private readonly bareTuiActionControllers: InitFlowActionControllers;
+  private readonly bareTuiStateReaderControllerFactory?: () => Promise<TuiStateReaderControllers>;
+  private readonly tuiSubprocessManagerFactory?: TuiSubprocessManagerFactory;
 
   /**
    * Creates a new AppRunner.
@@ -107,9 +113,19 @@ export class AppRunner {
    * @param version - CLI version string
    * @param container - Application container (optional, null for help/version without project)
    */
-  constructor(version: string, container: IApplicationContainer | null = null) {
+  constructor(
+    version: string,
+    container: IApplicationContainer | null = null,
+    bareTuiActionControllers: InitFlowActionControllers = {},
+    bareTuiStateReaderControllerFactory?: () => Promise<TuiStateReaderControllers>,
+    tuiSubprocessManagerFactory?: TuiSubprocessManagerFactory,
+  ) {
     this.version = version;
     this.container = container;
+    this.bareTuiActionControllers = bareTuiActionControllers;
+    this.bareTuiStateReaderControllerFactory =
+      bareTuiStateReaderControllerFactory;
+    this.tuiSubprocessManagerFactory = tuiSubprocessManagerFactory;
   }
 
   /**
@@ -121,10 +137,16 @@ export class AppRunner {
     const argv = process.argv;
     const invocationType = classifyInvocation(argv);
 
-    // Handle bare 'jumbo' command - show banner and exit
+    // Handle bare 'jumbo' command - launch the Ink TUI.
     if (invocationType === "banner") {
-      await showBannerWithContainer(this.version, this.container);
-      return; // showBannerWithContainer calls process.exit
+      await new TuiApplicationLauncher(
+        this.version,
+        this.container,
+        this.bareTuiActionControllers,
+        this.bareTuiStateReaderControllerFactory,
+        this.tuiSubprocessManagerFactory,
+      ).launch();
+      return;
     }
 
     // Create program with categorized help

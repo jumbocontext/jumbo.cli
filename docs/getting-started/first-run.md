@@ -133,6 +133,8 @@ jumbo goal add \
     "Includes unit tests for limit exceeded scenarios"
 ```
 
+If you are using the TUI, run `jumbo` and press `g` from the primed-empty Cockpit screen to open the same goal authoring flow without leaving the interface.
+
 Output:
 
 ```

@@ -99,7 +99,7 @@ To get the most out of Jumbo:
 - Register decisions when architectural choices are made: `jumbo decision add ...`
 - Register guidelines/invariants when user corrections define standards.
 - Keep component and dependency records current before starting large goals.
-- Use `jumbo session start` at the beginning of every agent session so orientation is consistent.
+- Use `jumbo session start` at the beginning of every agent session so the agent routes to the right workflow before loading context.
 
 ## Recommended rapid workflow
 
@@ -107,7 +107,6 @@ For day-to-day execution:
 
 ```bash
 > jumbo session start
-> jumbo goals list --status defined,refined,doing,paused
 > jumbo goal start --id <goalId>
 # implement in your coding agent
 > jumbo goal update-progress --id <goalId> --task-description "..."

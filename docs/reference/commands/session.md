@@ -25,18 +25,21 @@ None.
 
 ### Behavior
 
-1. Loads project orientation context
-2. Displays previous session summary
-3. Shows in-progress and planned goals
-4. Records session start event
+1. Records a session start event
+2. Returns a workflow router packet
+3. Tells the agent which workflow-specific command should load the next context packet
+4. Preserves brownfield onboarding guidance when the project has no registered solution context
 
 ### Output
 
 Displays:
-- Project header (name, purpose)
-- Previous session summary
-- In-progress goals (status: `doing`)
-- Planned goals (status: `defined`)
+- Session ID and status
+- A prompt asking whether the user wants to design/define, refine, execute, review, codify, or do something different
+- Route commands for each workflow
+- `jumbo project show --northstar --format json` for design or definition workflows
+- `jumbo goals list --format json` fallbacks for goal-id workflows
+
+`session start` no longer includes project context, goal backlog summaries, or recent decisions. Those are loaded by the selected workflow command.
 
 ### Examples
 

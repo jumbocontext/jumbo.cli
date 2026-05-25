@@ -3,6 +3,7 @@ import * as path from "path";
 import { Host } from "../../src/infrastructure/host/Host.js";
 import { IApplicationContainer } from "../../src/application/host/IApplicationContainer.js";
 import { BaseEvent } from "../../src/domain/BaseEvent.js";
+import os from "os";
 
 describe("Infrastructure Wiring Integration", () => {
   let tmpDir: string;
@@ -10,7 +11,7 @@ describe("Infrastructure Wiring Integration", () => {
   let container: IApplicationContainer;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-integration-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-integration-"));
     host = new Host(tmpDir);
     const builder = host.createBuilder();
     container = await builder.build();

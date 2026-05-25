@@ -56,6 +56,36 @@ List all project invariants.
 
 ---
 
+## jumbo invariants search
+
+Search invariants by title or free-text query. Filters combine with AND logic.
+
+### Synopsis
+
+```bash
+> jumbo invariants search [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-t, --title <title>` | Filter by title (substring match; supports `*` wildcards) |
+| `-q, --query <text>` | Free-text search across title, description, and rationale (supports `*` wildcards) |
+| `-o, --output <level>` | Output detail: `default` or `compact` (id and title only) |
+
+### Examples
+
+```bash
+# Search by title wildcard
+> jumbo invariants search --title "Clean*"
+
+# Free-text search with compact output
+> jumbo invariants search --query "stdout" --output compact
+```
+
+---
+
 ## jumbo invariant update
 
 Update an existing invariant.

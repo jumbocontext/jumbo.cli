@@ -11,13 +11,14 @@ import { FsGoalSubmittedEventStore } from "../../../../../src/infrastructure/con
 import { IGoalSubmittedEventReader } from "../../../../../src/application/context/goals/submit/IGoalSubmittedEventReader";
 import { IGoalSubmittedEventWriter } from "../../../../../src/application/context/goals/submit/IGoalSubmittedEventWriter";
 import { BaseEvent } from "../../../../../src/domain/BaseEvent";
+import os from "os";
 
 describe("FsGoalSubmittedEventStore", () => {
   let tmpDir: string;
   let store: FsGoalSubmittedEventStore;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-submit-events-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-submit-events-"));
     store = new FsGoalSubmittedEventStore(tmpDir);
   });
 

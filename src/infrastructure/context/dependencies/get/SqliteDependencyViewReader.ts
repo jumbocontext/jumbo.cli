@@ -8,6 +8,7 @@
 import { Database } from "better-sqlite3";
 import { IDependencyViewReader, DependencyListFilter } from "../../../../application/context/dependencies/get/IDependencyViewReader.js";
 import { DependencyView } from "../../../../application/context/dependencies/DependencyView.js";
+import { DependencySearchCriteria } from "../../../../application/context/dependencies/search/DependencySearchCriteria.js";
 import { DependencyRecord } from "../DependencyRecord.js";
 import { DependencyRecordMapper } from "../DependencyRecordMapper.js";
 
@@ -64,6 +65,75 @@ export class SqliteDependencyViewReader implements IDependencyViewReader {
     const query = `SELECT * FROM dependency_views WHERE dependencyId IN (${placeholders}) ORDER BY createdAt DESC`;
     const rows = this.db.prepare(query).all(...ids);
     return rows.map((row) => this.mapper.toView(this.mapRowToRecord(row as Record<string, unknown>)));
+  }
+
+  async search(criteria: DependencySearchCriteria): Promise<DependencyView[]> {
+    const clauses: string[] = [];
+    const params: string[] = [];
+
+    if (criteria.name !== undefined) {
+      clauses.push("COALESCE(name, packageName, providerId, 'unknown') LIKE ?");
+      params.push(this.toLikePattern(criteria.name));
+    }
+
+    if (criteria.ecosystem !== undefined) {
+      clauses.push("COALESCE(ecosystem, CASE WHEN providerId IS NOT NULL AND providerId != '' THEN 'legacy-component' ELSE 'unknown' END) LIKE ?");
+      params.push(this.toLikePattern(criteria.ecosystem));
+    }
+
+    if (criteria.packageName !== undefined) {
+      clauses.push("COALESCE(packageName, providerId, 'unknown') LIKE ?");
+      params.push(this.toLikePattern(criteria.packageName));
+    }
+
+    if (criteria.versionConstraint !== undefined) {
+      clauses.push("COALESCE(versionConstraint, '') LIKE ?");
+      params.push(this.toLikePattern(criteria.versionConstraint));
+    }
+
+    if (criteria.status !== undefined) {
+      clauses.push("status = ?");
+      params.push(criteria.status);
+    }
+
+    if (criteria.consumer !== undefined) {
+      clauses.push("consumerId LIKE ?");
+      params.push(this.toLikePattern(criteria.consumer));
+    }
+
+    if (criteria.provider !== undefined) {
+      clauses.push("providerId LIKE ?");
+      params.push(this.toLikePattern(criteria.provider));
+    }
+
+    if (criteria.query !== undefined) {
+      const pattern = this.toLikePattern(criteria.query);
+      clauses.push(`(
+        COALESCE(name, packageName, providerId, 'unknown') LIKE ?
+        OR COALESCE(ecosystem, CASE WHEN providerId IS NOT NULL AND providerId != '' THEN 'legacy-component' ELSE 'unknown' END) LIKE ?
+        OR COALESCE(packageName, providerId, 'unknown') LIKE ?
+        OR COALESCE(versionConstraint, '') LIKE ?
+        OR COALESCE(contract, '') LIKE ?
+        OR COALESCE(endpoint, '') LIKE ?
+      )`);
+      params.push(pattern, pattern, pattern, pattern, pattern, pattern);
+    }
+
+    let query = "SELECT * FROM dependency_views";
+    if (clauses.length > 0) {
+      query += " WHERE " + clauses.join(" AND ");
+    }
+    query += " ORDER BY createdAt DESC";
+
+    const rows = this.db.prepare(query).all(...params);
+    return rows.map((row) => this.mapper.toView(this.mapRowToRecord(row as Record<string, unknown>)));
+  }
+
+  private toLikePattern(input: string): string {
+    if (input.includes("*")) {
+      return input.replace(/\*/g, "%");
+    }
+    return `%${input}%`;
   }
 
   private mapRowToRecord(row: Record<string, unknown>): DependencyRecord {

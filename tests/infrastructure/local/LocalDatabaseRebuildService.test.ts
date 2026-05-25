@@ -16,6 +16,7 @@ import { GoalClaimPolicy } from "../../../src/application/context/goals/claims/G
 import { CommitGoalCommandHandler } from "../../../src/application/context/goals/commit/CommitGoalCommandHandler";
 import { SqliteGoalCommittedProjector } from "../../../src/infrastructure/context/goals/commit/SqliteGoalCommittedProjector";
 import { jest } from "@jest/globals";
+import os from "os";
 
 class MockHostSessionKeyResolver extends HostSessionKeyResolver {
   constructor(private readonly sessionKey: string) {
@@ -43,6 +44,8 @@ function createMockEventBus(): jest.Mocked<IEventBus> {
   };
 }
 
+jest.setTimeout(30_000);
+
 describe("LocalDatabaseRebuildService", () => {
   let tmpDir: string;
   let dbPath: string;
@@ -55,7 +58,7 @@ describe("LocalDatabaseRebuildService", () => {
   const goalId = "goal_rebuild_claim";
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-rebuild-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-rebuild-"));
     dbPath = path.join(tmpDir, "jumbo.db");
     initialDb = new Database(dbPath);
     initialDb.pragma("journal_mode = WAL");

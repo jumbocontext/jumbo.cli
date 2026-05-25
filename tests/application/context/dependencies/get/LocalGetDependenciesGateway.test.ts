@@ -7,6 +7,7 @@ describe("LocalGetDependenciesGateway", () => {
     const mockReader: jest.Mocked<IDependencyViewReader> = {
       findAll: jest.fn().mockResolvedValue([]),
       findByIds: jest.fn(),
+      search: jest.fn(),
     };
 
     const gateway = new LocalGetDependenciesGateway(mockReader);
@@ -22,6 +23,7 @@ describe("LocalGetDependenciesGateway", () => {
     const mockReader: jest.Mocked<IDependencyViewReader> = {
       findAll: jest.fn().mockResolvedValue([]),
       findByIds: jest.fn(),
+      search: jest.fn(),
     };
 
     const gateway = new LocalGetDependenciesGateway(mockReader);
@@ -51,6 +53,7 @@ describe("LocalGetDependenciesGateway", () => {
     const mockReader: jest.Mocked<IDependencyViewReader> = {
       findAll: jest.fn().mockResolvedValue(mockDependencies),
       findByIds: jest.fn(),
+      search: jest.fn(),
     };
 
     const gateway = new LocalGetDependenciesGateway(mockReader);

@@ -27,11 +27,13 @@ describe("SessionContextQueryHandler", () => {
     decisionViewReader = {
       findAll: jest.fn().mockResolvedValue([]),
       findByIds: jest.fn().mockResolvedValue([]),
+      search: jest.fn().mockResolvedValue([]),
     } as jest.Mocked<IDecisionViewReader>;
 
     projectContextReader = {
       getProject: jest.fn().mockResolvedValue(null),
     } as unknown as jest.Mocked<IProjectContextReader>;
+
   });
 
   function createHandler(): SessionContextQueryHandler {
@@ -81,15 +83,8 @@ describe("SessionContextQueryHandler", () => {
     expect(result.context.projectContext).toBeNull();
   });
 
-  it("should expose only project name and purpose in projectContext", async () => {
-    const project = {
-      projectId: "p1",
-      name: "TestProject",
-      purpose: "Testing",
-      version: 1,
-      createdAt: "2025-01-01T00:00:00Z",
-      updatedAt: "2025-01-01T00:00:00Z",
-    };
+  it("should assemble core projectContext without north-star data", async () => {
+    const project = { name: "TestProject", purpose: "Testing" };
 
     projectContextReader.getProject.mockResolvedValue(project as any);
 
@@ -97,11 +92,6 @@ describe("SessionContextQueryHandler", () => {
     const result = await handler.execute();
 
     expect(result.context.projectContext).toBe(project);
-    expect(result.context.projectContext?.name).toBe("TestProject");
-    expect(result.context.projectContext?.purpose).toBe("Testing");
-    expect(result.context.projectContext).not.toHaveProperty("audiences");
-    expect(result.context.projectContext).not.toHaveProperty("audiencePains");
-    expect(result.context.projectContext).not.toHaveProperty("valuePropositions");
   });
 
   it("should separate doing, blocked, in-review, and qualified goals as activeGoals", async () => {
@@ -172,7 +162,7 @@ describe("SessionContextQueryHandler", () => {
     expect(decisionViewReader.findAll).toHaveBeenCalledWith("active");
   });
 
-  it("should limit recent decisions to 3", async () => {
+  it("should limit recent decisions to 10", async () => {
     const decisions = Array.from({ length: 15 }, (_, i) => ({
       decisionId: `d${i}`,
       title: `Decision ${i}`,
@@ -186,7 +176,7 @@ describe("SessionContextQueryHandler", () => {
     expect(result.context.recentDecisions).toHaveLength(3);
   });
 
-  it("should handle missing optional project reader gracefully", async () => {
+  it("should handle missing optional readers gracefully", async () => {
     const handler = new SessionContextQueryHandler(
       sessionViewReader,
       goalStatusReader,

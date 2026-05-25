@@ -69,6 +69,8 @@ import { LocalAddDecisionGateway } from "../../application/context/decisions/add
 import { AddDecisionController } from "../../application/context/decisions/add/AddDecisionController.js";
 import { LocalGetDecisionsGateway } from "../../application/context/decisions/get/LocalGetDecisionsGateway.js";
 import { GetDecisionsController } from "../../application/context/decisions/get/GetDecisionsController.js";
+import { LocalSearchDecisionsGateway } from "../../application/context/decisions/search/LocalSearchDecisionsGateway.js";
+import { SearchDecisionsController } from "../../application/context/decisions/search/SearchDecisionsController.js";
 import { ReverseDecisionCommandHandler } from "../../application/context/decisions/reverse/ReverseDecisionCommandHandler.js";
 import { LocalReverseDecisionGateway } from "../../application/context/decisions/reverse/LocalReverseDecisionGateway.js";
 import { ReverseDecisionController } from "../../application/context/decisions/reverse/ReverseDecisionController.js";
@@ -150,6 +152,8 @@ import { FsProjectUpdatedEventStore } from "../context/project/update/FsProjectU
 import { UpdateProjectCommandHandler } from "../../application/context/project/update/UpdateProjectCommandHandler.js";
 import { LocalUpdateProjectGateway } from "../../application/context/project/update/LocalUpdateProjectGateway.js";
 import { UpdateProjectController } from "../../application/context/project/update/UpdateProjectController.js";
+import { LocalShowProjectGateway } from "../../application/context/project/show/LocalShowProjectGateway.js";
+import { ShowProjectController } from "../../application/context/project/show/ShowProjectController.js";
 // Audience Event Stores - decomposed by use case
 import { FsAudienceAddedEventStore } from "../context/audiences/add/FsAudienceAddedEventStore.js";
 import { FsAudienceUpdatedEventStore } from "../context/audiences/update/FsAudienceUpdatedEventStore.js";
@@ -229,6 +233,8 @@ import { SqliteGuidelineRemovedProjector } from "../context/guidelines/remove/Sq
 import { SqliteGuidelineViewReader } from "../context/guidelines/get/SqliteGuidelineViewReader.js";
 import { LocalGetGuidelinesGateway } from "../../application/context/guidelines/get/LocalGetGuidelinesGateway.js";
 import { GetGuidelinesController } from "../../application/context/guidelines/get/GetGuidelinesController.js";
+import { LocalSearchGuidelinesGateway } from "../../application/context/guidelines/search/LocalSearchGuidelinesGateway.js";
+import { SearchGuidelinesController } from "../../application/context/guidelines/search/SearchGuidelinesController.js";
 // Invariant Projection Stores - decomposed by use case
 import { SqliteInvariantAddedProjector } from "../context/invariants/add/SqliteInvariantAddedProjector.js";
 import { SqliteInvariantUpdatedProjector } from "../context/invariants/update/SqliteInvariantUpdatedProjector.js";
@@ -822,6 +828,8 @@ export class HostBuilder {
     const guidelineViewReader = new SqliteGuidelineViewReader(this.db);
     const getGuidelinesGateway = new LocalGetGuidelinesGateway(guidelineViewReader);
     const getGuidelinesController = new GetGuidelinesController(getGuidelinesGateway);
+    const searchGuidelinesGateway = new LocalSearchGuidelinesGateway(guidelineViewReader);
+    const searchGuidelinesController = new SearchGuidelinesController(searchGuidelinesGateway);
     const addGuidelineCommandHandler = new AddGuidelineCommandHandler(
       guidelineAddedEventStore,
       eventBus
@@ -970,6 +978,13 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const updateProjectController = new UpdateProjectController(
       updateProjectGateway
     );
+    const showProjectGateway = new LocalShowProjectGateway(
+      projectContextReader,
+      audienceContextReader,
+      audiencePainContextReader,
+      valuePropositionContextReader
+    );
+    const showProjectController = new ShowProjectController(showProjectGateway);
 
     // Session Controllers
     const sessionContextQueryHandler = new SessionContextQueryHandler(
@@ -983,10 +998,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       eventBus
     );
     const startSessionGateway = new LocalStartSessionGateway(
-      sessionContextQueryHandler,
       startSessionCommandHandler,
       brownfieldStatusReader,
-      architectureDefinedProjector,
     );
     const sessionStartController = new SessionStartController(
       startSessionGateway
@@ -1390,6 +1403,12 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     );
     const getDecisionsController = new GetDecisionsController(
       getDecisionsGateway
+    );
+    const searchDecisionsGateway = new LocalSearchDecisionsGateway(
+      decisionViewReader
+    );
+    const searchDecisionsController = new SearchDecisionsController(
+      searchDecisionsGateway
     );
     const reverseDecisionCommandHandler = new ReverseDecisionCommandHandler(
       decisionReversedEventStore,
@@ -2087,6 +2106,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       // Decision Controllers
       addDecisionController,
       getDecisionsController,
+      searchDecisionsController,
       reverseDecisionController,
       restoreDecisionController,
       supersedeDecisionController,
@@ -2192,6 +2212,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       updateGuidelineController,
       removeGuidelineController,
       getGuidelinesController,
+      searchGuidelinesController,
       // Invariant Projection Stores - decomposed by use case
       invariantAddedProjector,
       invariantUpdatedProjector,
@@ -2228,6 +2249,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       projectInitializedProjector,
       projectUpdatedProjector,
       updateProjectController,
+      showProjectController,
       projectContextReader,
       // Audience Projection Stores - decomposed by use case
       audienceAddedProjector,

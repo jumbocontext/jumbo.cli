@@ -5,13 +5,14 @@
 import fs from "fs-extra";
 import * as path from "path";
 import { FsGitignoreProtocol } from "../../../../../src/infrastructure/context/project/init/FsGitignoreProtocol";
+import os from "os";
 
 describe("FsGitignoreProtocol", () => {
   let tmpDir: string;
   let protocol: FsGitignoreProtocol;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-gitignore-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-gitignore-"));
     protocol = new FsGitignoreProtocol();
   });
 

@@ -32,11 +32,13 @@ import { decisionAdd, metadata as decisionAddMeta } from '../../commands/decisio
 import { decisionsList, metadata as decisionsListMeta } from '../../commands/decisions/list/decisions.list.js';
 import { decisionRestore, metadata as decisionRestoreMeta } from '../../commands/decisions/restore/decision.restore.js';
 import { decisionReverse, metadata as decisionReverseMeta } from '../../commands/decisions/reverse/decision.reverse.js';
+import { decisionsSearch, metadata as decisionsSearchMeta } from '../../commands/decisions/search/decisions.search.js';
 import { decisionSupersede, metadata as decisionSupersedeMeta } from '../../commands/decisions/supersede/decision.supersede.js';
 import { decisionUpdate, metadata as decisionUpdateMeta } from '../../commands/decisions/update/decision.update.js';
 import { dependencyAdd, metadata as dependencyAddMeta } from '../../commands/dependencies/add/dependency.add.js';
 import { dependenciesList, metadata as dependenciesListMeta } from '../../commands/dependencies/list/dependencies.list.js';
 import { dependencyRemove, metadata as dependencyRemoveMeta } from '../../commands/dependencies/remove/dependency.remove.js';
+import { dependenciesSearch, metadata as dependenciesSearchMeta } from '../../commands/dependencies/search/dependencies.search.js';
 import { dependencyUpdate, metadata as dependencyUpdateMeta } from '../../commands/dependencies/update/dependency.update.js';
 import { evolve, metadata as evolveMeta } from '../../commands/evolve/evolve.js';
 import { goalAdd, metadata as goalAddMeta } from '../../commands/goals/add/goal.add.js';
@@ -63,14 +65,17 @@ import { goalUpdateProgress, metadata as goalUpdateProgressMeta } from '../../co
 import { guidelineAdd, metadata as guidelineAddMeta } from '../../commands/guidelines/add/guideline.add.js';
 import { guidelinesList, metadata as guidelinesListMeta } from '../../commands/guidelines/list/guidelines.list.js';
 import { guidelineRemove, metadata as guidelineRemoveMeta } from '../../commands/guidelines/remove/guideline.remove.js';
+import { guidelinesSearch, metadata as guidelinesSearchMeta } from '../../commands/guidelines/search/guidelines.search.js';
 import { guidelineUpdate, metadata as guidelineUpdateMeta } from '../../commands/guidelines/update/guideline.update.js';
 import { heal, metadata as healMeta } from '../../commands/heal/heal.js';
 import { workerView, metadata as workerViewMeta } from '../../commands/host/workers/worker.view.js';
 import { invariantAdd, metadata as invariantAddMeta } from '../../commands/invariants/add/invariant.add.js';
 import { invariantsList, metadata as invariantsListMeta } from '../../commands/invariants/list/invariants.list.js';
 import { invariantRemove, metadata as invariantRemoveMeta } from '../../commands/invariants/remove/invariant.remove.js';
+import { invariantsSearch, metadata as invariantsSearchMeta } from '../../commands/invariants/search/invariants.search.js';
 import { invariantUpdate, metadata as invariantUpdateMeta } from '../../commands/invariants/update/invariant.update.js';
 import { projectInit, metadata as projectInitMeta } from '../../commands/project/init/project.init.js';
+import { projectShow, metadata as projectShowMeta } from '../../commands/project/show/project.show.js';
 import { projectUpdate, metadata as projectUpdateMeta } from '../../commands/project/update/project.update.js';
 import { relationAdd, metadata as relationAddMeta } from '../../commands/relations/add/relation.add.js';
 import { relationsList, metadata as relationsListMeta } from '../../commands/relations/list/relations.list.js';
@@ -208,6 +213,11 @@ export const commands: RegisteredCommand[] = [
     handler: decisionReverse
   },
   {
+    path: 'decisions search',
+    metadata: decisionsSearchMeta,
+    handler: decisionsSearch
+  },
+  {
     path: 'decision supersede',
     metadata: decisionSupersedeMeta,
     handler: decisionSupersede
@@ -231,6 +241,11 @@ export const commands: RegisteredCommand[] = [
     path: 'dependency remove',
     metadata: dependencyRemoveMeta,
     handler: dependencyRemove
+  },
+  {
+    path: 'dependencies search',
+    metadata: dependenciesSearchMeta,
+    handler: dependenciesSearch
   },
   {
     path: 'dependency update',
@@ -363,6 +378,11 @@ export const commands: RegisteredCommand[] = [
     handler: guidelineRemove
   },
   {
+    path: 'guidelines search',
+    metadata: guidelinesSearchMeta,
+    handler: guidelinesSearch
+  },
+  {
     path: 'guideline update',
     metadata: guidelineUpdateMeta,
     handler: guidelineUpdate
@@ -393,6 +413,11 @@ export const commands: RegisteredCommand[] = [
     handler: invariantRemove
   },
   {
+    path: 'invariants search',
+    metadata: invariantsSearchMeta,
+    handler: invariantsSearch
+  },
+  {
     path: 'invariant update',
     metadata: invariantUpdateMeta,
     handler: invariantUpdate
@@ -401,6 +426,11 @@ export const commands: RegisteredCommand[] = [
     path: 'project init',
     metadata: projectInitMeta,
     handler: projectInit
+  },
+  {
+    path: 'project show',
+    metadata: projectShowMeta,
+    handler: projectShow
   },
   {
     path: 'project update',

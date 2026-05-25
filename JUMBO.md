@@ -10,7 +10,7 @@ Sincerely,
 Project Administrator
 
 ### When you start a new Session Start
-Run `jumbo session start`
+Unless you've already been prompted with a specific directive, then run `jumbo session start`
 
 This orients you with the current state of the project: high-level project, recent events and a goal backlog to select work from.
 
@@ -81,6 +81,8 @@ Context you register now is served to future sessions — yours or another agent
 `jumbo session pause --help `
 `jumbo session resume --help `
 `jumbo session start --help `
+`jumbo architecture define --help `
+`jumbo architecture update --help `
 `jumbo component add --help `
 `jumbo component deprecate --help `
 `jumbo component remove --help `

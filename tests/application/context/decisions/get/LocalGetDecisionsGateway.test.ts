@@ -11,6 +11,7 @@ describe("LocalGetDecisionsGateway", () => {
     mockReader = {
       findAll: jest.fn(),
       findByIds: jest.fn(),
+      search: jest.fn(),
     } as jest.Mocked<IDecisionViewReader>;
 
     gateway = new LocalGetDecisionsGateway(mockReader);

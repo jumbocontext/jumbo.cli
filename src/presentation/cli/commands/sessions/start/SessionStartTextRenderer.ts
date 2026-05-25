@@ -1,6 +1,6 @@
 import { EnrichedSessionContext } from "../../../../../application/context/sessions/get/EnrichedSessionContext.js";
-import { SessionStartOutputBuilder } from "./SessionStartOutputBuilder.js";
 import { SessionContextOutputBuilder } from "./SessionContextOutputBuilder.js";
+import { SessionGoalsOutputBuilder } from "./SessionGoalsOutputBuilder.js";
 
 export interface SessionStartTextRenderResult {
   readonly blocks: string[];
@@ -20,22 +20,25 @@ export interface SessionStartStructuredContext {
 /**
  * SessionStartTextRenderer - Formats session start context for LLM orientation.
  *
- * Delegates to SessionStartOutputBuilder for composition.
+ * Delegates to session context and goals builders for legacy resume context.
  * Retained for backward compatibility with existing callers and tests.
  */
 export class SessionStartTextRenderer {
-  private readonly sessionStartOutputBuilder: SessionStartOutputBuilder;
   private readonly sessionContextOutputBuilder: SessionContextOutputBuilder;
+  private readonly sessionGoalsOutputBuilder: SessionGoalsOutputBuilder;
 
   constructor() {
-    this.sessionStartOutputBuilder = new SessionStartOutputBuilder();
     this.sessionContextOutputBuilder = new SessionContextOutputBuilder();
+    this.sessionGoalsOutputBuilder = new SessionGoalsOutputBuilder();
   }
 
   render(context: EnrichedSessionContext): SessionStartTextRenderResult {
-    const output = this.sessionStartOutputBuilder.buildSessionStartOutput(context);
+    const sections = [
+      ...this.sessionContextOutputBuilder.buildSessionContext(context).getSections(),
+      ...this.sessionGoalsOutputBuilder.buildGoalsOutput(this.getAllGoals(context)).getSections(),
+    ];
 
-    const blocks = output.getSections()
+    const blocks = sections
       .filter(s => s.type === "prompt" && s.content)
       .map(s => s.content as string);
 
@@ -54,19 +57,29 @@ export class SessionStartTextRenderer {
   }
 
   buildStructuredContext(context: EnrichedSessionContext): SessionStartStructuredContext {
-    const structured = this.sessionStartOutputBuilder.buildStructuredOutput(context, "");
+    const contextData = this.sessionContextOutputBuilder.buildStructuredSessionContext(context);
+    const goalsData = this.sessionGoalsOutputBuilder.buildStructuredGoals(this.getAllGoals(context));
+
     return {
-      projectContext: structured.projectContext as Record<string, unknown> | null,
-      sessionContext: structured.sessionContext as Record<string, unknown>,
-      goals: structured.goals as Record<string, unknown>,
-      llmInstructions: structured.llmInstructions as {
-        sessionContext: string | null;
-        goalStart: string;
+      projectContext: contextData.projectContext,
+      sessionContext: contextData.sessionContext,
+      goals: goalsData.goals,
+      llmInstructions: {
+        sessionContext: contextData.llmSessionContextInstruction,
+        goalStart: goalsData.llmGoalStartInstruction,
       },
     };
   }
 
   renderSessionSummary(context: EnrichedSessionContext): string {
     return this.sessionContextOutputBuilder.renderSessionSummary(context);
+  }
+
+  private getAllGoals(context: EnrichedSessionContext) {
+    return [
+      ...context.context.activeGoals,
+      ...context.context.pausedGoals,
+      ...context.context.plannedGoals,
+    ];
   }
 }

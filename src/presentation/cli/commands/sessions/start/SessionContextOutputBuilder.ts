@@ -12,7 +12,7 @@ import {
 /**
  * SessionContextOutputBuilder - Builds output for session context orientation.
  *
- * Renders a minimal project header (name, purpose) and session summary
+ * Renders project context (name, purpose, audiences, pains) and session summary
  * (focus, status, paused goals, recent decisions).
  * Includes brownfield onboarding and paused goals resume @LLM prompts.
  */
@@ -90,10 +90,12 @@ export class SessionContextOutputBuilder {
       return null;
     }
 
-    return {
+    const contextData: Record<string, unknown> = {
       name: projectContext.name,
       purpose: projectContext.purpose || "Not defined",
     };
+
+    return contextData;
   }
 
   private buildSessionContextData(

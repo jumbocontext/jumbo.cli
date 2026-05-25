@@ -18,7 +18,7 @@ Definition without alignment produces goals that solve the wrong problem or miss
 Before discussing the goal, load the project's north-star context:
 
 ```bash
-jumbo architecture view
+jumbo project show --northstar
 ```
 
 Also extract the `projectContext` from your session start output. From these two sources, note:

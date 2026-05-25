@@ -29,11 +29,12 @@ export class SessionContextQueryHandler {
    * 1. Active session (SessionView or null)
    * 2. Goal categories (active, paused, planned)
    * 3. Recent decisions
-   * 4. Project (name, purpose)
+   * 4. Core project context (name and purpose)
    *
    * @returns ContextualSessionView with session and assembled context
    */
   async execute(): Promise<ContextualSessionView> {
+    // Query all view readers in parallel for efficiency
     const [
       activeSession,
       doingGoals,
@@ -61,6 +62,7 @@ export class SessionContextQueryHandler {
     const activeGoals = doingGoals.concat(blockedGoals, inReviewGoals, qualifiedGoals);
     const plannedGoals = todoGoals.concat(refinedGoals);
 
+    // Limit to 10 most recent decisions, sorted by creation date (newest first)
     const recentDecisions = activeDecisions
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 3);

@@ -7,6 +7,15 @@ description: Use liberally when you create, discover, or modify a software compo
 
 Register a software component with Jumbo when you create one, discover an unregistered one, or significantly change one's responsibility.
 
+## Before Adding
+Check for an existing component to avoid duplication. Consider renaming, updating, or deprecating and replacing a previously registered component before registering a new one.
+
+Use the search subcommand to locate previously registered components:
+
+```bash
+jumbo components search -q <query>
+```
+
 ## Command Syntax
 
 ```bash

@@ -15,9 +15,7 @@
     "sourceMap": true,
     "moduleResolution": "Node16",
     "jsx": "react",
-    "jsxFactory": "React.createElement",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "jsxFactory": "React.createElement"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests", "**/_legacy/**"]

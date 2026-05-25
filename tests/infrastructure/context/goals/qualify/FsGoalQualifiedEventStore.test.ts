@@ -11,13 +11,14 @@ import { FsGoalQualifiedEventStore } from "../../../../../src/infrastructure/con
 import { IGoalQualifiedEventReader } from "../../../../../src/application/context/goals/qualify/IGoalQualifiedEventReader";
 import { IGoalQualifiedEventWriter } from "../../../../../src/application/context/goals/qualify/IGoalQualifiedEventWriter";
 import { BaseEvent } from "../../../../../src/domain/BaseEvent";
+import os from "os";
 
 describe("FsGoalQualifiedEventStore", () => {
   let tmpDir: string;
   let store: FsGoalQualifiedEventStore;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-qualified-events-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-qualified-events-"));
     store = new FsGoalQualifiedEventStore(tmpDir);
   });
 

@@ -2,26 +2,15 @@ import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 import { SessionStartController } from "../../../../../src/application/context/sessions/start/SessionStartController.js";
 import { IStartSessionGateway } from "../../../../../src/application/context/sessions/start/IStartSessionGateway.js";
 import { SessionStartResponse } from "../../../../../src/application/context/sessions/start/SessionStartResponse.js";
-import { SessionInstructionSignal } from "../../../../../src/application/context/sessions/SessionInstructionSignal.js";
 
 describe("SessionStartController", () => {
   let controller: SessionStartController;
   let mockGateway: jest.Mocked<IStartSessionGateway>;
 
   const mockResponse: SessionStartResponse = {
-    context: {
-      session: null,
-      context: {
-        projectContext: null,
-        activeGoals: [],
-        pausedGoals: [],
-        plannedGoals: [],
-        recentDecisions: [],
-      },
-      instructions: [SessionInstructionSignal.GOAL_SELECTION_PROMPT],
-      scope: "session-start",
-    },
     sessionId: "session_test-123",
+    status: "active",
+    isUnprimedBrownfield: false,
   };
 
   beforeEach(() => {

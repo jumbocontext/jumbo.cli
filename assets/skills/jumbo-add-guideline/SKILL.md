@@ -9,6 +9,15 @@ Register a guideline with Jumbo when the user states a preference about how work
 
 **Important:** Guidelines must be **generally applicable** to the project. Do not word them for a specific use case, goal, or task. A guideline that only applies to one situation belongs in a goal's criteria, not in the guideline registry.
 
+## Before Adding
+Check for an existing guideline to avoid duplication. Consider removing, or updating, a previously registered guideline before registering a new one.
+
+Use the search subcommand to locate previously registered guidelines:
+
+```bash
+jumbo guidelines search -q <query>
+```
+
 ## Command Syntax
 
 ```bash

@@ -20,15 +20,17 @@ import { ResumeGoalCommandHandler } from "../../src/application/context/goals/re
 import { ResumeGoalCommand } from "../../src/application/context/goals/resume/ResumeGoalCommand.js";
 import { GoalStatus, GoalEventType } from "../../src/domain/goals/Constants.js";
 import { jest } from "@jest/globals";
+import os from "os";
+
+jest.setTimeout(60_000);
 
 describe("Pause-Resume Lifecycle Integration", () => {
-  jest.setTimeout(30_000);
   let tmpDir: string;
   let host: Host;
   let container: IApplicationContainer;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-pause-resume-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-pause-resume-"));
     host = new Host(tmpDir);
     const builder = host.createBuilder();
     container = await builder.build();

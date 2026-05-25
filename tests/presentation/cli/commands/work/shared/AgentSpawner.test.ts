@@ -2,6 +2,7 @@ import { describe, it, expect } from "@jest/globals";
 import {
   SUPPORTED_AGENTS,
   AGENT_COMMANDS,
+  buildAgentCommandLine,
 } from "../../../../../../src/presentation/cli/commands/work/shared/AgentSpawner.js";
 
 describe("AgentSpawner", () => {
@@ -18,19 +19,24 @@ describe("AgentSpawner", () => {
   });
 
   describe("AGENT_COMMANDS", () => {
-    it("maps each agent to an executable and prompt flag", () => {
+    it("maps each agent to an executable and prompt argument strategy", () => {
       for (const agentId of SUPPORTED_AGENTS) {
         const entry = AGENT_COMMANDS[agentId];
         expect(entry).toBeDefined();
         expect(typeof entry.executable).toBe("string");
-        expect(typeof entry.promptFlag).toBe("string");
+        expect(entry.promptFlag !== undefined || entry.args !== undefined).toBe(true);
       }
     });
 
-    it("uses -p as prompt flag for all agents", () => {
-      for (const agentId of SUPPORTED_AGENTS) {
+    it("uses -p as prompt flag for agents whose CLI exposes prompt mode through -p", () => {
+      for (const agentId of SUPPORTED_AGENTS.filter((id) => id !== "codex")) {
         expect(AGENT_COMMANDS[agentId].promptFlag).toBe("-p");
       }
+    });
+
+    it("maps codex to the non-interactive exec command because -p means profile", () => {
+      expect(AGENT_COMMANDS.codex).toEqual({ executable: "codex", args: ["exec"] });
+      expect(buildAgentCommandLine(AGENT_COMMANDS.codex, "run refine")).toBe('codex exec "run refine"');
     });
 
     it("maps copilot to gh copilot executable", () => {

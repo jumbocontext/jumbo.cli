@@ -29,7 +29,7 @@ export class FileLogger implements ILogger {
     const yyyy = date.getFullYear().toString();
     const dd = date.getDate().toString().padStart(2, "0");
     const mm = (date.getMonth() + 1).toString().padStart(2, "0");
-    return `${yyyy}${dd}${mm}.log`;
+    return `${yyyy}${mm}${dd}.log`;
   }
 
   error(message: string, error?: Error | unknown, context?: Record<string, unknown>): void {

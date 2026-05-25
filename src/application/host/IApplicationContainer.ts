@@ -124,6 +124,7 @@ import { ResumeWorkController } from "../context/work/resume/ResumeWorkControlle
 
 import { AddDecisionController } from "../context/decisions/add/AddDecisionController.js";
 import { GetDecisionsController } from "../context/decisions/get/GetDecisionsController.js";
+import { SearchDecisionsController } from "../context/decisions/search/SearchDecisionsController.js";
 import { ReverseDecisionController } from "../context/decisions/reverse/ReverseDecisionController.js";
 import { RestoreDecisionController } from "../context/decisions/restore/RestoreDecisionController.js";
 import { SupersedeDecisionController } from "../context/decisions/supersede/SupersedeDecisionController.js";
@@ -183,6 +184,7 @@ import { IGuidelineRemovedProjector } from "../context/guidelines/remove/IGuidel
 import { IGuidelineRemoveReader } from "../context/guidelines/remove/IGuidelineRemoveReader.js";
 import { IGuidelineViewReader } from "../context/guidelines/get/IGuidelineViewReader.js";
 import { GetGuidelinesController } from "../context/guidelines/get/GetGuidelinesController.js";
+import { SearchGuidelinesController } from "../context/guidelines/search/SearchGuidelinesController.js";
 import { IInvariantAddedProjector } from "../context/invariants/add/IInvariantAddedProjector.js";
 import { IInvariantAddReader } from "../context/invariants/add/IInvariantAddReader.js";
 import { IInvariantUpdatedProjector } from "../context/invariants/update/IInvariantUpdatedProjector.js";
@@ -232,6 +234,7 @@ import { IAgentFileProtocol } from "../context/project/init/IAgentFileProtocol.j
 import { PlanProjectInitController } from "../context/project/init/PlanProjectInitController.js";
 import { InitializeProjectController } from "../context/project/init/InitializeProjectController.js";
 import { UpdateProjectController } from "../context/project/update/UpdateProjectController.js";
+import { ShowProjectController } from "../context/project/show/ShowProjectController.js";
 import { IAudienceContextReader } from "../context/audiences/query/IAudienceContextReader.js";
 import { IAudiencePainContextReader } from "../context/audience-pains/query/IAudiencePainContextReader.js";
 import { IValuePropositionContextReader } from "../context/value-propositions/query/IValuePropositionContextReader.js";
@@ -450,6 +453,7 @@ export interface IApplicationContainer {
   // Decision Controllers
   addDecisionController: AddDecisionController;
   getDecisionsController: GetDecisionsController;
+  searchDecisionsController: SearchDecisionsController;
   reverseDecisionController: ReverseDecisionController;
   restoreDecisionController: RestoreDecisionController;
   supersedeDecisionController: SupersedeDecisionController;
@@ -557,6 +561,7 @@ export interface IApplicationContainer {
   updateGuidelineController: UpdateGuidelineController;
   removeGuidelineController: RemoveGuidelineController;
   getGuidelinesController: GetGuidelinesController;
+  searchGuidelinesController: SearchGuidelinesController;
   // Invariant Projection Stores - decomposed by use case
   invariantAddedProjector: IInvariantAddedProjector & IInvariantAddReader;
   invariantUpdatedProjector: IInvariantUpdatedProjector & IInvariantUpdateReader;
@@ -595,6 +600,7 @@ export interface IApplicationContainer {
   projectInitializedProjector: IProjectInitializedProjector & IProjectInitReader;
   projectUpdatedProjector: IProjectUpdatedProjector & IProjectUpdateReader;
   updateProjectController: UpdateProjectController;
+  showProjectController: ShowProjectController;
   projectContextReader: IProjectContextReader;
   // Audience Projection Stores - decomposed by use case
   audienceAddedProjector: IAudienceAddedProjector;

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { ProjectionBusFactory } from "../../../src/infrastructure/messaging/ProjectionBusFactory";
 import { MigrationRunner } from "../../../src/infrastructure/persistence/MigrationRunner";
 import { getNamespaceMigrations } from "../../../src/infrastructure/persistence/migrations.config";
+import os from "os";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,7 +15,7 @@ describe("ProjectionBusFactory", () => {
   let db: Database.Database;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-projection-bus-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-projection-bus-"));
     const dbPath = path.join(tmpDir, "jumbo.db");
     db = new Database(dbPath);
     db.pragma("journal_mode = WAL");

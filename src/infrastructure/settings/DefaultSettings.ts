@@ -19,4 +19,7 @@ export const DEFAULT_SETTINGS: Settings = {
     anonymousId: null,
     consentGiven: false,
   },
+  tui: {
+    showLaunchpadWelcome: true,
+  },
 };

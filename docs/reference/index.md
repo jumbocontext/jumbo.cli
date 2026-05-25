@@ -17,7 +17,7 @@ Complete command documentation.
 | [Architecture Commands](commands/architecture.md) | define, update, view |
 | [Component Commands](commands/components.md) | add, show, update, rename, search, list, deprecate, undeprecate, remove |
 | [Decision Commands](commands/decisions.md) | add, list, update, supersede, reverse, restore |
-| [Dependency Commands](commands/dependencies.md) | add, list, update, remove |
+| [Dependency Commands](commands/dependencies.md) | add, list, search, update, remove |
 | [Guideline Commands](commands/guidelines.md) | add, list, update, remove |
 | [Invariant Commands](commands/invariants.md) | add, list, update, remove |
 | [Audience Commands](commands/audiences.md) | add, list, update, remove |

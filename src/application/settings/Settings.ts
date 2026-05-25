@@ -54,6 +54,14 @@ export interface TelemetrySettings {
   consentGiven: boolean;
 }
 
+export interface TuiSettings {
+  /**
+   * Whether the Cockpit launchpad welcome panel should be shown.
+   * Default: true
+   */
+  showLaunchpadWelcome: boolean;
+}
+
 export interface Settings {
   /**
    * QA (Quality Assurance) settings for goal completion
@@ -69,4 +77,9 @@ export interface Settings {
    * Telemetry consent and identity settings
    */
   telemetry: TelemetrySettings;
+
+  /**
+   * TUI presentation preferences
+   */
+  tui?: TuiSettings;
 }

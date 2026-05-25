@@ -11,13 +11,14 @@ import { FsGoalSubmittedForReviewEventStore } from "../../../../../src/infrastru
 import { IGoalSubmittedForReviewEventReader } from "../../../../../src/application/context/goals/review/IGoalSubmittedForReviewEventReader";
 import { IGoalSubmittedForReviewEventWriter } from "../../../../../src/application/context/goals/review/IGoalSubmittedForReviewEventWriter";
 import { BaseEvent } from "../../../../../src/domain/BaseEvent";
+import os from "os";
 
 describe("FsGoalSubmittedForReviewEventStore", () => {
   let tmpDir: string;
   let store: FsGoalSubmittedForReviewEventStore;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-review-events-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-review-events-"));
     store = new FsGoalSubmittedForReviewEventStore(tmpDir);
   });
 

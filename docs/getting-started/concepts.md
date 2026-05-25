@@ -11,15 +11,13 @@ Understand the key concepts that power Jumbo.
 
 ## Sessions
 
-Sessions provide agents with the highest level of project context, and managed meta data about project state.
+Sessions provide agents with managed metadata about project work.
 
-**Starting a session** renders orientation context:
+**Starting a session** renders a workflow router:
 
-- Project name and purpose
-- Recent changes
-- Goals in progress
-- Goals ready for refinement
-- Planned goals
+- A session ID and status
+- A prompt asking which workflow the user wants
+- Commands for design/define, refine, execute, review, and codify workflows
 
 **Ending a session** captures what was accomplished, creating a book of record for the project history.
 
@@ -86,9 +84,16 @@ Context packets are optimized bundles of project knowledge delivered at workflow
 
 **Session start packet** contains:
 
+- Session ID and status
+- Workflow choice prompt
+- Route commands for loading the next workflow-specific context packet
+
+**Project north-star packet** contains:
+
 - Project overview
-- Recent changes
-- Available goals
+- Audiences
+- Audience pains
+- Value propositions
 
 **Goal start packet** contains:
 

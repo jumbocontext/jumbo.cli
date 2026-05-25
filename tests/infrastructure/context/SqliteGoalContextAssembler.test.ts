@@ -87,6 +87,10 @@ class MockDependencyViewReader implements IDependencyViewReader {
     return this.dependencies.filter(d => ids.includes(d.dependencyId));
   }
 
+  async search(): Promise<DependencyView[]> {
+    return this.dependencies;
+  }
+
   setDependencies(dependencies: DependencyView[]): void {
     this.dependencies = dependencies;
   }
@@ -106,6 +110,10 @@ class MockDecisionViewReader implements IDecisionViewReader {
     return this.decisions.filter(d => ids.includes(d.decisionId));
   }
 
+  async search(): Promise<DecisionView[]> {
+    return this.decisions;
+  }
+
   setDecisions(decisions: DecisionView[]): void {
     this.decisions = decisions;
   }
@@ -122,6 +130,10 @@ class MockInvariantViewReader implements IInvariantViewReader {
     return this.invariants.filter(i => ids.includes(i.invariantId));
   }
 
+  async search(): Promise<InvariantView[]> {
+    return this.invariants;
+  }
+
   setInvariants(invariants: InvariantView[]): void {
     this.invariants = invariants;
   }
@@ -136,6 +148,10 @@ class MockGuidelineViewReader implements IGuidelineViewReader {
 
   async findByIds(ids: string[]): Promise<GuidelineView[]> {
     return this.guidelines.filter(g => ids.includes(g.guidelineId));
+  }
+
+  async search(): Promise<GuidelineView[]> {
+    return this.guidelines;
   }
 
   setGuidelines(guidelines: GuidelineView[]): void {

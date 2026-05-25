@@ -8,6 +8,14 @@ jest.unstable_mockModule("../../../src/presentation/cli/program/GlobalOptionsHan
   attachGlobalOptions: jest.fn(),
 }));
 
+const mockLaunchTui = jest.fn<() => Promise<void>>().mockResolvedValue();
+
+jest.unstable_mockModule("../../../src/presentation/tui/application-shell/TuiApplicationLauncher.js", () => ({
+  TuiApplicationLauncher: jest.fn().mockImplementation(() => ({
+    launch: mockLaunchTui,
+  })),
+}));
+
 jest.unstable_mockModule(
   "../../../src/presentation/cli/commands/registry/CommanderApplicator.js",
   () => ({
@@ -35,6 +43,9 @@ jest.unstable_mockModule(
 
 const { createProgram } = await import("../../../src/presentation/cli/program/ProgramFactory.js");
 import type { IApplicationContainer } from "../../../src/application/host/IApplicationContainer.js";
+const { TuiApplicationLauncher } = await import(
+  "../../../src/presentation/tui/application-shell/TuiApplicationLauncher.js"
+);
 const { AppRunner } = await import("../../../src/presentation/cli/AppRunner.js");
 import { Renderer } from "../../../src/presentation/cli/rendering/Renderer.js";
 
@@ -56,6 +67,57 @@ describe("AppRunner", () => {
     Renderer.reset();
     jest.clearAllMocks();
     jest.restoreAllMocks();
+  });
+
+  it("launches the Ink TUI for bare jumbo invocations", async () => {
+    process.argv = ["node", "jumbo"];
+
+    const runner = new AppRunner("1.2.3", null);
+    await runner.run();
+
+    expect(mockLaunchTui).toHaveBeenCalledTimes(1);
+    expect(TuiApplicationLauncher).toHaveBeenCalledWith(
+      "1.2.3",
+      null,
+      {},
+      undefined,
+      undefined,
+    );
+    expect(createProgram).not.toHaveBeenCalled();
+  });
+
+  it("passes fallback init action controllers to bare TUI launches", async () => {
+    process.argv = ["node", "jumbo"];
+    const actionControllers = {
+      planProjectInitController: { handle: jest.fn() },
+    };
+
+    const runner = new AppRunner("1.2.3", null, actionControllers);
+    await runner.run();
+
+    expect(TuiApplicationLauncher).toHaveBeenCalledWith(
+      "1.2.3",
+      null,
+      actionControllers,
+      undefined,
+      undefined,
+    );
+  });
+
+  it("passes fallback state reader controller factory to bare TUI launches", async () => {
+    process.argv = ["node", "jumbo"];
+    const factory = jest.fn();
+
+    const runner = new AppRunner("1.2.3", null, {}, factory);
+    await runner.run();
+
+    expect(TuiApplicationLauncher).toHaveBeenCalledWith(
+      "1.2.3",
+      null,
+      {},
+      factory,
+      undefined,
+    );
   });
 
   it("tracks successful command execution with command metadata", async () => {

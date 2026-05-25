@@ -5,6 +5,7 @@ import { ILogger } from "../../../../../src/application/logging/ILogger.js";
 import { ArchitectureEventType } from "../../../../../src/domain/architecture/Constants.js";
 import { BaseEvent } from "../../../../../src/domain/BaseEvent.js";
 import { jest } from "@jest/globals";
+import os from "os";
 
 const mockLogger: ILogger = {
   error: jest.fn(),
@@ -18,7 +19,7 @@ describe("FsArchitectureDeprecatedEventStore", () => {
   let store: FsArchitectureDeprecatedEventStore;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-arch-deprecated-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-arch-deprecated-"));
     store = new FsArchitectureDeprecatedEventStore(tmpDir, mockLogger);
   });
 

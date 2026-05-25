@@ -45,6 +45,12 @@ export class FsSettingsInitializer implements ISettingsInitializer {
     "anonymousId": null,
     // Whether the user has explicitly made a telemetry consent decision
     "consentGiven": false
+  },
+
+  // TUI presentation preferences
+  "tui": {
+    // Whether the Cockpit launchpad welcome panel should be shown
+    "showLaunchpadWelcome": true
   }
 }
 `;

@@ -31,11 +31,53 @@ describe("SqliteDecisionViewReader", () => {
     db.close();
   });
 
-  function insertDecision(id: string, title: string, createdAt: string): void {
+  function insertDecision(
+    id: string,
+    title: string,
+    createdAt: string,
+    overrides: {
+      context?: string;
+      rationale?: string | null;
+      alternatives?: string[];
+      consequences?: string | null;
+      status?: "active" | "reversed" | "superseded";
+      supersededBy?: string | null;
+      reversalReason?: string | null;
+      reversedAt?: string | null;
+    } = {}
+  ): void {
     db.prepare(`
-      INSERT INTO decision_views (decisionId, title, context, rationale, alternatives, consequences, status, version, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, title, "context", "rationale", "[]", null, "active", 1, createdAt, createdAt);
+      INSERT INTO decision_views (
+        decisionId,
+        title,
+        context,
+        rationale,
+        alternatives,
+        consequences,
+        status,
+        supersededBy,
+        reversalReason,
+        reversedAt,
+        version,
+        createdAt,
+        updatedAt
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      title,
+      overrides.context ?? "context",
+      overrides.rationale ?? "rationale",
+      JSON.stringify(overrides.alternatives ?? []),
+      overrides.consequences ?? null,
+      overrides.status ?? "active",
+      overrides.supersededBy ?? null,
+      overrides.reversalReason ?? null,
+      overrides.reversedAt ?? null,
+      1,
+      createdAt,
+      createdAt
+    );
   }
 
   describe("findByIds", () => {
@@ -73,6 +115,90 @@ describe("SqliteDecisionViewReader", () => {
       const result = await reader.findByIds(["nonexistent_1", "nonexistent_2"]);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe("search", () => {
+    it("should search by title substring and order by createdAt DESC", async () => {
+      insertDecision("dec_1", "Use REST API", "2025-01-01T00:00:00Z");
+      insertDecision("dec_2", "Use Event API", "2025-01-03T00:00:00Z");
+      insertDecision("dec_3", "Adopt SQLite", "2025-01-02T00:00:00Z");
+
+      const result = await reader.search({ title: "API" });
+
+      expect(result.map(d => d.decisionId)).toEqual(["dec_2", "dec_1"]);
+    });
+
+    it("should support star wildcards for title search", async () => {
+      insertDecision("dec_1", "Use REST API", "2025-01-01T00:00:00Z");
+      insertDecision("dec_2", "Adopt API Gateway", "2025-01-02T00:00:00Z");
+      insertDecision("dec_3", "Use SQLite", "2025-01-03T00:00:00Z");
+
+      const result = await reader.search({ title: "Use*" });
+
+      expect(result.map(d => d.decisionId)).toEqual(["dec_3", "dec_1"]);
+    });
+
+    it("should compose status, title, and query filters with AND logic", async () => {
+      insertDecision("dec_1", "Use Gateway Pattern", "2025-01-01T00:00:00Z", {
+        context: "Controller boundary",
+        status: "active",
+      });
+      insertDecision("dec_2", "Use Gateway Pattern", "2025-01-02T00:00:00Z", {
+        context: "Controller boundary",
+        status: "superseded",
+      });
+      insertDecision("dec_3", "Use Repository Pattern", "2025-01-03T00:00:00Z", {
+        context: "Controller boundary",
+        status: "active",
+      });
+
+      const result = await reader.search({
+        status: "active",
+        title: "Gateway",
+        query: "Controller",
+      });
+
+      expect(result.map(d => d.decisionId)).toEqual(["dec_1"]);
+    });
+
+    it("should treat omitted status and all status as all decisions", async () => {
+      insertDecision("dec_1", "Active Decision", "2025-01-01T00:00:00Z", { status: "active" });
+      insertDecision("dec_2", "Superseded Decision", "2025-01-02T00:00:00Z", { status: "superseded" });
+      insertDecision("dec_3", "Reversed Decision", "2025-01-03T00:00:00Z", { status: "reversed" });
+
+      const omitted = await reader.search({});
+      const all = await reader.search({ status: "all" });
+
+      expect(omitted.map(d => d.decisionId)).toEqual(["dec_3", "dec_2", "dec_1"]);
+      expect(all.map(d => d.decisionId)).toEqual(["dec_3", "dec_2", "dec_1"]);
+    });
+
+    it("should search query across decision text fields", async () => {
+      insertDecision("dec_1", "Use Repository", "2025-01-01T00:00:00Z", {
+        rationale: "Keeps storage hidden",
+      });
+      insertDecision("dec_2", "Use Ports", "2025-01-02T00:00:00Z", {
+        alternatives: ["gateway boundary"],
+      });
+      insertDecision("dec_3", "Reverse Old Choice", "2025-01-03T00:00:00Z", {
+        status: "reversed",
+        reversalReason: "stdout pollution",
+      });
+      insertDecision("dec_4", "Supersede Old Choice", "2025-01-04T00:00:00Z", {
+        status: "superseded",
+        supersededBy: "dec_target",
+      });
+
+      const rationaleResult = await reader.search({ query: "storage hidden" });
+      const alternativesResult = await reader.search({ query: "gateway" });
+      const reversalResult = await reader.search({ query: "stdout" });
+      const supersededByResult = await reader.search({ query: "dec_target" });
+
+      expect(rationaleResult.map(d => d.decisionId)).toEqual(["dec_1"]);
+      expect(alternativesResult.map(d => d.decisionId)).toEqual(["dec_2"]);
+      expect(reversalResult.map(d => d.decisionId)).toEqual(["dec_3"]);
+      expect(supersededByResult.map(d => d.decisionId)).toEqual(["dec_4"]);
     });
   });
 });

@@ -1,6 +1,6 @@
 ---
 title: Project Commands Reference
-description: Complete reference for all project-related commands — init and update.
+description: Complete reference for all project-related commands — init, show, and update.
 sidebar:
   order: 3
 ---
@@ -95,4 +95,48 @@ Update multiple fields:
 
 ```bash
 > jumbo project update --purpose "Updated purpose" --boundary "New boundary"
+```
+
+---
+
+## jumbo project show
+
+Show project metadata.
+
+### Synopsis
+
+```bash
+> jumbo project show [--northstar]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--northstar` | Return the project alignment packet for goal design and definition |
+
+### Behavior
+
+Without `--northstar`, returns only the core project fields.
+
+With `--northstar`, returns:
+- Project metadata
+- Audiences
+- Audience pains
+- Value propositions
+
+Use the north-star packet when designing or defining goals. Other workflows should load their goal-specific context instead.
+
+### Examples
+
+Show core project fields:
+
+```bash
+> jumbo project show
+```
+
+Show the project north-star packet as JSON:
+
+```bash
+> jumbo project show --northstar --format json
 ```

@@ -1,11 +1,11 @@
 ---
 name: define-jumbo-goals
-description: Use when defining new Jumbo goals from user requests. Guides discovery, decomposition, and goal authoring to produce goals with explicit implementation instructions that minimize token usage during autonomous execution.
+description: Add Jumbo goals liberally to decompose objectives into finite units of work with bounded context. Use when defining new Jumbo goals from user requests, or to augment your own work to maintain scope while ensuring complementary work is registered.
 ---
 
 # Define Jumbo Goals
 
-**Prompt:** Analyze a user request, discover the architectural context required, decompose the work into right-sized goals, and author each goal with precise objectives, verifiable criteria, and explicit scope — so that refinement and implementation proceed with minimal exploration overhead.
+**Prompt:** Analyze the primary objective to discover the architectural context required, decompose the work into right-sized goals, and author each goal with precise objectives, verifiable criteria, and explicit scope — so that refinement and implementation proceed with minimal exploration overhead.
 
 ## Why Definition Quality Matters
 
@@ -15,8 +15,17 @@ A goal's definition determines everything downstream. During refinement, the age
 
 ## Protocol
 
-### 1. Understand the Request
+### 1. Align Goal and Project Purpose
 
+Start by getting oriented with the overall project purpose (use a cached response if previously run in this session):
+
+```bash
+jumbo project show --northstar
+```
+
+The initiative to define a new goal could be self-driven, or have eminated from the user:
+
+#### If from the User
 Extract the user's intent through conversation. Identify:
 
 - **What** needs to change (feature, fix, refactor, infrastructure)
@@ -25,30 +34,26 @@ Extract the user's intent through conversation. Identify:
 
 If the request is ambiguous, ask clarifying questions before proceeding. Do not guess intent.
 
-### 2. Discover Architectural Context
+#### If Self-Driven
+Ensure the initiative is not in conflict with the project purpose. Abandon the initiative if it is, or adjust if slight fitting would align it.
+
+
+### 2. Understand Context
 
 Before writing any goal, survey the project to understand what exists:
 
 ```bash
-jumbo architecture view
-jumbo components search --query "<relevant domain terms>"
+jumbo components search --q "<query terms>"
 jumbo components search --type <likely-type>
-jumbo invariants list
-jumbo guidelines list
-jumbo decisions list
-jumbo dependencies list
+jumbo invariants search --q "<query terms>"
+jumbo guidelines search --q "<query terms>"
+jumbo decisions search --q "<query terms>"
+jumbo dependencies search --q "<query terms>"
 ```
 
 This discovery serves two purposes:
 - **Inform decomposition**: Understanding the system's boundaries, patterns, and constraints reveals the natural seams along which to split work.
 - **Inform criteria**: Existing invariants, decisions, and patterns dictate what "correct" looks like.
-
-If you encounter components, patterns, or decisions that exist in the codebase but are not registered in Jumbo, register them now — before writing goals. Accurate entity coverage produces better relations during refinement:
-
-```bash
-jumbo component add --name "ExistingService" --description "What it does"
-jumbo decision add --title "Existing pattern" --rationale "Why it was chosen" --context "Background"
-```
 
 Also explore the codebase directly to understand current implementation:
 
@@ -123,11 +128,6 @@ Rules:
 - Include a testing criterion — specify what tests exist and what they verify.
 - If a refactoring skill applies, add `skill:<skill-name>` as a criterion.
 
-**Criteria count guidance:**
-- Trivial goal (rename, config change): 2-3 criteria
-- Standard goal (new feature, refactor): 5-8 criteria
-- Complex goal (cross-cutting concern): 8-12 criteria
-
 #### Scope
 
 Scope tells the implementing agent where to work and where not to touch.
@@ -161,7 +161,6 @@ Chaining is the primary mechanism for **long-running autonomous sessions without
 
 **When to chain:**
 - Work decomposes into ordered steps where each builds on the prior (e.g., "define port abstraction" → "implement adapter" → "wire into CLI").
-- The user wants to hand off a multi-goal workstream and return when it is all done.
 - The combined work would exceed comfortable context limits if attempted as a single goal.
 
 **When NOT to chain:**
@@ -179,7 +178,7 @@ After all goals are registered, verify:
 - [ ] Goal sequencing reflects actual dependencies (not just aesthetic ordering)
 - [ ] No single goal is so large it risks context compaction during implementation
 - [ ] No goal duplicates work from another goal
-- [ ] The full set of goals covers the user's original request completely
+- [ ] The full set of goals covers the initial objective completely
 
 ## Anti-Patterns
 
@@ -199,4 +198,4 @@ After all goals are registered, verify:
 2. **Never write criteria the reviewing agent cannot verify.** If a criterion requires subjective judgment ("clean code", "good performance"), replace it with a measurable statement ("no function exceeds 30 lines", "response time under 200ms for 1000 records").
 3. **Never skip scope.** Every goal must have scope-in. Most goals should have scope-out. Unbounded scope invites unbounded implementation.
 4. **Always decompose before defining.** Resist the urge to create one large goal. Think in shippable increments.
-5. **Always verify goal coverage.** The union of all goals must fully address the user's request. Gaps between goals are gaps in delivery.
+5. **Always verify goal coverage.** The union of all goals must fully address the starting objective. Gaps between goals are gaps in delivery.

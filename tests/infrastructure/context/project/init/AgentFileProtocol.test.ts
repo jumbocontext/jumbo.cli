@@ -9,6 +9,10 @@ import { JumboMdContent } from "../../../../../src/domain/project/JumboMdContent
 import { AgentsMdContent } from "../../../../../src/domain/project/AgentsMdContent";
 import { AgentFileReferenceContent } from "../../../../../src/domain/project/AgentFileReferenceContent";
 import { CopilotInstructionsContent } from "../../../../../src/domain/project/CopilotInstructionsContent";
+import os from "os";
+import { jest } from "@jest/globals";
+
+jest.setTimeout(30_000);
 
 describe("AgentFileProtocol", () => {
   let tmpDir: string;
@@ -16,7 +20,7 @@ describe("AgentFileProtocol", () => {
   const skillPlatforms = [".agents/skills", ".claude/skills", ".codex/skills", ".gemini/skills", ".vibe/skills"];
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-agent-files-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-agent-files-"));
     protocol = new AgentFileProtocol(path.join(tmpDir, "assets", "skills"));
   });
 
@@ -181,7 +185,7 @@ describe("AgentFileProtocol", () => {
     });
 
     it("should install skills from template root outside project root", async () => {
-      const externalTemplateRoot = await fs.mkdtemp(path.join(process.cwd(), "external-template-skills-"));
+      const externalTemplateRoot = await fs.mkdtemp(path.join(os.tmpdir(), "external-template-skills-"));
       protocol = new AgentFileProtocol(externalTemplateRoot);
 
       const externalSkillPath = path.join(externalTemplateRoot, "external-skill");

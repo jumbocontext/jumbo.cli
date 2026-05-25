@@ -8,6 +8,7 @@
 import { Database } from "better-sqlite3";
 import { IGuidelineViewReader } from "../../../../application/context/guidelines/get/IGuidelineViewReader.js";
 import { GuidelineView } from "../../../../application/context/guidelines/GuidelineView.js";
+import { GuidelineSearchCriteria } from "../../../../application/context/guidelines/search/GuidelineSearchCriteria.js";
 import { GuidelineRecord } from "../GuidelineRecord.js";
 import { GuidelineRecordMapper } from "../GuidelineRecordMapper.js";
 
@@ -38,6 +39,43 @@ export class SqliteGuidelineViewReader implements IGuidelineViewReader {
     const query = `SELECT * FROM guideline_views WHERE guidelineId IN (${placeholders}) ORDER BY createdAt DESC`;
     const rows = this.db.prepare(query).all(...ids);
     return rows.map((row) => this.mapper.toView(this.mapRowToRecord(row as Record<string, unknown>)));
+  }
+
+  async search(criteria: GuidelineSearchCriteria): Promise<GuidelineView[]> {
+    const clauses: string[] = ["isRemoved = 0"];
+    const params: string[] = [];
+
+    if (criteria.category !== undefined) {
+      clauses.push("category = ?");
+      params.push(criteria.category);
+    }
+
+    if (criteria.title !== undefined) {
+      clauses.push("title LIKE ?");
+      params.push(this.toLikePattern(criteria.title));
+    }
+
+    if (criteria.query !== undefined) {
+      const pattern = this.toLikePattern(criteria.query);
+      clauses.push("(title LIKE ? OR description LIKE ? OR rationale LIKE ? OR examples LIKE ?)");
+      params.push(pattern, pattern, pattern, pattern);
+    }
+
+    const query = `SELECT * FROM guideline_views WHERE ${clauses.join(" AND ")} ORDER BY category, createdAt ASC`;
+    const rows = this.db.prepare(query).all(...params);
+    return rows.map((row) => this.mapper.toView(this.mapRowToRecord(row as Record<string, unknown>)));
+  }
+
+  /**
+   * Converts a user input string to a SQL LIKE pattern.
+   * If the input contains *, replaces * with % for explicit wildcard control.
+   * Otherwise wraps with % for default substring matching.
+   */
+  private toLikePattern(input: string): string {
+    if (input.includes("*")) {
+      return input.replace(/\*/g, "%");
+    }
+    return `%${input}%`;
   }
 
   private mapRowToRecord(row: Record<string, unknown>): GuidelineRecord {

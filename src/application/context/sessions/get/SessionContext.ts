@@ -6,7 +6,7 @@ import { ProjectView } from "../../project/ProjectView.js";
  * SessionContext - Pure context container for session orientation.
  *
  * Holds only the contextual data that provides orientation for a session:
- * project (name and purpose), goals by category, and recent decisions.
+ * project context, goals by category, and recent decisions.
  *
  * Does NOT contain the session itself. The composed return type
  * ContextualSessionView pairs a SessionView with its SessionContext.
@@ -16,7 +16,7 @@ import { ProjectView } from "../../project/ProjectView.js";
  */
 export interface SessionContext {
   /**
-   * Minimal project header (name and purpose).
+   * Core project context.
    * Null if project hasn't been initialized.
    */
   readonly projectContext: ProjectView | null;

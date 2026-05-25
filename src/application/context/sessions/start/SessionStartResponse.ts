@@ -1,12 +1,11 @@
-import { EnrichedSessionContext } from "../get/EnrichedSessionContext.js";
-
 /**
  * SessionStartResponse - Result of starting a new session.
  *
- * Contains the enriched session context (with LLM instruction signals)
- * and the newly created session ID.
+ * Contains only the data needed to render the session-start workflow router.
+ * Additional project and goal context is loaded by explicit follow-up commands.
  */
 export interface SessionStartResponse {
-  readonly context: EnrichedSessionContext;
   readonly sessionId: string;
+  readonly status: "active";
+  readonly isUnprimedBrownfield: boolean;
 }

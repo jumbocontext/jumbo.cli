@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Project north-star packet**: Added `jumbo project show --northstar` to return project alignment context for goal design and definition, including project metadata, audiences, audience pains, and value propositions.
+- **Decision search command**: Added `jumbo decisions search` with status filtering, title substring and wildcard matching, free-text search across decision fields, and `default` or `compact` output modes.
+- **Dependency search command**: Added `jumbo dependencies search` with identity-field filtering, status filtering, legacy consumer/provider filters, free-text search across dependency fields, wildcard support, and `default` or `compact` output modes.
+- **Guideline search command**: Added `jumbo guidelines search` with exact category filtering, title substring and wildcard matching, free-text search across title/description/rationale/examples, removed-guideline exclusion, and `default` or `compact` output modes.
+- **Invariant search command**: Added `jumbo invariants search` with title filtering, free-text search across title/description/rationale, wildcard support, and `default` or `compact` output modes.
+- **Cockpit create-goal footer shortcut**: The primed Cockpit launchpad footer now shows a contextual `g` / create goal badge that opens the existing goal authoring wizard.
+- **Cockpit goal authoring**: The primed-empty Cockpit `g` shortcut now opens the goal authoring wizard, registers the goal through the existing goal-add action path, suppresses surrounding shortcuts while typing, and routes to the launchpad after goal creation.
+- **Bare command TUI launch**: Running `jumbo` with no arguments now opens the Ink TUI instead of ending at the legacy static banner path, using project-backed state readers when a Jumbo project is available and an uninitialized TUI path otherwise.
+- **TUI foundation**: Ink + React terminal UI with app shell (header/body/footer flexbox layout), screen router (Cockpit, Goals, Memory, Session), keyboard navigation (arrow keys, number keys 1-4, q to quit), and shared design tokens (colors, spacing, glyphs). All screens are placeholder stubs awaiting content in future goals.
+- **TUI init flow**: Added a production-oriented project initialization wizard inside the TUI that collects project name, purpose, optional audiences, optional value propositions, agent selection, planned changes, confirmation, and inline dispatch errors using the shared wizard primitive.
+- **TUI notification prototype**: Footer notification badge with placeholder unread count, N-key drawer toggle, placeholder notification list, and individual dismiss actions.
+- **TUI dedicated memory entity screens**: Memory navigation now groups Decisions, Invariants, Components, Dependencies, and Guidelines under a first-level Memory menu category, with each entity type opening a focused placeholder list/detail screen and static event replay controls.
+- **Cockpit daemon Events panel**: Renamed the upper-right Cockpit panel from Session to Events and added bounded, timestamped daemon activity rows derived from refiner, reviewer, and codifier subprocess snapshots.
+- **TUI header directory context**: The TUI header now shows the launch directory path beside the project label while preserving the right-aligned CLI version.
+
+### Changed
+
+- **Session start router**: `jumbo session start` now returns a minimal workflow router instead of eager project, goal, and decision context; agents load workflow-specific context through the returned route commands.
+- **Cockpit daemon controls**: Refiner, Reviewer, and Codifier now keep independent agent, poll interval, and retry settings in the TUI. Pressing a daemon hotkey selects that panel, pressing the selected daemon hotkey again starts or stops it, and the selected daemon title is highlighted in blue.
+- **Cockpit daemon panel order**: Moved the launchpad daemon panels into Refiner, Reviewer, Codifier order so the visual flow matches the operator workflow.
+- **TUI notification footer priority**: Moved the placeholder notification notifier into the right footer status slot with an adjacent `n` key badge, replacing the previous daemon idle mockup.
+- **TUI footer notifications**: Removed placeholder notification rows from the footer drawer until real notification sources are wired.
+
+### Fixed
+
+- **Worker daemon polling**: Refiner, reviewer, and codifier worker daemons now continue polling after completed, skipped, failed, or exhausted goal attempts, and codifier honors the shared poll interval behavior.
+- **TUI wizard input ownership**: Goal authoring text fields now keep daemon launchpad hotkeys disabled while the wizard is open, preventing typed characters such as `s` or tab from starting or switching daemons.
+- **Goal authoring criteria input**: Success criterion text no longer clears during Cockpit daemon polling or other parent re-renders.
+- **Bare TUI bootstrap side effects**: Running bare `jumbo` from a non-project directory or from a subdirectory beneath an ancestor Jumbo project no longer creates `.jumbo` storage just by opening the TUI; storage is created only after project initialization is confirmed.
+- **Cockpit lifecycle routing**: Cockpit now resolves lifecycle state for the current working directory, treats any existing goal as evidence of prior goal use, and routes to the primed-with-goals view instead of showing the goals tutorial once goals exist in any status.
+- **TUI daemon stop status**: Stopping refiner, reviewer, or codifier daemons from the TUI now reports `stopped` instead of `failed` when termination produces a signal or taskkill-style non-zero exit.
+- **Cockpit daemon waiting states**: Running refiner, reviewer, and codifier daemons now show waiting, idle, stopped, and failure state transitions in the Cockpit Events panel, including the refiner's `foraging` state when no defined goals are available.
+- **TUI component memory isolation**: Component add, list, and detail views no longer collect or display component source paths as user-facing component metadata.
+- **TUI project initialization**: Running bare `jumbo` from an uninitialized directory now opens a controller-backed Init wizard that creates `.jumbo` state and project files, refreshes the TUI after success, and preserves existing `jumbo init` / `jumbo project init` CLI behavior.
+
 ## [3.1.0] - 2026-05-11
 
 ### Changed

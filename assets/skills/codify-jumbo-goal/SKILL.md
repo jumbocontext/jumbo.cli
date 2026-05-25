@@ -81,12 +81,6 @@ jumbo dependency update --id <id> --contract "..."
 jumbo dependency remove --id <id>
 ```
 
-#### Architecture
-Did this work change the architecture style, principles, or patterns?
-```bash
-jumbo architecture update --style "..." --principles "..."
-```
-
 #### Relations
 Should any new relations be established between entities touched by this goal?
 ```bash

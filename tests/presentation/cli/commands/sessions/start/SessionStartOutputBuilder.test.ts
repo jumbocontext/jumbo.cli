@@ -1,179 +1,111 @@
-/**
- * Tests for SessionStartOutputBuilder
- *
- * Verifies the top-level session start output composition:
- * - Human-readable output includes all context and goal sections
- * - Goals are grouped by status (not split into inProgress/planned)
- * - Structured output contains per-state grouping with hints
- * - @LLM prompts are preserved in both modes
- */
-
 import { describe, it, expect, beforeEach } from "@jest/globals";
 import { SessionStartOutputBuilder } from "../../../../../../src/presentation/cli/commands/sessions/start/SessionStartOutputBuilder.js";
-import { EnrichedSessionContext } from "../../../../../../src/application/context/sessions/get/EnrichedSessionContext.js";
-import { SessionContext } from "../../../../../../src/application/context/sessions/get/SessionContext.js";
-import { GoalView } from "../../../../../../src/application/context/goals/GoalView.js";
-import { DecisionView } from "../../../../../../src/application/context/decisions/DecisionView.js";
-import { SessionView } from "../../../../../../src/application/context/sessions/SessionView.js";
-import { SessionInstructionSignal } from "../../../../../../src/application/context/sessions/SessionInstructionSignal.js";
+import { SessionStartResponse } from "../../../../../../src/application/context/sessions/start/SessionStartResponse.js";
 
 describe("SessionStartOutputBuilder", () => {
   let builder: SessionStartOutputBuilder;
+
+  const response: SessionStartResponse = {
+    sessionId: "session-123",
+    status: "active",
+    isUnprimedBrownfield: false,
+  };
 
   beforeEach(() => {
     builder = new SessionStartOutputBuilder();
   });
 
-  const defaultSession: SessionView = {
-    sessionId: "session-1",
-    status: "active",
-    focus: "Test session",
-    contextSnapshot: null,
-    version: 1,
-    startedAt: "2025-01-01T10:00:00Z",
-    endedAt: null,
-    createdAt: "2025-01-01T10:00:00Z",
-    updatedAt: "2025-01-01T10:00:00Z",
-  };
+  it("should build the session router structured packet", () => {
+    const result = builder.buildStructuredOutput(response);
 
-  function createContext(
-    contextOverrides: Partial<SessionContext> = {},
-    session: SessionView | null = defaultSession,
-    instructions: string[] = []
-  ): EnrichedSessionContext {
-    return {
-      session,
-      context: {
-        projectContext: null,
-        activeGoals: [],
-        pausedGoals: [],
-        plannedGoals: [],
-        recentDecisions: [],
-        ...contextOverrides,
+    expect(result).toMatchObject({
+      schemaVersion: "jumbo.sessionStart.router.v1",
+      packetType: "session.router",
+      session: {
+        sessionId: "session-123",
+        status: "active",
       },
-      instructions,
-      scope: "session-start",
-    };
-  }
+      agentInstruction: {
+        primaryAction: "ask_user_to_choose_workflow",
+      },
+    });
+    expect(result.routes).toHaveProperty("design_or_define_goal");
+    expect(result.routes).toHaveProperty("refine_goal");
+    expect(result.routes).toHaveProperty("execute_goal");
+    expect(result.routes).toHaveProperty("review_goal");
+    expect(result.routes).toHaveProperty("codify_goal");
+  });
 
-  describe("buildSessionStartOutput", () => {
-    it("should include session context in output", () => {
-      const context = createContext();
-      const output = builder.buildSessionStartOutput(context);
-      const text = output.toHumanReadable();
+  it("should route design or definition to project north-star context", () => {
+    const result = builder.buildStructuredOutput(response);
+    const routes = result.routes as Record<string, Record<string, string>>;
 
-      expect(text).toContain("status: active");
+    expect(routes.design_or_define_goal.command).toBe(
+      "jumbo project show --northstar --format json"
+    );
+  });
+
+  it("should include fallback command for goal-id routes", () => {
+    const result = builder.buildStructuredOutput(response);
+    const routes = result.routes as Record<string, Record<string, string>>;
+
+    for (const key of ["refine_goal", "execute_goal", "review_goal", "codify_goal"]) {
+      expect(routes[key].command).toContain("<goalId>");
+      expect(routes[key].fallbackCommand).toBe("jumbo goals list --format json");
+    }
+  });
+
+  it("should not include eager session context in structured output", () => {
+    const result = builder.buildStructuredOutput(response);
+
+    expect(result).not.toHaveProperty("projectContext");
+    expect(result).not.toHaveProperty("goals");
+    expect(result).not.toHaveProperty("llmInstructions");
+    expect(result).not.toHaveProperty("recentDecisions");
+  });
+
+  it("should ask for workflow choice without naming hidden route classes", () => {
+    const result = builder.buildStructuredOutput(response);
+    const instruction = result.agentInstruction as Record<string, string>;
+
+    expect(instruction.prompt).toContain("design or define a goal");
+    expect(instruction.prompt).toContain("refine a goal");
+    expect(instruction.prompt).toContain("execute a goal");
+    expect(instruction.prompt).toContain("review a goal");
+    expect(instruction.prompt).toContain("codify a goal");
+    expect(instruction.prompt).toContain("something different");
+    expect(instruction.prompt).not.toContain("ad-hoc");
+    expect(instruction.prompt).not.toContain("preprompted");
+  });
+
+  it("should render router text without eager project or goal context", () => {
+    const output = builder.buildSessionStartOutput(response);
+    const text = output.toHumanReadable();
+
+    expect(text).toContain("design_or_define_goal");
+    expect(text).toContain("jumbo project show --northstar --format json");
+    expect(text).not.toContain("projectContext:");
+    expect(text).not.toContain("goals:");
+    expect(text).not.toContain("recentDecisions:");
+  });
+
+  it("should include dedicated brownfield instruction for unprimed repositories", () => {
+    const result = builder.buildStructuredOutput({
+      ...response,
+      isUnprimedBrownfield: true,
     });
 
-    it("should group goals by status from all sources", () => {
-      const context = createContext({
-        activeGoals: [{ goalId: "g_active", objective: "Active task", status: "doing" } as GoalView],
-        pausedGoals: [{ goalId: "g_paused", objective: "Paused task", status: "paused", updatedAt: "2025-01-01T11:00:00Z" } as GoalView],
-        plannedGoals: [{ goalId: "g_planned", objective: "Planned task", status: "defined" } as GoalView],
-      });
-
-      const output = builder.buildSessionStartOutput(context);
-      const text = output.toHumanReadable();
-
-      expect(text).toContain("doing:");
-      expect(text).toContain("goalId: g_active");
-      expect(text).toContain("paused:");
-      expect(text).toContain("goalId: g_paused");
-      expect(text).toContain("defined:");
-      expect(text).toContain("goalId: g_planned");
-    });
-
-    it("should include @LLM goal start instruction", () => {
-      const context = createContext();
-      const output = builder.buildSessionStartOutput(context);
-      const text = output.toHumanReadable();
-
-      expect(text).toContain("@LLM:");
-    });
-
-    it("should include paused goals resume prompt when goals are paused", () => {
-      const context = createContext({
-        pausedGoals: [
-          { goalId: "g_paused", objective: "Paused work", status: "paused", updatedAt: "2025-01-01T11:00:00Z" } as GoalView,
-        ],
-      });
-
-      const output = builder.buildSessionStartOutput(context);
-      const text = output.toHumanReadable();
-
-      expect(text).toContain("Goals were paused");
-      expect(text).toContain("jumbo goal resume --id");
-    });
-
-    it("should include brownfield instruction when brownfield-onboarding present", () => {
-      const context = createContext({}, defaultSession, [SessionInstructionSignal.BROWNFIELD_ONBOARDING]);
-      const output = builder.buildSessionStartOutput(context);
-      const text = output.toHumanReadable();
-
-      expect(text).toContain("BROWNFIELD PROJECT");
+    expect(result.brownfieldInstruction).toMatchObject({
+      prompt: expect.stringContaining("BROWNFIELD PROJECT"),
     });
   });
 
-  describe("buildStructuredOutput", () => {
-    it("should include per-state grouped goals instead of inProgress/planned split", () => {
-      const context = createContext({
-        activeGoals: [{ goalId: "g1", objective: "Active", status: "doing", createdAt: "2025-01-01T10:00:00Z" } as GoalView],
-        plannedGoals: [{ goalId: "g2", objective: "Planned", status: "defined", createdAt: "2025-01-01T10:00:00Z" } as GoalView],
-      });
-
-      const result = builder.buildStructuredOutput(context, "session-123");
-
-      expect(result).toHaveProperty("goals");
-      expect(result).not.toHaveProperty("inProgressGoals");
-      expect(result).not.toHaveProperty("plannedGoals");
-      expect(result.goals).toHaveProperty("doing");
-      expect(result.goals).toHaveProperty("defined");
-      expect(result.goals.doing.hint).toBe("jumbo goal submit --id <id>");
+  it("should include brownfield prompt in text output for unprimed repositories", () => {
+    const output = builder.buildSessionStartOutput({
+      ...response,
+      isUnprimedBrownfield: true,
     });
 
-    it("should include all expected top-level fields", () => {
-      const context = createContext();
-      const result = builder.buildStructuredOutput(context, "session-123");
-
-      expect(result).toHaveProperty("projectContext");
-      expect(result).toHaveProperty("sessionContext");
-      expect(result).toHaveProperty("goals");
-      expect(result).toHaveProperty("llmInstructions");
-      expect(result).toHaveProperty("sessionStart");
-    });
-
-    it("should include session ID in sessionStart field", () => {
-      const context = createContext();
-      const result = builder.buildStructuredOutput(context, "session-456");
-
-      expect(result.sessionStart).toEqual({ sessionId: "session-456" });
-    });
-
-    it("should include llm instructions with session context and goal start", () => {
-      const context = createContext({
-        pausedGoals: [
-          { goalId: "g1", objective: "Paused", status: "paused", updatedAt: "2025-01-01T11:00:00Z" } as GoalView,
-        ],
-      });
-
-      const result = builder.buildStructuredOutput(context, "session-789");
-
-      expect(result.llmInstructions.sessionContext).toContain("Goals were paused");
-      expect(result.llmInstructions.goalStart).toContain("@LLM:");
-    });
-
-    it("should have null sessionContext instruction when no paused goals", () => {
-      const context = createContext();
-      const result = builder.buildStructuredOutput(context, "session-000");
-
-      expect(result.llmInstructions.sessionContext).toBeNull();
-    });
-
-    it("should not include activityMirror in structured output", () => {
-      const context = createContext();
-      const result = builder.buildStructuredOutput(context, "session-123");
-
-      expect(result).not.toHaveProperty("activityMirror");
-    });
+    expect(output.toHumanReadable()).toContain("BROWNFIELD PROJECT");
   });
 });

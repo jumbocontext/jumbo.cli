@@ -4,6 +4,7 @@ import { FsEventStore } from "../../../src/infrastructure/persistence/FsEventSto
 import { BaseEvent } from "../../../src/domain/BaseEvent";
 import { ILogger } from "../../../src/application/logging/ILogger";
 import { jest } from "@jest/globals";
+import os from "os";
 
 const mockLogger: ILogger = {
   error: jest.fn(),
@@ -17,7 +18,7 @@ describe("FsEventStore", () => {
   let store: FsEventStore;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-events-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-events-"));
     store = new FsEventStore(tmpDir, mockLogger);
   });
 

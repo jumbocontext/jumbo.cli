@@ -103,6 +103,11 @@ export class FsSettingsReader implements ISettingsReader {
         consentGiven:
           settings.telemetry?.consentGiven ?? DEFAULT_SETTINGS.telemetry.consentGiven,
       },
+      tui: {
+        showLaunchpadWelcome:
+          settings.tui?.showLaunchpadWelcome ??
+          DEFAULT_SETTINGS.tui!.showLaunchpadWelcome,
+      },
     };
   }
 
@@ -134,6 +139,12 @@ export class FsSettingsReader implements ISettingsReader {
     "anonymousId": ${anonymousIdValue},
     // Whether the user has explicitly made a telemetry consent decision
     "consentGiven": ${settings.telemetry.consentGiven}
+  },
+
+  // TUI presentation preferences
+  "tui": {
+    // Whether the Cockpit launchpad welcome panel should be shown
+    "showLaunchpadWelcome": ${settings.tui!.showLaunchpadWelcome}
   }
 }
 `;

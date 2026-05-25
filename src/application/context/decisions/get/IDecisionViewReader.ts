@@ -4,6 +4,7 @@
  */
 
 import { DecisionView } from "../DecisionView.js";
+import type { DecisionSearchCriteria } from "../search/DecisionSearchCriteria.js";
 
 export type DecisionStatusFilter = "active" | "superseded" | "reversed" | "all";
 
@@ -21,4 +22,11 @@ export interface IDecisionViewReader {
    * @returns Array of decision views ordered by creation date (newest first)
    */
   findByIds(ids: string[]): Promise<DecisionView[]>;
+
+  /**
+   * Searches decisions by criteria with AND logic.
+   * @param criteria - Search filters (status exact, title substring, query across decision text fields)
+   * @returns Array of matching decision views ordered by creation date (newest first)
+   */
+  search(criteria: DecisionSearchCriteria): Promise<DecisionView[]>;
 }

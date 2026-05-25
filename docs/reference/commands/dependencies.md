@@ -82,6 +82,40 @@ List third-party dependencies.
 
 ---
 
+## jumbo dependencies search
+
+Search third-party dependencies by identity fields, status, legacy links, or free text.
+
+### Synopsis
+
+```bash
+> jumbo dependencies search [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--name <name>` | Filter by dependency display name; supports substring matching and `*` wildcards |
+| `--ecosystem <ecosystem>` | Filter by ecosystem/provider; supports substring matching and `*` wildcards |
+| `--package-name <packageName>` | Filter by package/service identifier; supports substring matching and `*` wildcards |
+| `--version <version>` | Filter by version constraint; supports substring matching and `*` wildcards |
+| `--status <status>` | Filter by status: `active`, `deprecated`, `removed` |
+| `--consumer <componentId>` | Legacy filter by consumer component ID; supports substring matching and `*` wildcards |
+| `--provider <componentId>` | Legacy filter by provider component ID; supports substring matching and `*` wildcards |
+| `-q, --query <query>` | Free-text search across name, ecosystem, package name, version constraint, contract, and endpoint |
+| `-o, --output <output>` | Output detail level: `default` or `compact` |
+
+### Examples
+
+```bash
+> jumbo dependencies search --ecosystem npm --query sqlite
+> jumbo dependencies search --package-name "@types/*" --output compact
+> jumbo dependencies search --status deprecated --format json
+```
+
+---
+
 ## jumbo dependency update
 
 Update an existing third-party dependency.

@@ -9,13 +9,14 @@ import fs from "fs-extra";
 import * as path from "path";
 import { FsGoalClosedEventStore } from "../../../../../src/infrastructure/context/goals/close/FsGoalClosedEventStore";
 import { FsEventStore } from "../../../../../src/infrastructure/persistence/FsEventStore";
+import os from "os";
 
 describe("FsGoalClosedEventStore", () => {
   let tmpDir: string;
   let store: FsGoalClosedEventStore;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-closed-events-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-closed-events-"));
     store = new FsGoalClosedEventStore(tmpDir);
   });
 

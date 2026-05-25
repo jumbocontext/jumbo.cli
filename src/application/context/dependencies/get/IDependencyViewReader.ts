@@ -4,6 +4,7 @@
  */
 
 import { DependencyView } from "../DependencyView.js";
+import { DependencySearchCriteria } from "../search/DependencySearchCriteria.js";
 
 export interface DependencyListFilter {
   name?: string;
@@ -28,4 +29,11 @@ export interface IDependencyViewReader {
    * @returns Array of dependency views ordered by creation date (newest first)
    */
   findByIds(ids: string[]): Promise<DependencyView[]>;
+
+  /**
+   * Searches dependencies by criteria with AND logic.
+   * @param criteria - Search filters for identity fields, status, legacy links, and free text
+   * @returns Array of matching dependency views ordered by creation date (newest first)
+   */
+  search(criteria: DependencySearchCriteria): Promise<DependencyView[]>;
 }

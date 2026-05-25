@@ -4,6 +4,7 @@
  */
 
 import { GuidelineView } from "../GuidelineView.js";
+import { GuidelineSearchCriteria } from "../search/GuidelineSearchCriteria.js";
 
 export interface IGuidelineViewReader {
   /**
@@ -19,4 +20,11 @@ export interface IGuidelineViewReader {
    * @returns Array of guideline views ordered by creation date (newest first)
    */
   findByIds(ids: string[]): Promise<GuidelineView[]>;
+
+  /**
+   * Searches active guidelines by criteria with AND logic.
+   * @param criteria - Search filters (category exact, title substring, query across title/description/rationale/examples)
+   * @returns Array of matching guideline views ordered by category and creation date
+   */
+  search(criteria: GuidelineSearchCriteria): Promise<GuidelineView[]>;
 }

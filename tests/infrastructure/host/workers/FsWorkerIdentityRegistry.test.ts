@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { FsWorkerIdentityRegistry } from "../../../../src/infrastructure/host/workers/FsWorkerIdentityRegistry";
 import { HostSessionKeyResolver, HostSessionKeyResult } from "../../../../src/infrastructure/host/session/HostSessionKeyResolver";
+import os from "os";
 
 // Mock HostSessionKeyResolver for controlled testing
 class MockHostSessionKeyResolver extends HostSessionKeyResolver {
@@ -24,7 +25,7 @@ describe("FsWorkerIdentityRegistry", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-workers-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-workers-"));
   });
 
   afterEach(async () => {

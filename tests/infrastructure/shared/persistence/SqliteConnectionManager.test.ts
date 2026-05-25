@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import * as path from "path";
 import { SqliteConnectionManager } from "../../../../src/infrastructure/persistence/SqliteConnectionManager";
+import os from "os";
 
 describe("SqliteConnectionManager", () => {
   let tmpDir: string;
@@ -8,7 +9,7 @@ describe("SqliteConnectionManager", () => {
   let manager: SqliteConnectionManager;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-jumbo-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-jumbo-"));
     dbPath = path.join(tmpDir, "test.db");
   });
 

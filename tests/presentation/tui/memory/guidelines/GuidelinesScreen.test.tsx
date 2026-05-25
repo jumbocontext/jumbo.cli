@@ -1,0 +1,53 @@
+import React from "react";
+import { describe, expect, it } from "@jest/globals";
+import { render } from "ink-testing-library";
+import { GuidelinesScreen } from "../../../../../src/presentation/tui/memory/guidelines/GuidelinesScreen.js";
+import { TuiStateReaderProvider } from "../../../../../src/presentation/tui/state-reading/TuiStateReader.js";
+
+async function waitForFrame(readFrame: () => string | undefined, text: string) {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const frame = readFrame() ?? "";
+    if (frame.includes(text)) return frame;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  return readFrame() ?? "";
+}
+
+describe("GuidelinesScreen", () => {
+  it("renders a focused guideline list and selected detail", async () => {
+    const { lastFrame, unmount } = render(
+      <TuiStateReaderProvider
+        controllers={{
+          getGuidelinesController: {
+            handle: async () => ({
+              guidelines: [{
+                guidelineId: "guideline_real",
+                title: "Real guideline",
+                category: "process",
+                description: "Rendered from a response",
+                rationale: "Keeps the route data-backed",
+                examples: [],
+                isRemoved: false,
+                removedAt: null,
+                removalReason: null,
+                version: 1,
+                createdAt: "2026-05-15T00:00:00.000Z",
+                updatedAt: "2026-05-15T00:00:00.000Z",
+              }],
+            }),
+          },
+        }}
+        options={{ tickMs: 0 }}
+      >
+        <GuidelinesScreen />
+      </TuiStateReaderProvider>,
+    );
+    const frame = await waitForFrame(lastFrame, "guideline_real");
+
+    expect(frame).toContain("Guidelines List");
+    expect(frame).toContain("Guideline Detail");
+    expect(frame).toContain("guideline_real");
+    expect(frame).not.toContain("Decisions List");
+    unmount();
+  });
+});

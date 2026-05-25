@@ -46,10 +46,6 @@ export async function sessionStart(
     const config = renderer.getConfig();
     const isTextOutput = config.format === "text";
 
-    if (isTextOutput) {
-      renderer.info("Loading orientation context...\n");
-    }
-
     // 1. CONTROLLER: Orchestrate session start
     const response = await container.sessionStartController.handle({});
 
@@ -57,14 +53,14 @@ export async function sessionStart(
     const outputBuilder = new SessionStartOutputBuilder();
 
     if (isTextOutput) {
-      const output = outputBuilder.buildSessionStartOutput(response.context);
+      const output = outputBuilder.buildSessionStartOutput(response);
       renderer.info(output.toHumanReadable());
 
       renderer.success("Session started", {
         sessionId: response.sessionId,
       });
     } else {
-      renderer.data(outputBuilder.buildStructuredOutput(response.context, response.sessionId));
+      renderer.data(outputBuilder.buildStructuredOutput(response));
     }
   } catch (error) {
     renderer.error("Failed to start session", error instanceof Error ? error : String(error));

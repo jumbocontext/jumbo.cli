@@ -22,6 +22,7 @@ describe("LocalGetInvariantsGateway", () => {
       findById: jest.fn(),
       findByIds: jest.fn(),
       findAll: jest.fn(),
+      search: jest.fn(),
     } as jest.Mocked<IInvariantViewReader>;
 
     gateway = new LocalGetInvariantsGateway(mockReader);

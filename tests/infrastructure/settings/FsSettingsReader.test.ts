@@ -1,0 +1,53 @@
+import { afterEach, describe, expect, it } from "@jest/globals";
+import fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
+import { FsSettingsReader } from "../../../src/infrastructure/settings/FsSettingsReader.js";
+import { DEFAULT_SETTINGS } from "../../../src/infrastructure/settings/DefaultSettings.js";
+
+const tempDirs: string[] = [];
+
+async function createTempDir(): Promise<string> {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "jumbo-settings-"));
+  tempDirs.push(tempDir);
+  return tempDir;
+}
+
+afterEach(async () => {
+  await Promise.all(tempDirs.splice(0).map((tempDir) => fs.remove(tempDir)));
+});
+
+describe("FsSettingsReader", () => {
+  it("merges TUI defaults when existing settings do not include them", async () => {
+    const tempDir = await createTempDir();
+    await fs.writeFile(
+      path.join(tempDir, "settings.jsonc"),
+      JSON.stringify({
+        qa: { defaultTurnLimit: 7 },
+        claims: { claimDurationMinutes: 45 },
+        telemetry: { enabled: false, anonymousId: null, consentGiven: true },
+      }),
+      "utf-8",
+    );
+    const reader = new FsSettingsReader(tempDir);
+
+    const settings = await reader.read();
+
+    expect(settings.tui).toEqual(DEFAULT_SETTINGS.tui);
+  });
+
+  it("persists TUI preferences through the settings file", async () => {
+    const tempDir = await createTempDir();
+    const reader = new FsSettingsReader(tempDir);
+
+    await reader.write({
+      ...DEFAULT_SETTINGS,
+      tui: { showLaunchpadWelcome: false },
+    });
+
+    await expect(reader.read()).resolves.toEqual({
+      ...DEFAULT_SETTINGS,
+      tui: { showLaunchpadWelcome: false },
+    });
+  });
+});

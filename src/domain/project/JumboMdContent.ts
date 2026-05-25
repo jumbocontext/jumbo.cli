@@ -28,7 +28,7 @@ Sincerely,
 Project Administrator
 
 ### When you start a new Session Start
-Run \`jumbo session start\`
+Unless you've already been prompted with a specific directive, then run \`jumbo session start\`
 
 This orients you with the current state of the project: high-level project, recent events and a goal backlog to select work from.
 

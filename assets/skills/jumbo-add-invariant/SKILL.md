@@ -9,6 +9,15 @@ Register an invariant with Jumbo when you discover a non-negotiable constraint â
 
 **Important:** Invariants must be **generally applicable** to the project. Do not word them for a specific use case, goal, or task. An invariant that only applies during one piece of work belongs in a goal's criteria, not in the invariant registry. If you find yourself writing "when working on X" or "for the Y feature", it is not an invariant.
 
+## Before Adding
+Check for an existing invariant to avoid duplication. Consider reversing, updating, or superseding a previously registered invariant before registering a new one.
+
+Use the search subcommand to locate previously registered invariants:
+
+```bash
+jumbo invariants search -q <query>
+```
+
 ## Command Syntax
 
 ```bash

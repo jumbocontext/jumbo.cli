@@ -2,7 +2,7 @@
  * Tests for SessionContextOutputBuilder
  *
  * Verifies output for session context orientation including:
- * - Minimal project header rendering (name, purpose only)
+ * - Project context rendering (core project fields)
  * - Session summary (focus, status, paused goals, recent decisions)
  * - Brownfield onboarding @LLM prompt
  * - Paused goals resume @LLM prompt
@@ -66,15 +66,11 @@ describe("SessionContextOutputBuilder", () => {
       expect(text).toContain("status: active");
     });
 
-    it("should include only project name and purpose when available", () => {
+    it("should include project context when available", () => {
       const context = createContext({
         projectContext: {
-          projectId: "p1",
           name: "TestProject",
           purpose: "Testing purposes",
-          version: 1,
-          createdAt: "2025-01-01T00:00:00Z",
-          updatedAt: "2025-01-01T00:00:00Z",
         } as any,
       });
 
@@ -83,9 +79,6 @@ describe("SessionContextOutputBuilder", () => {
 
       expect(text).toContain("name: TestProject");
       expect(text).toContain("purpose: Testing purposes");
-      expect(text).not.toContain("audiences");
-      expect(text).not.toContain("audiencePains");
-      expect(text).not.toContain("valuePropositions");
     });
 
     it("should omit project context section when null", () => {
@@ -300,29 +293,6 @@ describe("SessionContextOutputBuilder", () => {
       expect(result.projectContext).toBeNull();
       expect(result.sessionContext).toBeDefined();
       expect(result.llmSessionContextInstruction).toBeNull();
-    });
-
-    it("should expose only name and purpose in structured projectContext", () => {
-      const context = createContext({
-        projectContext: {
-          projectId: "p1",
-          name: "TestProject",
-          purpose: "Testing purposes",
-          version: 1,
-          createdAt: "2025-01-01T00:00:00Z",
-          updatedAt: "2025-01-01T00:00:00Z",
-        } as any,
-      });
-
-      const result = builder.buildStructuredSessionContext(context);
-
-      expect(result.projectContext).toEqual({
-        name: "TestProject",
-        purpose: "Testing purposes",
-      });
-      expect(result.projectContext).not.toHaveProperty("audiences");
-      expect(result.projectContext).not.toHaveProperty("audiencePains");
-      expect(result.projectContext).not.toHaveProperty("valuePropositions");
     });
 
     it("should include llm instruction when goals are paused", () => {

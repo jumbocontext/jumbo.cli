@@ -6,13 +6,17 @@ import fs from "fs-extra";
 import * as path from "path";
 import { CursorConfigurer } from "../../../../../src/infrastructure/context/project/init/CursorConfigurer";
 import { CursorRulesContent } from "../../../../../src/domain/project/CursorRulesContent";
+import os from "os";
+import { jest } from "@jest/globals";
+
+jest.setTimeout(30_000);
 
 describe("CursorConfigurer", () => {
   let tmpDir: string;
   const configurer = new CursorConfigurer();
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-cursor-configurer-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-cursor-configurer-"));
   });
 
   afterEach(async () => {

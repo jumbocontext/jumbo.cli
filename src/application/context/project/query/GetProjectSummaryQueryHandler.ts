@@ -29,9 +29,13 @@ export class GetProjectSummaryQueryHandler {
       return null;
     }
 
+    const lifecycleState = project.lifecycleState
+      ?? await this.projectContextReader.getProjectLifecycleState();
+
     return {
       name: project.name,
       purpose: project.purpose,
+      lifecycleState,
     };
   }
 }

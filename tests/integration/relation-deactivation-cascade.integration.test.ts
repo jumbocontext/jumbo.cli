@@ -4,6 +4,10 @@ import { Host } from "../../src/infrastructure/host/Host.js";
 import { IApplicationContainer } from "../../src/application/host/IApplicationContainer.js";
 import { EntityType } from "../../src/domain/relations/Constants.js";
 import { ComponentType } from "../../src/domain/components/Constants.js";
+import os from "os";
+import { jest } from "@jest/globals";
+
+jest.setTimeout(30_000);
 
 describe("Relation deactivation cascade integration", () => {
   let tmpDir: string;
@@ -11,7 +15,7 @@ describe("Relation deactivation cascade integration", () => {
   let container: IApplicationContainer;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(process.cwd(), "test-relation-cascade-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-relation-cascade-"));
     host = new Host(tmpDir);
     container = await host.createBuilder().build();
   });
@@ -147,7 +151,7 @@ describe("Relation deactivation cascade integration", () => {
     expect(removed.relations.some((relation) => relation.toEntityId === componentId)).toBe(true);
   });
 
-  it("session start context omits deactivated relation warning data", async () => {
+  it("session start router omits session context warning data", async () => {
     const decisionId = await addDecision("Session Warning Decision");
     const componentId = await addComponent("SessionWarningComponent");
 
@@ -165,7 +169,8 @@ describe("Relation deactivation cascade integration", () => {
     });
 
     const sessionStart = await container.sessionStartController.handle({});
-    expect(sessionStart.context.context).not.toHaveProperty("deactivatedRelations");
+    expect(sessionStart).not.toHaveProperty("context");
+    expect(sessionStart).not.toHaveProperty("deactivatedRelations");
   });
 
   it("relations query supports filtering by deactivated status", async () => {

@@ -7,6 +7,15 @@ description: Use liberally when you make an architectural choice, select a techn
 
 Register an architectural decision with Jumbo when you choose one approach over alternatives. Decisions explain **why** the codebase looks the way it does — without them, future agents may reverse your choices or repeat your analysis.
 
+## Before Adding
+Check for an existing decision to avoid duplication. Consider reversing, updating, or superseding a previously registered decision before registering a new one.
+
+Use the search subcommand to locate previously registered decisions:
+
+```bash
+jumbo decisions search -q <query>
+```
+
 ## Command Syntax
 
 ```bash
