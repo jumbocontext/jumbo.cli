@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-05-25
+
 ### Added
 
 - **Project north-star packet**: Added `jumbo project show --northstar` to return project alignment context for goal design and definition, including project metadata, audiences, audience pains, and value propositions.
