@@ -12,10 +12,10 @@ Register an invariant with Jumbo when you discover a non-negotiable constraint â
 ## Before Adding
 Check for an existing invariant to avoid duplication. Consider reversing, updating, or superseding a previously registered invariant before registering a new one.
 
-Use the list command for registered invariant:
+Use the search subcommand to locate previously registered invariants:
 
 ```bash
-jumbo invariants list
+jumbo invariants search -q <query>
 ```
 
 ## Command Syntax

@@ -10,10 +10,10 @@ Register an architectural decision with Jumbo when you choose one approach over 
 ## Before Adding
 Check for an existing decision to avoid duplication. Consider reversing, updating, or superseding a previously registered decision before registering a new one.
 
-Use the list command for registered decisions:
+Use the search subcommand to locate previously registered decisions:
 
 ```bash
-jumbo decisions list
+jumbo decisions search -q <query>
 ```
 
 ## Command Syntax

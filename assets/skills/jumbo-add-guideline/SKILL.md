@@ -12,10 +12,10 @@ Register a guideline with Jumbo when the user states a preference about how work
 ## Before Adding
 Check for an existing guideline to avoid duplication. Consider removing, or updating, a previously registered guideline before registering a new one.
 
-Use the list command for registered guideline:
+Use the search subcommand to locate previously registered guidelines:
 
 ```bash
-jumbo guidelines list
+jumbo guidelines search -q <query>
 ```
 
 ## Command Syntax

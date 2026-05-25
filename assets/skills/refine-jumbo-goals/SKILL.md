@@ -28,12 +28,12 @@ You MUST explore ALL entity categories to build a complete picture of available 
 ```bash
 jumbo invariants list
 jumbo guidelines list
-jumbo decisions list
-jumbo dependencies list
-jumbo architecture view
+jumbo decisions search -q <query>
+jumbo dependencies search -q <query>
+jumbo components search -q <query>
 ```
 
-For **components**, use targeted searches instead of dumping the full list. Extract keywords from the goal's objective and criteria, then search:
+Here are some examples demonstrated various ways to search for components:
 
 ```bash
 # Search by name (substring or wildcard)

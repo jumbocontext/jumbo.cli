@@ -10,10 +10,10 @@ Register a third-party dependency with Jumbo when you add a new package, discove
 ## Before Adding
 Check for an existing dependency to avoid duplication. Consider renaming, updating, or deprecating and replacing a previously registered dependency before registering a new one.
 
-Use the search help command for guidance on locating registered dependency:
+Use the search subcommand to locate previously registered dependencies:
 
 ```bash
-jumbo dependencies list
+jumbo dependencies search -q <query>
 ```
 
 ## Command Syntax
