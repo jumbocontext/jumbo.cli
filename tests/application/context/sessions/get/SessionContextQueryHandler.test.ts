@@ -33,6 +33,7 @@ describe("SessionContextQueryHandler", () => {
     decisionViewReader = {
       findAll: jest.fn().mockResolvedValue([]),
       findByIds: jest.fn().mockResolvedValue([]),
+      search: jest.fn().mockResolvedValue([]),
     } as jest.Mocked<IDecisionViewReader>;
 
     projectContextReader = {

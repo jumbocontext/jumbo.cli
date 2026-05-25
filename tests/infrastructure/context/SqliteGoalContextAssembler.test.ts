@@ -106,6 +106,10 @@ class MockDecisionViewReader implements IDecisionViewReader {
     return this.decisions.filter(d => ids.includes(d.decisionId));
   }
 
+  async search(): Promise<DecisionView[]> {
+    return this.decisions;
+  }
+
   setDecisions(decisions: DecisionView[]): void {
     this.decisions = decisions;
   }

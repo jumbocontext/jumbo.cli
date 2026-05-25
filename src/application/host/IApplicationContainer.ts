@@ -124,6 +124,7 @@ import { ResumeWorkController } from "../context/work/resume/ResumeWorkControlle
 
 import { AddDecisionController } from "../context/decisions/add/AddDecisionController.js";
 import { GetDecisionsController } from "../context/decisions/get/GetDecisionsController.js";
+import { SearchDecisionsController } from "../context/decisions/search/SearchDecisionsController.js";
 import { ReverseDecisionController } from "../context/decisions/reverse/ReverseDecisionController.js";
 import { RestoreDecisionController } from "../context/decisions/restore/RestoreDecisionController.js";
 import { SupersedeDecisionController } from "../context/decisions/supersede/SupersedeDecisionController.js";
@@ -451,6 +452,7 @@ export interface IApplicationContainer {
   // Decision Controllers
   addDecisionController: AddDecisionController;
   getDecisionsController: GetDecisionsController;
+  searchDecisionsController: SearchDecisionsController;
   reverseDecisionController: ReverseDecisionController;
   restoreDecisionController: RestoreDecisionController;
   supersedeDecisionController: SupersedeDecisionController;

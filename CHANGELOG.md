@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Decision search command**: Added `jumbo decisions search` with status filtering, title substring and wildcard matching, free-text search across decision fields, and `default` or `compact` output modes.
 - **Guideline search command**: Added `jumbo guidelines search` with exact category filtering, title substring and wildcard matching, free-text search across title/description/rationale/examples, removed-guideline exclusion, and `default` or `compact` output modes.
 - **Invariant search command**: Added `jumbo invariants search` with title filtering, free-text search across title/description/rationale, wildcard support, and `default` or `compact` output modes.
 - **Cockpit create-goal footer shortcut**: The primed Cockpit launchpad footer now shows a contextual `g` / create goal badge that opens the existing goal authoring wizard.

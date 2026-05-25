@@ -72,6 +72,36 @@ List all architectural decisions.
 
 ---
 
+## jumbo decisions search
+
+Search architectural decisions by status, title, or free-text query.
+
+### Synopsis
+
+```bash
+> jumbo decisions search [--title <text>] [--status <status>] [--query <text>] [--output <output>]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-t, --title <text>` | Filter by title substring, or use `*` for wildcards |
+| `-s, --status <status>` | Filter by status: `active`, `superseded`, `reversed`, `all` (default: `all`) |
+| `-q, --query <text>` | Free-text search across title, context, rationale, alternatives, consequences, reversal reason, and superseded-by fields |
+| `-o, --output <output>` | Output detail level: `default` or `compact` |
+
+### Examples
+
+```bash
+> jumbo decisions search --title architecture
+> jumbo decisions search --status active
+> jumbo decisions search --query "event handling" --output compact
+> jumbo decisions search --title "Gateway*" --format json
+```
+
+---
+
 ## jumbo decision update
 
 Update an existing decision.

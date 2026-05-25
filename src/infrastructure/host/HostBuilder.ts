@@ -69,6 +69,8 @@ import { LocalAddDecisionGateway } from "../../application/context/decisions/add
 import { AddDecisionController } from "../../application/context/decisions/add/AddDecisionController.js";
 import { LocalGetDecisionsGateway } from "../../application/context/decisions/get/LocalGetDecisionsGateway.js";
 import { GetDecisionsController } from "../../application/context/decisions/get/GetDecisionsController.js";
+import { LocalSearchDecisionsGateway } from "../../application/context/decisions/search/LocalSearchDecisionsGateway.js";
+import { SearchDecisionsController } from "../../application/context/decisions/search/SearchDecisionsController.js";
 import { ReverseDecisionCommandHandler } from "../../application/context/decisions/reverse/ReverseDecisionCommandHandler.js";
 import { LocalReverseDecisionGateway } from "../../application/context/decisions/reverse/LocalReverseDecisionGateway.js";
 import { ReverseDecisionController } from "../../application/context/decisions/reverse/ReverseDecisionController.js";
@@ -1398,6 +1400,12 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const getDecisionsController = new GetDecisionsController(
       getDecisionsGateway
     );
+    const searchDecisionsGateway = new LocalSearchDecisionsGateway(
+      decisionViewReader
+    );
+    const searchDecisionsController = new SearchDecisionsController(
+      searchDecisionsGateway
+    );
     const reverseDecisionCommandHandler = new ReverseDecisionCommandHandler(
       decisionReversedEventStore,
       decisionReversedProjector,
@@ -2094,6 +2102,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       // Decision Controllers
       addDecisionController,
       getDecisionsController,
+      searchDecisionsController,
       reverseDecisionController,
       restoreDecisionController,
       supersedeDecisionController,
