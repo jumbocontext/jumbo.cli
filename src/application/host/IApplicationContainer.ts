@@ -183,6 +183,7 @@ import { IGuidelineRemovedProjector } from "../context/guidelines/remove/IGuidel
 import { IGuidelineRemoveReader } from "../context/guidelines/remove/IGuidelineRemoveReader.js";
 import { IGuidelineViewReader } from "../context/guidelines/get/IGuidelineViewReader.js";
 import { GetGuidelinesController } from "../context/guidelines/get/GetGuidelinesController.js";
+import { SearchGuidelinesController } from "../context/guidelines/search/SearchGuidelinesController.js";
 import { IInvariantAddedProjector } from "../context/invariants/add/IInvariantAddedProjector.js";
 import { IInvariantAddReader } from "../context/invariants/add/IInvariantAddReader.js";
 import { IInvariantUpdatedProjector } from "../context/invariants/update/IInvariantUpdatedProjector.js";
@@ -557,6 +558,7 @@ export interface IApplicationContainer {
   updateGuidelineController: UpdateGuidelineController;
   removeGuidelineController: RemoveGuidelineController;
   getGuidelinesController: GetGuidelinesController;
+  searchGuidelinesController: SearchGuidelinesController;
   // Invariant Projection Stores - decomposed by use case
   invariantAddedProjector: IInvariantAddedProjector & IInvariantAddReader;
   invariantUpdatedProjector: IInvariantUpdatedProjector & IInvariantUpdateReader;

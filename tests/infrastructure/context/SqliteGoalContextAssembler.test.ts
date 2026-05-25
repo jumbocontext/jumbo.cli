@@ -142,6 +142,10 @@ class MockGuidelineViewReader implements IGuidelineViewReader {
     return this.guidelines.filter(g => ids.includes(g.guidelineId));
   }
 
+  async search(): Promise<GuidelineView[]> {
+    return this.guidelines;
+  }
+
   setGuidelines(guidelines: GuidelineView[]): void {
     this.guidelines = guidelines;
   }

@@ -75,6 +75,36 @@ List all execution guidelines.
 
 ---
 
+## jumbo guidelines search
+
+Search execution guidelines by category, title, or free-text query.
+
+### Synopsis
+
+```bash
+> jumbo guidelines search [--category <category>] [--title <text>] [--query <text>] [--output default|compact]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-c, --category <category>` | Filter by exact category: `testing`, `codingStyle`, `process`, `communication`, `documentation`, `security`, `performance`, `other` |
+| `-t, --title <text>` | Filter by title substring, or use `*` wildcards such as `Output*` or `*Style` |
+| `-q, --query <text>` | Free-text search across title, description, rationale, and examples; supports `*` wildcards |
+| `-o, --output <output>` | Output detail level: `default` or `compact` |
+
+### Examples
+
+```bash
+> jumbo guidelines search --category testing
+> jumbo guidelines search --title "Output*"
+> jumbo guidelines search --query "stdout" --output compact
+> jumbo guidelines search --query "stdout" --format json
+```
+
+---
+
 ## jumbo guideline update
 
 Update an existing guideline.

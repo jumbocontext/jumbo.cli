@@ -15,6 +15,7 @@ describe("LocalGetGuidelinesGateway", () => {
     mockReader = {
       findAll: jest.fn(),
       findByIds: jest.fn(),
+      search: jest.fn(),
     } as jest.Mocked<IGuidelineViewReader>;
 
     gateway = new LocalGetGuidelinesGateway(mockReader);

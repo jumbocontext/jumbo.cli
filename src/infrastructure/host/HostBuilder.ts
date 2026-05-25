@@ -229,6 +229,8 @@ import { SqliteGuidelineRemovedProjector } from "../context/guidelines/remove/Sq
 import { SqliteGuidelineViewReader } from "../context/guidelines/get/SqliteGuidelineViewReader.js";
 import { LocalGetGuidelinesGateway } from "../../application/context/guidelines/get/LocalGetGuidelinesGateway.js";
 import { GetGuidelinesController } from "../../application/context/guidelines/get/GetGuidelinesController.js";
+import { LocalSearchGuidelinesGateway } from "../../application/context/guidelines/search/LocalSearchGuidelinesGateway.js";
+import { SearchGuidelinesController } from "../../application/context/guidelines/search/SearchGuidelinesController.js";
 // Invariant Projection Stores - decomposed by use case
 import { SqliteInvariantAddedProjector } from "../context/invariants/add/SqliteInvariantAddedProjector.js";
 import { SqliteInvariantUpdatedProjector } from "../context/invariants/update/SqliteInvariantUpdatedProjector.js";
@@ -822,6 +824,8 @@ export class HostBuilder {
     const guidelineViewReader = new SqliteGuidelineViewReader(this.db);
     const getGuidelinesGateway = new LocalGetGuidelinesGateway(guidelineViewReader);
     const getGuidelinesController = new GetGuidelinesController(getGuidelinesGateway);
+    const searchGuidelinesGateway = new LocalSearchGuidelinesGateway(guidelineViewReader);
+    const searchGuidelinesController = new SearchGuidelinesController(searchGuidelinesGateway);
     const addGuidelineCommandHandler = new AddGuidelineCommandHandler(
       guidelineAddedEventStore,
       eventBus
@@ -2195,6 +2199,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       updateGuidelineController,
       removeGuidelineController,
       getGuidelinesController,
+      searchGuidelinesController,
       // Invariant Projection Stores - decomposed by use case
       invariantAddedProjector,
       invariantUpdatedProjector,
