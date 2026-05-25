@@ -4,6 +4,7 @@
  */
 
 import { InvariantView } from "../InvariantView.js";
+import { InvariantSearchCriteria } from "../search/InvariantSearchCriteria.js";
 
 export interface IInvariantViewReader {
   /**
@@ -25,4 +26,11 @@ export interface IInvariantViewReader {
    * @returns Array of invariant views ordered by creation date
    */
   findAll(): Promise<InvariantView[]>;
+
+  /**
+   * Searches invariants by criteria with AND logic.
+   * @param criteria - Search filters (title substring, query across title/description/rationale)
+   * @returns Array of matching invariant views ordered by creation date
+   */
+  search(criteria: InvariantSearchCriteria): Promise<InvariantView[]>;
 }

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Invariant search command**: Added `jumbo invariants search` with title filtering, free-text search across title/description/rationale, wildcard support, and `default` or `compact` output modes.
 - **Cockpit create-goal footer shortcut**: The primed Cockpit launchpad footer now shows a contextual `g` / create goal badge that opens the existing goal authoring wizard.
 - **Cockpit goal authoring**: The primed-empty Cockpit `g` shortcut now opens the goal authoring wizard, registers the goal through the existing goal-add action path, suppresses surrounding shortcuts while typing, and routes to the launchpad after goal creation.
 - **Bare command TUI launch**: Running `jumbo` with no arguments now opens the Ink TUI instead of ending at the legacy static banner path, using project-backed state readers when a Jumbo project is available and an uninitialized TUI path otherwise.

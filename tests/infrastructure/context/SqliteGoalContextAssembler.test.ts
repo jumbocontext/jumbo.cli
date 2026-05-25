@@ -122,6 +122,10 @@ class MockInvariantViewReader implements IInvariantViewReader {
     return this.invariants.filter(i => ids.includes(i.invariantId));
   }
 
+  async search(): Promise<InvariantView[]> {
+    return this.invariants;
+  }
+
   setInvariants(invariants: InvariantView[]): void {
     this.invariants = invariants;
   }

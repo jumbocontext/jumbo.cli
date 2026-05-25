@@ -8,6 +8,7 @@
 import { Database } from "better-sqlite3";
 import { IInvariantViewReader } from "../../../../application/context/invariants/get/IInvariantViewReader.js";
 import { InvariantView } from "../../../../application/context/invariants/InvariantView.js";
+import { InvariantSearchCriteria } from "../../../../application/context/invariants/search/InvariantSearchCriteria.js";
 import { InvariantRecord } from "../InvariantRecord.js";
 import { InvariantRecordMapper } from "../InvariantRecordMapper.js";
 
@@ -38,6 +39,43 @@ export class SqliteInvariantViewReader implements IInvariantViewReader {
     const query = `SELECT * FROM invariant_views WHERE invariantId IN (${placeholders}) ORDER BY createdAt ASC`;
     const rows = this.db.prepare(query).all(...ids);
     return rows.map((row) => this.mapper.toView(this.mapRowToRecord(row as Record<string, unknown>)));
+  }
+
+  async search(criteria: InvariantSearchCriteria): Promise<InvariantView[]> {
+    const clauses: string[] = [];
+    const params: string[] = [];
+
+    if (criteria.title !== undefined) {
+      clauses.push("title LIKE ?");
+      params.push(this.toLikePattern(criteria.title));
+    }
+
+    if (criteria.query !== undefined) {
+      const pattern = this.toLikePattern(criteria.query);
+      clauses.push("(title LIKE ? OR description LIKE ? OR rationale LIKE ?)");
+      params.push(pattern, pattern, pattern);
+    }
+
+    let query = "SELECT * FROM invariant_views";
+    if (clauses.length > 0) {
+      query += " WHERE " + clauses.join(" AND ");
+    }
+    query += " ORDER BY createdAt ASC";
+
+    const rows = this.db.prepare(query).all(...params);
+    return rows.map((row) => this.mapper.toView(this.mapRowToRecord(row as Record<string, unknown>)));
+  }
+
+  /**
+   * Converts a user input string to a SQL LIKE pattern.
+   * If the input contains *, replaces * with % for explicit wildcard control.
+   * Otherwise wraps with % for default substring matching.
+   */
+  private toLikePattern(input: string): string {
+    if (input.includes("*")) {
+      return input.replace(/\*/g, "%");
+    }
+    return `%${input}%`;
   }
 
   private mapRowToRecord(row: Record<string, unknown>): InvariantRecord {

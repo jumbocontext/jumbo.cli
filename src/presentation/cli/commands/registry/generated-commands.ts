@@ -69,6 +69,7 @@ import { workerView, metadata as workerViewMeta } from '../../commands/host/work
 import { invariantAdd, metadata as invariantAddMeta } from '../../commands/invariants/add/invariant.add.js';
 import { invariantsList, metadata as invariantsListMeta } from '../../commands/invariants/list/invariants.list.js';
 import { invariantRemove, metadata as invariantRemoveMeta } from '../../commands/invariants/remove/invariant.remove.js';
+import { invariantsSearch, metadata as invariantsSearchMeta } from '../../commands/invariants/search/invariants.search.js';
 import { invariantUpdate, metadata as invariantUpdateMeta } from '../../commands/invariants/update/invariant.update.js';
 import { projectInit, metadata as projectInitMeta } from '../../commands/project/init/project.init.js';
 import { projectUpdate, metadata as projectUpdateMeta } from '../../commands/project/update/project.update.js';
@@ -391,6 +392,11 @@ export const commands: RegisteredCommand[] = [
     path: 'invariant remove',
     metadata: invariantRemoveMeta,
     handler: invariantRemove
+  },
+  {
+    path: 'invariants search',
+    metadata: invariantsSearchMeta,
+    handler: invariantsSearch
   },
   {
     path: 'invariant update',
