@@ -57,9 +57,9 @@ Those solve the core problems. These make Jumbo pleasant to use:
 > npm i -g jumbo-cli
 ```
 
-2. Browse your project folder and initialize Jumbo
+2. Browse your project folder and run Jumbo
 ``` bash
-> jumbo init
+> jumbo
 ```
 Jumbo will guide you in getting started.
 
