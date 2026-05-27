@@ -1,10 +1,11 @@
 import { BaseEvent } from "../../BaseEvent.js";
+import { ValuePropositionEventType } from "../Constants.js";
 
 /**
  * Emitted when a value proposition is updated.
  */
 export interface ValuePropositionUpdatedEvent extends BaseEvent {
-  readonly type: "ValuePropositionUpdatedEvent";
+  readonly type: typeof ValuePropositionEventType.UPDATED;
   readonly payload: {
     readonly title?: string;
     readonly description?: string;

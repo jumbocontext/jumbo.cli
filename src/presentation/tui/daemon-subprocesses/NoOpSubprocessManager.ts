@@ -3,6 +3,7 @@ import {
   DEFAULT_WORKER_DAEMON_CONFIG,
   WORKER_DAEMON_NAMES,
 } from "../../../application/daemons/WorkerDaemonCatalog.js";
+import { TuiSubprocessStatus } from "./Constants.js";
 
 export class NoOpSubprocessManager implements ISubprocessManager {
   private readonly snapshots: Map<TuiDaemonName, TuiSubprocessSnapshot> = new Map(
@@ -30,7 +31,7 @@ export class NoOpSubprocessManager implements ISubprocessManager {
   private createStoppedSnapshot(name: TuiDaemonName): TuiSubprocessSnapshot {
     return {
       name,
-      status: "stopped",
+      status: TuiSubprocessStatus.STOPPED,
       config: DEFAULT_WORKER_DAEMON_CONFIG,
       stdout: [],
       stderr: [],

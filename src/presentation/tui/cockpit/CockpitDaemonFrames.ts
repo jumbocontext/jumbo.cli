@@ -1,5 +1,6 @@
 import { BaseColors } from "../../shared/DesignTokens.js";
-import type { TuiSubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
+import { TuiSubprocessStatus } from "../daemon-subprocesses/Constants.js";
+import type { CockpitDaemonSnapshot } from "./CockpitDaemonSnapshot.js";
 
 export interface GlyphStyle {
   readonly color: string;
@@ -79,10 +80,10 @@ export function getRenderedDaemonFrame<T>(frame: readonly T[]): readonly T[] {
 }
 
 export function getRenderedFrameIndex(
-  snapshot: TuiSubprocessSnapshot,
+  snapshot: CockpitDaemonSnapshot,
   animatedFrameIndex: number,
 ): number {
-  return snapshot.status === "running" ? animatedFrameIndex : 0;
+  return snapshot.status === TuiSubprocessStatus.RUNNING ? animatedFrameIndex : 0;
 }
 
 export function isDaemonStatusLine(lineIndex: number): boolean {
@@ -178,7 +179,7 @@ export function getRefinerFrame(
 
 export function getGlyphCellSegments(
   line: readonly GlyphCell[],
-  snapshot: TuiSubprocessSnapshot,
+  snapshot: CockpitDaemonSnapshot,
 ): Array<{ text: string; color: string }> {
   const segments: Array<{ text: string; color: string }> = [];
 
@@ -200,7 +201,7 @@ export function getGlyphCellSegments(
 export function getStyledGlyphSegments(
   line: string,
   glyphColors: GlyphColorMap,
-  snapshot: TuiSubprocessSnapshot,
+  snapshot: CockpitDaemonSnapshot,
 ): Array<GlyphStyle & { text: string }> {
   const segments: Array<GlyphStyle & { text: string }> = [];
 
@@ -261,7 +262,7 @@ function getDaemonStatusOverlayEnd(
 function getGlyphStyle(
   character: string,
   glyphColors: GlyphColorMap,
-  snapshot: TuiSubprocessSnapshot,
+  snapshot: CockpitDaemonSnapshot,
 ): GlyphStyle {
   const color = glyphColors[character];
 
@@ -276,10 +277,12 @@ function getGlyphStyle(
 }
 
 function getDaemonGlyphColor(
-  snapshot: TuiSubprocessSnapshot,
+  snapshot: CockpitDaemonSnapshot,
   animatedColor: string,
 ): string {
-  return snapshot.status === "running" ? animatedColor : BaseColors.shade6;
+  return snapshot.status === TuiSubprocessStatus.RUNNING
+    ? animatedColor
+    : BaseColors.shade6;
 }
 
 function createRandomGlyphGrid(

@@ -18,9 +18,11 @@ import type { SessionStatusFilter } from "../../../application/context/sessions/
 import type { GetComponentsController } from "../../../application/context/components/list/GetComponentsController.js";
 import type { GetComponentsResponse } from "../../../application/context/components/list/GetComponentsResponse.js";
 import type { ComponentStatusFilter } from "../../../application/context/components/get/IComponentViewReader.js";
+import { ComponentStatus } from "../../../domain/components/Constants.js";
 import type { GetDecisionsController } from "../../../application/context/decisions/get/GetDecisionsController.js";
 import type { GetDecisionsResponse } from "../../../application/context/decisions/get/GetDecisionsResponse.js";
 import type { DecisionStatusFilter } from "../../../application/context/decisions/get/IDecisionViewReader.js";
+import { DecisionStatus } from "../../../domain/decisions/Constants.js";
 import type { GetDependenciesController } from "../../../application/context/dependencies/get/GetDependenciesController.js";
 import type { GetDependenciesResponse } from "../../../application/context/dependencies/get/GetDependenciesResponse.js";
 import type { DependencyListFilter } from "../../../application/context/dependencies/get/IDependencyViewReader.js";
@@ -158,7 +160,7 @@ export function useSessionsList(
 }
 
 export function useComponentsList(
-  status: ComponentStatusFilter = "active",
+  status: ComponentStatusFilter = ComponentStatus.ACTIVE,
 ): TuiStateSnapshot<GetComponentsResponse> {
   const context = useContext(TuiStateReaderContext);
   const controller = context?.controllers.getComponentsController;
@@ -178,7 +180,7 @@ export function useComponentsList(
 }
 
 export function useDecisionsList(
-  status: DecisionStatusFilter = "active",
+  status: DecisionStatusFilter = DecisionStatus.ACTIVE,
 ): TuiStateSnapshot<GetDecisionsResponse> {
   const context = useContext(TuiStateReaderContext);
   const controller = context?.controllers.getDecisionsController;

@@ -1,12 +1,16 @@
 import { BaseEvent } from "../../BaseEvent.js";
-import { EntityTypeValue, RelationStrengthValue } from "../Constants.js";
+import {
+  EntityTypeValue,
+  RelationEventType,
+  RelationStrengthValue,
+} from "../Constants.js";
 
 /**
  * Emitted when a relation between two entities is added to the knowledge graph.
  * This is the first (and only lifecycle) event for the Relation aggregate.
  */
 export interface RelationAddedEvent extends BaseEvent {
-  readonly type: "RelationAddedEvent";
+  readonly type: typeof RelationEventType.ADDED;
   readonly payload: {
     readonly fromEntityType: EntityTypeValue;
     readonly fromEntityId: string;

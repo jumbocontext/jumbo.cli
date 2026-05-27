@@ -6,10 +6,14 @@
  */
 
 import { BaseEvent } from "../../BaseEvent.js";
-import { ComponentTypeValue, ComponentStatusValue } from "../Constants.js";
+import {
+  ComponentEventType,
+  ComponentTypeValue,
+  ComponentStatusValue,
+} from "../Constants.js";
 
 export interface ComponentAddedEvent extends BaseEvent {
-  readonly type: "ComponentAddedEvent";
+  readonly type: typeof ComponentEventType.ADDED;
   readonly payload: {
     readonly name: string;
     readonly type: ComponentTypeValue;

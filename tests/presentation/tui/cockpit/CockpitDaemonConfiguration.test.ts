@@ -10,9 +10,11 @@ import { DEFAULT_WORKER_DAEMON_CONFIGS } from "../../../../src/application/daemo
 
 describe("CockpitDaemonConfiguration", () => {
   it("cycles daemon focus in launchpad order", () => {
-    expect(getNextFocusedDaemon("refiner")).toBe("reviewer");
-    expect(getNextFocusedDaemon("reviewer")).toBe("codifier");
-    expect(getNextFocusedDaemon("codifier")).toBe("refiner");
+    const focusOrder = ["refiner", "reviewer", "codifier"] as const;
+
+    expect(getNextFocusedDaemon("refiner", focusOrder)).toBe("reviewer");
+    expect(getNextFocusedDaemon("reviewer", focusOrder)).toBe("codifier");
+    expect(getNextFocusedDaemon("codifier", focusOrder)).toBe("refiner");
   });
 
   it("cycles configured daemon agent, poll interval, and retries", () => {

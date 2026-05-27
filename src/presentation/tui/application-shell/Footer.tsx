@@ -1,9 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { BaseColors, TuiGlyphs } from "../../shared/DesignTokens.js";
+import { TuiGlyphs } from "../../shared/DesignTokens.js";
 import { KeyBadge } from "../ui-primitives/KeyBadge.js";
 import { NotificationDrawer } from "./NotificationDrawer.js";
 import type { NotificationDrawerNotification } from "./NotificationDrawer.js";
+import {
+  FooterCopy,
+  FooterShortcut,
+  NOTIFICATION_NOTIFIER_COLOR,
+} from "./FooterConstants.js";
 
 interface FooterProps {
   terminalWidth: number;
@@ -16,8 +21,6 @@ interface FooterShortcut {
   readonly char: string;
   readonly label: string;
 }
-
-export const NOTIFICATION_NOTIFIER_COLOR = BaseColors.brandYellow;
 
 export function Footer({
   terminalWidth,
@@ -46,7 +49,10 @@ export function Footer({
       return;
     }
 
-    if (input === "n" || input === "N") {
+    if (
+      input === FooterShortcut.NOTIFICATIONS.char ||
+      input === FooterShortcut.NOTIFICATIONS.char.toUpperCase()
+    ) {
       setNotificationDrawerOpen((isOpen) => !isOpen);
     }
   });
@@ -67,7 +73,10 @@ export function Footer({
       )}
       <Box justifyContent="space-between" paddingX={1}>
         <Box gap={2}>
-          <KeyBadge char="q" label="quit" />
+          <KeyBadge
+            char={FooterShortcut.QUIT.char}
+            label={FooterShortcut.QUIT.label}
+          />
           {contextualShortcuts.map((shortcut) => (
             <KeyBadge
               key={`${shortcut.char}-${shortcut.label}`}
@@ -78,9 +87,9 @@ export function Footer({
         </Box>
         {unreadNotificationCount > 0 && (
           <Box alignItems="center" gap={1}>
-            <KeyBadge char="n" />
+            <KeyBadge char={FooterShortcut.NOTIFICATIONS.char} />
             <Text color={NOTIFICATION_NOTIFIER_COLOR}>
-              {TuiGlyphs.filledCircle} notifications ({unreadNotificationCount})
+              {TuiGlyphs.filledCircle} {FooterCopy.notifications} ({unreadNotificationCount})
             </Text>
           </Box>
         )}

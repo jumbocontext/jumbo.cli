@@ -13,6 +13,7 @@ import type {
   TuiDaemonName,
   TuiSubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
+import { TuiSubprocessStatus } from "../daemon-subprocesses/Constants.js";
 import {
   appendDaemonEventRows,
   findDaemonStatus,
@@ -37,19 +38,21 @@ import {
   REFINER_FRAME_COUNT,
   REVIEWER_FRAME_COUNT,
   getCodifierFrame,
-  getRefinerFrame,
   getRenderedFrameIndex,
   getReviewerFrame,
   type GlyphColorMap,
   type GlyphPalette,
 } from "./CockpitDaemonFrames.js";
-import {
-  CockpitDaemonPanel,
-  CodifierDaemonFrame,
-  DaemonInfoOverlay,
-  GlyphCellDaemonFrame,
-} from "./CockpitDaemonPanel.js";
+import { CockpitDaemonPanel, DaemonInfoOverlay } from "./CockpitDaemonPanel.js";
 import { CockpitLaunchpadWelcome } from "./CockpitLaunchpadWelcome.js";
+import { getDaemonPanelStatusLabel } from "./DaemonPanelStatusLabel.js";
+import { CodifierDaemonConstants } from "./daemons/CodifierDaemonConstants.js";
+import { CodifierDaemonFrame } from "./daemons/CodifierDaemonFrame.js";
+import { RefinerDaemonConstants } from "./daemons/RefinerDaemonConstants.js";
+import { RefinerDaemonFrame } from "./daemons/RefinerDaemonFrame.js";
+import { ReviewerDaemonConstants } from "./daemons/ReviewerDaemonConstants.js";
+import { ReviewerDaemonFrame } from "./daemons/ReviewerDaemonFrame.js";
+import type { IDaemonUiDefinition } from "./daemons/IDaemonUiDefinition.js";
 
 interface LaunchAnimationSize {
   readonly width: number;
@@ -59,12 +62,6 @@ interface LaunchAnimationSize {
 export type LaunchAnimationRenderer = (
   input: AnimatedBillboardTriggerInput,
 ) => React.ReactElement;
-
-const COCKPIT_DAEMON_PANEL_DEFINITIONS = [
-  { name: "refiner", title: "REFINER//" },
-  { name: "reviewer", title: "REVIEWER//" },
-  { name: "codifier", title: "CODIFIER//" },
-] as const satisfies readonly { readonly name: TuiDaemonName; readonly title: string }[];
 
 interface CockpitLaunchpadViewProps {
   shortcutsEnabled?: boolean;
@@ -79,6 +76,25 @@ interface CockpitLaunchpadViewProps {
   codifierFrameDurationMs?: number;
   settingsReader?: Pick<ISettingsReader, "read" | "write">;
 }
+
+const DAEMON_UI_DEFINITIONS = [
+  {
+    constants: RefinerDaemonConstants,
+    Frame: RefinerDaemonFrame,
+  },
+  {
+    constants: ReviewerDaemonConstants,
+    Frame: ReviewerDaemonFrame,
+  },
+  {
+    constants: CodifierDaemonConstants,
+    Frame: CodifierDaemonFrame,
+  },
+] as const satisfies readonly IDaemonUiDefinition[];
+
+const DAEMON_FOCUS_ORDER = DAEMON_UI_DEFINITIONS.map(
+  (daemonUiDefinition) => daemonUiDefinition.constants.name,
+) as readonly TuiDaemonName[];
 
 export { getCodifierFrame, getReviewerFrame };
 
@@ -203,7 +219,10 @@ export function CockpitLaunchpadView({
     (input, key) => {
       if (key.tab || input === "\t") {
         setSelectedDaemon((currentDaemon) => {
-          const nextDaemon = getNextFocusedDaemon(currentDaemon);
+          const nextDaemon = getNextFocusedDaemon(
+            currentDaemon,
+            DAEMON_FOCUS_ORDER,
+          );
           setInfoDaemon((currentInfoDaemon) =>
             currentInfoDaemon === undefined ? undefined : nextDaemon
           );
@@ -251,9 +270,9 @@ export function CockpitLaunchpadView({
   );
 
   const daemonStatusByName = Object.fromEntries(
-    COCKPIT_DAEMON_PANEL_DEFINITIONS.map(({ name }) => [
-      name,
-      findDaemonStatus(daemonStatuses, name),
+    DAEMON_UI_DEFINITIONS.map((daemonUiDefinition) => [
+      daemonUiDefinition.constants.name,
+      findDaemonStatus(daemonStatuses, daemonUiDefinition.constants.name),
     ]),
   ) as Record<TuiDaemonName, TuiSubprocessSnapshot>;
   const daemonFrameIndexByName = {
@@ -261,6 +280,11 @@ export function CockpitLaunchpadView({
     reviewer: getRenderedFrameIndex(daemonStatusByName.reviewer, reviewerFrameIndex),
     codifier: getRenderedFrameIndex(daemonStatusByName.codifier, codifierFrameIndex),
   } as const satisfies Record<TuiDaemonName, number>;
+  const infoDaemonConstants = infoDaemon === undefined
+    ? undefined
+    : DAEMON_UI_DEFINITIONS.find(
+      (definition) => definition.constants.name === infoDaemon,
+    )?.constants;
 
   if (launchAnimationActive) {
     return (
@@ -280,30 +304,41 @@ export function CockpitLaunchpadView({
         <CockpitLaunchpadWelcome />
       )}
       <Box flexDirection="row" flexShrink={0} height={13} width="100%" gap={1} marginY={1}>
-        {COCKPIT_DAEMON_PANEL_DEFINITIONS.map(({ name, title }) => (
+        {DAEMON_UI_DEFINITIONS.map((daemonUiDefinition) => {
+          const { constants: daemonConstants, Frame } = daemonUiDefinition;
+          const name = daemonConstants.name;
+          const snapshot = daemonStatusByName[name];
+          const frameIndex = daemonFrameIndexByName[name];
+          const statusLabel = getDaemonPanelStatusLabel(
+            snapshot,
+            daemonConstants,
+          );
+
+          return (
           <CockpitDaemonPanel
             key={name}
-            title={title}
+            daemonConstants={daemonConstants}
             selected={selectedDaemon === name}
             configuring={configuredDaemon === name}
             infoVisible={infoDaemon === name}
-            snapshot={daemonStatusByName[name]}
+            snapshot={snapshot}
             pendingConfig={daemonConfigs[name]}
           >
-            {renderDaemonFrame({
-              name,
-              frameIndex: daemonFrameIndexByName[name],
-              snapshot: daemonStatusByName[name],
-              refinerGlyphPalette,
-              reviewerGlyphPalette,
-              codifierGlyphColors,
-            })}
+            <Frame
+              frameIndex={frameIndex}
+              snapshot={snapshot}
+              statusLabel={statusLabel}
+              refinerGlyphPalette={refinerGlyphPalette}
+              reviewerGlyphPalette={reviewerGlyphPalette}
+              codifierGlyphColors={codifierGlyphColors}
+            />
           </CockpitDaemonPanel>
-        ))}
+          );
+        })}
       </Box>
       <Box flexDirection="column" flexGrow={1} flexBasis={0} width="100%" paddingY={1}>
-        {infoDaemon !== undefined && (
-          <DaemonInfoOverlay name={infoDaemon} />
+        {infoDaemonConstants !== undefined && (
+          <DaemonInfoOverlay daemonConstants={infoDaemonConstants} />
         )}
         <Text color={BaseColors.shade2} bold>
           EVENTS//
@@ -317,51 +352,6 @@ export function CockpitLaunchpadView({
         </Box>
       </Box>
     </Box>
-  );
-}
-
-function renderDaemonFrame({
-  name,
-  frameIndex,
-  snapshot,
-  refinerGlyphPalette,
-  reviewerGlyphPalette,
-  codifierGlyphColors,
-}: {
-  readonly name: TuiDaemonName;
-  readonly frameIndex: number;
-  readonly snapshot: TuiSubprocessSnapshot;
-  readonly refinerGlyphPalette: GlyphPalette;
-  readonly reviewerGlyphPalette: GlyphPalette;
-  readonly codifierGlyphColors: GlyphColorMap;
-}): React.ReactElement {
-  if (name === "codifier") {
-    return (
-      <CodifierDaemonFrame
-        frame={getCodifierFrame(frameIndex)}
-        frameIndex={frameIndex}
-        glyphColors={codifierGlyphColors}
-        snapshot={snapshot}
-      />
-    );
-  }
-
-  if (name === "reviewer") {
-    return (
-      <GlyphCellDaemonFrame
-        frame={getReviewerFrame(frameIndex, reviewerGlyphPalette)}
-        frameIndex={frameIndex}
-        snapshot={snapshot}
-      />
-    );
-  }
-
-  return (
-    <GlyphCellDaemonFrame
-      frame={getRefinerFrame(frameIndex, refinerGlyphPalette)}
-      frameIndex={frameIndex}
-      snapshot={snapshot}
-    />
   );
 }
 
@@ -425,7 +415,7 @@ async function toggleDaemon(
   setDaemonEventRows: (update: (currentRows: readonly DaemonEventRow[]) => readonly DaemonEventRow[]) => void,
 ): Promise<void> {
   const snapshot = manager.getStatus(name);
-  if (snapshot.status === "running") {
+  if (snapshot.status === TuiSubprocessStatus.RUNNING) {
     await manager.terminate(name);
   } else {
     await manager.spawn(name, config);

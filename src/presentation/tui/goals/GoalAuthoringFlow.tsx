@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from "react";
 import { Wizard } from "../wizard/Wizard.js";
 import type { WizardStepDefinition } from "../wizard/Wizard.js";
-
-type GoalAuthoringStage =
-  | "details"
-  | "criteria"
-  | "scope"
-  | "sequencing"
-  | "workspace";
+import {
+  AUTHORING_PROGRESS_LABELS,
+  GoalAuthoringCopy,
+  GoalAuthoringCriterionValue,
+  GoalAuthoringFieldKey,
+  GoalAuthoringStage,
+  type GoalAuthoringStageValue,
+} from "./GoalAuthoringFlowConstants.js";
 
 export interface GoalAuthoringValues {
   readonly title: string;
@@ -24,19 +25,18 @@ export interface GoalAuthoringValues {
 
 const DETAILS_STEPS: readonly WizardStepDefinition[] = [
   {
-    title: "Goal Details",
-    description:
-      "Name the goal and state the single outcome it should accomplish.",
+    title: GoalAuthoringCopy.details.title,
+    description: GoalAuthoringCopy.details.description,
     fields: [
       {
-        key: "title",
-        label: "Title",
-        placeholder: "e.g. Wire Cockpit goal authoring",
+        key: GoalAuthoringFieldKey.TITLE,
+        label: GoalAuthoringCopy.details.fields.title,
+        placeholder: GoalAuthoringCopy.details.fields.titlePlaceholder,
       },
       {
-        key: "objective",
-        label: "Objective",
-        placeholder: "e.g. Prototype the Goals screen",
+        key: GoalAuthoringFieldKey.OBJECTIVE,
+        label: GoalAuthoringCopy.details.fields.objective,
+        placeholder: GoalAuthoringCopy.details.fields.objectivePlaceholder,
       },
     ],
   },
@@ -44,20 +44,19 @@ const DETAILS_STEPS: readonly WizardStepDefinition[] = [
 
 const SCOPE_STEPS: readonly WizardStepDefinition[] = [
   {
-    title: "Scope",
-    description:
-      "Identify the work area and boundaries that keep the goal focused.",
+    title: GoalAuthoringCopy.scope.title,
+    description: GoalAuthoringCopy.scope.description,
     fields: [
       {
-        key: "scopeIn",
-        label: "Scope in (optional)",
-        placeholder: "e.g. src/presentation/tui/goals",
+        key: GoalAuthoringFieldKey.SCOPE_IN,
+        label: GoalAuthoringCopy.scope.fields.scopeIn,
+        placeholder: GoalAuthoringCopy.scope.fields.scopeInPlaceholder,
         required: false,
       },
       {
-        key: "scopeOut",
-        label: "Scope out (optional)",
-        placeholder: "e.g. src/application",
+        key: GoalAuthoringFieldKey.SCOPE_OUT,
+        label: GoalAuthoringCopy.scope.fields.scopeOut,
+        placeholder: GoalAuthoringCopy.scope.fields.scopeOutPlaceholder,
         required: false,
       },
     ],
@@ -66,26 +65,27 @@ const SCOPE_STEPS: readonly WizardStepDefinition[] = [
 
 const SEQUENCING_STEPS: readonly WizardStepDefinition[] = [
   {
-    title: "Goal Sequence",
-    description:
-      "Optionally chain this goal to other goals or define prerequisites.",
+    title: GoalAuthoringCopy.sequencing.title,
+    description: GoalAuthoringCopy.sequencing.description,
     fields: [
       {
-        key: "previousGoal",
-        label: "Previous goal (optional)",
-        placeholder: "e.g. goal_123",
+        key: GoalAuthoringFieldKey.PREVIOUS_GOAL,
+        label: GoalAuthoringCopy.sequencing.fields.previousGoal,
+        placeholder:
+          GoalAuthoringCopy.sequencing.fields.previousGoalPlaceholder,
         required: false,
       },
       {
-        key: "nextGoal",
-        label: "Next goal (optional)",
-        placeholder: "e.g. goal_456",
+        key: GoalAuthoringFieldKey.NEXT_GOAL,
+        label: GoalAuthoringCopy.sequencing.fields.nextGoal,
+        placeholder: GoalAuthoringCopy.sequencing.fields.nextGoalPlaceholder,
         required: false,
       },
       {
-        key: "prerequisiteGoals",
-        label: "Prerequisite goals (optional)",
-        placeholder: "e.g. goal_a goal_b",
+        key: GoalAuthoringFieldKey.PREREQUISITE_GOALS,
+        label: GoalAuthoringCopy.sequencing.fields.prerequisiteGoals,
+        placeholder:
+          GoalAuthoringCopy.sequencing.fields.prerequisiteGoalsPlaceholder,
         required: false,
       },
     ],
@@ -94,37 +94,24 @@ const SEQUENCING_STEPS: readonly WizardStepDefinition[] = [
 
 const WORKSPACE_STEPS: readonly WizardStepDefinition[] = [
   {
-    title: "Workspace",
-    description:
-      "Optionally reserve a branch or worktree for multi-agent collaboration.",
+    title: GoalAuthoringCopy.workspace.title,
+    description: GoalAuthoringCopy.workspace.description,
     fields: [
       {
-        key: "branch",
-        label: "Branch (optional)",
-        placeholder: "e.g. feature/cockpit-goal-authoring",
+        key: GoalAuthoringFieldKey.BRANCH,
+        label: GoalAuthoringCopy.workspace.fields.branch,
+        placeholder: GoalAuthoringCopy.workspace.fields.branchPlaceholder,
         required: false,
       },
       {
-        key: "worktree",
-        label: "Worktree (optional)",
-        placeholder: "e.g. ../jumbo-cockpit-goal-authoring",
+        key: GoalAuthoringFieldKey.WORKTREE,
+        label: GoalAuthoringCopy.workspace.fields.worktree,
+        placeholder: GoalAuthoringCopy.workspace.fields.worktreePlaceholder,
         required: false,
       },
     ],
   },
 ] as const;
-
-const CRITERION_VALUES = {
-  yes: "yes",
-  no: "no",
-} as const;
-const AUTHORING_PROGRESS_LABELS: Readonly<Record<GoalAuthoringStage, string>> = {
-  details: "1/5",
-  criteria: "2/5",
-  scope: "3/5",
-  sequencing: "4/5",
-  workspace: "5/5",
-};
 
 interface GoalAuthoringFlowProps {
   readonly onComplete: (values: GoalAuthoringValues) => void | Promise<void>;
@@ -139,7 +126,9 @@ export function GoalAuthoringFlow({
   dispatchError = null,
   disabled = false,
 }: GoalAuthoringFlowProps): React.ReactElement {
-  const [stage, setStage] = useState<GoalAuthoringStage>("details");
+  const [stage, setStage] = useState<GoalAuthoringStageValue>(
+    GoalAuthoringStage.DETAILS,
+  );
   const [title, setTitle] = useState("");
   const [objective, setObjective] = useState("");
   const [successCriteria, setSuccessCriteria] = useState<readonly string[]>([]);
@@ -166,48 +155,52 @@ export function GoalAuthoringFlow({
   );
 
   const handleDetailsConfirm = (values: Record<string, string>) => {
-    setTitle(values.title ?? "");
-    setObjective(values.objective ?? "");
+    setTitle(values[GoalAuthoringFieldKey.TITLE] ?? "");
+    setObjective(values[GoalAuthoringFieldKey.OBJECTIVE] ?? "");
     setCriteriaEditIndex(0);
-    setStage("criteria");
+    setStage(GoalAuthoringStage.CRITERIA);
   };
 
   const handleCriteriaConfirm = (values: Record<string, string>) => {
-    const criterion = values.criterion ?? "";
+    const criterion = values[GoalAuthoringFieldKey.CRITERION] ?? "";
     const nextSuccessCriteria = [...successCriteria];
     nextSuccessCriteria[criteriaEditIndex] = criterion;
     setSuccessCriteria(nextSuccessCriteria);
 
-    if (values.addAnotherCriterion === CRITERION_VALUES.yes) {
+    if (
+      values[GoalAuthoringFieldKey.ADD_ANOTHER_CRITERION] ===
+      GoalAuthoringCriterionValue.YES
+    ) {
       setCriteriaEditIndex(criteriaEditIndex + 1);
       setWizardKey((current) => current + 1);
       return;
     }
 
-    setStage("scope");
+    setStage(GoalAuthoringStage.SCOPE);
   };
 
   const handleScopeConfirm = (values: Record<string, string>) => {
     setScopeValues({
-      scopeIn: values.scopeIn ?? "",
-      scopeOut: values.scopeOut ?? "",
+      scopeIn: values[GoalAuthoringFieldKey.SCOPE_IN] ?? "",
+      scopeOut: values[GoalAuthoringFieldKey.SCOPE_OUT] ?? "",
     });
-    setStage("sequencing");
+    setStage(GoalAuthoringStage.SEQUENCING);
   };
 
   const handleSequencingConfirm = (values: Record<string, string>) => {
     setSequencingValues({
-      previousGoal: values.previousGoal ?? "",
-      nextGoal: values.nextGoal ?? "",
-      prerequisiteGoals: values.prerequisiteGoals ?? "",
+      previousGoal: values[GoalAuthoringFieldKey.PREVIOUS_GOAL] ?? "",
+      nextGoal: values[GoalAuthoringFieldKey.NEXT_GOAL] ?? "",
+      prerequisiteGoals:
+        values[GoalAuthoringFieldKey.PREREQUISITE_GOALS] ?? "",
     });
-    setStage("workspace");
+    setStage(GoalAuthoringStage.WORKSPACE);
   };
 
   const handleWorkspaceConfirm = (values: Record<string, string>) => {
     const nextWorkspaceValues = {
-      branch: values.branch ?? "",
-      worktree: values.worktree ?? "",
+      branch: values[GoalAuthoringFieldKey.BRANCH] ?? "",
+      worktree: values[GoalAuthoringFieldKey.WORKTREE] ?? "",
     };
     setWorkspaceValues(nextWorkspaceValues);
     onComplete({
@@ -231,62 +224,63 @@ export function GoalAuthoringFlow({
       return;
     }
 
-    setStage("details");
+    setStage(GoalAuthoringStage.DETAILS);
   };
 
   const handleScopeBack = () => {
     setCriteriaEditIndex(Math.max(successCriteria.length - 1, 0));
-    setStage("criteria");
+    setStage(GoalAuthoringStage.CRITERIA);
   };
 
   const handleSequencingBack = () => {
-    setStage("scope");
+    setStage(GoalAuthoringStage.SCOPE);
   };
 
-  if (stage === "details") {
+  if (stage === GoalAuthoringStage.DETAILS) {
     return (
       <Wizard
-        key="details"
-        title="Author Goal"
+        key={GoalAuthoringStage.DETAILS}
+        title={GoalAuthoringCopy.title}
         steps={DETAILS_STEPS}
         onConfirm={handleDetailsConfirm}
         onCancel={onCancel}
         initialValues={{ title, objective }}
         dispatchError={dispatchError}
         disabled={disabled}
-        progressLabel={AUTHORING_PROGRESS_LABELS.details}
+        progressLabel={AUTHORING_PROGRESS_LABELS[GoalAuthoringStage.DETAILS]}
       />
     );
   }
 
-  if (stage === "criteria") {
+  if (stage === GoalAuthoringStage.CRITERIA) {
     return (
       <Wizard
         key={`criteria-${wizardKey}`}
-        title="Author Goal"
+        title={GoalAuthoringCopy.title}
         steps={criteriaSteps}
         onConfirm={handleCriteriaConfirm}
         onCancel={onCancel}
         onBack={handleCriteriaBack}
         initialValues={{
-          criterion: successCriteria[criteriaEditIndex] ?? "",
-          addAnotherCriterion:
+          [GoalAuthoringFieldKey.CRITERION]:
+            successCriteria[criteriaEditIndex] ?? "",
+          [GoalAuthoringFieldKey.ADD_ANOTHER_CRITERION]:
             criteriaEditIndex < successCriteria.length - 1
-              ? CRITERION_VALUES.yes
-              : CRITERION_VALUES.no,
+              ? GoalAuthoringCriterionValue.YES
+              : GoalAuthoringCriterionValue.NO,
         }}
         dispatchError={dispatchError}
         disabled={disabled}
-        progressLabel={AUTHORING_PROGRESS_LABELS.criteria}
+        progressLabel={AUTHORING_PROGRESS_LABELS[GoalAuthoringStage.CRITERIA]}
       />
     );
   }
 
-  if (stage === "scope") {
+  if (stage === GoalAuthoringStage.SCOPE) {
     return (
       <Wizard
-        key="scope"
-        title="Author Goal"
+        key={GoalAuthoringStage.SCOPE}
+        title={GoalAuthoringCopy.title}
         steps={SCOPE_STEPS}
         onConfirm={handleScopeConfirm}
         onCancel={onCancel}
@@ -294,16 +288,16 @@ export function GoalAuthoringFlow({
         initialValues={scopeValues}
         dispatchError={dispatchError}
         disabled={disabled}
-        progressLabel={AUTHORING_PROGRESS_LABELS.scope}
+        progressLabel={AUTHORING_PROGRESS_LABELS[GoalAuthoringStage.SCOPE]}
       />
     );
   }
 
-  if (stage === "sequencing") {
+  if (stage === GoalAuthoringStage.SEQUENCING) {
     return (
       <Wizard
-        key="sequencing"
-        title="Author Goal"
+        key={GoalAuthoringStage.SEQUENCING}
+        title={GoalAuthoringCopy.title}
         steps={SEQUENCING_STEPS}
         onConfirm={handleSequencingConfirm}
         onCancel={onCancel}
@@ -311,23 +305,23 @@ export function GoalAuthoringFlow({
         initialValues={sequencingValues}
         dispatchError={dispatchError}
         disabled={disabled}
-        progressLabel={AUTHORING_PROGRESS_LABELS.sequencing}
+        progressLabel={AUTHORING_PROGRESS_LABELS[GoalAuthoringStage.SEQUENCING]}
       />
     );
   }
 
   return (
     <Wizard
-      key="workspace"
-      title="Author Goal"
+      key={GoalAuthoringStage.WORKSPACE}
+      title={GoalAuthoringCopy.title}
       steps={WORKSPACE_STEPS}
       onConfirm={handleWorkspaceConfirm}
       onCancel={onCancel}
-      onBack={() => setStage("sequencing")}
+      onBack={() => setStage(GoalAuthoringStage.SEQUENCING)}
       initialValues={workspaceValues}
       dispatchError={dispatchError}
       disabled={disabled}
-      progressLabel={AUTHORING_PROGRESS_LABELS.workspace}
+      progressLabel={AUTHORING_PROGRESS_LABELS[GoalAuthoringStage.WORKSPACE]}
     />
   );
 }
@@ -337,20 +331,19 @@ function buildCriteriaSteps(
 ): readonly WizardStepDefinition[] {
   return [
     {
-      title: `Criterion ${criterionNumber}`,
-      description:
-        "Define one measurable success criterion so review can determine completion.",
+      title: `${GoalAuthoringCopy.criteria.titlePrefix} ${criterionNumber}`,
+      description: GoalAuthoringCopy.criteria.description,
       fields: [
         {
-          key: "criterion",
-          label: "Success criterion",
-          placeholder: "e.g. List renders status, detail, and action hints",
+          key: GoalAuthoringFieldKey.CRITERION,
+          label: GoalAuthoringCopy.criteria.successCriterion,
+          placeholder: GoalAuthoringCopy.criteria.successCriterionPlaceholder,
         },
         {
-          key: "addAnotherCriterion",
-          label: "Add another criterion?",
+          key: GoalAuthoringFieldKey.ADD_ANOTHER_CRITERION,
+          label: GoalAuthoringCopy.criteria.addAnotherCriterion,
           kind: "yes-no",
-          defaultValue: CRITERION_VALUES.no,
+          defaultValue: GoalAuthoringCriterionValue.NO,
         },
       ],
     },

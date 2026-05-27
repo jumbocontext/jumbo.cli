@@ -6,6 +6,10 @@ import type {
   TuiSubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
 import { DEFAULT_WORKER_DAEMON_CONFIG } from "../../../application/daemons/WorkerDaemonCatalog.js";
+import {
+  TuiDaemonEventStatus as TuiDaemonEventStatusValues,
+  TuiSubprocessStatus,
+} from "../daemon-subprocesses/Constants.js";
 
 const RENDERED_DAEMON_EVENT_LIMIT = 10;
 const DAEMON_EVENT_SOURCE_WIDTH = 8;
@@ -26,7 +30,7 @@ export function findDaemonStatus(
 ): TuiSubprocessSnapshot {
   return statuses.find((status) => status.name === name) ?? {
     name,
-    status: "stopped",
+    status: TuiSubprocessStatus.STOPPED,
     config: DEFAULT_WORKER_DAEMON_CONFIG,
     stdout: [],
     stderr: [],
@@ -89,20 +93,46 @@ function getLifecycleEventRow(
   eventIndex: number,
   observedAtMs: number,
 ): DaemonEventRow | undefined {
-  if (snapshot.status === "running" && snapshot.stopRequested === true) {
-    return createDaemonEventRow(snapshot, "stopping", eventIndex, observedAtMs);
-  }
-  if (snapshot.status === "running" && snapshot.events.length === 0) {
-    return createDaemonEventRow(snapshot, "starting", eventIndex, observedAtMs);
-  }
-  if (snapshot.status === "failed") {
-    return createDaemonEventRow(snapshot, "failed", eventIndex, observedAtMs);
+  if (
+    snapshot.status === TuiSubprocessStatus.RUNNING &&
+    snapshot.stopRequested === true
+  ) {
+    return createDaemonEventRow(
+      snapshot,
+      TuiDaemonEventStatusValues.STOPPING,
+      eventIndex,
+      observedAtMs,
+    );
   }
   if (
-    snapshot.status === "stopped"
+    snapshot.status === TuiSubprocessStatus.RUNNING &&
+    snapshot.events.length === 0
+  ) {
+    return createDaemonEventRow(
+      snapshot,
+      TuiDaemonEventStatusValues.STARTING,
+      eventIndex,
+      observedAtMs,
+    );
+  }
+  if (snapshot.status === TuiSubprocessStatus.FAILED) {
+    return createDaemonEventRow(
+      snapshot,
+      TuiDaemonEventStatusValues.FAILED,
+      eventIndex,
+      observedAtMs,
+    );
+  }
+  if (
+    snapshot.status === TuiSubprocessStatus.STOPPED
     && (snapshot.stopRequested === true || snapshot.exitCode !== undefined || snapshot.exitSignal !== undefined)
   ) {
-    return createDaemonEventRow(snapshot, "stopped", eventIndex, observedAtMs);
+    return createDaemonEventRow(
+      snapshot,
+      TuiDaemonEventStatusValues.STOPPED,
+      eventIndex,
+      observedAtMs,
+    );
   }
   return undefined;
 }
@@ -149,11 +179,15 @@ function toDaemonEventRow(
 }
 
 function normalizeDaemonEventStatus(status: string): TuiDaemonEventStatus {
-  if (status === "starting" || status === "stopping" || status === "stopped" || status === "failed" || status === "idle" || status === "processing" || status === "completed" || status === "skipped" || status === "exhausted" || status === "codifying") {
-    return status;
+  if (
+    Object.values(TuiDaemonEventStatusValues).includes(
+      status as TuiDaemonEventStatus,
+    )
+  ) {
+    return status as TuiDaemonEventStatus;
   }
 
-  return "processing";
+  return TuiDaemonEventStatusValues.PROCESSING;
 }
 
 function formatEventTimestamp(timestampMs: number): string {
@@ -207,16 +241,24 @@ function formatExitDetails(event: TuiDaemonEventSnapshot): string | undefined {
 }
 
 function getDaemonEventColor(status: TuiDaemonEventStatus): string {
-  if (status === "failed") {
+  if (status === TuiDaemonEventStatusValues.FAILED) {
     return BaseColors.brandRed;
   }
-  if (status === "completed") {
+  if (status === TuiDaemonEventStatusValues.COMPLETED) {
     return BaseColors.brandGreen;
   }
-  if (status === "skipped" || status === "exhausted") {
+  if (
+    status === TuiDaemonEventStatusValues.SKIPPED ||
+    status === TuiDaemonEventStatusValues.EXHAUSTED
+  ) {
     return BaseColors.brandYellow;
   }
-  if (status === "processing" || status === "codifying" || status === "starting" || status === "stopping") {
+  if (
+    status === TuiDaemonEventStatusValues.PROCESSING ||
+    status === TuiDaemonEventStatusValues.CODIFYING ||
+    status === TuiDaemonEventStatusValues.STARTING ||
+    status === TuiDaemonEventStatusValues.STOPPING
+  ) {
     return BaseColors.brandBlue;
   }
 

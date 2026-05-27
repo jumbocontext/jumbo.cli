@@ -1,5 +1,5 @@
 import { BaseEvent } from "../../BaseEvent.js";
-import { GoalEventType } from "../Constants.js";
+import { GoalEventType, GoalStatus } from "../Constants.js";
 
 /**
  * Emitted when a blocked goal is unblocked.
@@ -8,7 +8,7 @@ import { GoalEventType } from "../Constants.js";
 export interface GoalUnblockedEvent extends BaseEvent {
   readonly type: typeof GoalEventType.UNBLOCKED;
   readonly payload: {
-    readonly status: 'unblocked';  // Transition to unblocked waiting state
+    readonly status: typeof GoalStatus.UNBLOCKED;  // Transition to unblocked waiting state
     readonly note?: string;        // Optional resolution note
   };
 }

@@ -15,6 +15,7 @@ import type { AddValuePropositionResponse } from "../../../application/context/v
 import type { AgentId } from "../../../application/context/project/init/AgentSelection.js";
 import type { PlannedFileChange } from "../../../application/context/project/init/PlannedFileChange.js";
 import { SemanticColors } from "../../shared/DesignTokens.js";
+import { AudiencePriority } from "../../../domain/audiences/Constants.js";
 
 const YES_NO_MESSAGE = "Enter yes or no";
 const REQUIRED_PLAN_CONTROLLER_ERROR =
@@ -161,11 +162,11 @@ const AUDIENCE_STEPS: readonly WizardStepDefinition[] = [
         label: "Audience priority",
         kind: "single-select",
         options: [
-          { value: "primary", label: "Primary" },
-          { value: "secondary", label: "Secondary" },
-          { value: "tertiary", label: "Tertiary" },
+          { value: AudiencePriority.PRIMARY, label: "Primary" },
+          { value: AudiencePriority.SECONDARY, label: "Secondary" },
+          { value: AudiencePriority.TERTIARY, label: "Tertiary" },
         ],
-        defaultValue: "primary",
+        defaultValue: AudiencePriority.PRIMARY,
         validate: validateAudiencePriority,
       },
       {
@@ -796,9 +797,9 @@ function validateOptionalYesNo(value: string): string | null {
 function validateAudiencePriority(value: string): string | null {
   const normalized = value.trim().toLowerCase();
   if (
-    normalized === "primary" ||
-    normalized === "secondary" ||
-    normalized === "tertiary"
+    normalized === AudiencePriority.PRIMARY ||
+    normalized === AudiencePriority.SECONDARY ||
+    normalized === AudiencePriority.TERTIARY
   ) {
     return null;
   }

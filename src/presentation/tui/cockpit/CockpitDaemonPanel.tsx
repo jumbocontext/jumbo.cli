@@ -3,63 +3,13 @@ import { Box, Text } from "ink";
 import { BaseColors } from "../../shared/DesignTokens.js";
 import { Panel } from "../ui-primitives/Panel.js";
 import { KeyBadge } from "../ui-primitives/KeyBadge.js";
-import type { TuiDaemonConfig, TuiDaemonName, TuiSubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
-import {
-  DAEMON_PANEL_CONTENT_WIDTH,
-  getGlyphCellLinePrefix,
-  getGlyphCellLineSuffix,
-  getGlyphCellSegments,
-  getGlyphLinePrefix,
-  getGlyphLineSuffix,
-  getRenderedDaemonFrame,
-  getStyledGlyphSegments,
-  isDaemonStatusLine,
-  type GlyphCell,
-  type GlyphColorMap,
-} from "./CockpitDaemonFrames.js";
-
-const DAEMON_ACTIVE_VERBS = {
-  reviewer: "reviewing",
-  refiner: "refining",
-  codifier: "codifying",
-} as const satisfies Record<TuiDaemonName, string>;
-
-const DAEMON_IDLE_VERBS = {
-  reviewer: "awaiting submissions",
-  refiner: "foraging",
-  codifier: "awaiting approvals",
-} as const satisfies Record<TuiDaemonName, string>;
-
-const DAEMON_INFO_COPY = {
-  reviewer: {
-    title: "REVIEWER//",
-    lines: [
-      "Orchestrate background agents to automatically review goal implementations as soon as they submitted.",
-      "",
-      "Approved goals will get picked up by the codifier (if running).",
-      "Rejected goals will get requeued with documented issues to be resolved.",
-    ],
-  },
-  refiner: {
-    title: "REFINER//",
-    lines: [
-      "Automatically apply relevant memories to build goal context for the implementing agent.",
-      "",
-      "Goals are submitted when finished and ready for implementation.",
-    ],
-  },
-  codifier: {
-    title: "CODIFIER//",
-    lines: [
-      "Codify implementation results automatically as soon as goals are approved.",
-      "",
-      "Missing decisions, components and documentation will be updated before goals are finally closed.",
-    ],
-  },
-} as const satisfies Record<TuiDaemonName, { readonly title: string; readonly lines: readonly string[] }>;
+import type { TuiDaemonConfig, TuiSubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
+import { TuiSubprocessStatus } from "../daemon-subprocesses/Constants.js";
+import { DAEMON_PANEL_CONTENT_WIDTH } from "./CockpitDaemonFrames.js";
+import type { IDaemonConstants } from "./daemons/IDaemonConstants.js";
 
 export function CockpitDaemonPanel({
-  title,
+  daemonConstants,
   snapshot,
   pendingConfig,
   selected,
@@ -67,7 +17,7 @@ export function CockpitDaemonPanel({
   infoVisible,
   children,
 }: {
-  readonly title: string;
+  readonly daemonConstants: IDaemonConstants;
   readonly snapshot: TuiSubprocessSnapshot;
   readonly pendingConfig: TuiDaemonConfig;
   readonly selected: boolean;
@@ -77,7 +27,7 @@ export function CockpitDaemonPanel({
 }): React.ReactElement {
   return (
     <Panel
-      title={title}
+      title={daemonConstants.title}
       titleColor={selected ? BaseColors.brandBlue : BaseColors.shade3}
       borderColor={selected ? BaseColors.brandBlue : BaseColors.shade5}
       flexGrow={3}
@@ -104,102 +54,12 @@ export function CockpitDaemonPanel({
   );
 }
 
-export function GlyphCellDaemonFrame({
-  frame,
-  frameIndex,
-  snapshot,
-}: {
-  readonly frame: readonly (readonly GlyphCell[])[];
-  readonly frameIndex: number;
-  readonly snapshot: TuiSubprocessSnapshot;
-}): React.ReactElement {
-  const statusLabel = getDaemonPanelStatusLabel(snapshot);
-
-  return (
-    <Box flexDirection="column" flexWrap="nowrap" width={DAEMON_PANEL_CONTENT_WIDTH}>
-      {getRenderedDaemonFrame(frame).map((line, lineIndex) => (
-        <Text key={`${frameIndex}-${lineIndex}`}>
-          {getGlyphCellSegments(
-            getGlyphCellLinePrefix(line, statusLabel, lineIndex),
-            snapshot,
-          ).map((segment, segmentIndex) => (
-            <Text
-              key={`${frameIndex}-${lineIndex}-prefix-${segmentIndex}`}
-              color={segment.color}>
-              {segment.text}
-            </Text>
-          ))}
-          {isDaemonStatusLine(lineIndex) && (
-            <Text color={getDaemonStatusColor()} bold>
-              {statusLabel}
-            </Text>
-          )}
-          {getGlyphCellSegments(
-            getGlyphCellLineSuffix(line, statusLabel, lineIndex),
-            snapshot,
-          ).map((segment, segmentIndex) => (
-            <Text
-              key={`${frameIndex}-${lineIndex}-suffix-${segmentIndex}`}
-              color={segment.color}>
-              {segment.text}
-            </Text>
-          ))}
-        </Text>
-      ))}
-    </Box>
-  );
-}
-
-export function CodifierDaemonFrame({
-  frame,
-  frameIndex,
-  glyphColors,
-  snapshot,
-}: {
-  readonly frame: readonly string[];
-  readonly frameIndex: number;
-  readonly glyphColors: GlyphColorMap;
-  readonly snapshot: TuiSubprocessSnapshot;
-}): React.ReactElement {
-  const statusLabel = getDaemonPanelStatusLabel(snapshot);
-
-  return (
-    <Box flexDirection="column" flexWrap="nowrap" width={DAEMON_PANEL_CONTENT_WIDTH}>
-      {getRenderedDaemonFrame(frame).map((line, lineIndex) => (
-        <Text key={`${frameIndex}-${lineIndex}`}>
-          {getStyledGlyphSegments(getGlyphLinePrefix(line, statusLabel, lineIndex), glyphColors, snapshot).map((segment, segmentIndex) => (
-            <Text
-              key={`${frameIndex}-${lineIndex}-prefix-${segmentIndex}`}
-              color={segment.color}
-              dimColor={segment.dimColor}>
-              {segment.text}
-            </Text>
-          ))}
-          {isDaemonStatusLine(lineIndex) && (
-            <Text color={getDaemonStatusColor()} bold>
-              {statusLabel}
-            </Text>
-          )}
-          {getStyledGlyphSegments(getGlyphLineSuffix(line, statusLabel, lineIndex), glyphColors, snapshot).map((segment, segmentIndex) => (
-            <Text
-              key={`${frameIndex}-${lineIndex}-suffix-${segmentIndex}`}
-              color={segment.color}
-              dimColor={segment.dimColor}>
-              {segment.text}
-            </Text>
-          ))}
-        </Text>
-      ))}
-    </Box>
-  );
-}
-
 export function DaemonInfoOverlay({
-  name,
+  daemonConstants,
 }: {
-  readonly name: TuiDaemonName;
+  readonly daemonConstants: IDaemonConstants;
 }): React.ReactElement {
-  const info = DAEMON_INFO_COPY[name];
+  const info = daemonConstants.info;
 
   return (
     <Box
@@ -234,7 +94,8 @@ function DaemonActionLine({
   readonly selected: boolean;
   readonly infoVisible: boolean;
 }): React.ReactElement {
-  const action = snapshot.status === "running" ? "stop" : "start";
+  const action =
+    snapshot.status === TuiSubprocessStatus.RUNNING ? "stop" : "start";
   const badgeColor = getDaemonShortcutBadgeColor(selected);
 
   return (
@@ -270,7 +131,10 @@ function DaemonConfigWizard({
   readonly pendingConfig: TuiDaemonConfig;
   readonly selected: boolean;
 }): React.ReactElement {
-  const config = snapshot.status === "running" ? snapshot.config : pendingConfig;
+  const config =
+    snapshot.status === TuiSubprocessStatus.RUNNING
+      ? snapshot.config
+      : pendingConfig;
   const badgeColor = getDaemonShortcutBadgeColor(selected);
 
   return (
@@ -306,19 +170,3 @@ function getDaemonShortcutBadgeColor(selected: boolean): string {
   return selected ? BaseColors.brandBlue : BaseColors.shade4;
 }
 
-function getDaemonPanelStatusLabel(snapshot: TuiSubprocessSnapshot): string {
-  const latestEvent = snapshot.events[snapshot.events.length - 1];
-  if (snapshot.status === "running" && latestEvent?.status === "idle") {
-    return `[ ${DAEMON_IDLE_VERBS[snapshot.name]} ]`;
-  }
-
-  const status = snapshot.status === "running"
-    ? DAEMON_ACTIVE_VERBS[snapshot.name]
-    : snapshot.status;
-
-  return `[ ${status} ]`;
-}
-
-function getDaemonStatusColor(): string {
-  return BaseColors.shade3;
-}

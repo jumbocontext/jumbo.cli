@@ -8,19 +8,13 @@ import type {
   WorkerDaemonConfig as TuiDaemonConfig,
   WorkerDaemonName as TuiDaemonName,
 } from "../../../application/daemons/WorkerDaemonCatalog.js";
+import type {
+  TuiDaemonEventStatusValue,
+  TuiSubprocessStatusValue,
+} from "./Constants.js";
 
-export type TuiSubprocessStatus = "stopped" | "running" | "failed";
-export type TuiDaemonEventStatus =
-  | "starting"
-  | "stopping"
-  | "stopped"
-  | "failed"
-  | "idle"
-  | "processing"
-  | "completed"
-  | "skipped"
-  | "exhausted"
-  | "codifying";
+export type TuiSubprocessStatus = TuiSubprocessStatusValue;
+export type TuiDaemonEventStatus = TuiDaemonEventStatusValue;
 
 export interface TuiDaemonEventSnapshot {
   readonly daemon: string;

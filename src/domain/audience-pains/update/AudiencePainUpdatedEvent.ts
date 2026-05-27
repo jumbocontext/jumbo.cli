@@ -5,9 +5,10 @@
  */
 
 import { BaseEvent } from "../../BaseEvent.js";
+import { AudiencePainEventType } from "../Constants.js";
 
 export interface AudiencePainUpdatedEvent extends BaseEvent {
-  readonly type: "AudiencePainUpdatedEvent";
+  readonly type: typeof AudiencePainEventType.UPDATED;
   readonly payload: {
     readonly title?: string;
     readonly description?: string;

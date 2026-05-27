@@ -26,6 +26,15 @@ export const RelationStrength = {
 
 export type RelationStrengthValue = typeof RelationStrength[keyof typeof RelationStrength];
 
+// Relation status values
+export const RelationStatus = {
+  ACTIVE: 'active',
+  DEACTIVATED: 'deactivated',
+  REMOVED: 'removed'
+} as const;
+
+export type RelationStatusValue = typeof RelationStatus[keyof typeof RelationStatus];
+
 // Relation event types
 export const RelationEventType = {
   ADDED: 'RelationAddedEvent',

@@ -6,10 +6,10 @@
  */
 
 import { BaseEvent } from "../../BaseEvent.js";
-import { GuidelineCategoryValue } from "../Constants.js";
+import { GuidelineCategoryValue, GuidelineEventType } from "../Constants.js";
 
 export interface GuidelineUpdatedEvent extends BaseEvent {
-  readonly type: "GuidelineUpdatedEvent";
+  readonly type: typeof GuidelineEventType.UPDATED;
   readonly payload: {
     readonly category?: GuidelineCategoryValue;
     readonly title?: string;

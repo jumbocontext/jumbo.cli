@@ -7,9 +7,10 @@
 
 import { BaseEvent } from "../../BaseEvent.js";
 import { DataStore } from "../define/ArchitectureDefinedEvent.js";
+import { ArchitectureEventType } from "../Constants.js";
 
 export interface ArchitectureUpdatedEvent extends BaseEvent {
-  readonly type: "ArchitectureUpdatedEvent";
+  readonly type: typeof ArchitectureEventType.UPDATED;
   readonly payload: {
     readonly description?: string;
     readonly organization?: string;

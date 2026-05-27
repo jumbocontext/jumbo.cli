@@ -5,7 +5,7 @@ import { RelationAddedEvent } from "./add/RelationAddedEvent.js";
 import { RelationDeactivatedEvent } from "./deactivate/RelationDeactivatedEvent.js";
 import { RelationReactivatedEvent } from "./reactivate/RelationReactivatedEvent.js";
 import { RelationRemovedEvent } from "./remove/RelationRemovedEvent.js";
-import { RelationEventType, EntityTypeValue, RelationStrengthValue, RelationErrorMessages, formatErrorMessage } from "./Constants.js";
+import { RelationEventType, EntityTypeValue, RelationStrengthValue, RelationStatus, RelationStatusValue, RelationErrorMessages, formatErrorMessage } from "./Constants.js";
 import { ENTITY_TYPE_RULES, ENTITY_ID_RULES } from "./rules/EntityTypeRules.js";
 import { RELATION_TYPE_RULES } from "./rules/RelationTypeRules.js";
 import { DESCRIPTION_RULES } from "./rules/DescriptionRules.js";
@@ -26,7 +26,7 @@ export interface RelationState extends AggregateState {
   relationType: string;
   strength: RelationStrengthValue | null;
   description: string;
-  status: 'active' | 'deactivated' | 'removed';
+  status: RelationStatusValue;
   version: number;
 }
 
@@ -50,22 +50,22 @@ export class Relation extends BaseAggregate<RelationState, RelationEvent> {
         state.relationType = e.payload.relationType;
         state.strength = e.payload.strength;
         state.description = e.payload.description;
-        state.status = 'active';
+        state.status = RelationStatus.ACTIVE;
         state.version = e.version;
         break;
       }
       case RelationEventType.REMOVED: {
-        state.status = 'removed';
+        state.status = RelationStatus.REMOVED;
         state.version = event.version;
         break;
       }
       case RelationEventType.DEACTIVATED: {
-        state.status = 'deactivated';
+        state.status = RelationStatus.DEACTIVATED;
         state.version = event.version;
         break;
       }
       case RelationEventType.REACTIVATED: {
-        state.status = 'active';
+        state.status = RelationStatus.ACTIVE;
         state.version = event.version;
         break;
       }
@@ -82,7 +82,7 @@ export class Relation extends BaseAggregate<RelationState, RelationEvent> {
       relationType: '',
       strength: null,
       description: '',
-      status: 'active',
+      status: RelationStatus.ACTIVE,
       version: 0,
     };
     return new Relation(state);
@@ -102,7 +102,7 @@ export class Relation extends BaseAggregate<RelationState, RelationEvent> {
       relationType: '',
       strength: null,
       description: '',
-      status: 'active',
+      status: RelationStatus.ACTIVE,
       version: 0,
     };
 
@@ -153,7 +153,7 @@ export class Relation extends BaseAggregate<RelationState, RelationEvent> {
 
   remove(reason?: string): RelationRemovedEvent {
     // State validation - ensure relation hasn't already been removed
-    if (this.state.status === 'removed') {
+    if (this.state.status === RelationStatus.REMOVED) {
       throw new Error(
         formatErrorMessage(RelationErrorMessages.RELATION_ALREADY_REMOVED, {
           relationId: this.state.id
@@ -177,7 +177,7 @@ export class Relation extends BaseAggregate<RelationState, RelationEvent> {
   }
 
   deactivate(reason: string): RelationDeactivatedEvent {
-    if (this.state.status !== 'active') {
+    if (this.state.status !== RelationStatus.ACTIVE) {
       throw new Error(
         formatErrorMessage(RelationErrorMessages.RELATION_NOT_ACTIVE, {
           relationId: this.state.id
@@ -196,7 +196,7 @@ export class Relation extends BaseAggregate<RelationState, RelationEvent> {
   }
 
   reactivate(reason: string): RelationReactivatedEvent {
-    if (this.state.status !== 'deactivated') {
+    if (this.state.status !== RelationStatus.DEACTIVATED) {
       throw new Error(
         formatErrorMessage(RelationErrorMessages.RELATION_NOT_DEACTIVATED, {
           relationId: this.state.id

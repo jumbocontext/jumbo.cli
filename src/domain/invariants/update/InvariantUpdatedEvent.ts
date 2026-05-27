@@ -5,9 +5,10 @@
  */
 
 import { BaseEvent } from "../../BaseEvent.js";
+import { InvariantEventType } from "../Constants.js";
 
 export interface InvariantUpdatedEvent extends BaseEvent {
-  readonly type: "InvariantUpdatedEvent";
+  readonly type: typeof InvariantEventType.UPDATED;
   readonly payload: {
     readonly title?: string;
     readonly description?: string;

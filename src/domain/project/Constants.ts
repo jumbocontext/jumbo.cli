@@ -12,6 +12,17 @@ export const ProjectEventType = {
 export type ProjectEventTypeValue =
   (typeof ProjectEventType)[keyof typeof ProjectEventType];
 
+// Project lifecycle states
+export const ProjectLifecycle = {
+  UNINITIALIZED: "uninitialized",
+  UNPRIMED: "unprimed",
+  PRIMED_EMPTY: "primed-empty",
+  PRIMED: "primed",
+} as const;
+
+export type ProjectLifecycleValue =
+  (typeof ProjectLifecycle)[keyof typeof ProjectLifecycle];
+
 // Error messages
 export const ProjectErrorMessages = {
   ALREADY_INITIALIZED: "Project is already initialized",

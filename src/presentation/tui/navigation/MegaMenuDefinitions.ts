@@ -1,4 +1,8 @@
 import type { ScreenKey } from "./ScreenDefinitions.js";
+import { GoalStatus } from "../../../domain/goals/Constants.js";
+import { DecisionStatus } from "../../../domain/decisions/Constants.js";
+import { GuidelineCategory } from "../../../domain/guidelines/Constants.js";
+import { ComponentType } from "../../../domain/components/Constants.js";
 
 export interface MegaMenuItem {
   readonly key: string;
@@ -36,7 +40,7 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
         label: "Goal Summary",
         children: [
           { key: "in-progress", label: "In Progress" },
-          { key: "blocked", label: "Blocked" },
+          { key: GoalStatus.BLOCKED, label: "Blocked" },
           { key: "completed", label: "Completed" },
         ],
       },
@@ -61,8 +65,8 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
         key: "backlog",
         label: "Backlog",
         children: [
-          { key: "defined", label: "Defined" },
-          { key: "refined", label: "Refined" },
+          { key: GoalStatus.TODO, label: "Defined" },
+          { key: GoalStatus.REFINED, label: "Refined" },
           { key: "ready", label: "Ready" },
         ],
       },
@@ -71,8 +75,8 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
         label: "Active",
         children: [
           { key: "in-progress", label: "In Progress" },
-          { key: "blocked", label: "Blocked" },
-          { key: "in-review", label: "In Review" },
+          { key: GoalStatus.BLOCKED, label: "Blocked" },
+          { key: GoalStatus.INREVIEW, label: "In Review" },
         ],
       },
       {
@@ -95,9 +99,9 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
         label: "Decisions",
         screenKey: "decisions",
         children: [
-          { key: "active", label: "Active" },
-          { key: "superseded", label: "Superseded" },
-          { key: "reversed", label: "Reversed" },
+          { key: DecisionStatus.ACTIVE, label: "Active" },
+          { key: DecisionStatus.SUPERSEDED, label: "Superseded" },
+          { key: DecisionStatus.REVERSED, label: "Reversed" },
         ],
       },
       {
@@ -106,8 +110,8 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
         screenKey: "invariants",
         children: [
           { key: "architecture", label: "Architecture" },
-          { key: "process", label: "Process" },
-          { key: "testing", label: "Testing" },
+          { key: GuidelineCategory.PROCESS, label: "Process" },
+          { key: GuidelineCategory.TESTING, label: "Testing" },
         ],
       },
       {
@@ -115,9 +119,9 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
         label: "Components",
         screenKey: "components",
         children: [
-          { key: "services", label: "Services" },
-          { key: "ui", label: "UI" },
-          { key: "libraries", label: "Libraries" },
+          { key: ComponentType.SERVICE, label: "Services" },
+          { key: ComponentType.UI, label: "UI" },
+          { key: ComponentType.LIB, label: "Libraries" },
         ],
       },
       {
@@ -135,8 +139,8 @@ export const MEGA_MENU_SECTIONS: readonly MegaMenuSection[] = [
         screenKey: "guidelines",
         children: [
           { key: "coding-style", label: "Coding Style" },
-          { key: "testing", label: "Testing" },
-          { key: "process", label: "Process" },
+          { key: GuidelineCategory.TESTING, label: "Testing" },
+          { key: GuidelineCategory.PROCESS, label: "Process" },
         ],
       },
     ],

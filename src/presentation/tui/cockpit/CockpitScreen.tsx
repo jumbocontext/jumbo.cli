@@ -8,17 +8,18 @@ import { CockpitPrimedEmptyView } from "./CockpitPrimedEmptyView.js";
 import { CockpitLaunchpadView } from "./CockpitLaunchpadView.js";
 import type { LaunchAnimationRenderer } from "./CockpitLaunchpadView.js";
 import type { ISettingsReader } from "../../../application/settings/ISettingsReader.js";
+import { ProjectLifecycle } from "../../../domain/project/Constants.js";
+import {
+  CockpitScreenCopy,
+  DEFAULT_COCKPIT_BODY_HEIGHT,
+  DEFAULT_TERMINAL_WIDTH,
+  PLACEHOLDER_VERSION,
+} from "./Constants.js";
 
 export type CockpitState =
-  | "uninitialized"
-  | "unprimed"
-  | "primed-empty"
-  | "primed";
+  (typeof ProjectLifecycle)[keyof typeof ProjectLifecycle];
 
-const PLACEHOLDER_COCKPIT_STATE: CockpitState = "uninitialized";
-const PLACEHOLDER_VERSION = "0.0.0";
-const DEFAULT_TERMINAL_WIDTH = 80;
-const DEFAULT_COCKPIT_BODY_HEIGHT = 22;
+const PLACEHOLDER_COCKPIT_STATE: CockpitState = ProjectLifecycle.UNINITIALIZED;
 
 interface CockpitScreenProps {
   state?: CockpitState;
@@ -57,10 +58,12 @@ export function CockpitScreen({
   const bannerAnimationActive = launchAnimationEnabled && !bannerComplete;
   const billboardAnimationActive =
     launchAnimationEnabled && !billboardAnimationComplete;
-  const bannerPersists = state === "uninitialized" || state === "unprimed";
+  const bannerPersists =
+    state === ProjectLifecycle.UNINITIALIZED ||
+    state === ProjectLifecycle.UNPRIMED;
   const shouldRenderBanner =
-    state !== "primed" && (bannerAnimationActive || bannerPersists);
-  const shouldRenderContent = state === "primed" || bannerComplete;
+    state !== ProjectLifecycle.PRIMED && (bannerAnimationActive || bannerPersists);
+  const shouldRenderContent = state === ProjectLifecycle.PRIMED || bannerComplete;
   const launchAnimationSize = useMemo(
     () => ({
       height: Math.max(1, Math.floor(terminalHeight)),
@@ -75,16 +78,19 @@ export function CockpitScreen({
   }, [onBannerAnimationComplete]);
 
   const infoBoxLines = useMemo(() => {
-    if (state === "uninitialized") {
+    if (state === ProjectLifecycle.UNINITIALIZED) {
       return generateCustomInfoBoxLines([
-        { label: "Directory", value: process.cwd() },
-        { label: "Status", value: "Uninitialized" },
+        { label: CockpitScreenCopy.directoryLabel, value: process.cwd() },
+        {
+          label: CockpitScreenCopy.statusLabel,
+          value: CockpitScreenCopy.uninitializedStatus,
+        },
       ]);
     }
-    if (state === "unprimed") {
+    if (state === ProjectLifecycle.UNPRIMED) {
       return generateCustomInfoBoxLines([
-        { label: "Directory", value: process.cwd() },
-        { label: "Status", value: "Ready" },
+        { label: CockpitScreenCopy.directoryLabel, value: process.cwd() },
+        { label: CockpitScreenCopy.statusLabel, value: CockpitScreenCopy.readyStatus },
       ]);
     }
     return undefined;
@@ -105,10 +111,10 @@ export function CockpitScreen({
       )}
       {shouldRenderContent && (
         <Box flexDirection="column" flexGrow={1} width="100%">
-          {state === "uninitialized" && <CockpitGreeterView />}
-          {state === "unprimed" && <CockpitUnprimedView />}
-          {state === "primed-empty" && <CockpitPrimedEmptyView />}
-          {state === "primed" && (
+          {state === ProjectLifecycle.UNINITIALIZED && <CockpitGreeterView />}
+          {state === ProjectLifecycle.UNPRIMED && <CockpitUnprimedView />}
+          {state === ProjectLifecycle.PRIMED_EMPTY && <CockpitPrimedEmptyView />}
+          {state === ProjectLifecycle.PRIMED && (
             <CockpitLaunchpadView
               shortcutsEnabled={shortcutsEnabled}
               launchAnimationSize={

@@ -1,6 +1,11 @@
 import React from "react";
 import { Box, Text } from "ink";
 import { BaseColors, SemanticColors, TuiGlyphs } from "../../shared/DesignTokens.js";
+import {
+  HeaderCopy,
+  PATH_TRUNCATION_MARKER,
+  VERSION_PREFIX,
+} from "./HeaderConstants.js";
 
 interface HeaderProps {
   projectName: string;
@@ -15,8 +20,8 @@ export function Header({
   version,
   terminalWidth,
 }: HeaderProps): React.ReactElement {
-  const versionText = `v${version}`;
-  const versionLabelText = `Jumbo ● ${versionText}`;
+  const versionText = `${VERSION_PREFIX}${version}`;
+  const versionLabelText = `${HeaderCopy.productName} ● ${versionText}`;
   const displayedDirectoryPath = fitDirectoryPath({
     directoryPath,
     projectName,
@@ -83,5 +88,5 @@ function fitDirectoryPath({
     return directoryPath.slice(0, availablePathWidth);
   }
 
-  return `${directoryPath.slice(0, availablePathWidth - 3)}...`;
+  return `${directoryPath.slice(0, availablePathWidth - PATH_TRUNCATION_MARKER.length)}${PATH_TRUNCATION_MARKER}`;
 }

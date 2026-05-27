@@ -6,10 +6,10 @@
  */
 
 import { BaseEvent } from "../../BaseEvent.js";
-import { AudiencePriorityType } from "../Constants.js";
+import { AudienceEventType, AudiencePriorityType } from "../Constants.js";
 
 export interface AudienceAddedEvent extends BaseEvent {
-  readonly type: "AudienceAddedEvent";
+  readonly type: typeof AudienceEventType.ADDED;
   readonly payload: {
     readonly name: string;
     readonly description: string;

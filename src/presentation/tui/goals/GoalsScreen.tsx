@@ -5,7 +5,7 @@ import {
   SemanticColors,
   TuiLayout,
 } from "../../shared/DesignTokens.js";
-import type { GoalStatusType } from "../../../domain/goals/Constants.js";
+import { GoalStatus, type GoalStatusType } from "../../../domain/goals/Constants.js";
 import type { GoalView } from "../../../application/context/goals/GoalView.js";
 import { DetailPane } from "../ui-primitives/DetailPane.js";
 import { KeyBadge } from "../ui-primitives/KeyBadge.js";
@@ -14,26 +14,18 @@ import { Tumbler } from "../ui-primitives/Tumbler.js";
 import { GoalAuthoringFlow } from "./GoalAuthoringFlow.js";
 import type { GoalAuthoringValues } from "./GoalAuthoringFlow.js";
 import { useGoalsList } from "../state-reading/TuiStateReader.js";
-
-type DisplayGoalStatus =
-  | "defined"
-  | "refined"
-  | "doing"
-  | "blocked"
-  | "in-review"
-  | "done"
-  | "paused"
-  | "approved"
-  | "rejected"
-  | "submitted"
-  | "codifying"
-  | "in-refinement"
-  | "unblocked";
+import {
+  GOAL_DETAIL_JOIN_SEPARATOR,
+  GOAL_STATUS_FILTER_ALL,
+  GOAL_STATUS_FILTERS,
+  GOAL_TUMBLER_MAX_DISPLAY_LENGTH,
+  GoalsScreenCopy,
+} from "./GoalsScreenConstants.js";
 
 interface GoalListEntry {
   readonly id: string;
   readonly title: string;
-  readonly status: DisplayGoalStatus;
+  readonly status: GoalStatusType;
   readonly objective: string;
   readonly criteria: readonly string[];
   readonly scopeIn: readonly string[];
@@ -45,45 +37,32 @@ interface GoalListEntry {
   readonly nextGoalId?: string;
 }
 
-const STATUS_FILTERS = [
-  "all",
-  "defined",
-  "refined",
-  "doing",
-  "blocked",
-  "in-review",
-  "done",
-] as const;
-type GoalStatusFilter = (typeof STATUS_FILTERS)[number];
-
-const STATUS_COLORS: Record<DisplayGoalStatus, string> = {
-  defined: SemanticColors.muted,
-  refined: SemanticColors.info,
-  doing: SemanticColors.success,
-  blocked: SemanticColors.error,
-  "in-review": SemanticColors.warning,
-  done: BaseColors.brandGreen70,
-  paused: SemanticColors.warning,
-  approved: SemanticColors.success,
-  rejected: SemanticColors.error,
-  submitted: SemanticColors.info,
-  codifying: SemanticColors.accent,
-  "in-refinement": SemanticColors.info,
-  unblocked: SemanticColors.warning,
+const STATUS_COLORS: Record<GoalStatusType, string> = {
+  [GoalStatus.TODO]: SemanticColors.muted,
+  [GoalStatus.REFINED]: SemanticColors.info,
+  [GoalStatus.DOING]: SemanticColors.success,
+  [GoalStatus.BLOCKED]: SemanticColors.error,
+  [GoalStatus.INREVIEW]: SemanticColors.warning,
+  [GoalStatus.DONE]: BaseColors.brandGreen70,
+  [GoalStatus.PAUSED]: SemanticColors.warning,
+  [GoalStatus.QUALIFIED]: SemanticColors.success,
+  [GoalStatus.REJECTED]: SemanticColors.error,
+  [GoalStatus.SUBMITTED]: SemanticColors.info,
+  [GoalStatus.CODIFYING]: SemanticColors.accent,
+  [GoalStatus.IN_REFINEMENT]: SemanticColors.info,
+  [GoalStatus.UNBLOCKED]: SemanticColors.warning,
 };
-
-const DETAIL_JOIN_SEPARATOR = "\n";
-const EMPTY_FIELD_VALUE = "None";
-const GOAL_TUMBLER_MAX_DISPLAY_LENGTH = 44;
 
 export function GoalsScreen(): React.ReactElement {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filterIndex, setFilterIndex] = useState(0);
   const [authoringOpen, setAuthoringOpen] = useState(false);
 
-  const activeFilter = STATUS_FILTERS[filterIndex];
+  const activeFilter = GOAL_STATUS_FILTERS[filterIndex];
   const requestedStatus =
-    activeFilter === "all" ? undefined : (activeFilter as GoalStatusType);
+    activeFilter === GOAL_STATUS_FILTER_ALL
+      ? undefined
+      : (activeFilter as GoalStatusType);
   const goalsList = useGoalsList(requestedStatus);
   const visibleGoals = useMemo(
     () => {
@@ -105,7 +84,7 @@ export function GoalsScreen(): React.ReactElement {
     }
 
     if (key.rightArrow) {
-      const nextFilterIndex = (filterIndex + 1) % STATUS_FILTERS.length;
+      const nextFilterIndex = (filterIndex + 1) % GOAL_STATUS_FILTERS.length;
       setFilterIndex(nextFilterIndex);
       setSelectedIndex(0);
       return;
@@ -113,7 +92,7 @@ export function GoalsScreen(): React.ReactElement {
 
     if (key.leftArrow) {
       const nextFilterIndex =
-        filterIndex === 0 ? STATUS_FILTERS.length - 1 : filterIndex - 1;
+        filterIndex === 0 ? GOAL_STATUS_FILTERS.length - 1 : filterIndex - 1;
       setFilterIndex(nextFilterIndex);
       setSelectedIndex(0);
       return;
@@ -160,71 +139,71 @@ export function GoalsScreen(): React.ReactElement {
 
       <Box gap={2}>
         {goalsList.loading && goalsList.data === null ? (
-          <Panel title="Goal List" width={TuiLayout.listPanelWidth}>
-            <Text color={SemanticColors.muted}>Loading goals</Text>
+          <Panel title={GoalsScreenCopy.listTitle} width={TuiLayout.listPanelWidth}>
+            <Text color={SemanticColors.muted}>{GoalsScreenCopy.loadingGoals}</Text>
           </Panel>
         ) : goalsList.error !== null ? (
-          <Panel title="Goal List" width={TuiLayout.listPanelWidth}>
+          <Panel title={GoalsScreenCopy.listTitle} width={TuiLayout.listPanelWidth}>
             <Text color={SemanticColors.error}>{goalsList.error.message}</Text>
           </Panel>
         ) : (
           <Tumbler
             key={activeFilter}
-            title="Goal List"
+            title={GoalsScreenCopy.listTitle}
             items={tumblerItems}
             initialFocusedKey={selectedGoal?.id}
             maxDisplayLength={GOAL_TUMBLER_MAX_DISPLAY_LENGTH}
             width={TuiLayout.listPanelWidth}
-            emptyMessage="No goals available"
+            emptyMessage={GoalsScreenCopy.emptyGoals}
             onFocusedItemChange={handleFocusedGoalChange}
           />
         )}
 
         {selectedGoal && (
           <DetailPane
-            title="Goal Detail"
+            title={GoalsScreenCopy.detailTitle}
             width={TuiLayout.detailPanelWidth}
             entries={[
-              { label: "ID", value: selectedGoal.id },
-              { label: "Title", value: selectedGoal.title },
+              { label: GoalsScreenCopy.details.id, value: selectedGoal.id },
+              { label: GoalsScreenCopy.details.title, value: selectedGoal.title },
               {
-                label: "Status",
+                label: GoalsScreenCopy.details.status,
                 value: selectedGoal.status,
                 valueColor: STATUS_COLORS[selectedGoal.status],
               },
-              { label: "Objective", value: selectedGoal.objective },
+              { label: GoalsScreenCopy.details.objective, value: selectedGoal.objective },
               {
-                label: "Criteria",
-                value: selectedGoal.criteria.join(DETAIL_JOIN_SEPARATOR),
+                label: GoalsScreenCopy.details.criteria,
+                value: selectedGoal.criteria.join(GOAL_DETAIL_JOIN_SEPARATOR),
               },
               {
-                label: "Scope in",
-                value: selectedGoal.scopeIn.join(DETAIL_JOIN_SEPARATOR),
+                label: GoalsScreenCopy.details.scopeIn,
+                value: selectedGoal.scopeIn.join(GOAL_DETAIL_JOIN_SEPARATOR),
               },
               {
-                label: "Scope out",
-                value: selectedGoal.scopeOut.join(DETAIL_JOIN_SEPARATOR),
+                label: GoalsScreenCopy.details.scopeOut,
+                value: selectedGoal.scopeOut.join(GOAL_DETAIL_JOIN_SEPARATOR),
               },
               {
-                label: "Prerequisites",
+                label: GoalsScreenCopy.details.prerequisites,
                 value:
                   selectedGoal.prerequisiteGoals
-                    .join(DETAIL_JOIN_SEPARATOR) || EMPTY_FIELD_VALUE,
+                    .join(GOAL_DETAIL_JOIN_SEPARATOR) || GoalsScreenCopy.emptyFieldValue,
               },
               {
-                label: "Progress",
+                label: GoalsScreenCopy.details.progress,
                 value:
-                  selectedGoal.progress.join(DETAIL_JOIN_SEPARATOR)
-                  || EMPTY_FIELD_VALUE,
+                  selectedGoal.progress.join(GOAL_DETAIL_JOIN_SEPARATOR)
+                  || GoalsScreenCopy.emptyFieldValue,
               },
-              { label: "Note", value: selectedGoal.note ?? EMPTY_FIELD_VALUE },
+              { label: GoalsScreenCopy.details.note, value: selectedGoal.note ?? GoalsScreenCopy.emptyFieldValue },
               {
-                label: "Review issues",
-                value: selectedGoal.reviewIssues ?? EMPTY_FIELD_VALUE,
+                label: GoalsScreenCopy.details.reviewIssues,
+                value: selectedGoal.reviewIssues ?? GoalsScreenCopy.emptyFieldValue,
               },
               {
-                label: "Next goal",
-                value: selectedGoal.nextGoalId ?? EMPTY_FIELD_VALUE,
+                label: GoalsScreenCopy.details.nextGoal,
+                value: selectedGoal.nextGoalId ?? GoalsScreenCopy.emptyFieldValue,
               },
             ]}
           />
@@ -232,11 +211,11 @@ export function GoalsScreen(): React.ReactElement {
       </Box>
 
       {selectedGoal && (
-        <Panel title="Action Hints">
+        <Panel title={GoalsScreenCopy.actionHintsTitle}>
           <Box gap={2}>
-            <KeyBadge char="a" label="author" />
-            <KeyBadge char="↑↓" label="select" />
-            <KeyBadge char="←→" label="filter" />
+            <KeyBadge char="a" label={GoalsScreenCopy.shortcuts.author} />
+            <KeyBadge char="↑↓" label={GoalsScreenCopy.shortcuts.select} />
+            <KeyBadge char="←→" label={GoalsScreenCopy.shortcuts.filter} />
           </Box>
         </Panel>
       )}
@@ -248,7 +227,7 @@ function toGoalListEntry(goal: GoalView): GoalListEntry {
   return {
     id: goal.goalId,
     title: goal.title,
-    status: goal.status as DisplayGoalStatus,
+    status: goal.status,
     objective: goal.objective,
     criteria: goal.successCriteria,
     scopeIn: goal.scopeIn,
