@@ -3,6 +3,12 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { Wizard } from "../../../../src/presentation/tui/wizard/Wizard.js";
 import type { WizardStepDefinition } from "../../../../src/presentation/tui/wizard/Wizard.js";
+import {
+  WizardFieldKind,
+  WizardKeyboardHintCopy,
+  WizardKeyboardHintKey,
+  WizardValidationCopy,
+} from "../../../../src/presentation/tui/wizard/WizardConstants.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 const SHIFT_TAB = "\x1B[Z";
@@ -45,7 +51,7 @@ const YES_NO_CONFIG: WizardStepDefinition[] = [
       {
         key: "enabled",
         label: "Enable feature?",
-        kind: "yes-no",
+        kind: WizardFieldKind.YES_NO,
         defaultValue: "no",
       },
     ],
@@ -59,7 +65,7 @@ const MULTI_SELECT_CONFIG: WizardStepDefinition[] = [
       {
         key: "choices",
         label: "Choices",
-        kind: "multi-select",
+        kind: WizardFieldKind.MULTI_SELECT,
         options: [
           { value: "alpha", label: "Alpha" },
           { value: "beta", label: "Beta" },
@@ -77,7 +83,7 @@ const SINGLE_SELECT_CONFIG: WizardStepDefinition[] = [
       {
         key: "choice",
         label: "Choice",
-        kind: "single-select",
+        kind: WizardFieldKind.SINGLE_SELECT,
         options: [
           { value: "alpha", label: "Alpha" },
           { value: "beta", label: "Beta" },
@@ -187,7 +193,7 @@ describe("Wizard", () => {
     );
     stdin.write("\r");
     await tick();
-    expect(lastFrame()).toContain("Required");
+    expect(lastFrame()).toContain(WizardValidationCopy.required);
   });
 
   it("advances to next step after filling field and pressing enter", async () => {
@@ -261,8 +267,8 @@ describe("Wizard", () => {
         onCancel={() => {}}
       />,
     );
-    expect(lastFrame()).toContain("esc");
-    expect(lastFrame()).toContain("Cancel");
+    expect(lastFrame()).toContain(WizardKeyboardHintKey.cancel);
+    expect(lastFrame()).toContain(WizardKeyboardHintCopy.cancel);
   });
 
   it("renders a structured overlay", () => {
@@ -305,7 +311,7 @@ describe("Wizard", () => {
         onCancel={() => {}}
       />,
     );
-    expect(lastFrame()).not.toContain("Back");
+    expect(lastFrame()).not.toContain(WizardKeyboardHintCopy.back);
   });
 
   it("shows left-arrow back hint when parent back is available", () => {
@@ -318,8 +324,8 @@ describe("Wizard", () => {
         onBack={() => {}}
       />,
     );
-    expect(lastFrame()).toContain("←");
-    expect(lastFrame()).toContain("Back");
+    expect(lastFrame()).toContain(WizardKeyboardHintKey.back);
+    expect(lastFrame()).toContain(WizardKeyboardHintCopy.back);
   });
 
   it("shows back hint on first step when a parent back handler is available on a toggle", () => {
@@ -332,8 +338,8 @@ describe("Wizard", () => {
         onBack={() => {}}
       />,
     );
-    expect(lastFrame()).toContain("←");
-    expect(lastFrame()).toContain("Back");
+    expect(lastFrame()).toContain(WizardKeyboardHintKey.back);
+    expect(lastFrame()).toContain(WizardKeyboardHintCopy.back);
   });
 
   it("calls parent back handler from the first step", async () => {
@@ -384,7 +390,7 @@ describe("Wizard", () => {
     await tick();
     stdin.write("\r");
     await tick();
-    expect(lastFrame()).toContain("Confirm");
+    expect(lastFrame()).toContain(WizardKeyboardHintCopy.confirm);
   });
 
   it("moves to next field with tab", async () => {
@@ -486,8 +492,8 @@ describe("Wizard", () => {
     await tick();
     stdin.write("\r");
     await tick();
-    expect(lastFrame()).toContain("←");
-    expect(lastFrame()).toContain("Back");
+    expect(lastFrame()).toContain(WizardKeyboardHintKey.back);
+    expect(lastFrame()).toContain(WizardKeyboardHintCopy.back);
   });
 
   it("uses a supplied progress label instead of local step count", () => {
@@ -542,8 +548,8 @@ describe("Wizard", () => {
     expect(lastFrame()).toContain("Enable feature?");
     expect(lastFrame()).toContain("Yes");
     expect(lastFrame()).toContain("▸ No");
-    expect(lastFrame()).toContain("space");
-    expect(lastFrame()).toContain("Toggle");
+    expect(lastFrame()).toContain(WizardKeyboardHintKey.toggle);
+    expect(lastFrame()).toContain(WizardKeyboardHintCopy.toggle);
   });
 
   it("toggles yes/no fields with space and submits the selected value", async () => {
@@ -578,8 +584,8 @@ describe("Wizard", () => {
     expect(lastFrame()).toContain("Choices");
     expect(lastFrame()).toContain("▸ [x] Alpha");
     expect(lastFrame()).toContain("[x] Beta");
-    expect(lastFrame()).toContain("space");
-    expect(lastFrame()).toContain("Toggle");
+    expect(lastFrame()).toContain(WizardKeyboardHintKey.toggle);
+    expect(lastFrame()).toContain(WizardKeyboardHintCopy.toggle);
   });
 
   it("toggles multi-select options with space and submits selected values", async () => {
@@ -614,8 +620,8 @@ describe("Wizard", () => {
     expect(lastFrame()).toContain("Choice");
     expect(lastFrame()).toContain("▸ (x) Alpha");
     expect(lastFrame()).toContain("( ) Beta");
-    expect(lastFrame()).toContain("space");
-    expect(lastFrame()).toContain("Toggle");
+    expect(lastFrame()).toContain(WizardKeyboardHintKey.toggle);
+    expect(lastFrame()).toContain(WizardKeyboardHintCopy.toggle);
   });
 
   it("changes single-select value with down arrow and submits the selected value", async () => {

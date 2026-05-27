@@ -6,6 +6,7 @@ import {
   TuiLayout,
 } from "../../shared/DesignTokens.js";
 import { Panel } from "./Panel.js";
+import { ListPanelCopy } from "./ListPanelConstants.js";
 
 interface ListPanelItem {
   label: string;
@@ -24,7 +25,7 @@ interface ListPanelProps {
 export function ListPanel({
   title,
   items,
-  emptyMessage = "No items",
+  emptyMessage = ListPanelCopy.emptyMessage,
   titleColor,
   width,
 }: ListPanelProps): React.ReactElement {

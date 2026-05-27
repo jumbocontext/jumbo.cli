@@ -2,6 +2,7 @@ import React from "react";
 import { describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { ListPanel } from "../../../../src/presentation/tui/ui-primitives/ListPanel.js";
+import { ListPanelCopy } from "../../../../src/presentation/tui/ui-primitives/ListPanelConstants.js";
 
 describe("ListPanel", () => {
   const sampleItems = [
@@ -43,7 +44,7 @@ describe("ListPanel", () => {
     const { lastFrame } = render(
       <ListPanel title="Empty" items={[]} />,
     );
-    expect(lastFrame()).toContain("No items");
+    expect(lastFrame()).toContain(ListPanelCopy.emptyMessage);
   });
 
   it("renders custom empty message", () => {

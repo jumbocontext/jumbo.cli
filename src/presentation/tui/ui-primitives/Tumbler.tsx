@@ -7,6 +7,7 @@ import {
   TuiLayout,
 } from "../../shared/DesignTokens.js";
 import { Panel } from "./Panel.js";
+import { TumblerCopy } from "./TumblerConstants.js";
 
 export interface TumblerItem {
   readonly key: string;
@@ -113,7 +114,7 @@ export function Tumbler({
   maxDisplayLength,
   width = TuiLayout.listPanelWidth,
   isActive = true,
-  emptyMessage = "No items",
+  emptyMessage = TumblerCopy.emptyMessage,
   onFocusedItemChange,
 }: TumblerProps): React.ReactElement {
   const [focusedIndex, setFocusedIndex] = useState(() =>

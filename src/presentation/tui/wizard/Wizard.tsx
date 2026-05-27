@@ -7,12 +7,19 @@ import {
 } from "../../shared/DesignTokens.js";
 import { KeyBadge } from "../ui-primitives/KeyBadge.js";
 import { WizardTextInput } from "./WizardTextInput.js";
+import {
+  WizardFieldKind,
+  WizardKeyboardHintCopy,
+  WizardKeyboardHintKey,
+  WizardValidationCopy,
+  type WizardFieldKindValue,
+} from "./WizardConstants.js";
 
 export interface WizardStepField {
   readonly key: string;
   readonly label: string;
   readonly placeholder?: string;
-  readonly kind?: "text" | "yes-no" | "single-select" | "multi-select";
+  readonly kind?: WizardFieldKindValue;
   readonly options?: readonly WizardStepFieldOption[];
   readonly defaultValue?: string;
   readonly required?: boolean;
@@ -161,9 +168,9 @@ export function Wizard({
   const currentFields = currentStep.fields;
   const activeField = currentFields[activeFieldIndex];
   const showSpaceToggleHint =
-    activeField?.kind === "multi-select" ||
-    activeField?.kind === "single-select" ||
-    activeField?.kind === "yes-no";
+    activeField?.kind === WizardFieldKind.MULTI_SELECT ||
+    activeField?.kind === WizardFieldKind.SINGLE_SELECT ||
+    activeField?.kind === WizardFieldKind.YES_NO;
   const showBackHint = !isFirstStep || onBack !== undefined;
   const footerProgressLabel =
     typeof progressLabel === "function"
@@ -174,19 +181,45 @@ export function Wizard({
   const footerHintsWidth = Math.max(1, innerWidth - footerProgressWidth - 2);
   const footerHints = [
     ...(showBackHint
-      ? [{ char: "←", label: "Back", compact: true }]
+      ? [
+          {
+            char: WizardKeyboardHintKey.back,
+            label: WizardKeyboardHintCopy.back,
+            compact: true,
+          },
+        ]
       : []),
     {
-      char: "⏎",
-      label: disabled ? "Working" : isLastStep ? "Confirm" : "Next",
+      char: WizardKeyboardHintKey.submit,
+      label: disabled
+        ? WizardKeyboardHintCopy.working
+        : isLastStep
+          ? WizardKeyboardHintCopy.confirm
+          : WizardKeyboardHintCopy.next,
       compact: true,
     },
-    { char: "esc", label: "Cancel", compact: true },
+    {
+      char: WizardKeyboardHintKey.cancel,
+      label: WizardKeyboardHintCopy.cancel,
+      compact: true,
+    },
     ...(currentFields.length > 1
-      ? [{ char: "↑↓", label: "Field", compact: true }]
+      ? [
+          {
+            char: WizardKeyboardHintKey.field,
+            label: WizardKeyboardHintCopy.field,
+            compact: true,
+          },
+        ]
       : []),
     ...(showSpaceToggleHint
-      ? [{ char: "space", label: "Toggle", compact: true }]
+      ? [
+          {
+            char: WizardKeyboardHintKey.toggle,
+            label: WizardKeyboardHintCopy.toggle,
+            compact: true,
+          },
+        ]
       : []),
     ...extraHints.map((hint) => ({ ...hint, compact: true })),
   ];
@@ -273,8 +306,8 @@ export function Wizard({
     }
 
     if (
-      activeField?.kind !== "multi-select" &&
-      activeField?.kind !== "single-select" &&
+      activeField?.kind !== WizardFieldKind.MULTI_SELECT &&
+      activeField?.kind !== WizardFieldKind.SINGLE_SELECT &&
       key.upArrow
     ) {
       if (fieldIdx > 0) {
@@ -285,8 +318,8 @@ export function Wizard({
     }
 
     if (
-      activeField?.kind !== "multi-select" &&
-      activeField?.kind !== "single-select" &&
+      activeField?.kind !== WizardFieldKind.MULTI_SELECT &&
+      activeField?.kind !== WizardFieldKind.SINGLE_SELECT &&
       key.downArrow
     ) {
       if (fieldIdx < fields.length - 1) {
@@ -296,7 +329,7 @@ export function Wizard({
       return;
     }
 
-    if (activeField?.kind === "yes-no") {
+    if (activeField?.kind === WizardFieldKind.YES_NO) {
       if (input === "y" || input === "Y") {
         handleFieldChange(activeField.key, YES_NO_VALUES.yes);
         return;
@@ -318,7 +351,7 @@ export function Wizard({
       }
     }
 
-    if (activeField?.kind === "multi-select") {
+    if (activeField?.kind === WizardFieldKind.MULTI_SELECT) {
       const options = activeField.options ?? [];
       const currentOptionIndex =
         focusedOptionIndexesRef.current[activeField.key] ?? 0;
@@ -351,7 +384,7 @@ export function Wizard({
       }
     }
 
-    if (activeField?.kind === "single-select") {
+    if (activeField?.kind === WizardFieldKind.SINGLE_SELECT) {
       const options = activeField.options ?? [];
       const currentOptionIndex =
         focusedOptionIndexesRef.current[activeField.key] ?? 0;
@@ -387,7 +420,7 @@ export function Wizard({
       for (const field of fields) {
         const fieldValue = resolveFieldValue(field, currentValues);
         if (field.required !== false && fieldValue.trim().length === 0) {
-          errors[field.key] = "Required";
+          errors[field.key] = WizardValidationCopy.required;
           continue;
         }
         const validationError = field.validate?.(fieldValue, currentValues);
@@ -447,7 +480,7 @@ export function Wizard({
           {currentFields.map((field, fieldIndex) => {
             const fieldValue = resolveFieldValue(field, values);
             const isFocused = fieldIndex === activeFieldIndex;
-            if (field.kind === "yes-no") {
+            if (field.kind === WizardFieldKind.YES_NO) {
               return (
               <WizardYesNoToggle
                 key={field.key}
@@ -459,7 +492,7 @@ export function Wizard({
               );
             }
 
-            if (field.kind === "multi-select") {
+            if (field.kind === WizardFieldKind.MULTI_SELECT) {
               return (
                 <WizardMultiSelect
                   key={field.key}
@@ -473,7 +506,7 @@ export function Wizard({
               );
             }
 
-            if (field.kind === "single-select") {
+            if (field.kind === WizardFieldKind.SINGLE_SELECT) {
               return (
                 <WizardSingleSelect
                   key={field.key}

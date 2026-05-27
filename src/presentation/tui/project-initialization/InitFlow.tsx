@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Box, Text } from "ink";
 import { Wizard } from "../wizard/Wizard.js";
 import type { WizardInputKey, WizardStepDefinition } from "../wizard/Wizard.js";
+import { WizardFieldKind } from "../wizard/WizardConstants.js";
 import { dispatchTuiAction } from "../action-dispatch/TuiActionDispatcher.js";
 import type { TuiRequestController } from "../action-dispatch/TuiActionDispatcher.js";
 import type { PlanProjectInitRequest } from "../../../application/context/project/init/PlanProjectInitRequest.js";
@@ -132,7 +133,7 @@ const AUDIENCE_GATE_STEPS: readonly WizardStepDefinition[] = [
       {
         key: "addAudience",
         label: "Add an audience?",
-        kind: "yes-no",
+        kind: WizardFieldKind.YES_NO,
         defaultValue: "no",
         required: false,
         validate: validateOptionalYesNo,
@@ -160,7 +161,7 @@ const AUDIENCE_STEPS: readonly WizardStepDefinition[] = [
       {
         key: "audiencePriority",
         label: "Audience priority",
-        kind: "single-select",
+        kind: WizardFieldKind.SINGLE_SELECT,
         options: [
           { value: AudiencePriority.PRIMARY, label: "Primary" },
           { value: AudiencePriority.SECONDARY, label: "Secondary" },
@@ -172,7 +173,7 @@ const AUDIENCE_STEPS: readonly WizardStepDefinition[] = [
       {
         key: "addAnotherAudience",
         label: "Add another audience?",
-        kind: "yes-no",
+        kind: WizardFieldKind.YES_NO,
         defaultValue: "no",
         required: false,
         validate: validateOptionalYesNo,
@@ -190,7 +191,7 @@ const VALUE_GATE_STEPS: readonly WizardStepDefinition[] = [
       {
         key: "addValueProposition",
         label: "Add a value proposition?",
-        kind: "yes-no",
+        kind: WizardFieldKind.YES_NO,
         defaultValue: "no",
         required: false,
         validate: validateOptionalYesNo,
@@ -229,7 +230,7 @@ const VALUE_STEPS: readonly WizardStepDefinition[] = [
       {
         key: "addAnotherValueProposition",
         label: "Add another value proposition?",
-        kind: "yes-no",
+        kind: WizardFieldKind.YES_NO,
         defaultValue: "no",
         required: false,
         validate: validateOptionalYesNo,
@@ -638,7 +639,7 @@ function buildAgentSelectionSteps(
         {
           key: "selectedAgentIds",
           label: "Agents",
-          kind: "multi-select",
+          kind: WizardFieldKind.MULTI_SELECT,
           options: availableAgents.map((agent) => ({
             value: agent.id,
             label: `${agent.name} (${agent.id})`,
@@ -668,7 +669,7 @@ function buildConfirmationSteps(
         {
           key: "confirmInitialization",
           label: "Proceed with initialization?",
-          kind: "yes-no",
+          kind: WizardFieldKind.YES_NO,
           defaultValue: "yes",
           required: false,
           validate: validateOptionalYesNo,

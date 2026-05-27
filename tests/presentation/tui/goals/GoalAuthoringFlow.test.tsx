@@ -2,6 +2,7 @@ import React from "react";
 import { describe, expect, it, jest } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { GoalAuthoringFlow } from "../../../../src/presentation/tui/goals/GoalAuthoringFlow.js";
+import { WizardValidationCopy } from "../../../../src/presentation/tui/wizard/WizardConstants.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 const LEFT_ARROW = "\x1B[D";
@@ -182,7 +183,7 @@ describe("GoalAuthoringFlow", () => {
     await tick();
     stdin.write("\r");
     await waitForFrame(lastFrame, (frame) => frame.includes("Previous goal"));
-    expect(lastFrame()).not.toContain("Required");
+    expect(lastFrame()).not.toContain(WizardValidationCopy.required);
 
     stdin.write("\r");
     await tick();

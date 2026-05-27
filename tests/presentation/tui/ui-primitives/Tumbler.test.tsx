@@ -3,6 +3,7 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { render } from "ink-testing-library";
 import stripAnsi from "strip-ansi";
 import { Tumbler } from "../../../../src/presentation/tui/ui-primitives/Tumbler.js";
+import { TumblerCopy } from "../../../../src/presentation/tui/ui-primitives/TumblerConstants.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 const plainFrame = (lastFrame: () => string | undefined) =>
@@ -111,6 +112,12 @@ describe("Tumbler", () => {
     );
 
     expect(plainFrame(lastFrame)).toContain("Nothing available");
+  });
+
+  it("renders the default empty message from the primitive copy contract", () => {
+    const { lastFrame } = render(<Tumbler items={[]} />);
+
+    expect(plainFrame(lastFrame)).toContain(TumblerCopy.emptyMessage);
   });
 
   it("normalizes even visible counts to keep a center row", () => {

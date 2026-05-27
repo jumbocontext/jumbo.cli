@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Wizard } from "../wizard/Wizard.js";
 import type { WizardStepDefinition } from "../wizard/Wizard.js";
+import { WizardFieldKind } from "../wizard/WizardConstants.js";
 import {
   AUTHORING_PROGRESS_LABELS,
   GoalAuthoringCopy,
@@ -342,7 +343,7 @@ function buildCriteriaSteps(
         {
           key: GoalAuthoringFieldKey.ADD_ANOTHER_CRITERION,
           label: GoalAuthoringCopy.criteria.addAnotherCriterion,
-          kind: "yes-no",
+          kind: WizardFieldKind.YES_NO,
           defaultValue: GoalAuthoringCriterionValue.NO,
         },
       ],
