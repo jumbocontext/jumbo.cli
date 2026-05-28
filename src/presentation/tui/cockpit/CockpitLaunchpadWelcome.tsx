@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Text } from "ink";
 import { BaseColors } from "../../shared/DesignTokens.js";
 import { KeyBadge } from "../ui-primitives/KeyBadge.js";
+import { CockpitLaunchpadWelcomeCopy } from "./CockpitLaunchpadWelcomeCopy.js";
 
 export function CockpitLaunchpadWelcome(): React.ReactElement {
   return (
@@ -15,23 +16,23 @@ export function CockpitLaunchpadWelcome(): React.ReactElement {
     >
       <Box flexDirection="row">
         <Text color={BaseColors.brandBlue}>
-          Welcome//
+          {CockpitLaunchpadWelcomeCopy.title}
         </Text>
       </Box>
       <Box flexDirection="row">
         <Text color={BaseColors.shade1}>
-          Run Jumbo worker daemons to keep goal workflows moving. Each worker watches Jumbo state, starts your configured agent when a goal is ready, and prompts it through the next CLI step: refinement, review, or codification.
+          {CockpitLaunchpadWelcomeCopy.paragraphs[0]}
         </Text>
       </Box>
       <Box flexDirection="row" marginTop={1}>
         <Text color={BaseColors.shade1}>
-          You define and prioritize the work; Jumbo handles the repeatable agent handoffs.
+          {CockpitLaunchpadWelcomeCopy.paragraphs[1]}
         </Text>
       </Box>
       <Box width="100%" justifyContent="flex-end">
         <KeyBadge
-          char="x"
-          label="hide"
+          char={CockpitLaunchpadWelcomeCopy.hidePrompt.char}
+          label={CockpitLaunchpadWelcomeCopy.hidePrompt.label}
           color={BaseColors.brandBlue}
           labelColor={BaseColors.shade4}
         />

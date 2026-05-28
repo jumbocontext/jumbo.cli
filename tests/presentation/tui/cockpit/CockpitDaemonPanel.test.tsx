@@ -1,0 +1,88 @@
+import React from "react";
+import { describe, expect, it } from "@jest/globals";
+import { Text } from "ink";
+import { render } from "ink-testing-library";
+import {
+  CockpitDaemonPanel,
+  DaemonInfoOverlay,
+} from "../../../../src/presentation/tui/cockpit/CockpitDaemonPanel.js";
+import { CockpitDaemonPanelCopy } from "../../../../src/presentation/tui/cockpit/CockpitDaemonPanelCopy.js";
+import { RefinerDaemonConstants } from "../../../../src/presentation/tui/cockpit/daemons/RefinerDaemonConstants.js";
+import type {
+  TuiDaemonConfig,
+  TuiSubprocessSnapshot,
+} from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
+
+const daemonConfig: TuiDaemonConfig = {
+  agentId: "codex",
+  pollIntervalMs: 30000,
+  maxRetries: 3,
+};
+
+function createSnapshot(
+  status: TuiSubprocessSnapshot["status"],
+): TuiSubprocessSnapshot {
+  return {
+    name: "refiner",
+    status,
+    config: daemonConfig,
+    stdout: [],
+    stderr: [],
+    events: [],
+  };
+}
+
+describe("CockpitDaemonPanel", () => {
+  it("renders supplied daemon frame content and stopped action controls", () => {
+    const { lastFrame, unmount } = render(
+      <CockpitDaemonPanel
+        daemonConstants={RefinerDaemonConstants}
+        snapshot={createSnapshot("stopped")}
+        pendingConfig={daemonConfig}
+        selected={true}
+        configuring={false}
+        infoVisible={false}
+      >
+        <Text>daemon frame</Text>
+      </CockpitDaemonPanel>,
+    );
+
+    expect(lastFrame()).toContain("daemon frame");
+    expect(lastFrame()).toContain(CockpitDaemonPanelCopy.action.start);
+    expect(lastFrame()).toContain(CockpitDaemonPanelCopy.action.config);
+    expect(lastFrame()).toContain(CockpitDaemonPanelCopy.action.info);
+    unmount();
+  });
+
+  it("renders running and configuration panel labels through cockpit constants", () => {
+    const { lastFrame, unmount } = render(
+      <CockpitDaemonPanel
+        daemonConstants={RefinerDaemonConstants}
+        snapshot={{ ...createSnapshot("running"), pid: 1234 }}
+        pendingConfig={daemonConfig}
+        selected={true}
+        configuring={true}
+        infoVisible={true}
+      >
+        <Text>daemon frame</Text>
+      </CockpitDaemonPanel>,
+    );
+
+    expect(lastFrame()).toContain(CockpitDaemonPanelCopy.action.stop);
+    expect(lastFrame()).toContain(CockpitDaemonPanelCopy.action.infoOpen);
+    expect(lastFrame()).toContain(CockpitDaemonPanelCopy.pidLabel);
+    unmount();
+  });
+});
+
+describe("DaemonInfoOverlay", () => {
+  it("renders daemon info and close affordance", () => {
+    const { lastFrame, unmount } = render(
+      <DaemonInfoOverlay daemonConstants={RefinerDaemonConstants} />,
+    );
+
+    expect(lastFrame()).toContain(RefinerDaemonConstants.info.title);
+    expect(lastFrame()).toContain(CockpitDaemonPanelCopy.closeInfoLabel);
+    unmount();
+  });
+});

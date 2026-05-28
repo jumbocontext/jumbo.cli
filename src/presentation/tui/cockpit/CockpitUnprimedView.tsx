@@ -3,6 +3,7 @@ import { Box, Text } from "ink";
 import { BaseColors, SemanticColors, TuiLayout } from "../../shared/DesignTokens.js";
 import { CenteredPrompt } from "./CenteredPrompt.js";
 import { SectionHeading } from "../ui-primitives/SectionHeading.js";
+import { CockpitUnprimedCopy } from "./CockpitUnprimedCopy.js";
 
 export function CockpitUnprimedView(): React.ReactElement {
   return (
@@ -12,8 +13,7 @@ export function CockpitUnprimedView(): React.ReactElement {
           <Box flexBasis="3%" />
           <Box flexDirection="column" flexBasis="94%">
             <Text color={SemanticColors.primary} wrap="wrap">
-              This looks like an existing project.
-              Start by giving Jumbo some project context before adding your first goal.
+              {CockpitUnprimedCopy.intro}
             </Text>
           </Box>
           <Box flexBasis="3%" />
@@ -21,20 +21,19 @@ export function CockpitUnprimedView(): React.ReactElement {
         <Box flexDirection="row">
           <Box flexBasis="10%" />
           <Box flexDirection="column" flexBasis="80%" marginTop={1}>
-            <SectionHeading title="NEXT STEPS" />
+            <SectionHeading title={CockpitUnprimedCopy.nextStepsHeading} />
             <Box flexDirection="column" marginTop={1}>
               <Text color={SemanticColors.primary} wrap="wrap">
-                1. Open another shell in this directory
+                {CockpitUnprimedCopy.nextSteps[0]}
               </Text>
               <Text color={SemanticColors.primary} wrap="wrap">
-                2. Start AI coding agent (e.g. claude, codex, etc.)
+                {CockpitUnprimedCopy.nextSteps[1]}
               </Text>
               <Text color={BaseColors.brandYellow} dimColor wrap="wrap">
-                Note: You'll need to nudge your agent by prompting 'follow
-                instructions'.
+                {CockpitUnprimedCopy.agentNudgeNote}
               </Text>
               <Text color={SemanticColors.primary} wrap="wrap">
-                3. Let the agent explore the project and save insights to Jumbo's memory when it asks
+                {CockpitUnprimedCopy.nextSteps[2]}
               </Text>
             </Box>
           </Box>
@@ -42,9 +41,9 @@ export function CockpitUnprimedView(): React.ReactElement {
         </Box>
         <Box marginTop={2}>
           <CenteredPrompt
-            keyChar="s"
-            prefix="Press "
-            suffix=" to skip this screen for now"
+            keyChar={CockpitUnprimedCopy.skipPrompt.keyChar}
+            prefix={CockpitUnprimedCopy.skipPrompt.prefix}
+            suffix={CockpitUnprimedCopy.skipPrompt.suffix}
           />
         </Box>
       </Box>

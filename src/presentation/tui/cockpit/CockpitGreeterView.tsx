@@ -1,7 +1,8 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { BaseColors, SemanticColors, TuiLayout } from "../../shared/DesignTokens.js";
+import { BaseColors, TuiLayout } from "../../shared/DesignTokens.js";
 import { CenteredPrompt } from "./CenteredPrompt.js";
+import { CockpitGreeterCopy } from "./CockpitGreeterCopy.js";
 
 export function CockpitGreeterView(): React.ReactElement {
   return (
@@ -12,23 +13,16 @@ export function CockpitGreeterView(): React.ReactElement {
           <Box flexDirection="column" flexBasis="94%">
             <Box marginTop={1}>
               <Text color={BaseColors.brandBlue} wrap="wrap">
-                Hi, I'm Jumbo. I help coding agents stay aligned with your project intent.
-
-                I capture the decisions, rules, corrections, and goals that matter, then
-                deliver the relevant context back to agents when they need it. That keeps
-                work consistent across sessions and agents without forcing you
-                to rebuild context every time.
-
-                Get started by initializing this project.
+                {CockpitGreeterCopy.body.join("\n\n")}
               </Text>
             </Box>
 
             <Box marginTop={2}>
               <CenteredPrompt
-                keyChar="i"
-                prefix="Press "
-                suffix=" to initialize"
-                secondary="or run 'jumbo init' from another terminal"
+                keyChar={CockpitGreeterCopy.initializePrompt.keyChar}
+                prefix={CockpitGreeterCopy.initializePrompt.prefix}
+                suffix={CockpitGreeterCopy.initializePrompt.suffix}
+                secondary={CockpitGreeterCopy.initializePrompt.secondary}
               />
             </Box>
           </Box>

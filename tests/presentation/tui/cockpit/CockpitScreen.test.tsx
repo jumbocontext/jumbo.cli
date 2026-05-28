@@ -3,6 +3,7 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { Box } from "ink";
 import { CockpitScreen } from "../../../../src/presentation/tui/cockpit/CockpitScreen.js";
+import { CockpitUnprimedCopy } from "../../../../src/presentation/tui/cockpit/CockpitUnprimedCopy.js";
 import { CockpitUnprimedView } from "../../../../src/presentation/tui/cockpit/CockpitUnprimedView.js";
 
 describe("CockpitScreen", () => {
@@ -23,7 +24,7 @@ describe("CockpitScreen", () => {
 
   it("renders a local skip affordance on the unprimed view", () => {
     const { lastFrame, unmount } = render(<CockpitUnprimedView />);
-    expect(lastFrame()).toContain("skip this screen for now");
+    expect(lastFrame()).toContain(CockpitUnprimedCopy.skipPrompt.suffix.trim());
     unmount();
   });
 

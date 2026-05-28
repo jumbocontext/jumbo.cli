@@ -6,6 +6,7 @@ import { KeyBadge } from "../ui-primitives/KeyBadge.js";
 import type { TuiDaemonConfig, TuiSubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
 import { TuiSubprocessStatus } from "../daemon-subprocesses/Constants.js";
 import { DAEMON_PANEL_CONTENT_WIDTH } from "./CockpitDaemonFrames.js";
+import { CockpitDaemonPanelCopy } from "./CockpitDaemonPanelCopy.js";
 import type { IDaemonConstants } from "./daemons/IDaemonConstants.js";
 
 export function CockpitDaemonPanel({
@@ -79,7 +80,7 @@ export function DaemonInfoOverlay({
         </Text>
       ))}
       <Text color={BaseColors.shade4}>
-        [i] close
+        {CockpitDaemonPanelCopy.closeInfoLabel}
       </Text>
     </Box>
   );
@@ -95,7 +96,9 @@ function DaemonActionLine({
   readonly infoVisible: boolean;
 }): React.ReactElement {
   const action =
-    snapshot.status === TuiSubprocessStatus.RUNNING ? "stop" : "start";
+    snapshot.status === TuiSubprocessStatus.RUNNING
+      ? CockpitDaemonPanelCopy.action.stop
+      : CockpitDaemonPanelCopy.action.start;
   const badgeColor = getDaemonShortcutBadgeColor(selected);
 
   return (
@@ -108,13 +111,17 @@ function DaemonActionLine({
       />
       <KeyBadge
         char="@"
-        label="config"
+        label={CockpitDaemonPanelCopy.action.config}
         color={badgeColor}
         labelColor={BaseColors.shade4}
       />
       <KeyBadge
         char="i"
-        label={infoVisible ? "info open" : "info"}
+        label={
+          infoVisible
+            ? CockpitDaemonPanelCopy.action.infoOpen
+            : CockpitDaemonPanelCopy.action.info
+        }
         color={badgeColor}
         labelColor={BaseColors.shade4}
       />
@@ -140,7 +147,7 @@ function DaemonConfigWizard({
   return (
     <Box width={DAEMON_PANEL_CONTENT_WIDTH} flexDirection="column">
       <Text color={BaseColors.shade4}>
-        pid {snapshot.pid ?? "-"}
+        {CockpitDaemonPanelCopy.pidLabel} {snapshot.pid ?? "-"}
       </Text>
       <Box gap={1}>
         <KeyBadge

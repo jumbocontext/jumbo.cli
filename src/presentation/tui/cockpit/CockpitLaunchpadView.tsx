@@ -44,6 +44,7 @@ import {
   type GlyphPalette,
 } from "./CockpitDaemonFrames.js";
 import { CockpitDaemonPanel, DaemonInfoOverlay } from "./CockpitDaemonPanel.js";
+import { CockpitLaunchpadCopy } from "./CockpitLaunchpadCopy.js";
 import { CockpitLaunchpadWelcome } from "./CockpitLaunchpadWelcome.js";
 import { getDaemonPanelStatusLabel } from "./DaemonPanelStatusLabel.js";
 import { CodifierDaemonConstants } from "./daemons/CodifierDaemonConstants.js";
@@ -341,7 +342,7 @@ export function CockpitLaunchpadView({
           <DaemonInfoOverlay daemonConstants={infoDaemonConstants} />
         )}
         <Text color={BaseColors.shade2} bold>
-          EVENTS//
+          {CockpitLaunchpadCopy.eventsHeading}
         </Text>
         <Box flexDirection="column" marginTop={1}>
           {daemonEventRows.map((row) => (

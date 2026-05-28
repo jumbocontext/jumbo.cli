@@ -1,6 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Text } from "ink";
 import Yoga from "yoga-layout";
+import { AnimatedBillboardPalette } from "./AnimatedBillboardPalette.js";
+import type { AnimatedBillboardColorPair } from "./AnimatedBillboardPalette.js";
+import { AnimatedBillboardPhase } from "./AnimatedBillboardPhase.js";
+import type { AnimatedBillboardPhase as AnimatedBillboardPhaseValue } from "./AnimatedBillboardPhase.js";
+import { AnimatedBillboardStickerArt } from "./AnimatedBillboardStickerArt.js";
+import { AnimatedBillboardWordmarkArt } from "./AnimatedBillboardWordmarkArt.js";
 
 const TARGET_STICKERS = 39;
 const STICKERS_PER_FRAME = 6;
@@ -10,100 +16,21 @@ const JUMBO_COLOR = "#ffffff";
 const CANDIDATES_PER_STICKER = 40;
 const FINAL_PAUSE_MS = 650;
 const ERASE_FRAME_MS = 0;
-const ERASE_ROWS_PER_FRAME = 3
-;
+const ERASE_ROWS_PER_FRAME = 3;
 
-const GLYPH = [
-  "         ▓▒▒▒▒▒▒▒▒▒▓        ",
-  " ▓▒▒▒▒▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒▒▒▒▓ ",
-  "▓▒▒▒▒▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒▒▒▒▓",
-  "▓▒▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▒▓",
-  "▓▒▒▒▓▓▒▒▒█▒▒▒▒▒▒▒▒█▒▒▒▓▓▒▒▒▓",
-  "  ▓▒▒▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▒▒▓  ",
-  "   ▓▓▒▒▓▓▒▓▒▒▒▒▒▒▓▒▓▓▒▒▓▓   ",
-  "   ▓▒▒▒▒▒▒▓▓▒▒▒▒▓▓▒▒▒▒▒▒▓   ",
-  "  ▓▒▒▒▒▒▒▒▒▓▒▒▒▒▓▓▓▒▒▒▒▒▒▓  ",
-  "  ▓▒▒▒▒▒▒▒▒▒▓▓▒▒▒▒▒▓▒▒▒▒▒▓  ",
-  "  ▓▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▒▒▒▒▒▒▓  ",
-  "   ▓▒▒▒▒▒▒▒▓    ▓▒▒▒▒▒▒▒▓   ",
-  "    ▓▒▒▒▒▒▓      ▓▒▒▒▒▒▓    ",
-  "                            ",
-] as const;
-
-const JUMBO = [
-  "     ███ ███    ███ ████      ████ ████████   █████████  ",
-  "     ███░███░   ███░█████    █████░███░░░███ ███░░░░░███ ",
-  "     ███░███░   ███░███░██  ██░███░████████░░███░    ███░",
-  "███  ███░███░   ███░███░ ████░░███░███░░░███ ███░    ███░",
-  " ██████░░ ████████░░███░  ██░░ ███░████████░░ █████████░░",
-  "  ░░░░░░   ░░░░░░░░  ░░░   ░░   ░░░ ░░░░░░░░   ░░░░░░░░░ ",
-  "                              Agent Context Orchestration",
-] as const;
-
-const BASE_COLORS = {
-  Blue: "#66b4f4",
-  BlueBorder: "#236ca8",
-  Purple: "#aa00d4",
-  PurpleBorder: "#6d0089",
-  Red: "#ff2a2a",
-  RedBorder: "#b11226",
-  Orange: "#ff8307",
-  OrangeBorder: "#b65300",
-  Yellow: "#ffcc00",
-  YellowBorder: "#a67c00",
-  Green: "#44aa00",
-  GreenBorder: "#2a6f00",
-  Magenta: "#ff00aa",
-  MagentaBorder: "#a80071",
-} as const;
-
-const COLOR_PAIRS = [
-  {
-    name: "Blue",
-    fill: BASE_COLORS.Blue,
-    border: BASE_COLORS.BlueBorder,
-  },
-  {
-    name: "Purple",
-    fill: BASE_COLORS.Purple,
-    border: BASE_COLORS.PurpleBorder,
-  },
-  {
-    name: "Red",
-    fill: BASE_COLORS.Red,
-    border: BASE_COLORS.RedBorder,
-  },
-  {
-    name: "Orange",
-    fill: BASE_COLORS.Orange,
-    border: BASE_COLORS.OrangeBorder,
-  },
-  {
-    name: "Yellow",
-    fill: BASE_COLORS.Yellow,
-    border: BASE_COLORS.YellowBorder,
-  },
-  {
-    name: "Green",
-    fill: BASE_COLORS.Green,
-    border: BASE_COLORS.GreenBorder,
-  },
-  {
-    name: "Magenta",
-    fill: BASE_COLORS.Magenta,
-    border: BASE_COLORS.MagentaBorder,
-  },
-] as const;
-
-const GLYPH_HEIGHT = GLYPH.length;
-const GLYPH_WIDTH = Math.max(...GLYPH.map((line) => line.length));
-const GLYPH_PIXELS = GLYPH.flatMap((line, y) =>
+const GLYPH_HEIGHT = AnimatedBillboardStickerArt.length;
+const GLYPH_WIDTH = Math.max(
+  ...AnimatedBillboardStickerArt.map((line) => line.length),
+);
+const GLYPH_PIXELS = AnimatedBillboardStickerArt.flatMap((line, y) =>
   Array.from(line).flatMap((char, x) =>
     char === " " ? [] : [{ x, y }],
   ),
 );
-const JUMBO_HEIGHT = JUMBO.length;
-const JUMBO_WIDTH = Math.max(...JUMBO.map((line) => Array.from(line).length));
+const JUMBO_HEIGHT = AnimatedBillboardWordmarkArt.length;
+const JUMBO_WIDTH = Math.max(
+  ...AnimatedBillboardWordmarkArt.map((line) => Array.from(line).length),
+);
 
 export type AnimatedBillboardTriggerInput = {
   height: number;
@@ -111,7 +38,7 @@ export type AnimatedBillboardTriggerInput = {
   onDone?: () => void;
 };
 
-type ColorPair = (typeof COLOR_PAIRS)[number];
+type ColorPair = AnimatedBillboardColorPair;
 
 type Sticker = {
   id: number;
@@ -147,7 +74,7 @@ type PlacementBounds = {
   maxY: number;
 };
 
-type AnimationPhase = "stickers" | "finalPause" | "erasing" | "done";
+type AnimationPhase = AnimatedBillboardPhaseValue;
 
 function randomIntBetween(minInclusive: number, maxInclusive: number): number {
   return (
@@ -181,7 +108,7 @@ function getPlacementBounds(stage: Size): PlacementBounds {
 
 function getBalancedColorPair(stickers: readonly Sticker[]): ColorPair {
   const counts = new Map<ColorPair["name"], number>(
-    COLOR_PAIRS.map((pair) => [pair.name, 0]),
+    AnimatedBillboardPalette.map((pair) => [pair.name, 0]),
   );
 
   for (const sticker of stickers) {
@@ -189,9 +116,9 @@ function getBalancedColorPair(stickers: readonly Sticker[]): ColorPair {
   }
 
   const lowestCount = Math.min(
-    ...COLOR_PAIRS.map((pair) => counts.get(pair.name) ?? 0),
+    ...AnimatedBillboardPalette.map((pair) => counts.get(pair.name) ?? 0),
   );
-  const leastUsedPairs = COLOR_PAIRS.filter(
+  const leastUsedPairs = AnimatedBillboardPalette.filter(
     (pair) => counts.get(pair.name) === lowestCount,
   );
 
@@ -345,7 +272,7 @@ function renderSticker(cells: Array<Array<Cell | undefined>>, sticker: Sticker):
       continue;
     }
 
-    const line = GLYPH[glyphY] ?? "";
+    const line = AnimatedBillboardStickerArt[glyphY] ?? "";
 
     for (let glyphX = 0; glyphX < line.length; glyphX += 1) {
       const char = line[glyphX] ?? " ";
@@ -380,7 +307,7 @@ function renderJumbo(
       continue;
     }
 
-    const line = Array.from(JUMBO[jumboY] ?? "");
+    const line = Array.from(AnimatedBillboardWordmarkArt[jumboY] ?? "");
 
     for (let jumboX = 0; jumboX < line.length; jumboX += 1) {
       const char = line[jumboX] ?? " ";
@@ -471,19 +398,21 @@ function AnimatedBillboardView({
   const [stickers, setStickers] = useState<Sticker[]>(() => [
     createSticker(0, stage, []),
   ]);
-  const [phase, setPhase] = useState<AnimationPhase>("stickers");
+  const [phase, setPhase] = useState<AnimationPhase>(
+    AnimatedBillboardPhase.stickers,
+  );
   const [visibleRows, setVisibleRows] = useState(stage.rows);
 
   useEffect(() => {
     hasNotifiedDone.current = false;
-    setPhase("stickers");
+    setPhase(AnimatedBillboardPhase.stickers);
     setVisibleRows(stage.rows);
     setStickers([createSticker(0, stage, [])]);
   }, [stage]);
 
   /*
   useEffect(() => {
-    if (phase !== "stickers" || stickers.length >= TARGET_STICKERS) {
+    if (phase !== AnimatedBillboardPhase.stickers || stickers.length >= TARGET_STICKERS) {
       return;
     }
 
@@ -504,7 +433,7 @@ function AnimatedBillboardView({
   */
 
   useEffect(() => {
-    if (phase !== "stickers" || stickers.length >= TARGET_STICKERS) {
+    if (phase !== AnimatedBillboardPhase.stickers || stickers.length >= TARGET_STICKERS) {
       return;
     }
 
@@ -534,21 +463,21 @@ function AnimatedBillboardView({
   }, [phase, stage, stickers.length]);
 
   useEffect(() => {
-    if (phase !== "stickers" || stickers.length < TARGET_STICKERS) {
+    if (phase !== AnimatedBillboardPhase.stickers || stickers.length < TARGET_STICKERS) {
       return;
     }
 
     setVisibleRows(stage.rows);
-    setPhase("finalPause");
+    setPhase(AnimatedBillboardPhase.finalPause);
   }, [phase, stage.rows, stickers.length]);
 
   useEffect(() => {
-    if (phase !== "finalPause") {
+    if (phase !== AnimatedBillboardPhase.finalPause) {
       return;
     }
 
     const timer = setTimeout(() => {
-      setPhase("erasing");
+      setPhase(AnimatedBillboardPhase.erasing);
     }, FINAL_PAUSE_MS);
 
     return () => {
@@ -557,12 +486,12 @@ function AnimatedBillboardView({
   }, [phase]);
 
   useEffect(() => {
-    if (phase !== "erasing") {
+    if (phase !== AnimatedBillboardPhase.erasing) {
       return;
     }
 
     if (visibleRows <= 0) {
-      setPhase("done");
+      setPhase(AnimatedBillboardPhase.done);
       return;
     }
 
@@ -576,7 +505,7 @@ function AnimatedBillboardView({
   }, [phase, visibleRows]);
 
   useEffect(() => {
-    if (phase !== "done" || hasNotifiedDone.current) {
+    if (phase !== AnimatedBillboardPhase.done || hasNotifiedDone.current) {
       return;
     }
 
@@ -584,7 +513,8 @@ function AnimatedBillboardView({
     onDone?.();
   }, [onDone, phase]);
 
-  const showJumbo = stickers.length >= TARGET_STICKERS && phase !== "done";
+  const showJumbo =
+    stickers.length >= TARGET_STICKERS && phase !== AnimatedBillboardPhase.done;
   const frame = useMemo(
     () => buildFrame(stickers, stage, showJumbo, visibleRows),
     [stage, stickers, showJumbo, visibleRows],

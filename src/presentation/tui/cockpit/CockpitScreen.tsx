@@ -9,12 +9,8 @@ import { CockpitLaunchpadView } from "./CockpitLaunchpadView.js";
 import type { LaunchAnimationRenderer } from "./CockpitLaunchpadView.js";
 import type { ISettingsReader } from "../../../application/settings/ISettingsReader.js";
 import { ProjectLifecycle } from "../../../domain/project/Constants.js";
-import {
-  CockpitScreenCopy,
-  DEFAULT_COCKPIT_BODY_HEIGHT,
-  DEFAULT_TERMINAL_WIDTH,
-  PLACEHOLDER_VERSION,
-} from "./Constants.js";
+import { CockpitScreenCopy } from "./CockpitScreenCopy.js";
+import { CockpitScreenDefaults } from "./CockpitScreenDefaults.js";
 
 export type CockpitState =
   (typeof ProjectLifecycle)[keyof typeof ProjectLifecycle];
@@ -38,8 +34,8 @@ interface CockpitScreenProps {
 export function CockpitScreen({
   state = PLACEHOLDER_COCKPIT_STATE,
   shortcutsEnabled = true,
-  terminalWidth = DEFAULT_TERMINAL_WIDTH,
-  terminalHeight = DEFAULT_COCKPIT_BODY_HEIGHT,
+  terminalWidth = CockpitScreenDefaults.terminalWidth,
+  terminalHeight = CockpitScreenDefaults.bodyHeight,
   launchAnimationEnabled = true,
   bannerAnimationComplete,
   billboardAnimationComplete = false,
@@ -103,7 +99,7 @@ export function CockpitScreen({
           <AnimatedBanner
             onComplete={handleBannerComplete}
             persist={bannerPersists}
-            version={PLACEHOLDER_VERSION}
+            version={CockpitScreenDefaults.placeholderVersion}
             infoBoxLines={infoBoxLines}
             animated={bannerAnimationActive}
           />
