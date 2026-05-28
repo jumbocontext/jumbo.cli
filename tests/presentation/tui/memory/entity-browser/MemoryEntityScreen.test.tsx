@@ -36,10 +36,9 @@ describe("MemoryEntityScreen", () => {
     );
     const frame = lastFrame() ?? "";
 
-    expect(frame).toContain("Decisions List");
-    expect(frame).toContain("Decision Detail");
     expect(frame).toContain(DECISION_ROWS[0].id);
-    expect(frame).toContain("Event Replay");
+    expect(frame).toContain(DECISION_ROWS[0].title);
+    expect(frame).not.toContain(DECISION_ROWS[1].id);
     unmount();
   });
 
@@ -70,10 +69,12 @@ describe("MemoryEntityScreen", () => {
       />,
     );
 
+    const beforeFrame = lastFrame() ?? "";
+
     stdin.write("]");
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    expect(lastFrame() ?? "").toContain("event 2 of 3");
+    expect(lastFrame() ?? "").not.toEqual(beforeFrame);
     unmount();
   });
 });

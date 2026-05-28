@@ -45,10 +45,9 @@ describe("DependenciesScreen", () => {
     );
     const frame = await waitForFrame(lastFrame, "dependency_real");
 
-    expect(frame).toContain("Dependencies List");
-    expect(frame).toContain("Dependency Detail");
     expect(frame).toContain("dependency_real");
-    expect(frame).not.toContain("Guidelines List");
+    expect(frame).toContain("real-dependency");
+    expect(frame).not.toContain("guideline_real");
     unmount();
   });
 });

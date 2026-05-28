@@ -3,6 +3,10 @@ import {
   MEGA_MENU_SECTIONS,
   MAX_MENU_DEPTH,
 } from "../../../../src/presentation/tui/navigation/MegaMenuDefinitions.js";
+import { ComponentType } from "../../../../src/domain/components/Constants.js";
+import { DecisionStatus } from "../../../../src/domain/decisions/Constants.js";
+import { GoalStatus } from "../../../../src/domain/goals/Constants.js";
+import { GuidelineCategory } from "../../../../src/domain/guidelines/Constants.js";
 
 describe("MegaMenuDefinitions", () => {
   it("defines top-level sections with Memory as a category", () => {
@@ -48,6 +52,37 @@ describe("MegaMenuDefinitions", () => {
 
   it("sets max menu depth to 3", () => {
     expect(MAX_MENU_DEPTH).toBe(3);
+  });
+
+  it("uses domain constants for domain-valued submenu keys", () => {
+    const cockpitSection = MEGA_MENU_SECTIONS[0];
+    const goalsSection = MEGA_MENU_SECTIONS[1];
+    const memorySection = MEGA_MENU_SECTIONS[2];
+
+    expect(cockpitSection.children[1].children?.map((item) => item.key)).toEqual([
+      GoalStatus.DOING,
+      GoalStatus.BLOCKED,
+      GoalStatus.DONE,
+    ]);
+    expect(goalsSection.children[0].children?.slice(0, 2).map((item) => item.key)).toEqual([
+      GoalStatus.TODO,
+      GoalStatus.REFINED,
+    ]);
+    expect(memorySection.children[0].children?.map((item) => item.key)).toEqual([
+      DecisionStatus.ACTIVE,
+      DecisionStatus.SUPERSEDED,
+      DecisionStatus.REVERSED,
+    ]);
+    expect(memorySection.children[2].children?.map((item) => item.key)).toEqual([
+      ComponentType.SERVICE,
+      ComponentType.UI,
+      ComponentType.LIB,
+    ]);
+    expect(memorySection.children[4].children?.map((item) => item.key)).toEqual([
+      GuidelineCategory.CODING_STYLE,
+      GuidelineCategory.TESTING,
+      GuidelineCategory.PROCESS,
+    ]);
   });
 
   it("all items have unique keys within their level", () => {

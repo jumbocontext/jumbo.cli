@@ -3,14 +3,19 @@ import { MemoryEntityScreen } from "../entity-browser/MemoryEntityScreen.js";
 import { useDecisionsList } from "../../state-reading/TuiStateReader.js";
 import type { DecisionView } from "../../../../application/context/decisions/DecisionView.js";
 
+const DECISIONS_SCREEN_COPY = {
+  title: "Decisions",
+  subtitle: "Focused decision memory list and selected decision detail",
+} as const;
+
 export function DecisionsScreen(): React.ReactElement {
   const decisionsList = useDecisionsList();
 
   return (
     <MemoryEntityScreen
       entityType="decision"
-      title="Decisions"
-      subtitle="Focused decision memory list and selected decision detail"
+      title={DECISIONS_SCREEN_COPY.title}
+      subtitle={DECISIONS_SCREEN_COPY.subtitle}
       rows={(decisionsList.data?.decisions ?? []).map(toDecisionEntityRow)}
       loading={decisionsList.loading}
       error={decisionsList.error}

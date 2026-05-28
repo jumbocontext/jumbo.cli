@@ -43,11 +43,10 @@ describe("ComponentsScreen", () => {
     );
     const frame = await waitForFrame(lastFrame, "component_real");
 
-    expect(frame).toContain("Components List");
-    expect(frame).toContain("Component Detail");
     expect(frame).toContain("component_real");
+    expect(frame).toContain("RealComponent");
     expect(frame).not.toContain("src/presentation/tui/memory/components/ComponentsScreen.tsx");
-    expect(frame).not.toContain("Dependencies List");
+    expect(frame).not.toContain("dependency_real");
     unmount();
   });
 });

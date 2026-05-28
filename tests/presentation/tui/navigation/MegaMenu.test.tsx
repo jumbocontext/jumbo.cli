@@ -28,9 +28,9 @@ describe("MegaMenu", () => {
       expect(frame).not.toMatch(/▸ \d /);
     });
 
-    it("renders navigate title", () => {
+    it("renders a framed menu surface", () => {
       const { lastFrame } = render(<MegaMenu {...defaultProps} />);
-      expect(lastFrame()).toContain("Navigate");
+      expect(lastFrame()).toContain("┌");
     });
 
     it("shows selector glyph on the highlighted section", () => {
@@ -243,21 +243,21 @@ describe("MegaMenu", () => {
     });
   });
 
-  describe("hint text", () => {
-    it("renders drill and close hints at level 1", () => {
+  describe("keyboard hint area", () => {
+    it("renders command key hints at level 1", () => {
       const { lastFrame } = render(<MegaMenu {...defaultProps} />);
       const frame = lastFrame()!;
-      expect(frame).toContain("drill");
-      expect(frame).toContain("close");
+      expect(frame).toContain("←→");
+      expect(frame).toContain("esc");
     });
 
-    it("shows back hint when drilled into a sublevel", async () => {
+    it("keeps command key hints visible when drilled into a sublevel", async () => {
       const { lastFrame, stdin } = render(
         <MegaMenu {...defaultProps} terminalWidth={120} />,
       );
       stdin.write("\x1B[C");
       await tick();
-      expect(lastFrame()).toContain("back");
+      expect(lastFrame()).toContain("esc");
     });
   });
 

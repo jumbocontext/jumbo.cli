@@ -3,6 +3,10 @@ import { Box, Text } from "ink";
 import { SemanticColors, TuiGlyphs } from "../../../shared/DesignTokens.js";
 import { Panel } from "../../ui-primitives/Panel.js";
 
+const ENTITY_COLUMN_COPY = {
+  emptyState: "No entries",
+} as const;
+
 interface EntityColumnProps {
   readonly title: string;
   readonly entries: readonly { readonly id: string; readonly label: string }[];
@@ -24,7 +28,7 @@ export function EntityColumn({
   return (
     <Panel title={title} titleColor={titleColor} width={width}>
       {entries.length === 0 ? (
-        <Text color={SemanticColors.muted}>No entries</Text>
+        <Text color={SemanticColors.muted}>{ENTITY_COLUMN_COPY.emptyState}</Text>
       ) : (
         entries.map((entry) => {
           const isSelected = isActive && entry.id === selectedId;

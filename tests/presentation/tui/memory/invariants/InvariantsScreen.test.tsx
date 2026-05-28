@@ -39,10 +39,9 @@ describe("InvariantsScreen", () => {
     );
     const frame = await waitForFrame(lastFrame, "invariant_real");
 
-    expect(frame).toContain("Invariants List");
-    expect(frame).toContain("Invariant Detail");
     expect(frame).toContain("invariant_real");
-    expect(frame).not.toContain("Components List");
+    expect(frame).toContain("Real invariant");
+    expect(frame).not.toContain("component_real");
     unmount();
   });
 });

@@ -17,10 +17,28 @@ import type {
 
 const LIST_WIDTH = 46;
 const DETAIL_WIDTH = 78;
+const LOADING_ENTRY_ID = "loading";
+const MEMORY_ENTITY_SCREEN_COPY = {
+  listTitleSuffix: "List",
+  loadingPrefix: "Loading",
+  readErrorTitle: "Read Error",
+  eventReplayTitle: "Event Replay",
+  actionHintsTitle: "Action Hints",
+  currentStatePrefix: "Current state",
+  eventLabel: "event",
+  eventReplayEvents: [
+    "Loaded entity read model",
+    "Selected entity row",
+    "Rendered projected detail view",
+  ],
+  actionHints: {
+    select: "select",
+    previousEvent: "previous event",
+    nextEvent: "next event",
+  },
+} as const;
 const MEMORY_REPLAY_EVENTS = [
-  "Loaded entity read model",
-  "Selected entity row",
-  "Rendered projected detail view",
+  ...MEMORY_ENTITY_SCREEN_COPY.eventReplayEvents,
 ] as const;
 
 interface MemoryEntityScreenProps {
@@ -78,10 +96,15 @@ export function MemoryEntityScreen({
 
       <Box gap={2}>
         <EntityColumn
-          title={`${title} List`}
+          title={`${title} ${MEMORY_ENTITY_SCREEN_COPY.listTitleSuffix}`}
           entries={
             loading && rows.length === 0
-              ? [{ id: "loading", label: `Loading ${title.toLowerCase()}` }]
+              ? [
+                  {
+                    id: LOADING_ENTRY_ID,
+                    label: `${MEMORY_ENTITY_SCREEN_COPY.loadingPrefix} ${title.toLowerCase()}`,
+                  },
+                ]
               : rows.map((row) => ({
                   id: row.id,
                   label: labelForRow(entityType, row),
@@ -93,7 +116,7 @@ export function MemoryEntityScreen({
         />
 
         {error !== null && (
-          <Panel title="Read Error" width={DETAIL_WIDTH}>
+          <Panel title={MEMORY_ENTITY_SCREEN_COPY.readErrorTitle} width={DETAIL_WIDTH}>
             <Text color={SemanticColors.error}>{error.message}</Text>
           </Panel>
         )}
@@ -107,10 +130,11 @@ export function MemoryEntityScreen({
         )}
       </Box>
 
-      <Panel title="Event Replay">
+      <Panel title={MEMORY_ENTITY_SCREEN_COPY.eventReplayTitle}>
         <Box flexDirection="column">
           <Text color={SemanticColors.primary}>
-            Current state: event {eventIndex + 1} of{" "}
+            {MEMORY_ENTITY_SCREEN_COPY.currentStatePrefix}:{" "}
+            {MEMORY_ENTITY_SCREEN_COPY.eventLabel} {eventIndex + 1} of{" "}
             {MEMORY_REPLAY_EVENTS.length}
           </Text>
           <Text color={SemanticColors.secondary}>
@@ -119,11 +143,17 @@ export function MemoryEntityScreen({
         </Box>
       </Panel>
 
-      <Panel title="Action Hints">
+      <Panel title={MEMORY_ENTITY_SCREEN_COPY.actionHintsTitle}>
         <Box gap={2}>
-          <KeyBadge char="↑↓" label="select" />
-          <KeyBadge char="[" label="previous event" />
-          <KeyBadge char="]" label="next event" />
+          <KeyBadge char="↑↓" label={MEMORY_ENTITY_SCREEN_COPY.actionHints.select} />
+          <KeyBadge
+            char="["
+            label={MEMORY_ENTITY_SCREEN_COPY.actionHints.previousEvent}
+          />
+          <KeyBadge
+            char="]"
+            label={MEMORY_ENTITY_SCREEN_COPY.actionHints.nextEvent}
+          />
         </Box>
       </Panel>
     </Box>

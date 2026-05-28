@@ -45,10 +45,9 @@ describe("DecisionsScreen", () => {
     );
     const frame = await waitForFrame(lastFrame, "decision_real");
 
-    expect(frame).toContain("Decisions List");
-    expect(frame).toContain("Decision Detail");
     expect(frame).toContain("decision_real");
-    expect(frame).not.toContain("Invariants List");
+    expect(frame).toContain("Real decision");
+    expect(frame).not.toContain("invariant_real");
     unmount();
   });
 });

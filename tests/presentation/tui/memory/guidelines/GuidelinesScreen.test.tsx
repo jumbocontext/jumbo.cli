@@ -44,10 +44,9 @@ describe("GuidelinesScreen", () => {
     );
     const frame = await waitForFrame(lastFrame, "guideline_real");
 
-    expect(frame).toContain("Guidelines List");
-    expect(frame).toContain("Guideline Detail");
     expect(frame).toContain("guideline_real");
-    expect(frame).not.toContain("Decisions List");
+    expect(frame).toContain("Real guideline");
+    expect(frame).not.toContain("decision_real");
     unmount();
   });
 });

@@ -1,5 +1,8 @@
 import React from "react";
-import { SCREEN_DEFINITIONS } from "./ScreenDefinitions.js";
+import {
+  DEFAULT_SCREEN_INDEX,
+  SCREEN_DEFINITIONS,
+} from "./ScreenDefinitions.js";
 import { CockpitScreen } from "../cockpit/CockpitScreen.js";
 import { ComponentsScreen } from "../memory/components/ComponentsScreen.js";
 import { DecisionsScreen } from "../memory/decisions/DecisionsScreen.js";
@@ -57,7 +60,9 @@ export function ScreenRouter({
     ? SCREEN_COMPONENTS[definition.key]
     : SCREEN_COMPONENTS.cockpit;
 
-  if ((definition?.key ?? "cockpit") === "cockpit") {
+  const defaultScreenKey = SCREEN_DEFINITIONS[DEFAULT_SCREEN_INDEX].key;
+
+  if ((definition?.key ?? defaultScreenKey) === defaultScreenKey) {
     return (
       <CockpitScreen
         state={projectLifecycleState}

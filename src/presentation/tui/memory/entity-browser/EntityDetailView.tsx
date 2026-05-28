@@ -10,6 +10,34 @@ import type {
 } from "./MemoryEntityShapes.js";
 
 const LIST_SEPARATOR = "\n";
+const ENTITY_DETAIL_VIEW_COPY = {
+  titles: {
+    decision: "Decision Detail",
+    invariant: "Invariant Detail",
+    component: "Component Detail",
+    dependency: "Dependency Detail",
+    guideline: "Guideline Detail",
+  },
+  labels: {
+    id: "ID",
+    title: "Title",
+    context: "Context",
+    rationale: "Rationale",
+    alternatives: "Alternatives",
+    consequences: "Consequences",
+    description: "Description",
+    name: "Name",
+    type: "Type",
+    responsibility: "Responsibility",
+    ecosystem: "Ecosystem",
+    packageName: "Package",
+    versionConstraint: "Version",
+    endpoint: "Endpoint",
+    contract: "Contract",
+    category: "Category",
+    examples: "Examples",
+  },
+} as const;
 
 interface EntityDetailViewProps {
   readonly entityType: MemoryEntityType;
@@ -46,18 +74,7 @@ export function EntityDetailView({
 }
 
 function detailTitle(entityType: MemoryEntityType): string {
-  switch (entityType) {
-    case "decision":
-      return "Decision Detail";
-    case "invariant":
-      return "Invariant Detail";
-    case "component":
-      return "Component Detail";
-    case "dependency":
-      return "Dependency Detail";
-    case "guideline":
-      return "Guideline Detail";
-  }
+  return ENTITY_DETAIL_VIEW_COPY.titles[entityType];
 }
 
 function buildEntries(
@@ -73,57 +90,96 @@ function buildEntries(
     case "decision": {
       const decision = entity as DecisionEntityRow;
       return [
-        { label: "ID", value: decision.id },
-        { label: "Title", value: decision.title },
-        { label: "Context", value: decision.context },
-        { label: "Rationale", value: decision.rationale },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: decision.id },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.title, value: decision.title },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.context, value: decision.context },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.rationale, value: decision.rationale },
         {
-          label: "Alternatives",
+          label: ENTITY_DETAIL_VIEW_COPY.labels.alternatives,
           value: decision.alternatives.join(LIST_SEPARATOR),
         },
-        { label: "Consequences", value: decision.consequences },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.consequences,
+          value: decision.consequences,
+        },
       ];
     }
     case "invariant": {
       const invariant = entity as InvariantEntityRow;
       return [
-        { label: "ID", value: invariant.id },
-        { label: "Title", value: invariant.title },
-        { label: "Description", value: invariant.description },
-        { label: "Rationale", value: invariant.rationale },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: invariant.id },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.title, value: invariant.title },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.description,
+          value: invariant.description,
+        },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.rationale,
+          value: invariant.rationale,
+        },
       ];
     }
     case "component": {
       const component = entity as ComponentEntityRow;
       return [
-        { label: "ID", value: component.id },
-        { label: "Name", value: component.name },
-        { label: "Type", value: component.type },
-        { label: "Description", value: component.description },
-        { label: "Responsibility", value: component.responsibility },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: component.id },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.name, value: component.name },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.type, value: component.type },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.description,
+          value: component.description,
+        },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.responsibility,
+          value: component.responsibility,
+        },
       ];
     }
     case "dependency": {
       const dependency = entity as DependencyEntityRow;
       return [
-        { label: "ID", value: dependency.id },
-        { label: "Name", value: dependency.name },
-        { label: "Ecosystem", value: dependency.ecosystem },
-        { label: "Package", value: dependency.packageName },
-        { label: "Version", value: dependency.versionConstraint },
-        { label: "Endpoint", value: dependency.endpoint },
-        { label: "Contract", value: dependency.contract },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: dependency.id },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.name, value: dependency.name },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.ecosystem,
+          value: dependency.ecosystem,
+        },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.packageName,
+          value: dependency.packageName,
+        },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.versionConstraint,
+          value: dependency.versionConstraint,
+        },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.endpoint,
+          value: dependency.endpoint,
+        },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.contract, value: dependency.contract },
       ];
     }
     case "guideline": {
       const guideline = entity as GuidelineEntityRow;
       return [
-        { label: "ID", value: guideline.id },
-        { label: "Title", value: guideline.title },
-        { label: "Category", value: guideline.category },
-        { label: "Description", value: guideline.description },
-        { label: "Rationale", value: guideline.rationale },
-        { label: "Examples", value: guideline.examples.join(LIST_SEPARATOR) },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: guideline.id },
+        { label: ENTITY_DETAIL_VIEW_COPY.labels.title, value: guideline.title },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.category,
+          value: guideline.category,
+        },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.description,
+          value: guideline.description,
+        },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.rationale,
+          value: guideline.rationale,
+        },
+        {
+          label: ENTITY_DETAIL_VIEW_COPY.labels.examples,
+          value: guideline.examples.join(LIST_SEPARATOR),
+        },
       ];
     }
   }

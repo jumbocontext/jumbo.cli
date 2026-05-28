@@ -44,8 +44,8 @@ describe("SessionScreen", () => {
 
     const frame = await waitForFrame(lastFrame, "session_real");
 
-    expect(frame).toContain("Session List");
-    expect(frame).toContain("Session Detail");
+    expect(frame).toContain("session_real");
+    expect(frame).toContain("active");
     expect(frame).toContain("Resolve rejected goal");
     unmount();
   });

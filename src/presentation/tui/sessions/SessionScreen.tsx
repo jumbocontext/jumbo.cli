@@ -8,6 +8,24 @@ import { useSessionsList } from "../state-reading/TuiStateReader.js";
 import type { SessionView } from "../../../application/context/sessions/SessionView.js";
 
 const SESSION_LIST_WIDTH = 46;
+const SESSION_LOADING_ENTRY_ID = "loading";
+const SESSION_SCREEN_COPY = {
+  title: "Session",
+  subtitle: "Current session focus and history",
+  listTitle: "Session List",
+  loadingLabel: "Loading sessions",
+  readErrorTitle: "Read Error",
+  detailTitle: "Session Detail",
+  emptyValue: "None",
+  detailLabels: {
+    id: "ID",
+    status: "Status",
+    focus: "Focus",
+    started: "Started",
+    ended: "Ended",
+    updated: "Updated",
+  },
+} as const;
 
 export function SessionScreen(): React.ReactElement {
   const sessionsList = useSessionsList();
@@ -18,19 +36,24 @@ export function SessionScreen(): React.ReactElement {
     <Box flexDirection="column" paddingX={1} paddingTop={1} gap={1}>
       <Box flexDirection="column">
         <Text color={SemanticColors.headline} bold>
-          Session
+          {SESSION_SCREEN_COPY.title}
         </Text>
         <Text color={SemanticColors.secondary}>
-          Current session focus and history
+          {SESSION_SCREEN_COPY.subtitle}
         </Text>
       </Box>
 
       <Box gap={2}>
         <EntityColumn
-          title="Session List"
+          title={SESSION_SCREEN_COPY.listTitle}
           entries={
             sessionsList.loading && sessions.length === 0
-              ? [{ id: "loading", label: "Loading sessions" }]
+              ? [
+                  {
+                    id: SESSION_LOADING_ENTRY_ID,
+                    label: SESSION_SCREEN_COPY.loadingLabel,
+                  },
+                ]
               : sessions.map(toSessionListEntry)
           }
           selectedId={selectedSession?.sessionId}
@@ -39,22 +62,40 @@ export function SessionScreen(): React.ReactElement {
         />
 
         {sessionsList.error !== null && (
-          <Panel title="Read Error" width={TuiLayout.detailPanelWidth}>
+          <Panel title={SESSION_SCREEN_COPY.readErrorTitle} width={TuiLayout.detailPanelWidth}>
             <Text color={SemanticColors.error}>{sessionsList.error.message}</Text>
           </Panel>
         )}
 
         {sessionsList.error === null && selectedSession && (
           <DetailPane
-            title="Session Detail"
+            title={SESSION_SCREEN_COPY.detailTitle}
             width={TuiLayout.detailPanelWidth}
             entries={[
-              { label: "ID", value: selectedSession.sessionId },
-              { label: "Status", value: selectedSession.status },
-              { label: "Focus", value: selectedSession.focus ?? "None" },
-              { label: "Started", value: selectedSession.startedAt },
-              { label: "Ended", value: selectedSession.endedAt ?? "None" },
-              { label: "Updated", value: selectedSession.updatedAt },
+              {
+                label: SESSION_SCREEN_COPY.detailLabels.id,
+                value: selectedSession.sessionId,
+              },
+              {
+                label: SESSION_SCREEN_COPY.detailLabels.status,
+                value: selectedSession.status,
+              },
+              {
+                label: SESSION_SCREEN_COPY.detailLabels.focus,
+                value: selectedSession.focus ?? SESSION_SCREEN_COPY.emptyValue,
+              },
+              {
+                label: SESSION_SCREEN_COPY.detailLabels.started,
+                value: selectedSession.startedAt,
+              },
+              {
+                label: SESSION_SCREEN_COPY.detailLabels.ended,
+                value: selectedSession.endedAt ?? SESSION_SCREEN_COPY.emptyValue,
+              },
+              {
+                label: SESSION_SCREEN_COPY.detailLabels.updated,
+                value: selectedSession.updatedAt,
+              },
             ]}
           />
         )}

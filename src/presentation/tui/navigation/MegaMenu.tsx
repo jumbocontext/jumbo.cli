@@ -23,6 +23,15 @@ interface MegaMenuProps {
 }
 
 const COLUMN_WIDTH = 24;
+const MEGA_MENU_COPY = {
+  title: "Navigate",
+  hints: {
+    drill: "drill",
+    select: "enter select",
+    back: "back",
+    close: "close",
+  },
+} as const;
 
 function screenIndexForKey(screenKey: ScreenKey): number {
   return SCREEN_DEFINITIONS.findIndex((screen) => screen.key === screenKey);
@@ -241,7 +250,7 @@ export function MegaMenu({
     >
       <Box marginBottom={1}>
         <Text color={SemanticColors.headline} bold>
-          Navigate
+          {MEGA_MENU_COPY.title}
         </Text>
       </Box>
       <Box>
@@ -275,8 +284,11 @@ export function MegaMenu({
       </Box>
       <Box marginTop={1}>
         <Text color={SemanticColors.muted}>
-          ←→ drill {TuiGlyphs.dot} enter select {TuiGlyphs.dot} esc{" "}
-          {activeLevel > 0 ? "back" : "close"}
+          ←→ {MEGA_MENU_COPY.hints.drill} {TuiGlyphs.dot}{" "}
+          {MEGA_MENU_COPY.hints.select} {TuiGlyphs.dot} esc{" "}
+          {activeLevel > 0
+            ? MEGA_MENU_COPY.hints.back
+            : MEGA_MENU_COPY.hints.close}
         </Text>
       </Box>
     </Box>
