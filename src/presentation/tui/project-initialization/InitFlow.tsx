@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { Box, Text } from "ink";
 import { Wizard } from "../wizard/Wizard.js";
 import type { WizardInputKey, WizardStepDefinition } from "../wizard/Wizard.js";
-import { WizardFieldKind } from "../wizard/WizardConstants.js";
 import { dispatchTuiAction } from "../action-dispatch/TuiActionDispatcher.js";
 import type { TuiRequestController } from "../action-dispatch/TuiActionDispatcher.js";
 import type { PlanProjectInitRequest } from "../../../application/context/project/init/PlanProjectInitRequest.js";
@@ -17,52 +16,47 @@ import type { AgentId } from "../../../application/context/project/init/AgentSel
 import type { PlannedFileChange } from "../../../application/context/project/init/PlannedFileChange.js";
 import { SemanticColors } from "../../shared/DesignTokens.js";
 import { AudiencePriority } from "../../../domain/audiences/Constants.js";
-
-const YES_NO_MESSAGE = "Enter yes or no";
-const REQUIRED_PLAN_CONTROLLER_ERROR =
-  "Project initialization planning is unavailable. Restart Jumbo and try again.";
-const REQUIRED_INIT_CONTROLLER_ERROR =
-  "Project initialization is unavailable. Restart Jumbo and try again.";
-const REQUIRED_AUDIENCE_CONTROLLER_ERROR =
-  "Audience registration is unavailable. Restart Jumbo and try again.";
-const REQUIRED_VALUE_PROPOSITION_CONTROLLER_ERROR =
-  "Value proposition registration is unavailable. Restart Jumbo and try again.";
-
-type InitFlowStage =
-  | "project"
-  | "audience-gate"
-  | "audience"
-  | "value-gate"
-  | "value"
-  | "agent-selection"
-  | "confirmation"
-  | "success";
-
-type InitFlowRollback = "audience" | "value-proposition" | "plan";
+import {
+  InitFlowAudiencePriorityOption,
+  InitFlowConfirmationCopy,
+  InitFlowConfirmationGroupLabel,
+  InitFlowControllerErrorCopy,
+  InitFlowCopy,
+  InitFlowFieldKey,
+  InitFlowFieldKind,
+  InitFlowRollback,
+  InitFlowStage,
+  InitFlowValidationCopy,
+  InitFlowYesNoValue,
+} from "./Constants.js";
+import type {
+  InitFlowRollback as InitFlowRollbackValue,
+  InitFlowStage as InitFlowStageValue,
+} from "./Constants.js";
 
 interface InitFlowStageHistoryEntry {
-  readonly stage: InitFlowStage;
+  readonly stage: InitFlowStageValue;
   readonly restoreStepIndex: number;
-  readonly rollback?: InitFlowRollback;
+  readonly rollback?: InitFlowRollbackValue;
 }
 
-const INIT_FLOW_STAGES_WITH_AGENT_SELECTION: readonly InitFlowStage[] = [
-  "project",
-  "audience-gate",
-  "audience",
-  "value-gate",
-  "value",
-  "agent-selection",
-  "confirmation",
+const INIT_FLOW_STAGES_WITH_AGENT_SELECTION: readonly InitFlowStageValue[] = [
+  InitFlowStage.project,
+  InitFlowStage.audienceGate,
+  InitFlowStage.audience,
+  InitFlowStage.valueGate,
+  InitFlowStage.value,
+  InitFlowStage.agentSelection,
+  InitFlowStage.confirmation,
 ] as const;
 
-const INIT_FLOW_STAGES_WITHOUT_AGENT_SELECTION: readonly InitFlowStage[] = [
-  "project",
-  "audience-gate",
-  "audience",
-  "value-gate",
-  "value",
-  "confirmation",
+const INIT_FLOW_STAGES_WITHOUT_AGENT_SELECTION: readonly InitFlowStageValue[] = [
+  InitFlowStage.project,
+  InitFlowStage.audienceGate,
+  InitFlowStage.audience,
+  InitFlowStage.valueGate,
+  InitFlowStage.value,
+  InitFlowStage.confirmation,
 ] as const;
 const CONFIRMATION_FILE_REVIEW_PAGE_SIZE = 10;
 
@@ -98,26 +92,24 @@ interface InitFlowProps {
 
 const PROJECT_STEPS: readonly WizardStepDefinition[] = [
   {
-    title: "Project Name",
-    description:
-      "What is your project called? This name will appear in context packets served to coding agents.",
+    title: InitFlowCopy.projectNameTitle,
+    description: InitFlowCopy.projectNameDescription,
     fields: [
       {
-        key: "projectName",
-        label: "Project name",
-        placeholder: "e.g. Jumbo",
+        key: InitFlowFieldKey.projectName,
+        label: InitFlowCopy.projectNameLabel,
+        placeholder: InitFlowCopy.projectNamePlaceholder,
       },
     ],
   },
   {
-    title: "Purpose",
-    description:
-      "Describe the purpose of your project. What problem does it solve? This helps agents understand the north-star.",
+    title: InitFlowCopy.purposeTitle,
+    description: InitFlowCopy.purposeDescription,
     fields: [
       {
-        key: "purpose",
-        label: "Project purpose",
-        placeholder: "e.g. Context management for LLM coding agents",
+        key: InitFlowFieldKey.purpose,
+        label: InitFlowCopy.purposeLabel,
+        placeholder: InitFlowCopy.purposePlaceholder,
         required: false,
       },
     ],
@@ -126,15 +118,14 @@ const PROJECT_STEPS: readonly WizardStepDefinition[] = [
 
 const AUDIENCE_GATE_STEPS: readonly WizardStepDefinition[] = [
   {
-    title: "Audiences",
-    description:
-      "Who are the primary audiences for your project? Understanding your users helps agents make better decisions.",
+    title: InitFlowCopy.audiencesTitle,
+    description: InitFlowCopy.audiencesDescription,
     fields: [
       {
-        key: "addAudience",
-        label: "Add an audience?",
-        kind: WizardFieldKind.YES_NO,
-        defaultValue: "no",
+        key: InitFlowFieldKey.addAudience,
+        label: InitFlowCopy.addAudienceLabel,
+        kind: InitFlowFieldKind.yesNo,
+        defaultValue: InitFlowYesNoValue.no,
         required: false,
         validate: validateOptionalYesNo,
       },
@@ -144,37 +135,36 @@ const AUDIENCE_GATE_STEPS: readonly WizardStepDefinition[] = [
 
 const AUDIENCE_STEPS: readonly WizardStepDefinition[] = [
   {
-    title: "Audiences",
-    description:
-      "Who are the primary audiences for your project? Understanding your users helps agents make better decisions.",
+    title: InitFlowCopy.audiencesTitle,
+    description: InitFlowCopy.audiencesDescription,
     fields: [
       {
-        key: "audienceName",
-        label: "Audience name",
-        placeholder: "e.g. Software Developers",
+        key: InitFlowFieldKey.audienceName,
+        label: InitFlowCopy.audienceNameLabel,
+        placeholder: InitFlowCopy.audienceNamePlaceholder,
       },
       {
-        key: "audienceDescription",
-        label: "Audience description",
-        placeholder: "e.g. Developers collaborating with LLM coding agents",
+        key: InitFlowFieldKey.audienceDescription,
+        label: InitFlowCopy.audienceDescriptionLabel,
+        placeholder: InitFlowCopy.audienceDescriptionPlaceholder,
       },
       {
-        key: "audiencePriority",
-        label: "Audience priority",
-        kind: WizardFieldKind.SINGLE_SELECT,
+        key: InitFlowFieldKey.audiencePriority,
+        label: InitFlowCopy.audiencePriorityLabel,
+        kind: InitFlowFieldKind.singleSelect,
         options: [
-          { value: AudiencePriority.PRIMARY, label: "Primary" },
-          { value: AudiencePriority.SECONDARY, label: "Secondary" },
-          { value: AudiencePriority.TERTIARY, label: "Tertiary" },
+          InitFlowAudiencePriorityOption.primary,
+          InitFlowAudiencePriorityOption.secondary,
+          InitFlowAudiencePriorityOption.tertiary,
         ],
         defaultValue: AudiencePriority.PRIMARY,
         validate: validateAudiencePriority,
       },
       {
-        key: "addAnotherAudience",
-        label: "Add another audience?",
-        kind: WizardFieldKind.YES_NO,
-        defaultValue: "no",
+        key: InitFlowFieldKey.addAnotherAudience,
+        label: InitFlowCopy.addAnotherAudienceLabel,
+        kind: InitFlowFieldKind.yesNo,
+        defaultValue: InitFlowYesNoValue.no,
         required: false,
         validate: validateOptionalYesNo,
       },
@@ -184,15 +174,14 @@ const AUDIENCE_STEPS: readonly WizardStepDefinition[] = [
 
 const VALUE_GATE_STEPS: readonly WizardStepDefinition[] = [
   {
-    title: "Value Propositions",
-    description:
-      "What value does your project deliver? These propositions guide what capabilities matter most.",
+    title: InitFlowCopy.valuePropositionsTitle,
+    description: InitFlowCopy.valuePropositionsDescription,
     fields: [
       {
-        key: "addValueProposition",
-        label: "Add a value proposition?",
-        kind: WizardFieldKind.YES_NO,
-        defaultValue: "no",
+        key: InitFlowFieldKey.addValueProposition,
+        label: InitFlowCopy.addValuePropositionLabel,
+        kind: InitFlowFieldKind.yesNo,
+        defaultValue: InitFlowYesNoValue.no,
         required: false,
         validate: validateOptionalYesNo,
       },
@@ -202,36 +191,35 @@ const VALUE_GATE_STEPS: readonly WizardStepDefinition[] = [
 
 const VALUE_STEPS: readonly WizardStepDefinition[] = [
   {
-    title: "Value Propositions",
-    description:
-      "What value does your project deliver? These propositions guide what capabilities matter most.",
+    title: InitFlowCopy.valuePropositionsTitle,
+    description: InitFlowCopy.valuePropositionsDescription,
     fields: [
       {
-        key: "valueTitle",
-        label: "Value proposition title",
-        placeholder: "e.g. Persistent context across sessions",
+        key: InitFlowFieldKey.valueTitle,
+        label: InitFlowCopy.valueTitleLabel,
+        placeholder: InitFlowCopy.valueTitlePlaceholder,
       },
       {
-        key: "valueDescription",
-        label: "Description",
-        placeholder: "e.g. Detailed explanation of the value",
+        key: InitFlowFieldKey.valueDescription,
+        label: InitFlowCopy.valueDescriptionLabel,
+        placeholder: InitFlowCopy.valueDescriptionPlaceholder,
       },
       {
-        key: "valueBenefit",
-        label: "Benefit",
-        placeholder: "e.g. Agents never lose important project context",
+        key: InitFlowFieldKey.valueBenefit,
+        label: InitFlowCopy.valueBenefitLabel,
+        placeholder: InitFlowCopy.valueBenefitPlaceholder,
       },
       {
-        key: "valueMeasurableOutcome",
-        label: "Measurable outcome",
-        placeholder: "optional",
+        key: InitFlowFieldKey.valueMeasurableOutcome,
+        label: InitFlowCopy.valueMeasurableOutcomeLabel,
+        placeholder: InitFlowCopy.valueMeasurableOutcomePlaceholder,
         required: false,
       },
       {
-        key: "addAnotherValueProposition",
-        label: "Add another value proposition?",
-        kind: WizardFieldKind.YES_NO,
-        defaultValue: "no",
+        key: InitFlowFieldKey.addAnotherValueProposition,
+        label: InitFlowCopy.addAnotherValuePropositionLabel,
+        kind: InitFlowFieldKind.yesNo,
+        defaultValue: InitFlowYesNoValue.no,
         required: false,
         validate: validateOptionalYesNo,
       },
@@ -239,15 +227,17 @@ const VALUE_STEPS: readonly WizardStepDefinition[] = [
   },
 ] as const;
 
-const INIT_FLOW_STAGE_STEP_COUNTS: Readonly<Record<InitFlowStage, number>> = {
-  project: PROJECT_STEPS.length,
-  "audience-gate": AUDIENCE_GATE_STEPS.length,
-  audience: AUDIENCE_STEPS.length,
-  "value-gate": VALUE_GATE_STEPS.length,
-  value: VALUE_STEPS.length,
-  "agent-selection": 1,
-  confirmation: 1,
-  success: 0,
+const INIT_FLOW_STAGE_STEP_COUNTS: Readonly<
+  Record<InitFlowStageValue, number>
+> = {
+  [InitFlowStage.project]: PROJECT_STEPS.length,
+  [InitFlowStage.audienceGate]: AUDIENCE_GATE_STEPS.length,
+  [InitFlowStage.audience]: AUDIENCE_STEPS.length,
+  [InitFlowStage.valueGate]: VALUE_GATE_STEPS.length,
+  [InitFlowStage.value]: VALUE_STEPS.length,
+  [InitFlowStage.agentSelection]: 1,
+  [InitFlowStage.confirmation]: 1,
+  [InitFlowStage.success]: 0,
 };
 
 export function InitFlow({
@@ -255,7 +245,7 @@ export function InitFlow({
   onComplete,
   onCancel,
 }: InitFlowProps): React.ReactElement {
-  const [stage, setStage] = useState<InitFlowStage>("project");
+  const [stage, setStage] = useState<InitFlowStageValue>(InitFlowStage.project);
   const [stageHistory, setStageHistory] = useState<
     InitFlowStageHistoryEntry[]
   >([]);
@@ -292,8 +282,8 @@ export function InitFlow({
   );
 
   const navigateToStage = (
-    nextStage: InitFlowStage,
-    rollback?: InitFlowRollback,
+    nextStage: InitFlowStageValue,
+    rollback?: InitFlowRollbackValue,
   ) => {
     setStageHistory((current) => [
       ...current,
@@ -318,18 +308,18 @@ export function InitFlow({
     setRestoreStepIndex(previousEntry.restoreStepIndex);
   };
 
-  const applyRollback = (rollback: InitFlowRollback | undefined) => {
-    if (rollback === "audience") {
+  const applyRollback = (rollback: InitFlowRollbackValue | undefined) => {
+    if (rollback === InitFlowRollback.audience) {
       setAudiences((current) => current.slice(0, -1));
       return;
     }
 
-    if (rollback === "value-proposition") {
+    if (rollback === InitFlowRollback.valueProposition) {
       setValuePropositions((current) => current.slice(0, -1));
       return;
     }
 
-    if (rollback === "plan") {
+    if (rollback === InitFlowRollback.plan) {
       setPlanResponse(null);
       setSelectedAgentIds(undefined);
       setConfirmationReviewOpen(false);
@@ -339,79 +329,85 @@ export function InitFlow({
 
   const handleProjectConfirm = async (values: Record<string, string>) => {
     const nextProjectDetails = {
-      name: values.projectName.trim(),
-      purpose: (values.purpose ?? "").trim() || undefined,
+      name: values[InitFlowFieldKey.projectName].trim(),
+      purpose: (values[InitFlowFieldKey.purpose] ?? "").trim() || undefined,
     };
     setProjectDetails(nextProjectDetails);
-    navigateToStage("audience-gate");
+    navigateToStage(InitFlowStage.audienceGate);
   };
 
   const handleAudienceGateConfirm = (values: Record<string, string>) => {
-    navigateToStage(isYes(values.addAudience ?? "") ? "audience" : "value-gate");
+    navigateToStage(
+      isYes(values[InitFlowFieldKey.addAudience] ?? "")
+        ? InitFlowStage.audience
+        : InitFlowStage.valueGate,
+    );
   };
 
   const handleAudienceConfirm = (values: Record<string, string>) => {
     setAudiences((current) => [
       ...current,
       {
-        name: values.audienceName.trim(),
-        description: values.audienceDescription.trim(),
-        priority: toAudiencePriority(values.audiencePriority),
+        name: values[InitFlowFieldKey.audienceName].trim(),
+        description: values[InitFlowFieldKey.audienceDescription].trim(),
+        priority: toAudiencePriority(values[InitFlowFieldKey.audiencePriority]),
       },
     ]);
     navigateToStage(
-      isYes(values.addAnotherAudience ?? "") ? "audience" : "value-gate",
-      "audience",
+      isYes(values[InitFlowFieldKey.addAnotherAudience] ?? "")
+        ? InitFlowStage.audience
+        : InitFlowStage.valueGate,
+      InitFlowRollback.audience,
     );
   };
 
   const handleValueGateConfirm = async (values: Record<string, string>) => {
-    if (isYes(values.addValueProposition ?? "")) {
-      navigateToStage("value");
+    if (isYes(values[InitFlowFieldKey.addValueProposition] ?? "")) {
+      navigateToStage(InitFlowStage.value);
       return;
     }
 
-    await planProjectInit(undefined, "plan");
+    await planProjectInit(undefined, InitFlowRollback.plan);
   };
 
   const handleValueConfirm = async (values: Record<string, string>) => {
     const nextValuePropositions = [
       ...valuePropositions,
       {
-        title: values.valueTitle.trim(),
-        description: values.valueDescription.trim(),
-        benefit: values.valueBenefit.trim(),
+        title: values[InitFlowFieldKey.valueTitle].trim(),
+        description: values[InitFlowFieldKey.valueDescription].trim(),
+        benefit: values[InitFlowFieldKey.valueBenefit].trim(),
         measurableOutcome:
-          (values.valueMeasurableOutcome ?? "").trim().length === 0
+          (values[InitFlowFieldKey.valueMeasurableOutcome] ?? "").trim().length === 0
             ? undefined
-            : values.valueMeasurableOutcome.trim(),
+            : values[InitFlowFieldKey.valueMeasurableOutcome].trim(),
       },
     ];
     setValuePropositions(nextValuePropositions);
 
-    if (isYes(values.addAnotherValueProposition ?? "")) {
-      navigateToStage("value", "value-proposition");
+    if (isYes(values[InitFlowFieldKey.addAnotherValueProposition] ?? "")) {
+      navigateToStage(InitFlowStage.value, InitFlowRollback.valueProposition);
       return;
     }
 
-    await planProjectInit(undefined, "value-proposition");
+    await planProjectInit(undefined, InitFlowRollback.valueProposition);
   };
 
   const handleAgentSelectionConfirm = async (values: Record<string, string>) => {
     const parsedAgentIds = parseAgentSelection(
-      values.selectedAgentIds ?? "",
+      values[InitFlowFieldKey.selectedAgentIds] ?? "",
     );
     setSelectedAgentIds(parsedAgentIds);
     await planProjectInit(parsedAgentIds);
   };
 
   const handleWizardInput = (input: string, key: WizardInputKey): boolean => {
-    if (stage !== "confirmation") {
+    if (stage !== InitFlowStage.confirmation) {
       return false;
     }
 
     const plannedChanges = planResponse?.plannedChanges ?? [];
-    if (input === "v" || input === "V") {
+    if (input.toLowerCase() === InitFlowConfirmationCopy.reviewHintKey) {
       setConfirmationReviewOpen((isOpen) => !isOpen);
       setConfirmationReviewOffset(0);
       return true;
@@ -440,7 +436,7 @@ export function InitFlow({
   };
 
   const handleConfirmationConfirm = async (values: Record<string, string>) => {
-    if (isExplicitNo(values.confirmInitialization ?? "")) {
+    if (isExplicitNo(values[InitFlowFieldKey.confirmInitialization] ?? "")) {
       onCancel();
       return;
     }
@@ -450,11 +446,11 @@ export function InitFlow({
 
   const planProjectInit = async (
     nextSelectedAgentIds: readonly AgentId[] | undefined,
-    rollback?: InitFlowRollback,
+    rollback?: InitFlowRollbackValue,
   ) => {
     const controller = actionControllers.planProjectInitController;
     if (controller === undefined) {
-      setDispatchError(REQUIRED_PLAN_CONTROLLER_ERROR);
+      setDispatchError(InitFlowControllerErrorCopy.requiredPlan);
       return;
     }
 
@@ -476,20 +472,20 @@ export function InitFlow({
       nextSelectedAgentIds === undefined &&
       result.response.availableAgents.length > 0
     ) {
-      navigateToStage("agent-selection", rollback);
+      navigateToStage(InitFlowStage.agentSelection, rollback);
     } else {
-      navigateToStage("confirmation", rollback);
+      navigateToStage(InitFlowStage.confirmation, rollback);
     }
   };
 
   const initializeProject = async () => {
     if (projectDetails === null) {
-      setDispatchError("Project details are required before initialization.");
+      setDispatchError(InitFlowControllerErrorCopy.requiredProjectDetails);
       return;
     }
     const initializeController = actionControllers.initializeProjectController;
     if (initializeController === undefined) {
-      setDispatchError(REQUIRED_INIT_CONTROLLER_ERROR);
+      setDispatchError(InitFlowControllerErrorCopy.requiredInit);
       return;
     }
 
@@ -520,18 +516,18 @@ export function InitFlow({
       return;
     }
 
-    setStage("success");
+    setStage(InitFlowStage.success);
     await onComplete({
       ...flattenCollectedValues(projectDetails, audiences, valuePropositions),
       projectId: initResult.response.projectId,
     });
   };
 
-  if (stage === "success") {
+  if (stage === InitFlowStage.success) {
     return (
       <Box flexDirection="column" alignItems="center" justifyContent="center" flexGrow={1}>
         <Text color={SemanticColors.success} bold>
-          Project initialized successfully.
+          {InitFlowCopy.success}
         </Text>
       </Box>
     );
@@ -539,7 +535,7 @@ export function InitFlow({
 
   return (
     <Wizard
-      title="Initialize Project"
+      title={InitFlowCopy.title}
       steps={resolveSteps(stage, agentSelectionSteps, confirmationSteps)}
       onConfirm={resolveConfirmHandler(stage, {
         handleProjectConfirm,
@@ -560,11 +556,13 @@ export function InitFlow({
         resolveProgressLabel(stage, planResponse, currentStepIndex)
       }
       extraHints={
-        stage === "confirmation"
+        stage === InitFlowStage.confirmation
           ? [
               {
-                char: "v",
-                label: confirmationReviewOpen ? "Summary" : "View files",
+                char: InitFlowConfirmationCopy.reviewHintKey,
+                label: confirmationReviewOpen
+                  ? InitFlowConfirmationCopy.reviewHintOpenLabel
+                  : InitFlowConfirmationCopy.reviewHintClosedLabel,
               },
             ]
           : []
@@ -575,21 +573,21 @@ export function InitFlow({
 }
 
 function resolveSteps(
-  stage: InitFlowStage,
+  stage: InitFlowStageValue,
   agentSelectionSteps: readonly WizardStepDefinition[],
   confirmationSteps: readonly WizardStepDefinition[],
 ): readonly WizardStepDefinition[] {
-  if (stage === "project") return PROJECT_STEPS;
-  if (stage === "audience-gate") return AUDIENCE_GATE_STEPS;
-  if (stage === "audience") return AUDIENCE_STEPS;
-  if (stage === "value-gate") return VALUE_GATE_STEPS;
-  if (stage === "value") return VALUE_STEPS;
-  if (stage === "agent-selection") return agentSelectionSteps;
+  if (stage === InitFlowStage.project) return PROJECT_STEPS;
+  if (stage === InitFlowStage.audienceGate) return AUDIENCE_GATE_STEPS;
+  if (stage === InitFlowStage.audience) return AUDIENCE_STEPS;
+  if (stage === InitFlowStage.valueGate) return VALUE_GATE_STEPS;
+  if (stage === InitFlowStage.value) return VALUE_STEPS;
+  if (stage === InitFlowStage.agentSelection) return agentSelectionSteps;
   return confirmationSteps;
 }
 
 function resolveConfirmHandler(
-  stage: InitFlowStage,
+  stage: InitFlowStageValue,
   handlers: {
     readonly handleProjectConfirm: (values: Record<string, string>) => void;
     readonly handleAudienceGateConfirm: (values: Record<string, string>) => void;
@@ -604,26 +602,30 @@ function resolveConfirmHandler(
     ) => void;
   },
 ): (values: Record<string, string>) => void {
-  if (stage === "project") return handlers.handleProjectConfirm;
-  if (stage === "audience-gate") return handlers.handleAudienceGateConfirm;
-  if (stage === "audience") return handlers.handleAudienceConfirm;
-  if (stage === "value-gate") return handlers.handleValueGateConfirm;
-  if (stage === "value") return handlers.handleValueConfirm;
-  if (stage === "agent-selection") return handlers.handleAgentSelectionConfirm;
+  if (stage === InitFlowStage.project) return handlers.handleProjectConfirm;
+  if (stage === InitFlowStage.audienceGate) {
+    return handlers.handleAudienceGateConfirm;
+  }
+  if (stage === InitFlowStage.audience) return handlers.handleAudienceConfirm;
+  if (stage === InitFlowStage.valueGate) return handlers.handleValueGateConfirm;
+  if (stage === InitFlowStage.value) return handlers.handleValueConfirm;
+  if (stage === InitFlowStage.agentSelection) {
+    return handlers.handleAgentSelectionConfirm;
+  }
   return handlers.handleConfirmationConfirm;
 }
 
 function resolveInitialValues(
-  stage: InitFlowStage,
+  stage: InitFlowStageValue,
   projectDetails: ProjectDetails | null,
 ): Record<string, string> {
-  if (stage !== "project" || projectDetails === null) {
+  if (stage !== InitFlowStage.project || projectDetails === null) {
     return {};
   }
 
   return {
-    projectName: projectDetails.name,
-    purpose: projectDetails.purpose ?? "",
+    [InitFlowFieldKey.projectName]: projectDetails.name,
+    [InitFlowFieldKey.purpose]: projectDetails.purpose ?? "",
   };
 }
 
@@ -633,13 +635,13 @@ function buildAgentSelectionSteps(
   const availableAgents = planResponse?.availableAgents ?? [];
   return [
     {
-      title: "Agent Selection",
-      description: "Select agents to configure.",
+      title: InitFlowCopy.agentSelectionTitle,
+      description: InitFlowCopy.agentSelectionDescription,
       fields: [
         {
-          key: "selectedAgentIds",
-          label: "Agents",
-          kind: WizardFieldKind.MULTI_SELECT,
+          key: InitFlowFieldKey.selectedAgentIds,
+          label: InitFlowCopy.agentsLabel,
+          kind: InitFlowFieldKind.multiSelect,
           options: availableAgents.map((agent) => ({
             value: agent.id,
             label: `${agent.name} (${agent.id})`,
@@ -661,16 +663,16 @@ function buildConfirmationSteps(
 ): readonly WizardStepDefinition[] {
   return [
     {
-      title: "Confirmation",
+      title: InitFlowCopy.confirmationTitle,
       description: reviewOpen
         ? formatPlannedChangeReview(plannedChanges, reviewOffset)
         : formatPlannedChangeSummary(plannedChanges),
       fields: [
         {
-          key: "confirmInitialization",
-          label: "Proceed with initialization?",
-          kind: WizardFieldKind.YES_NO,
-          defaultValue: "yes",
+          key: InitFlowFieldKey.confirmInitialization,
+          label: InitFlowCopy.confirmInitializationLabel,
+          kind: InitFlowFieldKind.yesNo,
+          defaultValue: InitFlowYesNoValue.yes,
           required: false,
           validate: validateOptionalYesNo,
         },
@@ -680,7 +682,7 @@ function buildConfirmationSteps(
 }
 
 function resolveProgressLabel(
-  stage: InitFlowStage,
+  stage: InitFlowStageValue,
   planResponse: PlanProjectInitResponse | null,
   currentStepIndex: number,
 ): string | undefined {
@@ -708,7 +710,7 @@ function formatPlannedChangeSummary(
   plannedChanges: readonly PlannedFileChange[],
 ): string {
   if (plannedChanges.length === 0) {
-    return "No file changes are required. Confirm to initialize project state.";
+    return InitFlowConfirmationCopy.noChangesSummary;
   }
 
   const createCount = plannedChanges.filter((change) => change.action === "create").length;
@@ -716,17 +718,20 @@ function formatPlannedChangeSummary(
   const groupCounts = summarizePlannedChangeGroups(plannedChanges);
 
   return [
-    "Jumbo will create project memory and configure selected agents.",
+    InitFlowConfirmationCopy.summaryLead,
     "",
-    "Planned changes",
-    `Create: ${createCount} files`,
-    `Modify: ${modifyCount} files`,
+    InitFlowConfirmationCopy.plannedChangesLabel,
+    `${InitFlowConfirmationCopy.createLabel}: ${createCount} ${InitFlowConfirmationCopy.filesLabel}`,
+    `${InitFlowConfirmationCopy.modifyLabel}: ${modifyCount} ${InitFlowConfirmationCopy.filesLabel}`,
     "",
-    "Existing content is preserved.",
-    "Jumbo only creates missing files and appends or updates managed configuration where needed.",
+    InitFlowConfirmationCopy.existingContentPreserved,
+    InitFlowConfirmationCopy.managedConfigurationOnly,
     "",
-    "Agent configuration",
-    ...groupCounts.map((group) => `${group.label}: ${group.count} files`),
+    InitFlowConfirmationCopy.agentConfigurationLabel,
+    ...groupCounts.map(
+      (group) =>
+        `${group.label}: ${group.count} ${InitFlowConfirmationCopy.filesLabel}`,
+    ),
   ].join("\n");
 }
 
@@ -735,7 +740,7 @@ function formatPlannedChangeReview(
   reviewOffset: number,
 ): string {
   if (plannedChanges.length === 0) {
-    return "No file changes are required.";
+    return InitFlowConfirmationCopy.noChangesReview;
   }
 
   const visibleChanges = plannedChanges.slice(
@@ -746,11 +751,11 @@ function formatPlannedChangeReview(
   const to = reviewOffset + visibleChanges.length;
 
   return [
-    `Files ${from}-${to} of ${plannedChanges.length}`,
+    `${InitFlowConfirmationCopy.reviewFilesLabel} ${from}-${to} of ${plannedChanges.length}`,
     "",
     ...visibleChanges.map(
       (change) =>
-        `${change.action}: ${change.path} - ${change.description}`,
+        `${change.action}: ${change.path}${InitFlowConfirmationCopy.changeSeparator}${change.description}`,
     ),
   ].join("\n");
 }
@@ -764,28 +769,47 @@ function summarizePlannedChangeGroups(
     counts.set(group, (counts.get(group) ?? 0) + 1);
   }
 
-  return ["Shared", "Claude", "Codex", "Gemini", "Copilot", "Cursor", "Vibe"]
+  return [
+    InitFlowConfirmationGroupLabel.shared,
+    InitFlowConfirmationGroupLabel.claude,
+    InitFlowConfirmationGroupLabel.codex,
+    InitFlowConfirmationGroupLabel.gemini,
+    InitFlowConfirmationGroupLabel.copilot,
+    InitFlowConfirmationGroupLabel.cursor,
+    InitFlowConfirmationGroupLabel.vibe,
+  ]
     .map((label) => ({ label, count: counts.get(label) ?? 0 }))
     .filter((group) => group.count > 0);
 }
 
 function classifyPlannedChangeGroup(path: string): string {
-  if (path === "CLAUDE.md" || path.startsWith(".claude/")) return "Claude";
-  if (path.startsWith(".codex/")) return "Codex";
-  if (path === "GEMINI.md" || path.startsWith(".gemini/")) return "Gemini";
-  if (path.startsWith(".github/")) return "Copilot";
-  if (path.startsWith(".cursor/")) return "Cursor";
-  if (path.startsWith(".vibe/")) return "Vibe";
+  if (path === "CLAUDE.md" || path.startsWith(".claude/")) {
+    return InitFlowConfirmationGroupLabel.claude;
+  }
+  if (path.startsWith(".codex/")) return InitFlowConfirmationGroupLabel.codex;
+  if (path === "GEMINI.md" || path.startsWith(".gemini/")) {
+    return InitFlowConfirmationGroupLabel.gemini;
+  }
+  if (path.startsWith(".github/")) {
+    return InitFlowConfirmationGroupLabel.copilot;
+  }
+  if (path.startsWith(".cursor/")) return InitFlowConfirmationGroupLabel.cursor;
+  if (path.startsWith(".vibe/")) return InitFlowConfirmationGroupLabel.vibe;
 
-  return "Shared";
+  return InitFlowConfirmationGroupLabel.shared;
 }
 
 function validateYesNo(value: string): string | null {
   const normalized = value.trim().toLowerCase();
-  if (normalized === "yes" || normalized === "y" || normalized === "no" || normalized === "n") {
+  if (
+    normalized === InitFlowYesNoValue.yes ||
+    normalized === InitFlowYesNoValue.yesShort ||
+    normalized === InitFlowYesNoValue.no ||
+    normalized === InitFlowYesNoValue.noShort
+  ) {
     return null;
   }
-  return YES_NO_MESSAGE;
+  return InitFlowValidationCopy.yesNo;
 }
 
 function validateOptionalYesNo(value: string): string | null {
@@ -804,7 +828,7 @@ function validateAudiencePriority(value: string): string | null {
   ) {
     return null;
   }
-  return "Enter primary, secondary, or tertiary";
+  return InitFlowValidationCopy.audiencePriority;
 }
 
 function validateAgentSelection(
@@ -813,13 +837,13 @@ function validateAgentSelection(
 ): string | null {
   const selectedAgentIds = parseAgentSelection(value);
   if (selectedAgentIds.length === 0) {
-    return "Select at least one agent";
+    return InitFlowValidationCopy.agentSelectionRequired;
   }
   const unknownAgentIds = selectedAgentIds.filter(
     (agentId) => !availableAgentIds.includes(agentId),
   );
   if (unknownAgentIds.length > 0) {
-    return `Unknown agent id: ${unknownAgentIds.join(", ")}`;
+    return `${InitFlowValidationCopy.unknownAgentId}: ${unknownAgentIds.join(", ")}`;
   }
   return null;
 }
@@ -833,12 +857,18 @@ function parseAgentSelection(value: string): readonly AgentId[] {
 
 function isYes(value: string): boolean {
   const normalized = value.trim().toLowerCase();
-  return normalized === "yes" || normalized === "y";
+  return (
+    normalized === InitFlowYesNoValue.yes ||
+    normalized === InitFlowYesNoValue.yesShort
+  );
 }
 
 function isExplicitNo(value: string): boolean {
   const normalized = value.trim().toLowerCase();
-  return normalized === "no" || normalized === "n";
+  return (
+    normalized === InitFlowYesNoValue.no ||
+    normalized === InitFlowYesNoValue.noShort
+  );
 }
 
 function toAudiencePriority(value: string): AddAudienceRequest["priority"] {
@@ -854,7 +884,7 @@ async function persistCollectedPrimitives(
     if (controllers.addAudienceController === undefined) {
       return {
         ok: false,
-        error: new Error(REQUIRED_AUDIENCE_CONTROLLER_ERROR),
+        error: new Error(InitFlowControllerErrorCopy.requiredAudience),
       };
     }
     const result = await dispatchTuiAction(
@@ -870,7 +900,7 @@ async function persistCollectedPrimitives(
     if (controllers.addValuePropositionController === undefined) {
       return {
         ok: false,
-        error: new Error(REQUIRED_VALUE_PROPOSITION_CONTROLLER_ERROR),
+        error: new Error(InitFlowControllerErrorCopy.requiredValueProposition),
       };
     }
     const result = await dispatchTuiAction(
@@ -891,8 +921,8 @@ function flattenCollectedValues(
   valuePropositions: readonly AddValuePropositionRequest[],
 ): Record<string, string> {
   return {
-    projectName: projectDetails?.name ?? "",
-    purpose: projectDetails?.purpose ?? "",
+    [InitFlowFieldKey.projectName]: projectDetails?.name ?? "",
+    [InitFlowFieldKey.purpose]: projectDetails?.purpose ?? "",
     audienceCount: String(audiences.length),
     valuePropositionCount: String(valuePropositions.length),
   };
