@@ -223,4 +223,28 @@ describe("CodifierProcessManager", () => {
       }),
     );
   });
+
+  it("caps codifier failure event and telemetry error messages", async () => {
+    goalStatusReader.findByStatus.mockResolvedValue([goal()]);
+    codifyGoalController.handle.mockRejectedValue(new Error(`${"x".repeat(20_000)}codifier tail`));
+    const events: any[] = [];
+
+    await manager().processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => events.push(event),
+    });
+
+    const failedEvent = events.find((event) => event.status === "failed");
+    expect(failedEvent.errorMessage).toHaveLength(2_048);
+    expect(failedEvent.errorMessage).toContain("codifier tail");
+    expect(telemetryClient.track).toHaveBeenCalledWith(
+      "codifier_process_completed",
+      expect.objectContaining({
+        errorMessage: expect.stringContaining("codifier tail"),
+      }),
+    );
+    const telemetryProperties = telemetryClient.track.mock.calls[0][1] as { errorMessage: string };
+    expect(telemetryProperties.errorMessage).toHaveLength(2_048);
+  });
 });

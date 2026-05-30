@@ -11,6 +11,7 @@ import { IGoalSubmitForReviewReader } from "./IGoalSubmitForReviewReader.js";
 
 const REVIEW_COMPLETE_STATUSES = new Set<string>([GoalStatus.QUALIFIED, GoalStatus.REJECTED]);
 const REVIEWER_EVENT_SOURCE = "reviewer";
+const REVIEWER_EVENT_TEXT_FIELD_MAX_LENGTH = 2_048;
 const REVIEWER_EVENT_COPY = {
   noWork: {
     category: "waiting",
@@ -168,7 +169,7 @@ export class ReviewerProcessManager implements IProcessManager {
         status: "processing",
         source: REVIEWER_EVENT_SOURCE,
         category: "model-output",
-        message: line,
+        message: limitTextTail(line, REVIEWER_EVENT_TEXT_FIELD_MAX_LENGTH),
         goalId,
       });
     }
@@ -184,8 +185,21 @@ export class ReviewerProcessManager implements IProcessManager {
 
   private errorProperties(error: unknown): { errorType: string; errorMessage: string; errorStack?: string } {
     if (error instanceof Error) {
-      return { errorType: error.name, errorMessage: error.message, errorStack: error.stack };
+      return {
+        errorType: error.name,
+        errorMessage: limitTextTail(error.message, REVIEWER_EVENT_TEXT_FIELD_MAX_LENGTH),
+        errorStack: error.stack === undefined
+          ? undefined
+          : limitTextTail(error.stack, REVIEWER_EVENT_TEXT_FIELD_MAX_LENGTH),
+      };
     }
-    return { errorType: "UnknownError", errorMessage: String(error) };
+    return {
+      errorType: "UnknownError",
+      errorMessage: limitTextTail(String(error), REVIEWER_EVENT_TEXT_FIELD_MAX_LENGTH),
+    };
   }
+}
+
+function limitTextTail(value: string, maxLength: number): string {
+  return value.length > maxLength ? value.slice(-maxLength) : value;
 }

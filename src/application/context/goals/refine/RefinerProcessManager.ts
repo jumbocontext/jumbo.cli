@@ -10,6 +10,7 @@ import { RefineGoalController } from "./RefineGoalController.js";
 import { IGoalRefineReader } from "./IGoalRefineReader.js";
 
 const REFINER_EVENT_SOURCE = "refiner";
+const REFINER_EVENT_TEXT_FIELD_MAX_LENGTH = 2_048;
 const REFINER_EVENT_COPY = {
   noWork: {
     category: "foraging",
@@ -157,15 +158,31 @@ export class RefinerProcessManager implements IProcessManager {
 
   private errorProperties(error: unknown): { errorType: string; errorMessage: string; errorStack?: string } {
     if (error instanceof Error) {
-      return { errorType: error.name, errorMessage: error.message, errorStack: error.stack };
+      return {
+        errorType: error.name,
+        errorMessage: limitTextTail(error.message, REFINER_EVENT_TEXT_FIELD_MAX_LENGTH),
+        errorStack: error.stack === undefined
+          ? undefined
+          : limitTextTail(error.stack, REFINER_EVENT_TEXT_FIELD_MAX_LENGTH),
+      };
     }
-    return { errorType: "UnknownError", errorMessage: String(error) };
+    return {
+      errorType: "UnknownError",
+      errorMessage: limitTextTail(String(error), REFINER_EVENT_TEXT_FIELD_MAX_LENGTH),
+    };
   }
 
   private agentFailureProperties(result: { readonly exitCode: number; readonly stderr?: string }): { errorMessage?: string } {
     if (result.exitCode === 0 || result.stderr === undefined || result.stderr.trim().length === 0) {
       return {};
     }
-    return { errorMessage: result.stderr.trim().split(/\r?\n/).at(-1) };
+    const lastLine = result.stderr.trim().split(/\r?\n/).at(-1);
+    return lastLine === undefined
+      ? {}
+      : { errorMessage: limitTextTail(lastLine, REFINER_EVENT_TEXT_FIELD_MAX_LENGTH) };
   }
+}
+
+function limitTextTail(value: string, maxLength: number): string {
+  return value.length > maxLength ? value.slice(-maxLength) : value;
 }

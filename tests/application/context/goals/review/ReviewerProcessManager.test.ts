@@ -172,4 +172,31 @@ describe("ReviewerProcessManager", () => {
       },
     ]);
   });
+
+  it("caps reviewer model-output event messages from oversized agent stdout", async () => {
+    const emittedEvents: any[] = [];
+    agentGateway.invoke.mockResolvedValue({
+      exitCode: 0,
+      stdout: `${"x".repeat(20_000)}review tail\n`,
+    });
+    const manager = new ReviewerProcessManager(
+      goalStatusReader,
+      goalReader,
+      claimPolicy as any,
+      { workerId: "worker_1" },
+      reviewGoalController as any,
+      agentGateway,
+      telemetryClient,
+    );
+
+    await manager.processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => emittedEvents.push(event),
+    });
+
+    const modelOutputEvent = emittedEvents.find((event) => event.category === "model-output");
+    expect(modelOutputEvent.message).toHaveLength(2_048);
+    expect(modelOutputEvent.message).toContain("review tail");
+  });
 });

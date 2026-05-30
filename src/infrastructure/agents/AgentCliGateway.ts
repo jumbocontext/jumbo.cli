@@ -13,6 +13,7 @@ interface AgentCommand {
 }
 
 const CODEX_NON_INTERACTIVE_EXEC_ARGS = ["exec", "--skip-git-repo-check"] as const;
+const AGENT_OUTPUT_TAIL_MAX_LENGTH = 16_384;
 
 const AGENT_COMMANDS: Record<SupportedAgentId, AgentCommand> = {
   claude: { executable: "claude", promptFlag: "-p" },
@@ -32,34 +33,34 @@ export class AgentCliGateway implements IAgentGateway {
     const commandLine = this.buildCommandLine(command, invocation.prompt);
 
     return new Promise((resolve) => {
-      let stdout = "";
-      let stderr = "";
+      const stdout = new BoundedTextTail(AGENT_OUTPUT_TAIL_MAX_LENGTH);
+      const stderr = new BoundedTextTail(AGENT_OUTPUT_TAIL_MAX_LENGTH);
       const child = spawn(commandLine, [], {
         stdio: ["ignore", "pipe", "pipe"],
         shell: true,
       });
 
       child.stdout?.on("data", (chunk: Buffer) => {
-        const text = chunk.toString();
-        stdout += text;
-        process.stderr.write(text);
+        stdout.append(chunk.toString());
       });
 
       child.stderr?.on("data", (chunk: Buffer) => {
-        const text = chunk.toString();
-        stderr += text;
-        process.stderr.write(text);
+        stderr.append(chunk.toString());
       });
 
       child.on("close", (code) => {
         const exitCode = code ?? 1;
         this.trackInvocation(invocation.agentId, exitCode, startedAt);
-        resolve({ exitCode, stdout, stderr });
+        resolve({ exitCode, stdout: stdout.toString(), stderr: stderr.toString() });
       });
 
       child.on("error", (error) => {
         this.trackInvocation(invocation.agentId, 1, startedAt, error);
-        resolve({ exitCode: 1, stdout, stderr: stderr || error.message });
+        resolve({
+          exitCode: 1,
+          stdout: stdout.toString(),
+          stderr: stderr.toString() || limitTextTail(error.message, AGENT_OUTPUT_TAIL_MAX_LENGTH),
+        });
       });
     });
   }
@@ -106,4 +107,27 @@ export class AgentCliGateway implements IAgentGateway {
         : {}),
     });
   }
+}
+
+class BoundedTextTail {
+  private value = "";
+
+  constructor(private readonly maxLength: number) {}
+
+  append(nextValue: string): void {
+    if (nextValue.length >= this.maxLength) {
+      this.value = limitTextTail(nextValue, this.maxLength);
+      return;
+    }
+
+    this.value = limitTextTail(`${this.value}${nextValue}`, this.maxLength);
+  }
+
+  toString(): string {
+    return this.value;
+  }
+}
+
+function limitTextTail(value: string, maxLength: number): string {
+  return value.length > maxLength ? value.slice(-maxLength) : value;
 }

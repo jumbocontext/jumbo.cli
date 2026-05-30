@@ -14,6 +14,7 @@ const DEFAULT_AGENT_ID = "codex";
 const DEFAULT_MAX_RETRIES = 3;
 const DEFAULT_POLL_INTERVAL_MS = 30_000;
 const FAILURE_EXIT_CODE = 1;
+const DAEMON_EVENT_TEXT_FIELD_MAX_LENGTH = 2_048;
 
 export async function runReviewerDaemon(argv = process.argv): Promise<void> {
   const projectRoot = resolveProjectRoot();
@@ -61,7 +62,28 @@ function readPositiveInt(argv: string[], name: string, fallback: number): number
 }
 
 function writeDaemonEvent(event: ProcessManagerEvent): void {
-  process.stdout.write(`${JSON.stringify(event)}\n`);
+  process.stdout.write(`${JSON.stringify(boundDaemonEvent(event))}\n`);
+}
+
+function boundDaemonEvent(event: ProcessManagerEvent): ProcessManagerEvent {
+  return {
+    ...event,
+    daemon: limitTextTail(event.daemon, DAEMON_EVENT_TEXT_FIELD_MAX_LENGTH),
+    source: boundOptionalText(event.source),
+    category: boundOptionalText(event.category),
+    message: boundOptionalText(event.message),
+    goalId: boundOptionalText(event.goalId),
+    errorType: boundOptionalText(event.errorType),
+    errorMessage: boundOptionalText(event.errorMessage),
+  };
+}
+
+function boundOptionalText(value: string | undefined): string | undefined {
+  return value === undefined ? undefined : limitTextTail(value, DAEMON_EVENT_TEXT_FIELD_MAX_LENGTH);
+}
+
+function limitTextTail(value: string, maxLength: number): string {
+  return value.length > maxLength ? value.slice(-maxLength) : value;
 }
 
 if (process.argv[1]?.endsWith("reviewer.daemon.js")) {

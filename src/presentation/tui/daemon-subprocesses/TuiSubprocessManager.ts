@@ -20,6 +20,9 @@ import { TuiSubprocessCopy } from "./TuiSubprocessCopy.js";
 
 const OUTPUT_RING_BUFFER_SIZE = 25;
 const EVENT_RING_BUFFER_SIZE = 50;
+const OUTPUT_CHUNK_MAX_LENGTH = 16_384;
+const OUTPUT_LINE_MAX_LENGTH = 2_048;
+const EVENT_TEXT_FIELD_MAX_LENGTH = 2_048;
 const SUBPROCESS_EVENT_COPY = {
   stopping: {
     category: TuiDaemonEventCategory.STOPPING,
@@ -92,7 +95,7 @@ export class TuiSubprocessManager implements ISubprocessManager {
     });
 
     child.stdout?.on("data", (chunk) => {
-      const text = chunk.toString();
+      const text = limitTextTail(chunk.toString(), OUTPUT_CHUNK_MAX_LENGTH);
       const lines = this.appendLines(managed.stdout, text);
       this.logger.info(TuiSubprocessCopy.stdoutLog, { daemon: name, text });
       const events = lines.map((line) => parseDaemonOutputEvent(name, line));
@@ -101,7 +104,7 @@ export class TuiSubprocessManager implements ISubprocessManager {
       }
     });
     child.stderr?.on("data", (chunk) => {
-      const text = chunk.toString();
+      const text = limitTextTail(chunk.toString(), OUTPUT_CHUNK_MAX_LENGTH);
       this.appendLines(managed.stderr, text);
       this.logger.warn(TuiSubprocessCopy.stderrLog, { daemon: name, text });
     });
@@ -122,9 +125,10 @@ export class TuiSubprocessManager implements ISubprocessManager {
       managed.status = managed.stopRequested
         ? TuiSubprocessStatus.STOPPED
         : TuiSubprocessStatus.FAILED;
-      this.appendLines(managed.stderr, error.message);
-      this.recordSubprocessTerminalEvent(managed, error.message);
-      this.logger.error(TuiSubprocessCopy.errorLog, error, {
+      const errorMessage = limitTextTail(error.message, EVENT_TEXT_FIELD_MAX_LENGTH);
+      this.appendLines(managed.stderr, errorMessage);
+      this.recordSubprocessTerminalEvent(managed, errorMessage);
+      this.logger.error(TuiSubprocessCopy.errorLog, boundedError(error), {
         daemon: name,
         stopRequested: managed.stopRequested,
         status: managed.status,
@@ -168,14 +172,14 @@ export class TuiSubprocessManager implements ISubprocessManager {
     } catch (error) {
       managed.stopRequested = false;
       managed.status = TuiSubprocessStatus.FAILED;
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = limitTextTail(error instanceof Error ? error.message : String(error), EVENT_TEXT_FIELD_MAX_LENGTH);
       this.appendLines(managed.stderr, errorMessage);
       this.recordSubprocessLifecycleEvent(managed, {
         status: TuiDaemonEventStatus.FAILED,
         errorMessage,
         ...SUBPROCESS_EVENT_COPY.failed,
       });
-      this.logger.error(TuiSubprocessCopy.terminationFailedLog, error, {
+      this.logger.error(TuiSubprocessCopy.terminationFailedLog, boundedError(error), {
         daemon: name,
         pid: managed.child.pid,
         stopRequested: managed.stopRequested,
@@ -228,8 +232,10 @@ export class TuiSubprocessManager implements ISubprocessManager {
   }
 
   private appendLines(buffer: string[], value: string): string[] {
-    const lines = value.split(/\r?\n/).filter((line) => line.length > 0);
-    buffer.push(...lines);
+    const lines = value
+      .split(/\r?\n/)
+      .filter((line) => line.length > 0);
+    buffer.push(...lines.map((line) => limitTextTail(line, OUTPUT_LINE_MAX_LENGTH)));
     while (buffer.length > OUTPUT_RING_BUFFER_SIZE) {
       buffer.shift();
     }
@@ -287,8 +293,9 @@ export class TuiSubprocessManager implements ISubprocessManager {
     process: ManagedSubprocess,
     event: TuiDaemonEventSnapshot,
   ): void {
-    this.logger.info(TuiSubprocessCopy.eventLog, { daemon: process.name, event });
-    process.events.push(event);
+    const boundedEvent = boundDaemonEvent(event);
+    this.logger.info(TuiSubprocessCopy.eventLog, { daemon: process.name, event: boundedEvent });
+    process.events.push(boundedEvent);
     while (process.events.length > EVENT_RING_BUFFER_SIZE) {
       process.events.shift();
     }
@@ -310,7 +317,7 @@ function parseDaemonOutputEvent(
     status: TuiDaemonEventStatus.PROCESSING,
     source: daemon,
     category: TuiDaemonEventCategory.MODEL_OUTPUT,
-    message: line,
+    message: limitTextTail(line, EVENT_TEXT_FIELD_MAX_LENGTH),
     timestampMs: Date.now(),
   };
 }
@@ -328,4 +335,36 @@ function parseDaemonEvent(line: string): TuiDaemonEventSnapshot | null {
   } catch {
     return null;
   }
+}
+
+function boundDaemonEvent(event: TuiDaemonEventSnapshot): TuiDaemonEventSnapshot {
+  return {
+    ...event,
+    daemon: limitTextTail(event.daemon, EVENT_TEXT_FIELD_MAX_LENGTH),
+    status: limitTextTail(event.status, EVENT_TEXT_FIELD_MAX_LENGTH),
+    source: boundOptionalText(event.source),
+    category: boundOptionalText(event.category),
+    message: boundOptionalText(event.message),
+    goalId: boundOptionalText(event.goalId),
+    errorMessage: boundOptionalText(event.errorMessage),
+  };
+}
+
+function boundOptionalText(value: string | undefined): string | undefined {
+  return value === undefined ? undefined : limitTextTail(value, EVENT_TEXT_FIELD_MAX_LENGTH);
+}
+
+function boundedError(error: unknown): unknown {
+  if (!(error instanceof Error)) {
+    return error;
+  }
+
+  const bounded = new Error(limitTextTail(error.message, EVENT_TEXT_FIELD_MAX_LENGTH));
+  bounded.name = error.name;
+  bounded.stack = boundOptionalText(error.stack);
+  return bounded;
+}
+
+function limitTextTail(value: string, maxLength: number): string {
+  return value.length > maxLength ? value.slice(-maxLength) : value;
 }

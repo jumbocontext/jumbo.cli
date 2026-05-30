@@ -96,6 +96,38 @@ describe("TuiSubprocessManager", () => {
     ]);
   });
 
+  it("caps oversized daemon chunks, stored lines, and model-output event messages", async () => {
+    const child = childProcess();
+    const testLogger = logger();
+    const manager = new TuiSubprocessManager(processController(child), testLogger);
+    const oversizedLine = `${"x".repeat(20_000)}tail`;
+
+    await manager.spawn("codifier");
+    child.stdout?.emit("data", Buffer.from(`${oversizedLine}\n`));
+    child.stderr?.emit("data", Buffer.from(`${oversizedLine}\n`));
+
+    const snapshot = manager.getStatus("codifier");
+    expect(snapshot.stdout).toHaveLength(1);
+    expect(snapshot.stderr).toHaveLength(1);
+    expect(snapshot.stdout[0]).toHaveLength(2_048);
+    expect(snapshot.stderr[0]).toHaveLength(2_048);
+    expect(snapshot.stdout[0]).toContain("tail");
+    expect(snapshot.events[0].message).toHaveLength(2_048);
+    expect(snapshot.events[0].message).toContain("tail");
+    expect(testLogger.info).toHaveBeenCalledWith("Daemon subprocess stdout", {
+      daemon: "codifier",
+      text: expect.stringMatching(/tail\n$/),
+    });
+    expect(testLogger.warn).toHaveBeenCalledWith("Daemon subprocess stderr", {
+      daemon: "codifier",
+      text: expect.stringMatching(/tail\n$/),
+    });
+    const stdoutLog = testLogger.info.mock.calls.find(([message]) => message === "Daemon subprocess stdout")?.[1];
+    const stderrLog = testLogger.warn.mock.calls.find(([message]) => message === "Daemon subprocess stderr")?.[1];
+    expect(String(stdoutLog?.text)).toHaveLength(16_384);
+    expect(String(stderrLog?.text)).toHaveLength(16_384);
+  });
+
   it("passes configured agent, poll interval, and retry flags, parses daemon events, and logs them", async () => {
     const child = childProcess();
     const testLogger = logger();
@@ -136,6 +168,35 @@ describe("TuiSubprocessManager", () => {
         maxRetries: 5,
       },
     });
+  });
+
+  it("parses structured daemon events before capping retained stdout lines", async () => {
+    const child = childProcess();
+    const manager = new TuiSubprocessManager(processController(child));
+    const errorMessage = "x".repeat(2_048);
+
+    await manager.spawn("reviewer");
+    child.stdout?.emit("data", Buffer.from(`${JSON.stringify({
+      daemon: "reviewer",
+      status: "failed",
+      source: "reviewer",
+      category: "failed",
+      errorMessage,
+    })}\n`));
+
+    const snapshot = manager.getStatus("reviewer");
+    expect(snapshot.stdout).toHaveLength(1);
+    expect(snapshot.stdout[0]).toHaveLength(2_048);
+    expect(snapshot.events).toEqual([
+      expect.objectContaining({
+        daemon: "reviewer",
+        status: "failed",
+        source: "reviewer",
+        category: "failed",
+        errorMessage,
+      }),
+    ]);
+    expect(snapshot.events[0].category).not.toBe("model-output");
   });
 
   it("keeps only the latest 50 parsed daemon events in memory", async () => {

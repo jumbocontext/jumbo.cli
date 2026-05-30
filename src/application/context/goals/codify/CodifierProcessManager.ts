@@ -16,6 +16,7 @@ import { CodifyGoalController } from "./CodifyGoalController.js";
 import { IGoalCodifyReader } from "./IGoalCodifyReader.js";
 
 const CODIFIER_EVENT_SOURCE = "codifier";
+const CODIFIER_EVENT_TEXT_FIELD_MAX_LENGTH = 2_048;
 const CODIFIER_EVENT_COPY = {
   noWork: {
     category: "waiting",
@@ -214,14 +215,20 @@ export class CodifierProcessManager implements IProcessManager {
     if (error instanceof Error) {
       return {
         errorType: error.name,
-        errorMessage: error.message,
-        errorStack: error.stack,
+        errorMessage: limitTextTail(error.message, CODIFIER_EVENT_TEXT_FIELD_MAX_LENGTH),
+        errorStack: error.stack === undefined
+          ? undefined
+          : limitTextTail(error.stack, CODIFIER_EVENT_TEXT_FIELD_MAX_LENGTH),
       };
     }
 
     return {
       errorType: "UnknownError",
-      errorMessage: String(error),
+      errorMessage: limitTextTail(String(error), CODIFIER_EVENT_TEXT_FIELD_MAX_LENGTH),
     };
   }
+}
+
+function limitTextTail(value: string, maxLength: number): string {
+  return value.length > maxLength ? value.slice(-maxLength) : value;
 }

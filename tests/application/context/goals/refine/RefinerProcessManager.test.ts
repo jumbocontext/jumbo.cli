@@ -170,4 +170,32 @@ describe("RefinerProcessManager", () => {
       }),
     ]);
   });
+
+  it("caps agent stderr in skipped and exhausted event error messages", async () => {
+    goalReader.findById.mockResolvedValue({ ...goal, status: GoalStatus.TODO });
+    agentGateway.invoke.mockResolvedValue({
+      exitCode: 1,
+      stderr: `${"x".repeat(20_000)}refiner tail\n`,
+    });
+    const events: any[] = [];
+    const manager = new RefinerProcessManager(
+      goalStatusReader,
+      goalReader,
+      claimPolicy as any,
+      { workerId: "worker_1" },
+      refineGoalController as any,
+      agentGateway,
+      telemetryClient,
+    );
+
+    await manager.processNext({
+      agentId: "codex",
+      maxRetries: 1,
+      emit: (event) => events.push(event),
+    });
+
+    const exhaustedEvent = events.find((event) => event.status === "exhausted");
+    expect(exhaustedEvent.errorMessage).toHaveLength(2_048);
+    expect(exhaustedEvent.errorMessage).toContain("refiner tail");
+  });
 });

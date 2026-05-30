@@ -93,19 +93,29 @@ describe("AgentCliGateway", () => {
     );
   });
 
-  it("captures and forwards agent stderr so failed daemon events can show the actual agent error", async () => {
+  it("captures bounded agent stdout and stderr tails without mirroring raw output to daemon stderr", async () => {
     const child = childProcess();
     spawnMock.mockReturnValue(child);
+    const oversizedStdout = `${"x".repeat(20_000)}stdout tail\n`;
+    const oversizedStderr = `${"y".repeat(20_000)}stderr tail\n`;
 
     const promise = new AgentCliGateway(telemetryClient).invoke({
       agentId: "codex",
       prompt: "run codify",
     });
-    child.stderr.emit("data", Buffer.from("codex failed\n"));
+    child.stdout.emit("data", Buffer.from(oversizedStdout));
+    child.stderr.emit("data", Buffer.from(oversizedStderr));
     child.emit("close", 1);
 
-    await expect(promise).resolves.toEqual({ exitCode: 1, stdout: "", stderr: "codex failed\n" });
-    expect(stderrSpy).toHaveBeenCalledWith("codex failed\n");
+    const result = await promise;
+    expect(result).toEqual({
+      exitCode: 1,
+      stdout: expect.stringContaining("stdout tail\n"),
+      stderr: expect.stringContaining("stderr tail\n"),
+    });
+    expect(result.stdout).toHaveLength(16_384);
+    expect(result.stderr).toHaveLength(16_384);
+    expect(stderrSpy).not.toHaveBeenCalled();
   });
 
   it("returns a failed invocation result when the child process errors", async () => {
