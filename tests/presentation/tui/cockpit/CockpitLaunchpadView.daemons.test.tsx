@@ -2,7 +2,7 @@ import React from "react";
 import { jest, describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { CockpitLaunchpadView } from "../../../../src/presentation/tui/cockpit/CockpitLaunchpadView.js";
-import { SubprocessManagerProvider } from "../../../../src/presentation/tui/daemon-subprocesses/SubprocessManagerContext.js";
+import { SubprocessManagerProvider } from "../../../../src/presentation/tui/daemon-subprocesses/SubprocessManagerProvider.js";
 import type { ISubprocessManager, TuiDaemonConfig, TuiDaemonName, TuiSubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));

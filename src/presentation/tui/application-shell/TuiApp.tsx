@@ -16,7 +16,8 @@ import {
   type TuiStateReaderControllers,
   type TuiStateReaderOptions,
 } from "../state-reading/TuiStateReader.js";
-import { SubprocessManagerProvider, useSubprocessManager } from "../daemon-subprocesses/SubprocessManagerContext.js";
+import { SubprocessManagerProvider } from "../daemon-subprocesses/SubprocessManagerProvider.js";
+import { useSubprocessManager } from "../daemon-subprocesses/useSubprocessManager.js";
 import type { ISubprocessManager, TuiSubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
 import type { NotificationDrawerNotification } from "./NotificationDrawer.js";
 import type { AddGoalRequest } from "../../../application/context/goals/add/AddGoalRequest.js";

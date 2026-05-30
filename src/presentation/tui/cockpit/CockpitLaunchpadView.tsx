@@ -3,7 +3,7 @@ import { Box, Text, useInput } from "ink";
 import AnimatedBillboard from "../billboard/AnimatedBillboard.js";
 import type { AnimatedBillboardTriggerInput } from "../billboard/AnimatedBillboard.js";
 import { BaseColors } from "../../shared/DesignTokens.js";
-import { useSubprocessManager } from "../daemon-subprocesses/SubprocessManagerContext.js";
+import { useSubprocessManager } from "../daemon-subprocesses/useSubprocessManager.js";
 import { DEFAULT_WORKER_DAEMON_CONFIGS } from "../../../application/daemons/WorkerDaemonCatalog.js";
 import type { ISettingsReader } from "../../../application/settings/ISettingsReader.js";
 import type {
