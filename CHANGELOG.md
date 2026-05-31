@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-05-31
+
 ### Added
 
 - **Session start backlog preview**: `jumbo session start` now includes a bounded, settings-configurable backlog preview with `goalId`, `title`, `status`, and `createdAt` so agents can see available work while still loading full goal context through follow-up workflow commands.
+
+### Changed
+
+- **Internal**: Decomposed `TuiSubprocessManager` into focused collaborators (`ManagedSubprocess`, `TuiDaemonOutputEventParser`, `TuiSubprocessConfigResolver`, `TuiSubprocessLifecycleEventRecorder`, `TuiSubprocessOutputRingBuffer`, `TuiSubprocessSnapshotMapper`) for improved testability and separation of concerns.
 
 ## [3.3.0] - 2026-05-31
 
