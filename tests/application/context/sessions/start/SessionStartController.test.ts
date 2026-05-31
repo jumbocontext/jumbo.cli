@@ -11,6 +11,7 @@ describe("SessionStartController", () => {
     sessionId: "session_test-123",
     status: "active",
     isUnprimedBrownfield: false,
+    backlogPreview: [],
   };
 
   beforeEach(() => {

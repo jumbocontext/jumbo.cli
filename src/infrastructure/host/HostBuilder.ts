@@ -396,6 +396,7 @@ import { GetRelationsController } from "../../application/context/relations/get/
 import { LocalGetRelationsGateway } from "../../application/context/relations/get/LocalGetRelationsGateway.js";
 // Context
 import { GoalContextQueryHandler } from "../../application/context/goals/get/GoalContextQueryHandler.js";
+import { GoalBacklogPreviewQueryHandler } from "../../application/context/goals/query/GoalBacklogPreviewQueryHandler.js";
 
 // Goal Controllers
 import { AddGoalCommandHandler } from "../../application/context/goals/add/AddGoalCommandHandler.js";
@@ -965,6 +966,9 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const goalContextQueryHandler = new GoalContextQueryHandler(
       goalContextAssembler
     );
+    const goalBacklogPreviewQueryHandler = new GoalBacklogPreviewQueryHandler(
+      goalStatusReader
+    );
     // Project Controllers
     const updateProjectCommandHandler = new UpdateProjectCommandHandler(
       projectUpdatedEventStore,
@@ -1000,6 +1004,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const startSessionGateway = new LocalStartSessionGateway(
       startSessionCommandHandler,
       brownfieldStatusReader,
+      settingsReader,
+      goalBacklogPreviewQueryHandler
     );
     const sessionStartController = new SessionStartController(
       startSessionGateway
@@ -2072,6 +2078,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       goalContextReader: goalStartedProjector,
       goalContextAssembler,
       goalContextQueryHandler,
+      goalBacklogPreviewQueryHandler,
       goalStatusReader,
       // Session Controllers
       sessionStartController,

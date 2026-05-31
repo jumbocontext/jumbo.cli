@@ -51,6 +51,12 @@ export class FsSettingsInitializer implements ISettingsInitializer {
   "tui": {
     // Whether the Cockpit launchpad welcome panel should be shown
     "showLaunchpadWelcome": true
+  },
+
+  // Session workflow preferences
+  "session": {
+    // Maximum number of available backlog goals to include in session start
+    "backlogPreviewSize": 5
   }
 }
 `;

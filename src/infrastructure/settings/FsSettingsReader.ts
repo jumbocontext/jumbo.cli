@@ -108,6 +108,11 @@ export class FsSettingsReader implements ISettingsReader {
           settings.tui?.showLaunchpadWelcome ??
           DEFAULT_SETTINGS.tui!.showLaunchpadWelcome,
       },
+      session: {
+        backlogPreviewSize:
+          settings.session?.backlogPreviewSize ??
+          DEFAULT_SETTINGS.session!.backlogPreviewSize,
+      },
     };
   }
 
@@ -145,6 +150,12 @@ export class FsSettingsReader implements ISettingsReader {
   "tui": {
     // Whether the Cockpit launchpad welcome panel should be shown
     "showLaunchpadWelcome": ${settings.tui!.showLaunchpadWelcome}
+  },
+
+  // Session workflow preferences
+  "session": {
+    // Maximum number of available backlog goals to include in session start
+    "backlogPreviewSize": ${settings.session!.backlogPreviewSize}
   }
 }
 `;

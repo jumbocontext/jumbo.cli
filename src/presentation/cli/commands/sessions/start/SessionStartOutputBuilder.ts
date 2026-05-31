@@ -1,13 +1,15 @@
 import { TerminalOutputBuilder } from "../../../output/TerminalOutputBuilder.js";
 import { TerminalOutput } from "../../../output/TerminalOutput.js";
 import { SessionStartResponse } from "../../../../../application/context/sessions/start/SessionStartResponse.js";
+import { GoalBacklogPreviewItem } from "../../../../../application/context/goals/query/GoalBacklogPreviewItem.js";
+import { YamlFormatter } from "../../../formatting/YamlFormatter.js";
 
 const SESSION_ROUTER_SCHEMA_VERSION = "jumbo.sessionStart.router.v1";
 const SESSION_ROUTER_PACKET_TYPE = "session.router";
 const GOAL_FALLBACK_COMMAND = "jumbo goals list --format json";
 const ROUTER_PRIMARY_ACTION = "ask_user_to_choose_workflow";
 const ROUTER_PROMPT =
-  "Ask the user whether they want to design or define a goal, refine a goal, execute a goal, review a goal, codify a goal, or do something different.";
+  "Prompt the user for input about what goal or workflow to work on. Session start includes only a bounded backlog preview with goalId, title, status, and createdAt. Ask whether they want to work on one of the shown goals, design or define a goal, refine a goal, execute a goal, review a goal, codify a goal, or do something different. IMPORTANT: Run the appropriate route command for the chosen goal before doing any work.";
 
 const ROUTES = {
   design_or_define_goal: {
@@ -41,9 +43,11 @@ const ROUTES = {
  */
 export class SessionStartOutputBuilder {
   private readonly builder: TerminalOutputBuilder;
+  private readonly yamlFormatter: YamlFormatter;
 
   constructor() {
     this.builder = new TerminalOutputBuilder();
+    this.yamlFormatter = new YamlFormatter();
   }
 
   /**
@@ -76,6 +80,7 @@ export class SessionStartOutputBuilder {
         primaryAction: ROUTER_PRIMARY_ACTION,
         prompt: ROUTER_PROMPT,
       },
+      backlogPreview: response.backlogPreview,
       routes: ROUTES,
     };
 
@@ -94,6 +99,8 @@ export class SessionStartOutputBuilder {
       `  sessionId: ${response.sessionId}`,
       `  status: ${response.status}`,
       "",
+      this.renderBacklogPreview(response.backlogPreview),
+      "",
       `@LLM: ${ROUTER_PROMPT}`,
       "",
       "routes:",
@@ -107,6 +114,10 @@ export class SessionStartOutputBuilder {
       `  codify_goal: ${ROUTES.codify_goal.command}`,
       `    fallbackCommand: ${ROUTES.codify_goal.fallbackCommand}`,
     ].join("\n");
+  }
+
+  private renderBacklogPreview(preview: readonly GoalBacklogPreviewItem[]): string {
+    return this.yamlFormatter.toYaml({ backlogPreview: preview }).trimEnd();
   }
 
   private buildBrownfieldInstruction(): string {

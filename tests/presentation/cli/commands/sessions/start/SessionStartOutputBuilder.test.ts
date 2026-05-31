@@ -9,6 +9,14 @@ describe("SessionStartOutputBuilder", () => {
     sessionId: "session-123",
     status: "active",
     isUnprimedBrownfield: false,
+    backlogPreview: [
+      {
+        goalId: "goal_1",
+        title: "Implement preview",
+        status: "refined",
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+    ],
   };
 
   beforeEach(() => {
@@ -28,6 +36,14 @@ describe("SessionStartOutputBuilder", () => {
       agentInstruction: {
         primaryAction: "ask_user_to_choose_workflow",
       },
+      backlogPreview: [
+        {
+          goalId: "goal_1",
+          title: "Implement preview",
+          status: "refined",
+          createdAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
     });
     expect(result.routes).toHaveProperty("design_or_define_goal");
     expect(result.routes).toHaveProperty("refine_goal");
@@ -59,9 +75,21 @@ describe("SessionStartOutputBuilder", () => {
     const result = builder.buildStructuredOutput(response);
 
     expect(result).not.toHaveProperty("projectContext");
-    expect(result).not.toHaveProperty("goals");
     expect(result).not.toHaveProperty("llmInstructions");
     expect(result).not.toHaveProperty("recentDecisions");
+    expect(result.backlogPreview).toEqual(response.backlogPreview);
+  });
+
+  it("should keep preview DTO fields bounded in structured output", () => {
+    const result = builder.buildStructuredOutput(response);
+    const preview = result.backlogPreview as Record<string, unknown>[];
+
+    expect(Object.keys(preview[0]).sort()).toEqual([
+      "createdAt",
+      "goalId",
+      "status",
+      "title",
+    ]);
   });
 
   it("should ask for workflow choice without naming hidden route classes", () => {
@@ -69,6 +97,8 @@ describe("SessionStartOutputBuilder", () => {
     const instruction = result.agentInstruction as Record<string, string>;
 
     expect(instruction.prompt).toContain("design or define a goal");
+    expect(instruction.prompt).toContain("shown goals");
+    expect(instruction.prompt).toContain("bounded backlog preview");
     expect(instruction.prompt).toContain("refine a goal");
     expect(instruction.prompt).toContain("execute a goal");
     expect(instruction.prompt).toContain("review a goal");
@@ -83,9 +113,11 @@ describe("SessionStartOutputBuilder", () => {
     const text = output.toHumanReadable();
 
     expect(text).toContain("design_or_define_goal");
+    expect(text).toContain("backlogPreview:");
+    expect(text).toContain("goalId: goal_1");
+    expect(text).toContain("title: Implement preview");
     expect(text).toContain("jumbo project show --northstar --format json");
     expect(text).not.toContain("projectContext:");
-    expect(text).not.toContain("goals:");
     expect(text).not.toContain("recentDecisions:");
   });
 

@@ -36,6 +36,24 @@ describe("FsSettingsReader", () => {
     expect(settings.tui).toEqual(DEFAULT_SETTINGS.tui);
   });
 
+  it("merges session backlog preview defaults when existing settings do not include them", async () => {
+    const tempDir = await createTempDir();
+    await fs.writeFile(
+      path.join(tempDir, "settings.jsonc"),
+      JSON.stringify({
+        qa: { defaultTurnLimit: 7 },
+        claims: { claimDurationMinutes: 45 },
+        telemetry: { enabled: false, anonymousId: null, consentGiven: true },
+      }),
+      "utf-8",
+    );
+    const reader = new FsSettingsReader(tempDir);
+
+    const settings = await reader.read();
+
+    expect(settings.session).toEqual(DEFAULT_SETTINGS.session);
+  });
+
   it("persists TUI preferences through the settings file", async () => {
     const tempDir = await createTempDir();
     const reader = new FsSettingsReader(tempDir);
@@ -48,6 +66,21 @@ describe("FsSettingsReader", () => {
     await expect(reader.read()).resolves.toEqual({
       ...DEFAULT_SETTINGS,
       tui: { showLaunchpadWelcome: false },
+    });
+  });
+
+  it("persists session backlog preview size through the settings file", async () => {
+    const tempDir = await createTempDir();
+    const reader = new FsSettingsReader(tempDir);
+
+    await reader.write({
+      ...DEFAULT_SETTINGS,
+      session: { backlogPreviewSize: 2 },
+    });
+
+    await expect(reader.read()).resolves.toEqual({
+      ...DEFAULT_SETTINGS,
+      session: { backlogPreviewSize: 2 },
     });
   });
 });

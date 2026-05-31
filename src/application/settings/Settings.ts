@@ -62,6 +62,19 @@ export interface TuiSettings {
   showLaunchpadWelcome: boolean;
 }
 
+/**
+ * Default number of backlog goals shown in session-start preview.
+ */
+export const DEFAULT_BACKLOG_PREVIEW_SIZE = 5;
+
+export interface SessionSettings {
+  /**
+   * Maximum number of available backlog goals to include in session start.
+   * Default: 5
+   */
+  backlogPreviewSize: number;
+}
+
 export interface Settings {
   /**
    * QA (Quality Assurance) settings for goal completion
@@ -82,4 +95,9 @@ export interface Settings {
    * TUI presentation preferences
    */
   tui?: TuiSettings;
+
+  /**
+   * Session workflow preferences
+   */
+  session?: SessionSettings;
 }

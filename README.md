@@ -193,7 +193,7 @@ Spread some ❤️ and sponsor the projects or buy them a cup of coffee. I have.
 <details>
 <summary>How does jumbo integrate with my AI agent?</summary>
 
-Through hooks, with fallback to AGENTS.md. Your agent calls `jumbo session start` at the beginning of a session, and Jumbo returns a workflow router. The selected workflow then loads the relevant context packet, such as `jumbo project show --northstar --format json` for goal design or `jumbo goal start --id <id>` for implementation. New insights are captured in the natural flow of your agent conversations.
+Through hooks, with fallback to AGENTS.md. Your agent calls `jumbo session start` at the beginning of a session, and Jumbo returns a workflow router plus a bounded backlog preview. The selected workflow then loads the relevant context packet, such as `jumbo project show --northstar --format json` for goal design or `jumbo goal start --id <id>` for implementation. New insights are captured in the natural flow of your agent conversations.
 </details>
 
 <details>

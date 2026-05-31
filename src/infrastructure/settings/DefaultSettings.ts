@@ -1,6 +1,7 @@
 import {
   Settings,
   DEFAULT_CLAIM_DURATION_MINUTES,
+  DEFAULT_BACKLOG_PREVIEW_SIZE,
 } from "../../application/settings/Settings.js";
 
 /**
@@ -21,5 +22,8 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   tui: {
     showLaunchpadWelcome: true,
+  },
+  session: {
+    backlogPreviewSize: DEFAULT_BACKLOG_PREVIEW_SIZE,
   },
 };
