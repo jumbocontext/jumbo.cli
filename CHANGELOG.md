@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Global search command**: Added `jumbo search` for querying the projected global memory search index across components, dependencies, decisions, guidelines, and invariants with grouped text output and structured JSON output.
+- **Search index rebuild command**: Added `jumbo index rebuild` for repairing the projected global search index by replaying persisted memory events without rebuilding every Jumbo projection.
 
 ### Fixed
 

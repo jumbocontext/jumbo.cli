@@ -39,10 +39,12 @@ export class InvariantSearchDocumentProjector implements ISearchDocumentProjecto
   }
 
   private fromAdded(event: InvariantAddedEvent): SearchDocument {
+    const payload = event.payload as InvariantAddedEvent["payload"] & { category?: string };
     return this.fromMetadata(event, null, {
-      title: event.payload.title,
-      description: event.payload.description,
-      rationale: event.payload.rationale,
+      title: payload.title ?? payload.category ?? event.aggregateId,
+      invariantCategory: payload.category ?? null,
+      description: payload.description,
+      rationale: payload.rationale ?? null,
     });
   }
 
@@ -63,7 +65,7 @@ export class InvariantSearchDocumentProjector implements ISearchDocumentProjecto
       title,
       summary,
       content,
-      facets: {},
+      facets: { category: metadata.invariantCategory ?? null },
       metadata,
       version: event.version,
       createdAt: current?.createdAt ?? event.timestamp,

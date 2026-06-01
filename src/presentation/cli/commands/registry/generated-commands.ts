@@ -69,6 +69,7 @@ import { guidelinesSearch, metadata as guidelinesSearchMeta } from '../../comman
 import { guidelineUpdate, metadata as guidelineUpdateMeta } from '../../commands/guidelines/update/guideline.update.js';
 import { heal, metadata as healMeta } from '../../commands/heal/heal.js';
 import { workerView, metadata as workerViewMeta } from '../../commands/host/workers/worker.view.js';
+import { indexRebuild, metadata as indexRebuildMeta } from '../../commands/index/rebuild/index.rebuild.js';
 import { invariantAdd, metadata as invariantAddMeta } from '../../commands/invariants/add/invariant.add.js';
 import { invariantsList, metadata as invariantsListMeta } from '../../commands/invariants/list/invariants.list.js';
 import { invariantRemove, metadata as invariantRemoveMeta } from '../../commands/invariants/remove/invariant.remove.js';
@@ -397,6 +398,11 @@ export const commands: RegisteredCommand[] = [
     path: 'worker view',
     metadata: workerViewMeta,
     handler: workerView
+  },
+  {
+    path: 'index rebuild',
+    metadata: indexRebuildMeta,
+    handler: indexRebuild
   },
   {
     path: 'invariant add',

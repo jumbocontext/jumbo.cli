@@ -98,4 +98,25 @@ describe("Command Compliance", () => {
       commandPath: "search",
     });
   });
+
+  test("index rebuild command metadata supports project guard and structured output", () => {
+    const command = commands.find((c) => c.path === "index rebuild");
+
+    expect(command).toBeDefined();
+    expect(command?.metadata.requiresProject).toBe(true);
+    expect(command?.metadata.requiredOptions).toBeUndefined();
+    expect(command?.metadata.options).toBeUndefined();
+    expect(command?.metadata.examples?.map((example) => example.command)).toContain("jumbo index rebuild --format json");
+    expect(command?.metadata.related).toEqual(expect.arrayContaining(["search", "heal", "evolve"]));
+  });
+
+  test("index rebuild command is classified as project-scoped", () => {
+    const classification = classifyCommand(["node", "jumbo", "index", "rebuild"], commands);
+
+    expect(classification).toEqual({
+      requiresInfrastructure: true,
+      requiresProject: true,
+      commandPath: "index rebuild",
+    });
+  });
 });

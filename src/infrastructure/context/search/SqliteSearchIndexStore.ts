@@ -1,6 +1,8 @@
 import { Database } from "better-sqlite3";
 import { ISearchIndexWriter } from "../../../application/context/search/ISearchIndexWriter.js";
 import { ISearchIndexReader } from "../../../application/context/search/ISearchIndexReader.js";
+import { ISearchIndexRebuildStore } from "../../../application/context/search/ISearchIndexRebuildStore.js";
+import { SearchCategory } from "../../../application/context/search/SearchCategory.js";
 import { SearchCriteria } from "../../../application/context/search/SearchCriteria.js";
 import { SearchDocument } from "../../../application/context/search/SearchDocument.js";
 import { SearchDocumentSource } from "../../../application/context/search/SearchDocumentSource.js";
@@ -9,7 +11,7 @@ import { SearchResultLimit } from "../../../application/context/search/SearchRes
 import { SearchIndexRecord } from "./SearchIndexRecord.js";
 import { SearchIndexRecordMapper } from "./SearchIndexRecordMapper.js";
 
-export class SqliteSearchIndexStore implements ISearchIndexWriter, ISearchIndexReader {
+export class SqliteSearchIndexStore implements ISearchIndexWriter, ISearchIndexReader, ISearchIndexRebuildStore {
   private readonly mapper = new SearchIndexRecordMapper();
 
   constructor(private readonly db: Database) {}
@@ -59,6 +61,27 @@ export class SqliteSearchIndexStore implements ISearchIndexWriter, ISearchIndexR
       .get(source.type, source.id) as SearchIndexRecord | undefined;
 
     return row ? this.mapper.toDocument(row) : null;
+  }
+
+  async clear(): Promise<number> {
+    const result = this.db.prepare("DELETE FROM search_index_entries").run();
+    return result.changes;
+  }
+
+  async countByCategory(): Promise<Readonly<Partial<Record<SearchCategory, number>>>> {
+    const rows = this.db
+      .prepare(`
+        SELECT category, COUNT(*) AS count
+        FROM search_index_entries
+        GROUP BY category
+        ORDER BY category ASC
+      `)
+      .all() as Array<{ category: SearchCategory; count: number }>;
+
+    return rows.reduce<Partial<Record<SearchCategory, number>>>((counts, row) => {
+      counts[row.category] = row.count;
+      return counts;
+    }, {});
   }
 
   async search(criteria: SearchCriteria): Promise<SearchHit[]> {
