@@ -186,6 +186,9 @@ import { IGuidelineRemoveReader } from "../context/guidelines/remove/IGuidelineR
 import { IGuidelineViewReader } from "../context/guidelines/get/IGuidelineViewReader.js";
 import { GetGuidelinesController } from "../context/guidelines/get/GetGuidelinesController.js";
 import { SearchGuidelinesController } from "../context/guidelines/search/SearchGuidelinesController.js";
+import { SearchController } from "../context/search/SearchController.js";
+import { ISearchIndexWriter } from "../context/search/ISearchIndexWriter.js";
+import { ISearchIndexReader } from "../context/search/ISearchIndexReader.js";
 import { IInvariantAddedProjector } from "../context/invariants/add/IInvariantAddedProjector.js";
 import { IInvariantAddReader } from "../context/invariants/add/IInvariantAddReader.js";
 import { IInvariantUpdatedProjector } from "../context/invariants/update/IInvariantUpdatedProjector.js";
@@ -569,6 +572,9 @@ export interface IApplicationContainer {
   invariantUpdatedProjector: IInvariantUpdatedProjector & IInvariantUpdateReader;
   invariantRemovedProjector: IInvariantRemovedProjector & IInvariantRemoveReader;
   invariantViewReader: IInvariantViewReader;
+  searchIndexReader: ISearchIndexReader;
+  searchIndexWriter: ISearchIndexWriter;
+  searchController: SearchController;
   // Invariant Controllers
   addInvariantController: AddInvariantController;
   updateInvariantController: UpdateInvariantController;

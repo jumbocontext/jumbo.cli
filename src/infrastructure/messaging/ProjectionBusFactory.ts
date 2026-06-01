@@ -16,6 +16,9 @@ import { IEventBus } from "../../application/messaging/IEventBus.js";
 import { IEventHandler } from "../../application/messaging/IEventHandler.js";
 import { BaseEvent } from "../../domain/BaseEvent.js";
 import { InProcessEventBus } from "./InProcessEventBus.js";
+import { SearchIndexEventHandler } from "../../application/context/search/SearchIndexEventHandler.js";
+import { SearchDocumentProjectorRegistry } from "../../application/context/search/SearchDocumentProjectorRegistry.js";
+import { SqliteSearchIndexStore } from "../context/search/SqliteSearchIndexStore.js";
 
 // Session projectors
 import { SqliteSessionStartedProjector } from "../context/sessions/start/SqliteSessionStartedProjector.js";
@@ -223,6 +226,16 @@ export class ProjectionBusFactory {
     bus.subscribe("InvariantUpdatedEvent", this.wrap((e) => invariantUpdatedProjector.applyInvariantUpdated(e as any)));
     bus.subscribe("InvariantRemovedEvent", this.wrap((e) => invariantRemovedProjector.applyInvariantRemoved(e as any)));
 
+    // Global search index projections
+    const searchIndexStore = new SqliteSearchIndexStore(db);
+    const searchDocumentProjectorRegistry = new SearchDocumentProjectorRegistry();
+    const searchIndexEventHandler = new SearchIndexEventHandler(
+      searchDocumentProjectorRegistry.createMemoryProjectors(),
+      searchIndexStore,
+      searchIndexStore
+    );
+    this.subscribeSearchIndexEvents(bus, searchIndexEventHandler);
+
     // Project projections
     const projectInitializedProjector = new SqliteProjectInitializedProjector(db);
     const projectUpdatedProjector = new SqliteProjectUpdatedProjector(db);
@@ -273,5 +286,11 @@ export class ProjectionBusFactory {
    */
   private wrap(fn: (event: BaseEvent) => void | Promise<void>): IEventHandler {
     return { handle: async (event: BaseEvent) => { await fn(event); } };
+  }
+
+  private subscribeSearchIndexEvents(bus: InProcessEventBus, handler: SearchIndexEventHandler): void {
+    for (const eventType of handler.eventTypes) {
+      bus.subscribe(eventType, handler);
+    }
   }
 }
