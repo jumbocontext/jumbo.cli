@@ -9,6 +9,7 @@ import { SearchCategory } from "../../../src/application/context/search/SearchCa
 import { ComponentEventType, ComponentStatus } from "../../../src/domain/components/Constants";
 import { DecisionEventType, DecisionStatus } from "../../../src/domain/decisions/Constants";
 import { GuidelineEventType } from "../../../src/domain/guidelines/Constants";
+import { InvariantEventType } from "../../../src/domain/invariants/Constants";
 import { EntityType, RelationEventType, RelationStatus } from "../../../src/domain/relations/Constants";
 import os from "os";
 
@@ -107,6 +108,18 @@ describe("ProjectionBusFactory", () => {
       },
     } as any);
 
+    await bus.publish({
+      type: InvariantEventType.ADDED,
+      aggregateId: "inv-search",
+      version: 1,
+      timestamp: "2026-01-01T00:00:00.000Z",
+      payload: {
+        title: "No junk drawers",
+        description: "Keep source files organized by domain concept",
+        rationale: "Search rebuild must include invariant memory",
+      },
+    } as any);
+
     const rows = db
       .prepare("SELECT sourceType, sourceId, category, title FROM search_index_entries ORDER BY category")
       .all() as any[];
@@ -123,6 +136,12 @@ describe("ProjectionBusFactory", () => {
         sourceId: "guide-search",
         category: SearchCategory.GUIDELINE,
         title: "Search index tests",
+      },
+      {
+        sourceType: SearchCategory.INVARIANT,
+        sourceId: "inv-search",
+        category: SearchCategory.INVARIANT,
+        title: "No junk drawers",
       },
     ]);
   });

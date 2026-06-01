@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Global search command**: Added `jumbo search` for querying the projected global memory search index across components, dependencies, decisions, guidelines, and invariants with grouped text output and structured JSON output.
+
+### Fixed
+
+- **Top-level command help**: Command-specific help now supports top-level commands such as `jumbo search --help` without requiring a parent/subcommand path.
+
 ## [3.4.0] - 2026-05-31
 
 ### Added

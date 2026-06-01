@@ -80,6 +80,7 @@ import { projectUpdate, metadata as projectUpdateMeta } from '../../commands/pro
 import { relationAdd, metadata as relationAddMeta } from '../../commands/relations/add/relation.add.js';
 import { relationsList, metadata as relationsListMeta } from '../../commands/relations/list/relations.list.js';
 import { relationRemove, metadata as relationRemoveMeta } from '../../commands/relations/remove/relation.remove.js';
+import { search, metadata as searchMeta } from '../../commands/search/search.js';
 import { sessionCompact, metadata as sessionCompactMeta } from '../../commands/sessions/compact/session.compact.js';
 import { sessionEnd, metadata as sessionEndMeta } from '../../commands/sessions/end/session.end.js';
 import { sessionsList, metadata as sessionsListMeta } from '../../commands/sessions/list/sessions.list.js';
@@ -451,6 +452,11 @@ export const commands: RegisteredCommand[] = [
     path: 'relation remove',
     metadata: relationRemoveMeta,
     handler: relationRemove
+  },
+  {
+    path: 'search',
+    metadata: searchMeta,
+    handler: search
   },
   {
     path: 'session compact',
