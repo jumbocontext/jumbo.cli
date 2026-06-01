@@ -44,6 +44,12 @@ const __dirname = path.dirname(__filename);
 import { ProjectionBusFactory } from "../messaging/ProjectionBusFactory.js";
 import { MigrationRunner } from "../persistence/MigrationRunner.js";
 import { getNamespaceMigrations } from "../persistence/migrations.config.js";
+import { LocalSearchGateway } from "../../application/context/search/LocalSearchGateway.js";
+import { SearchController } from "../../application/context/search/SearchController.js";
+import { SearchIndexEventHandler } from "../../application/context/search/SearchIndexEventHandler.js";
+import { SearchDocumentProjectorRegistry } from "../../application/context/search/SearchDocumentProjectorRegistry.js";
+import { SqliteSearchIndexStore } from "../context/search/SqliteSearchIndexStore.js";
+import { ProjectedSearchIndexProvider } from "../context/search/ProjectedSearchIndexProvider.js";
 
 // Session Event Stores - decomposed by use case
 import { FsSessionStartedEventStore } from "../context/sessions/start/FsSessionStartedEventStore.js";
@@ -872,6 +878,7 @@ export class HostBuilder {
     const invariantUpdatedProjector = new SqliteInvariantUpdatedProjector(this.db);
     const invariantRemovedProjector = new SqliteInvariantRemovedProjector(this.db);
     const invariantViewReader = new SqliteInvariantViewReader(this.db);
+    const searchIndexStore = new SqliteSearchIndexStore(this.db);
 
     // AddInvariant Controller
     const addInvariantCommandHandler = new AddInvariantCommandHandler(
@@ -918,6 +925,9 @@ export class HostBuilder {
     // GetInvariants Controller
     const getInvariantsGateway = new LocalGetInvariantsGateway(invariantViewReader);
     const getInvariantsController = new GetInvariantsController(getInvariantsGateway);
+    const projectedSearchIndexProvider = new ProjectedSearchIndexProvider(searchIndexStore);
+    const searchGateway = new LocalSearchGateway([projectedSearchIndexProvider]);
+    const searchController = new SearchController(searchGateway);
 
     // Brownfield Status
     const brownfieldStatusReader = new SqliteBrownfieldStatusReader(this.db);
@@ -1829,6 +1839,12 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const invariantAddedEventHandler = new InvariantAddedEventHandler(invariantAddedProjector);
     const invariantUpdatedEventHandler = new InvariantUpdatedEventHandler(invariantUpdatedProjector, relationMaintenanceGoalRegistrar);
     const invariantRemovedEventHandler = new InvariantRemovedEventHandler(invariantRemovedProjector, relationMaintenanceGoalRegistrar);
+    const searchDocumentProjectorRegistry = new SearchDocumentProjectorRegistry();
+    const searchIndexEventHandler = new SearchIndexEventHandler(
+      searchDocumentProjectorRegistry.createMemoryProjectors(),
+      searchIndexStore,
+      searchIndexStore
+    );
 
     // Project Knowledge Category
     // Project Event Handlers - decomposed by use case
@@ -1963,6 +1979,11 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     eventBus.subscribe("InvariantAddedEvent", invariantAddedEventHandler);
     eventBus.subscribe("InvariantUpdatedEvent", invariantUpdatedEventHandler);
     eventBus.subscribe("InvariantRemovedEvent", invariantRemovedEventHandler);
+
+    // Global search index projections
+    for (const eventType of searchIndexEventHandler.eventTypes) {
+      eventBus.subscribe(eventType, searchIndexEventHandler);
+    }
 
     // Relation discovery - auto-register goals for newly created entities
     eventBus.subscribe("ComponentAddedEvent", relationDiscoveryEventHandler);
@@ -2225,6 +2246,9 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       invariantUpdatedProjector,
       invariantRemovedProjector,
       invariantViewReader,
+      searchIndexReader: searchIndexStore,
+      searchIndexWriter: searchIndexStore,
+      searchController,
       // Invariant Controllers
       addInvariantController,
       updateInvariantController,

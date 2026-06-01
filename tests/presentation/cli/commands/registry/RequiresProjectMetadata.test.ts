@@ -27,4 +27,11 @@ describe("requiresProject metadata", () => {
     );
     expect(actualFalse).toEqual(REQUIRES_PROJECT_FALSE_ALLOWLIST);
   });
+
+  it("includes index rebuild as an explicitly project-scoped generated command", () => {
+    const command = commands.find((c) => c.path === "index rebuild");
+
+    expect(command).toBeDefined();
+    expect(command?.metadata.requiresProject).toBe(true);
+  });
 });

@@ -34,6 +34,7 @@ export function getNamespaceMigrations(infrastructureDir: string): NamespaceMigr
     { namespace: "dependencies", path: path.join(infrastructureDir, "context/dependencies/migrations") },
     { namespace: "guidelines", path: path.join(infrastructureDir, "context/guidelines/migrations") },
     { namespace: "invariants", path: path.join(infrastructureDir, "context/invariants/migrations") },
+    { namespace: "search", path: path.join(infrastructureDir, "context/search/migrations") },
     // Project knowledge category
     { namespace: "project", path: path.join(infrastructureDir, "context/project/migrations") },
     { namespace: "audiences", path: path.join(infrastructureDir, "context/audiences/migrations") },

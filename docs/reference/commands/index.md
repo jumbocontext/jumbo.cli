@@ -10,6 +10,8 @@ Complete reference for all Jumbo CLI commands.
 
 | Command Group | Description |
 |---------------|-------------|
+| [Search Command](search.md) | search |
+| [Index Commands](search-index.md) | rebuild |
 | [Goal Commands](goal.md) | add, refine, commit, start, pause, resume, block, unblock, submit, review, approve, reject, codify, close, qualify, reset, update, update-progress, show, remove, list |
 | [Session Commands](session.md) | start, end, list, compact |
 | [Project Commands](project.md) | init, update |

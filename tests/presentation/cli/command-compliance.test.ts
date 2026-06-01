@@ -1,6 +1,8 @@
 import fs from "fs-extra";
 import fastGlob from "fast-glob";
 import path from "path";
+import { classifyCommand } from "../../../src/presentation/cli/commands/CommandClassifier.js";
+import { commands } from "../../../src/presentation/cli/commands/registry/generated-commands.js";
 
 describe("Command Compliance", () => {
   let files: { rel: string; content: string }[];
@@ -69,5 +71,52 @@ describe("Command Compliance", () => {
 
   test("all commands export metadata", () => {
     expect(violations((f) => !f.content.includes("export const metadata"))).toEqual([]);
+  });
+
+  test("global search command metadata supports project guard and output detail", () => {
+    const command = commands.find((c) => c.path === "search");
+
+    expect(command).toBeDefined();
+    expect(command?.metadata.requiresProject).toBe(true);
+    expect(command?.metadata.requiredOptions?.map((option) => option.flags)).toEqual(["-q, --query <query>"]);
+    expect(command?.metadata.options?.map((option) => option.flags)).toEqual([
+      "-c, --category <category>",
+      "-l, --limit <limit>",
+      "-o, --output <output>",
+    ]);
+    expect(command?.metadata.options?.find((option) => option.flags === "-o, --output <output>")?.description).toContain(
+      "default or compact"
+    );
+  });
+
+  test("global search command is classified as project-scoped", () => {
+    const classification = classifyCommand(["node", "jumbo", "search", "--query", "memory"], commands);
+
+    expect(classification).toEqual({
+      requiresInfrastructure: true,
+      requiresProject: true,
+      commandPath: "search",
+    });
+  });
+
+  test("index rebuild command metadata supports project guard and structured output", () => {
+    const command = commands.find((c) => c.path === "index rebuild");
+
+    expect(command).toBeDefined();
+    expect(command?.metadata.requiresProject).toBe(true);
+    expect(command?.metadata.requiredOptions).toBeUndefined();
+    expect(command?.metadata.options).toBeUndefined();
+    expect(command?.metadata.examples?.map((example) => example.command)).toContain("jumbo index rebuild --format json");
+    expect(command?.metadata.related).toEqual(expect.arrayContaining(["search", "heal", "evolve"]));
+  });
+
+  test("index rebuild command is classified as project-scoped", () => {
+    const classification = classifyCommand(["node", "jumbo", "index", "rebuild"], commands);
+
+    expect(classification).toEqual({
+      requiresInfrastructure: true,
+      requiresProject: true,
+      commandPath: "index rebuild",
+    });
   });
 });

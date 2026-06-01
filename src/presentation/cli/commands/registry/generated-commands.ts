@@ -69,6 +69,7 @@ import { guidelinesSearch, metadata as guidelinesSearchMeta } from '../../comman
 import { guidelineUpdate, metadata as guidelineUpdateMeta } from '../../commands/guidelines/update/guideline.update.js';
 import { heal, metadata as healMeta } from '../../commands/heal/heal.js';
 import { workerView, metadata as workerViewMeta } from '../../commands/host/workers/worker.view.js';
+import { indexRebuild, metadata as indexRebuildMeta } from '../../commands/index/rebuild/index.rebuild.js';
 import { invariantAdd, metadata as invariantAddMeta } from '../../commands/invariants/add/invariant.add.js';
 import { invariantsList, metadata as invariantsListMeta } from '../../commands/invariants/list/invariants.list.js';
 import { invariantRemove, metadata as invariantRemoveMeta } from '../../commands/invariants/remove/invariant.remove.js';
@@ -80,6 +81,7 @@ import { projectUpdate, metadata as projectUpdateMeta } from '../../commands/pro
 import { relationAdd, metadata as relationAddMeta } from '../../commands/relations/add/relation.add.js';
 import { relationsList, metadata as relationsListMeta } from '../../commands/relations/list/relations.list.js';
 import { relationRemove, metadata as relationRemoveMeta } from '../../commands/relations/remove/relation.remove.js';
+import { search, metadata as searchMeta } from '../../commands/search/search.js';
 import { sessionCompact, metadata as sessionCompactMeta } from '../../commands/sessions/compact/session.compact.js';
 import { sessionEnd, metadata as sessionEndMeta } from '../../commands/sessions/end/session.end.js';
 import { sessionsList, metadata as sessionsListMeta } from '../../commands/sessions/list/sessions.list.js';
@@ -398,6 +400,11 @@ export const commands: RegisteredCommand[] = [
     handler: workerView
   },
   {
+    path: 'index rebuild',
+    metadata: indexRebuildMeta,
+    handler: indexRebuild
+  },
+  {
     path: 'invariant add',
     metadata: invariantAddMeta,
     handler: invariantAdd
@@ -451,6 +458,11 @@ export const commands: RegisteredCommand[] = [
     path: 'relation remove',
     metadata: relationRemoveMeta,
     handler: relationRemove
+  },
+  {
+    path: 'search',
+    metadata: searchMeta,
+    handler: search
   },
   {
     path: 'session compact',

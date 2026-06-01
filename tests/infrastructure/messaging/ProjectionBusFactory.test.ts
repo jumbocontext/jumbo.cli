@@ -5,6 +5,12 @@ import { fileURLToPath } from "node:url";
 import { ProjectionBusFactory } from "../../../src/infrastructure/messaging/ProjectionBusFactory";
 import { MigrationRunner } from "../../../src/infrastructure/persistence/MigrationRunner";
 import { getNamespaceMigrations } from "../../../src/infrastructure/persistence/migrations.config";
+import { SearchCategory } from "../../../src/application/context/search/SearchCategory";
+import { ComponentEventType, ComponentStatus } from "../../../src/domain/components/Constants";
+import { DecisionEventType, DecisionStatus } from "../../../src/domain/decisions/Constants";
+import { GuidelineEventType } from "../../../src/domain/guidelines/Constants";
+import { InvariantEventType } from "../../../src/domain/invariants/Constants";
+import { EntityType, RelationEventType, RelationStatus } from "../../../src/domain/relations/Constants";
 import os from "os";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,7 +42,7 @@ describe("ProjectionBusFactory", () => {
 
     // First add the component so deprecation has something to update
     await bus.publish({
-      type: "ComponentAddedEvent",
+      type: ComponentEventType.ADDED,
       aggregateId: "comp-1",
       version: 1,
       timestamp: "2026-01-01T00:00:00.000Z",
@@ -46,18 +52,18 @@ describe("ProjectionBusFactory", () => {
         description: "A test component",
         responsibility: "",
         path: "",
-        status: "active",
+        status: ComponentStatus.ACTIVE,
       },
     } as any);
 
     // Deprecate it — should project without cascade errors
     await bus.publish({
-      type: "ComponentDeprecatedEvent",
+      type: ComponentEventType.DEPRECATED,
       aggregateId: "comp-1",
       version: 2,
       timestamp: "2026-01-01T01:00:00.000Z",
       payload: {
-        status: "deprecated",
+        status: ComponentStatus.DEPRECATED,
         reason: "No longer needed",
         deprecatedAt: "2026-01-01T01:00:00.000Z",
       },
@@ -66,7 +72,78 @@ describe("ProjectionBusFactory", () => {
     const rows = db.prepare("SELECT * FROM component_views").all();
     expect(rows).toHaveLength(1);
     const row = rows[0] as any;
-    expect(row.status).toBe("deprecated");
+    expect(row.status).toBe(ComponentStatus.DEPRECATED);
+  });
+
+  it("creates an event bus that rebuilds the global search index from memory events", async () => {
+    const factory = new ProjectionBusFactory();
+    const bus = factory.create(db);
+
+    await bus.publish({
+      type: ComponentEventType.ADDED,
+      aggregateId: "comp-search",
+      version: 1,
+      timestamp: "2026-01-01T00:00:00.000Z",
+      payload: {
+        name: "SearchIndex",
+        type: "service",
+        description: "Projects searchable memory",
+        responsibility: "Index events",
+        path: "src/search",
+        status: ComponentStatus.ACTIVE,
+      },
+    } as any);
+
+    await bus.publish({
+      type: GuidelineEventType.ADDED,
+      aggregateId: "guide-search",
+      version: 1,
+      timestamp: "2026-01-01T00:00:00.000Z",
+      payload: {
+        category: "testing",
+        title: "Search index tests",
+        description: "Cover projected query behavior",
+        rationale: "Rebuild must be deterministic",
+        examples: ["ProjectionBusFactory replay"],
+      },
+    } as any);
+
+    await bus.publish({
+      type: InvariantEventType.ADDED,
+      aggregateId: "inv-search",
+      version: 1,
+      timestamp: "2026-01-01T00:00:00.000Z",
+      payload: {
+        title: "No junk drawers",
+        description: "Keep source files organized by domain concept",
+        rationale: "Search rebuild must include invariant memory",
+      },
+    } as any);
+
+    const rows = db
+      .prepare("SELECT sourceType, sourceId, category, title FROM search_index_entries ORDER BY category")
+      .all() as any[];
+
+    expect(rows).toEqual([
+      {
+        sourceType: SearchCategory.COMPONENT,
+        sourceId: "comp-search",
+        category: SearchCategory.COMPONENT,
+        title: "SearchIndex",
+      },
+      {
+        sourceType: SearchCategory.GUIDELINE,
+        sourceId: "guide-search",
+        category: SearchCategory.GUIDELINE,
+        title: "Search index tests",
+      },
+      {
+        sourceType: SearchCategory.INVARIANT,
+        sourceId: "inv-search",
+        category: SearchCategory.INVARIANT,
+        title: "No junk drawers",
+      },
+    ]);
   });
 
   it("creates an event bus that projects RelationDeactivatedEvent directly", async () => {
@@ -75,14 +152,14 @@ describe("ProjectionBusFactory", () => {
 
     // Add a relation
     await bus.publish({
-      type: "RelationAddedEvent",
+      type: RelationEventType.ADDED,
       aggregateId: "rel-1",
       version: 1,
       timestamp: "2026-01-01T00:00:00.000Z",
       payload: {
-        fromEntityType: "goal",
+        fromEntityType: EntityType.GOAL,
         fromEntityId: "goal-1",
-        toEntityType: "component",
+        toEntityType: EntityType.COMPONENT,
         toEntityId: "comp-1",
         relationType: "involves",
         strength: null,
@@ -92,7 +169,7 @@ describe("ProjectionBusFactory", () => {
 
     // Deactivate it directly (as persisted by original cascade)
     await bus.publish({
-      type: "RelationDeactivatedEvent",
+      type: RelationEventType.DEACTIVATED,
       aggregateId: "rel-1",
       version: 2,
       timestamp: "2026-01-01T01:00:00.000Z",
@@ -103,7 +180,7 @@ describe("ProjectionBusFactory", () => {
     } as any);
 
     const row = db.prepare("SELECT status FROM relation_views WHERE relationId = ?").get("rel-1") as any;
-    expect(row.status).toBe("deactivated");
+    expect(row.status).toBe(RelationStatus.DEACTIVATED);
   });
 
   it("creates an event bus that projects DecisionSupersededEvent without triggering cascades", async () => {
@@ -111,7 +188,7 @@ describe("ProjectionBusFactory", () => {
     const bus = factory.create(db);
 
     await bus.publish({
-      type: "DecisionAddedEvent",
+      type: DecisionEventType.ADDED,
       aggregateId: "dec-1",
       version: 1,
       timestamp: "2026-01-01T00:00:00.000Z",
@@ -125,7 +202,7 @@ describe("ProjectionBusFactory", () => {
     } as any);
 
     await bus.publish({
-      type: "DecisionSupersededEvent",
+      type: DecisionEventType.SUPERSEDED,
       aggregateId: "dec-1",
       version: 2,
       timestamp: "2026-01-01T01:00:00.000Z",
@@ -136,6 +213,6 @@ describe("ProjectionBusFactory", () => {
     } as any);
 
     const row = db.prepare("SELECT status FROM decision_views WHERE decisionId = ?").get("dec-1") as any;
-    expect(row.status).toBe("superseded");
+    expect(row.status).toBe(DecisionStatus.SUPERSEDED);
   });
 });

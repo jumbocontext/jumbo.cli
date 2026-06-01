@@ -6,7 +6,7 @@
  */
 
 import { RegisteredCommand, CommandOption, CommandExample } from "../commands/registry/CommandMetadata.js";
-import { extractParts } from "../commands/registry/PathNormalizer.js";
+import { normalizePath } from "../commands/registry/PathNormalizer.js";
 
 /** Indent for flag lines (2 spaces, matching gh style). */
 const FLAG_INDENT = "  ";
@@ -75,8 +75,7 @@ export function formatSubcommandHelp(
   aliasName?: string
 ): string {
   const metadata = registeredCommand.metadata;
-  const { parent, subcommand } = extractParts(registeredCommand.path);
-  const commandName = aliasName ?? `${parent} ${subcommand}`;
+  const commandName = aliasName ?? normalizePath(registeredCommand.path).join(" ");
 
   // Compute consistent pad width across all flags (including --help)
   const allOptions: CommandOption[] = [
@@ -113,7 +112,7 @@ export function formatSubcommandHelp(
 
   // LEARN MORE
   const learnMoreLines = [
-    "  Use `jumbo <command> <subcommand> --help` for more information about a command.",
+    "  Use `jumbo <command> --help` for more information about a command.",
   ];
   if (metadata.related && metadata.related.length > 0) {
     learnMoreLines.push(
