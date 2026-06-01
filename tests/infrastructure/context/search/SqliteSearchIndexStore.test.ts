@@ -58,7 +58,44 @@ describe("SqliteSearchIndexStore", () => {
     expect(document?.metadata).toEqual({ status: DecisionStatus.ACTIVE });
     expect(document?.content).toContain("Avoid scanning");
   });
+
+  it("filters search hits by category", async () => {
+    const db = createDb();
+    const store = new SqliteSearchIndexStore(db);
+
+    await store.upsert(createDocument(SearchCategory.COMPONENT, "comp-1", "Search component"));
+    await store.upsert(createDocument(SearchCategory.DECISION, "dec-1", "Search decision"));
+
+    const hits = await store.search({ query: "search", category: SearchCategory.DECISION });
+
+    expect(hits).toHaveLength(1);
+    expect(hits[0].source).toEqual({ type: SearchCategory.DECISION, id: "dec-1" });
+  });
+
+  it("returns empty search results when the projected index has no matches", async () => {
+    const db = createDb();
+    const store = new SqliteSearchIndexStore(db);
+
+    await store.upsert(createDocument(SearchCategory.COMPONENT, "comp-1", "Search component"));
+
+    await expect(store.search({ query: "missing" })).resolves.toEqual([]);
+  });
 });
+
+function createDocument(category: SearchCategory, id: string, title: string) {
+  return {
+    source: { type: category, id },
+    category,
+    title,
+    summary: null,
+    content: title,
+    facets: {},
+    metadata: {},
+    version: 1,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  };
+}
 
 function createDb(): Database.Database {
   const db = new Database(":memory:");

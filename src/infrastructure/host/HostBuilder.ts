@@ -49,6 +49,7 @@ import { SearchController } from "../../application/context/search/SearchControl
 import { SearchIndexEventHandler } from "../../application/context/search/SearchIndexEventHandler.js";
 import { SearchDocumentProjectorRegistry } from "../../application/context/search/SearchDocumentProjectorRegistry.js";
 import { SqliteSearchIndexStore } from "../context/search/SqliteSearchIndexStore.js";
+import { ProjectedSearchIndexProvider } from "../context/search/ProjectedSearchIndexProvider.js";
 
 // Session Event Stores - decomposed by use case
 import { FsSessionStartedEventStore } from "../context/sessions/start/FsSessionStartedEventStore.js";
@@ -924,7 +925,8 @@ export class HostBuilder {
     // GetInvariants Controller
     const getInvariantsGateway = new LocalGetInvariantsGateway(invariantViewReader);
     const getInvariantsController = new GetInvariantsController(getInvariantsGateway);
-    const searchGateway = new LocalSearchGateway(searchIndexStore);
+    const projectedSearchIndexProvider = new ProjectedSearchIndexProvider(searchIndexStore);
+    const searchGateway = new LocalSearchGateway([projectedSearchIndexProvider]);
     const searchController = new SearchController(searchGateway);
 
     // Brownfield Status

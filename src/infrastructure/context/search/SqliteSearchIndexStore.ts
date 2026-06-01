@@ -5,6 +5,7 @@ import { SearchCriteria } from "../../../application/context/search/SearchCriter
 import { SearchDocument } from "../../../application/context/search/SearchDocument.js";
 import { SearchDocumentSource } from "../../../application/context/search/SearchDocumentSource.js";
 import { SearchHit } from "../../../application/context/search/SearchHit.js";
+import { SearchResultLimit } from "../../../application/context/search/SearchResultLimit.js";
 import { SearchIndexRecord } from "./SearchIndexRecord.js";
 import { SearchIndexRecordMapper } from "./SearchIndexRecordMapper.js";
 
@@ -81,7 +82,10 @@ export class SqliteSearchIndexStore implements ISearchIndexWriter, ISearchIndexR
     }
 
     const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
-    const limit = Math.min(Math.max(criteria.limit ?? 25, 1), 100);
+    const limit = Math.min(
+      Math.max(criteria.limit ?? SearchResultLimit.DEFAULT, SearchResultLimit.MIN),
+      SearchResultLimit.MAX
+    );
     const rows = this.db
       .prepare(`
         SELECT *,
