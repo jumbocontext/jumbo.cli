@@ -21,13 +21,11 @@ import {
   getDaemonEventRows,
   type DaemonEventRow,
 } from "./CockpitDaemonEvents.js";
-import {
-  getNextFocusedDaemon,
-  nextAgentConfig,
-  nextDaemonConfigs,
-  nextPollConfig,
-  nextRetryConfig,
-} from "./CockpitDaemonConfiguration.js";
+import { getNextCockpitDaemonAgentConfig } from "./CockpitDaemonAgentConfigCycler.js";
+import { updateSelectedCockpitDaemonConfig } from "./CockpitDaemonConfigsUpdater.js";
+import { getNextFocusedCockpitDaemon } from "./CockpitDaemonFocusOrder.js";
+import { getNextCockpitDaemonPollConfig } from "./CockpitDaemonPollConfigCycler.js";
+import { getNextCockpitDaemonRetryConfig } from "./CockpitDaemonRetryConfigCycler.js";
 import {
   CODIFIER_FRAME_COUNT,
   DEFAULT_CODIFIER_FRAME_DURATION_MS,
@@ -220,7 +218,7 @@ export function CockpitLaunchpadView({
     (input, key) => {
       if (key.tab || input === "\t") {
         setSelectedDaemon((currentDaemon) => {
-          const nextDaemon = getNextFocusedDaemon(
+          const nextDaemon = getNextFocusedCockpitDaemon(
             currentDaemon,
             DAEMON_FOCUS_ORDER,
           );
@@ -253,17 +251,35 @@ export function CockpitLaunchpadView({
       }
       if (input === "a" || input === "A") {
         if (configuredDaemon !== undefined) {
-          setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextAgentConfig));
+          setDaemonConfigs((configs) =>
+            updateSelectedCockpitDaemonConfig(
+              configs,
+              configuredDaemon,
+              getNextCockpitDaemonAgentConfig,
+            )
+          );
         }
       }
       if (input === "p" || input === "P") {
         if (configuredDaemon !== undefined) {
-          setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextPollConfig));
+          setDaemonConfigs((configs) =>
+            updateSelectedCockpitDaemonConfig(
+              configs,
+              configuredDaemon,
+              getNextCockpitDaemonPollConfig,
+            )
+          );
         }
       }
       if (input === "x" || input === "X") {
         if (configuredDaemon !== undefined) {
-          setDaemonConfigs((configs) => nextDaemonConfigs(configs, configuredDaemon, nextRetryConfig));
+          setDaemonConfigs((configs) =>
+            updateSelectedCockpitDaemonConfig(
+              configs,
+              configuredDaemon,
+              getNextCockpitDaemonRetryConfig,
+            )
+          );
         }
       }
     },
