@@ -14,13 +14,8 @@ import type {
   TuiSubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
 import { TuiSubprocessStatus } from "../daemon-subprocesses/TuiSubprocessStatus.js";
-import {
-  appendDaemonEventRows,
-  findDaemonStatus,
-  formatDaemonEventRow,
-  getDaemonEventRows,
-  type DaemonEventRow,
-} from "./CockpitDaemonEvents.js";
+import { CockpitDaemonEvents } from "./CockpitDaemonEvents.js";
+import type { DaemonEventRow } from "./DaemonEventRow.js";
 import { getNextCockpitDaemonAgentConfig } from "./CockpitDaemonAgentConfigCycler.js";
 import { updateSelectedCockpitDaemonConfig } from "./CockpitDaemonConfigsUpdater.js";
 import { getNextFocusedCockpitDaemon } from "./CockpitDaemonFocusOrder.js";
@@ -128,7 +123,7 @@ export function CockpitLaunchpadView({
     subprocessManager.getAllStatuses(),
   );
   const [daemonEventRows, setDaemonEventRows] = useState<readonly DaemonEventRow[]>(() =>
-    getDaemonEventRows(subprocessManager.getAllStatuses(), Date.now())
+    CockpitDaemonEvents.getRows(subprocessManager.getAllStatuses(), Date.now())
   );
   const launchAnimationActive =
     launchAnimationSize !== undefined && !launchAnimationDone;
@@ -207,7 +202,10 @@ export function CockpitLaunchpadView({
       const snapshots = subprocessManager.getAllStatuses();
       setDaemonStatuses(snapshots);
       setDaemonEventRows((currentRows) =>
-        appendDaemonEventRows(currentRows, getDaemonEventRows(snapshots, Date.now()))
+        CockpitDaemonEvents.appendRows(
+          currentRows,
+          CockpitDaemonEvents.getRows(snapshots, Date.now()),
+        )
       );
     }, 500);
 
@@ -289,7 +287,7 @@ export function CockpitLaunchpadView({
   const daemonStatusByName = Object.fromEntries(
     DAEMON_UI_DEFINITIONS.map((daemonUiDefinition) => [
       daemonUiDefinition.constants.name,
-      findDaemonStatus(daemonStatuses, daemonUiDefinition.constants.name),
+      CockpitDaemonEvents.findStatus(daemonStatuses, daemonUiDefinition.constants.name),
     ]),
   ) as Record<TuiDaemonName, TuiSubprocessSnapshot>;
   const daemonFrameIndexByName = {
@@ -363,7 +361,7 @@ export function CockpitLaunchpadView({
         <Box flexDirection="column" marginTop={1}>
           {daemonEventRows.map((row) => (
             <Text key={row.key} color={row.color}>
-              {formatDaemonEventRow(row)}
+              {CockpitDaemonEvents.formatRow(row)}
             </Text>
           ))}
         </Box>
@@ -440,6 +438,9 @@ async function toggleDaemon(
   const snapshots = manager.getAllStatuses();
   setDaemonStatuses(snapshots);
   setDaemonEventRows((currentRows) =>
-    appendDaemonEventRows(currentRows, getDaemonEventRows(snapshots, Date.now()))
+    CockpitDaemonEvents.appendRows(
+      currentRows,
+      CockpitDaemonEvents.getRows(snapshots, Date.now()),
+    )
   );
 }
