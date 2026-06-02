@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Managed agent files**: `jumbo init`, `jumbo evolve`, and repair flows now generate bootstrap-only agent instruction files from canonical `assets/agent-files` markdown and JSON fragments, while distributing fine-grained managed skills for session bootstrap, lifecycle hooks, command discovery, context maintenance, and correction capture.
+
 ## [3.5.0] - 2026-06-01
 
 ### Added

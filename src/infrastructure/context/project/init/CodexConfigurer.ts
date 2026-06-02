@@ -16,6 +16,7 @@ import path from "path";
 import fs from "fs-extra";
 import { IConfigurer } from "./IConfigurer.js";
 import { PlannedFileChange } from "../../../../application/context/project/init/PlannedFileChange.js";
+import { AgentFileAssetContent } from "../../../../domain/project/AgentFileAssetContent.js";
 
 export class CodexConfigurer implements IConfigurer {
   readonly agent = {
@@ -77,41 +78,7 @@ export class CodexConfigurer implements IConfigurer {
   }
 
   private getJumboHooks(): any {
-    return {
-      hooks: {
-        PreCompact: [
-          {
-            matcher: "auto",
-            hooks: [
-              {
-                type: "command",
-                command: "jumbo work pause --format text",
-              },
-            ],
-          },
-        ],
-        SessionStart: [
-          {
-            matcher: "startup",
-            hooks: [
-              {
-                type: "command",
-                command: "jumbo session start --format text",
-              },
-            ],
-          },
-          {
-            matcher: "compact",
-            hooks: [
-              {
-                type: "command",
-                command: "jumbo work resume --format text",
-              },
-            ],
-          },
-        ],
-      },
-    };
+    return AgentFileAssetContent.readJson("codex-hooks.fragment.json");
   }
 
   private mergeHooks(existing: any, jumbo: any): any {

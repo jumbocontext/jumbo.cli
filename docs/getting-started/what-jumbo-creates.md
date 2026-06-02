@@ -36,29 +36,38 @@ The `.jumbo/` directory is Jumbo's local project memory. Everything Jumbo knows 
 
 ---
 
-## Agent hook files
+## Agent files
 
-Jumbo creates or updates several files outside `.jumbo/` to integrate with AI coding agents. All writes are idempotent — if the file already exists, Jumbo appends its section without overwriting your content.
+Jumbo creates or updates several files outside `.jumbo/` to integrate with AI coding agents. Writes are idempotent: Jumbo preserves user content, merges JSON hook/settings fragments, dedupes existing Jumbo entries, and refreshes managed skills during repair.
 
 **Instruction files** (project root):
 
 | File | Purpose |
 |---|---|
-| `AGENTS.md` | Primary Jumbo instructions for all agents |
-| `CLAUDE.md` | Points Claude Code to AGENTS.md |
-| `GEMINI.md` | Points Gemini CLI to AGENTS.md |
-| `.github/copilot-instructions.md` | Jumbo instructions for GitHub Copilot |
+| `JUMBO.md` | Bootstrap-only Jumbo instruction file |
+| `AGENTS.md` | Points agents to `JUMBO.md` |
+| `CLAUDE.md` | Points Claude Code to `JUMBO.md` |
+| `GEMINI.md` | Points Gemini CLI to `JUMBO.md` |
+| `.github/copilot-instructions.md` | Points GitHub Copilot to `../JUMBO.md` |
+| `.cursor/rules/jumbo.mdc` | Points Cursor to `JUMBO.md` with always-apply rules frontmatter |
+
+`JUMBO.md` tells agents to follow Jumbo command prompts and run `jumbo session start` only when a Jumbo command has not already routed the current task. It does not contain a command catalog, workflow guide, or context-maintenance playbook.
 
 **Settings and hooks:**
 
 | File | Purpose |
 |---|---|
-| `.claude/settings.json` | Claude Code hooks for session start, compaction, and session end |
+| `.claude/settings.json` | Claude Code hooks for session start and compaction |
 | `.codex/hooks.json` | Codex hooks for session start and compaction using text-mode Jumbo output |
-| `.gemini/settings.json` | Gemini CLI hooks for session start, compression, and session end |
+| `.gemini/settings.json` | Gemini CLI hooks for session start and compression |
 | `.github/hooks/hooks.json` | GitHub Copilot hooks for session start |
+| `.cursor/hooks.json` | Cursor hook for session start |
 
-These hooks allow Jumbo to automatically load context when an agent session begins and capture a summary when it ends.
+These hooks load the session router when an agent session begins and preserve work state before compaction or compression.
+
+**Managed skills:**
+
+Jumbo copies workflow and maintenance skills from `assets/skills` into the selected agents' skill directories, including bootstrap/session use, lifecycle hooks, command discovery, context maintenance, and correction capture. Additive initialization does not overwrite existing managed skill directories; repair refreshes Jumbo-managed skills from assets while preserving user-created skills.
 
 ---
 

@@ -11,6 +11,7 @@
 import path from "path";
 import fs from "fs-extra";
 import { CursorRulesContent } from "../../../../domain/project/CursorRulesContent.js";
+import { AgentFileAssetContent } from "../../../../domain/project/AgentFileAssetContent.js";
 import { IConfigurer } from "./IConfigurer.js";
 import { PlannedFileChange } from "../../../../application/context/project/init/PlannedFileChange.js";
 
@@ -70,16 +71,7 @@ export class CursorConfigurer implements IConfigurer {
 
       await fs.ensureDir(path.join(projectRoot, ".cursor"));
 
-      const jumboHooks = {
-        version: 1,
-        hooks: {
-          sessionStart: [
-            {
-              command: "jumbo session start",
-            },
-          ],
-        },
-      };
+      const jumboHooks = AgentFileAssetContent.readJson("cursor-hooks.fragment.json");
 
       const exists = await fs.pathExists(hooksPath);
 

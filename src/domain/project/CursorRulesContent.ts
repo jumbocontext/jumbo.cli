@@ -1,14 +1,10 @@
 /**
  * Domain Value Object: Cursor Rules Content
  *
- * Codifies the content for .cursor/rules/jumbo.mdc that directs
- * Cursor agents to read JUMBO.md on startup.
- * Handles content generation with YAML frontmatter (alwaysApply: true)
- * and section replacement for repair operations.
- *
- * Rationale: Codified in domain rather than template file to support
- * npm distribution (no file copying during build).
+ * Asset-backed compatibility helper for .cursor/rules/jumbo.mdc content.
  */
+
+import { AgentFileAssetContent } from "./AgentFileAssetContent.js";
 
 export class CursorRulesContent {
   private static readonly SECTION_MARKER = "<!-- jumbo:cursor-rules -->";
@@ -18,16 +14,7 @@ export class CursorRulesContent {
    * and a reference to JUMBO.md.
    */
   static getFullContent(): string {
-    return `---
-alwaysApply: true
----
-
-${this.SECTION_MARKER}
-
-# Jumbo Context Management
-
-See JUMBO.md and follow all instructions. If the file does not exist, then ignore this instruction.
-`;
+    return AgentFileAssetContent.readMarkdown("cursor-rules.mdc");
   }
 
   /**
@@ -51,11 +38,6 @@ See JUMBO.md and follow all instructions. If the file does not exist, then ignor
 
     const before = existingContent.substring(0, markerIndex);
 
-    return before + `${this.SECTION_MARKER}
-
-# Jumbo Context Management
-
-See JUMBO.md and follow all instructions. If the file does not exist, then ignore this instruction.
-`;
+    return before + AgentFileAssetContent.extractSection(this.getFullContent(), this.SECTION_MARKER);
   }
 }

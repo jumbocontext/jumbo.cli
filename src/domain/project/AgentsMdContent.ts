@@ -1,33 +1,27 @@
 /**
  * Domain Value Object: AGENTS.md Content
  *
- * Codifies the thin reference content for AGENTS.md files that
- * points agents to JUMBO.md as the single source of truth.
- * Handles content generation, section marker management, and
- * section replacement for both current and legacy markers.
- *
- * Rationale: Codified in domain rather than template file to support
- * npm distribution (no file copying during build).
+ * Asset-backed compatibility helper for AGENTS.md content.
  */
+
+import { AgentFileAssetContent } from "./AgentFileAssetContent.js";
 
 export class AgentsMdContent {
   /**
    * Generate the Jumbo reference section for AGENTS.md
    */
   static getJumboSection(): string {
-    return `## Instructions for Agents on how to collaborate with Jumbo
-
-See JUMBO.md and follow all instructions. If the file does not exist, then ignore this instruction.
-`;
+    return AgentFileAssetContent.extractSection(
+      AgentFileAssetContent.readMarkdown("AGENTS.md"),
+      this.getCurrentJumboSectionMarker()
+    );
   }
 
   /**
    * Generate complete AGENTS.md file content
    */
   static getFullContent(): string {
-    return `# AGENTS.md
-
-${this.getJumboSection()}`;
+    return AgentFileAssetContent.readMarkdown("AGENTS.md");
   }
 
   /**

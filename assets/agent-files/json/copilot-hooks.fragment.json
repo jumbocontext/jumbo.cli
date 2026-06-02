@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "jumbo session start",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
+
