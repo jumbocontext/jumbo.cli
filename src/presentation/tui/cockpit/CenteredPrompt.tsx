@@ -3,7 +3,7 @@ import { Box, Text } from "ink";
 import { SemanticColors } from "../../shared/DesignTokens.js";
 import { KeyBadge } from "../ui-primitives/KeyBadge.js";
 
-interface CenteredPromptProps {
+export interface CenteredPromptProps {
   keyChar: string;
   prefix: string;
   suffix: string;
