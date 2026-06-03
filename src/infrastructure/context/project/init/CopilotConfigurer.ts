@@ -11,6 +11,7 @@
 import path from "path";
 import fs from "fs-extra";
 import { CopilotInstructionsContent } from "../../../../domain/project/CopilotInstructionsContent.js";
+import { AgentFileAssetContent } from "../../../../domain/project/AgentFileAssetContent.js";
 import { IConfigurer } from "./IConfigurer.js";
 import { PlannedFileChange } from "../../../../application/context/project/init/PlannedFileChange.js";
 
@@ -63,12 +64,7 @@ export class CopilotConfigurer implements IConfigurer {
       const jumboMarker = CopilotInstructionsContent.getCopilotSectionMarker();
 
       if (!content.includes(jumboMarker) && !content.includes("## Jumbo Context Management")) {
-        // Jumbo section missing (neither current nor legacy) - append section
-        const sectionContent = `## Instructions for Agents on how to collaborate with Jumbo
-
-See ../JUMBO.md and follow all instructions. If the file does not exist, then ignore this instruction.
-`;
-        const updatedContent = content + "\n\n" + sectionContent;
+        const updatedContent = content + "\n\n" + CopilotInstructionsContent.getCopilotSection();
         await fs.writeFile(copilotInstructionsPath, updatedContent, "utf-8");
       }
       // else: Jumbo section already present - no-op
@@ -90,20 +86,7 @@ See ../JUMBO.md and follow all instructions. If the file does not exist, then ig
       // Ensure .github/hooks directory exists
       await fs.ensureDir(path.join(projectRoot, ".github", "hooks"));
 
-      // Define all Jumbo hooks for GitHub
-      const jumboHooks = {
-        version: 1,
-        hooks: {
-          sessionStart: [
-            {
-              type: "command",
-              bash: "jumbo session start",
-              cwd: ".",
-              timeoutSec: 10
-            }
-          ]
-        }
-      };
+      const jumboHooks = AgentFileAssetContent.readJson("copilot-hooks.fragment.json");
 
       // Check if file exists
       const exists = await fs.pathExists(hooksPath);
@@ -224,12 +207,7 @@ See ../JUMBO.md and follow all instructions. If the file does not exist, then ig
         // Jumbo section found (current or legacy) - replace with thin reference
         await fs.writeFile(copilotInstructionsPath, replaced, "utf-8");
       } else {
-        // Jumbo section not found - append
-        const sectionContent = `## Instructions for Agents on how to collaborate with Jumbo
-
-See ../JUMBO.md and follow all instructions. If the file does not exist, then ignore this instruction.
-`;
-        const updatedContent = content + "\n\n" + sectionContent;
+        const updatedContent = content + "\n\n" + CopilotInstructionsContent.getCopilotSection();
         await fs.writeFile(copilotInstructionsPath, updatedContent, "utf-8");
       }
     } catch (error) {

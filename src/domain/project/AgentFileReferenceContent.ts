@@ -1,13 +1,10 @@
 /**
  * Domain Value Object: Agent File Reference Content
  *
- * Codifies the thin reference content for CLAUDE.md and GEMINI.md
- * that directs agents to read JUMBO.md on startup.
- * Handles content generation and legacy content replacement.
- *
- * Rationale: Codified in domain rather than template file to support
- * npm distribution (no file copying during build).
+ * Asset-backed compatibility helper for CLAUDE.md and GEMINI.md content.
  */
+
+import { AgentFileAssetContent } from "./AgentFileAssetContent.js";
 
 export class AgentFileReferenceContent {
   /**
@@ -15,12 +12,7 @@ export class AgentFileReferenceContent {
    * parameterized by filename.
    */
   static getAgentFileReference(fileName: string): string {
-    return `# ${fileName}
-
-## Instructions for Agents on how to collaborate with Jumbo
-
-See JUMBO.md and follow all instructions. If the file does not exist, then ignore this instruction.
-`;
+    return AgentFileAssetContent.readMarkdown(fileName);
   }
 
   /**

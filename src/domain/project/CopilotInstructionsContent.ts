@@ -1,25 +1,27 @@
 /**
  * Domain Value Object: Copilot Instructions Content
  *
- * Codifies the thin reference content for copilot-instructions.md
- * that directs agents to read JUMBO.md on startup.
- * Handles content generation, section marker detection, and section replacement.
- *
- * Rationale: Codified in domain rather than template file to support
- * npm distribution (no file copying during build).
+ * Asset-backed compatibility helper for copilot-instructions.md content.
  */
+
+import { AgentFileAssetContent } from "./AgentFileAssetContent.js";
 
 export class CopilotInstructionsContent {
   /**
    * Generate thin reference content for copilot-instructions.md
    */
   static getCopilotInstructions(): string {
-    return `# copilot-instructions.md
+    return AgentFileAssetContent.readMarkdown("copilot-instructions.md");
+  }
 
-## Instructions for Agents on how to collaborate with Jumbo
-
-See ../JUMBO.md and follow all instructions. If the file does not exist, then ignore this instruction.
-`;
+  /**
+   * Generate the Jumbo section without the file title.
+   */
+  static getCopilotSection(): string {
+    return AgentFileAssetContent.extractSection(
+      this.getCopilotInstructions(),
+      this.getCopilotSectionMarker()
+    );
   }
 
   /**
@@ -70,11 +72,6 @@ See ../JUMBO.md and follow all instructions. If the file does not exist, then ig
     const before = existingContent.substring(0, markerIndex);
     const after = existingContent.substring(endIndex);
 
-    const sectionContent = `## Instructions for Agents on how to collaborate with Jumbo
-
-See ../JUMBO.md and follow all instructions. If the file does not exist, then ignore this instruction.
-`;
-
-    return before + sectionContent + after;
+    return before + this.getCopilotSection() + after;
   }
 }

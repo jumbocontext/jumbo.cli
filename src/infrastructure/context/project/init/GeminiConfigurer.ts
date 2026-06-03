@@ -11,6 +11,7 @@
 import path from "path";
 import fs from "fs-extra";
 import { AgentFileReferenceContent } from "../../../../domain/project/AgentFileReferenceContent.js";
+import { AgentFileAssetContent } from "../../../../domain/project/AgentFileAssetContent.js";
 import { SafeGeminiSettingsMerger } from "./SafeGeminiSettingsMerger.js";
 import { IConfigurer } from "./IConfigurer.js";
 import { PlannedFileChange } from "../../../../application/context/project/init/PlannedFileChange.js";
@@ -70,47 +71,8 @@ export class GeminiConfigurer implements IConfigurer {
    */
   private async ensureGeminiSettings(projectRoot: string): Promise<void> {
     try {
-      // Define all Jumbo settings for Gemini CLI
-      const jumboSettings = {
-        hooks: {
-          SessionStart: [
-            {
-              matcher: "startup" as const,
-              hooks: [
-                {
-                  type: "command" as const,
-                  command: "jumbo session start",
-                },
-              ],
-            },
-            {
-              matcher: "compress" as const,
-              hooks: [
-                {
-                  type: "command" as const,
-                  command: "jumbo work resume",
-                },
-              ],
-            },
-          ],
-          PreCompress: [
-            {
-              matcher: "auto" as const,
-              hooks: [
-                {
-                  type: "command" as const,
-                  command: "jumbo work pause",
-                },
-              ],
-            },
-          ],
-        },
-        tools: {
-          allowed: ["run_shell_command(jumbo --help)"],
-        },
-      };
+      const jumboSettings = AgentFileAssetContent.readJson("gemini-settings.fragment.json");
 
-      // Merge into existing settings (or create new)
       await SafeGeminiSettingsMerger.mergeSettings(projectRoot, jumboSettings);
     } catch (error) {
       // Graceful degradation - log but don't throw

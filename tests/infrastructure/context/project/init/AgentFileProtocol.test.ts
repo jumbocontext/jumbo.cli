@@ -9,6 +9,7 @@ import { JumboMdContent } from "../../../../../src/domain/project/JumboMdContent
 import { AgentsMdContent } from "../../../../../src/domain/project/AgentsMdContent";
 import { AgentFileReferenceContent } from "../../../../../src/domain/project/AgentFileReferenceContent";
 import { CopilotInstructionsContent } from "../../../../../src/domain/project/CopilotInstructionsContent";
+import { AgentFileAssetContent } from "../../../../../src/domain/project/AgentFileAssetContent";
 import os from "os";
 import { jest } from "@jest/globals";
 
@@ -52,7 +53,16 @@ describe("AgentFileProtocol", () => {
       const content = await fs.readFile(jumboMdPath, "utf-8");
       expect(content).toContain("# JUMBO.md");
       expect(content).toContain(JumboMdContent.getCurrentSectionMarker());
-      expect(content).toContain("jumbo goal refine --help");
+      expect(content).toContain("jumbo session start");
+      expect(content).not.toContain("jumbo goal refine --help");
+      expect(content).not.toContain("### Available Commands");
+    });
+
+    it("should create JUMBO.md from the canonical managed asset", async () => {
+      await protocol.ensureJumboMd(tmpDir);
+
+      const content = await fs.readFile(path.join(tmpDir, "JUMBO.md"), "utf-8");
+      expect(content).toBe(AgentFileAssetContent.readMarkdown("JUMBO.md"));
     });
 
     it("should replace outdated Jumbo section with current version", async () => {
@@ -213,6 +223,23 @@ describe("AgentFileProtocol", () => {
         const installedSkillPath = path.join(tmpDir, platformSkillRoot, "my-skill", "SKILL.md");
         expect(await fs.pathExists(installedSkillPath)).toBe(true);
         expect(await fs.readFile(installedSkillPath, "utf-8")).toContain("From template.");
+      }
+    });
+
+    it("should distribute fine-grained managed skills from packaged assets", async () => {
+      protocol = new AgentFileProtocol();
+
+      await protocol.ensureAgentConfigurations(tmpDir, ["codex"]);
+
+      const expectedSkillNames = [
+        "jumbo-bootstrap-session",
+        "jumbo-command-discovery",
+        "jumbo-context-maintenance",
+        "jumbo-correction-capture",
+      ];
+
+      for (const skillName of expectedSkillNames) {
+        expect(await fs.pathExists(path.join(tmpDir, ".codex", "skills", skillName, "SKILL.md"))).toBe(true);
       }
     });
 

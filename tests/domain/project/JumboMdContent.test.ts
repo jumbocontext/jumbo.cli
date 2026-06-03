@@ -6,68 +6,53 @@ import { JumboMdContent } from "../../../src/domain/project/JumboMdContent";
 
 describe("JumboMdContent Value Object", () => {
   describe("getJumboSection()", () => {
-    it("should return Jumbo section markdown content", () => {
+    it("should return bootstrap-only Jumbo section markdown content", () => {
       const content = JumboMdContent.getJumboSection();
 
       expect(content).toContain("## Instructions for Agents on how to collaborate with Jumbo");
-      expect(content).toContain("Jumbo CLI for agent orchestration and context management");
       expect(content).toContain("jumbo session start");
-      expect(content).toContain("jumbo goal start");
-      expect(content).toContain("jumbo component add");
-      expect(content).toContain("jumbo decision add");
-      expect(content).toContain("jumbo guideline add");
-      expect(content).toContain("jumbo invariant add");
+      expect(content).toContain("already been routed");
     });
 
-    it("should include available commands section with jumbo goal refine", () => {
+    it("should not include command catalog content", () => {
       const content = JumboMdContent.getJumboSection();
 
-      expect(content).toContain("### Available Commands");
-      expect(content).toContain("jumbo goal add --help");
-      expect(content).toContain("jumbo goal refine --help");
-      expect(content).toContain("jumbo session start --help");
+      expect(content).not.toContain("### Available Commands");
+      expect(content).not.toContain("jumbo goal refine --help");
+      expect(content).not.toContain("jumbo session start --help");
     });
 
-    it("should include context maintenance section with specific behavioral expectations", () => {
+    it("should not include workflow or context-maintenance playbook prose", () => {
       const content = JumboMdContent.getJumboSection();
 
-      expect(content).toContain("### Maintain Context as You Work");
-      expect(content).toContain("#### During Refinement");
-      expect(content).toContain("jumbo goal add --objective");
-      expect(content).toContain("--prerequisite-goals");
-      expect(content).toContain("#### During Implementation");
-      expect(content).toContain("jumbo decision add --title");
-      expect(content).toContain("jumbo component add --name");
-      expect(content).toContain("jumbo relation add --from-type goal");
-      expect(content).toContain("#### When the User Corrects You");
-      expect(content).toContain("jumbo invariant add --category");
-      expect(content).toContain("jumbo guideline add --category");
-      expect(content).toContain("#### Why This Matters");
+      expect(content).not.toContain("### Maintain Context as You Work");
+      expect(content).not.toContain("### Before Starting Work on a Goal");
+      expect(content).not.toContain("jumbo decision add --title");
+      expect(content).not.toContain("jumbo component add --name");
     });
 
-    it("should include Dear Agent letter", () => {
+    it("should not include legacy letter copy", () => {
       const content = JumboMdContent.getJumboSection();
 
-      expect(content).toContain("Dear Agent,");
-      expect(content).toContain("Sincerely,");
-      expect(content).toContain("Project Administrator");
+      expect(content).not.toContain("Dear Agent,");
+      expect(content).not.toContain("Sincerely,");
+      expect(content).not.toContain("Project Administrator");
     });
 
-    it("should include session lifecycle sections", () => {
+    it("should not include lifecycle hook instructions", () => {
       const content = JumboMdContent.getJumboSection();
 
-      expect(content).toContain("### When you start a new Session Start");
-      expect(content).toContain("### Pre Compaction/Compression");
-      expect(content).toContain("### After Compaction/Compression");
-      expect(content).toContain("### Before Finishing a Session");
-      expect(content).toContain("### Before Starting Work on a Goal");
+      expect(content).not.toContain("### Pre Compaction/Compression");
+      expect(content).not.toContain("### After Compaction/Compression");
+      expect(content).not.toContain("jumbo work pause");
+      expect(content).not.toContain("jumbo work resume");
     });
 
-    it("should include next step", () => {
+    it("should not include next-step orientation copy", () => {
       const content = JumboMdContent.getJumboSection();
 
-      expect(content).toContain("### Next step:");
-      expect(content).toContain("Run `jumbo session start` to retrieve project orientation.");
+      expect(content).not.toContain("### Next step:");
+      expect(content).not.toContain("retrieve project orientation");
     });
   });
 

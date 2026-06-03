@@ -14,6 +14,7 @@
 import path from "path";
 import fs from "fs-extra";
 import { AgentFileReferenceContent } from "../../../../domain/project/AgentFileReferenceContent.js";
+import { AgentFileAssetContent } from "../../../../domain/project/AgentFileAssetContent.js";
 import { SafeClaudeSettingsMerger } from "./SafeClaudeSettingsMerger.js";
 import { IConfigurer } from "./IConfigurer.js";
 import { PlannedFileChange } from "../../../../application/context/project/init/PlannedFileChange.js";
@@ -73,47 +74,8 @@ export class ClaudeConfigurer implements IConfigurer {
    */
   private async ensureClaudeSettings(projectRoot: string): Promise<void> {
     try {
-      // Define all Jumbo settings for Claude Code
-      const jumboSettings = {
-        hooks: {
-          SessionStart: [
-            {
-              matcher: "startup" as const,
-              hooks: [
-                {
-                  type: "command" as const,
-                  command: "jumbo session start",
-                },
-              ],
-            },
-            {
-              matcher: "compact" as const,
-              hooks: [
-                {
-                  type: "command" as const,
-                  command: "jumbo work resume",
-                },
-              ],
-            },
-          ],
-          PreCompact: [
-            {
-              matcher: "auto" as const,
-              hooks: [
-                {
-                  type: "command" as const,
-                  command: "jumbo work pause",
-                },
-              ],
-            },
-          ],
-        },
-        permissions: {
-          allow: ["Bash(jumbo --help)"],
-        },
-      };
+      const jumboSettings = AgentFileAssetContent.readJson("claude-settings.fragment.json");
 
-      // Merge into existing settings (or create new)
       await SafeClaudeSettingsMerger.mergeSettings(projectRoot, jumboSettings);
     } catch (error) {
       // Graceful degradation - log but don't throw

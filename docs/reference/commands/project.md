@@ -37,10 +37,12 @@ jumbo project init --non-interactive --name <name> [options]
 ### Behavior
 
 1. Creates `.jumbo/` directory with event store and projections
-2. In interactive mode, prompts for Claude, Gemini, Copilot, and GitHub Hooks selection before confirmation
+2. In interactive mode, prompts for supported agent integrations before confirmation
 3. Filters planned changes and agent-specific file creation to the selected agents
-4. Always creates `JUMBO.md` and `AGENTS.md`
+4. Always creates bootstrap-only `JUMBO.md` and reference-only `AGENTS.md`
 5. In non-interactive mode, configures all supported agents
+
+Managed agent markdown and JSON hook/settings fragments are loaded from `assets/agent-files`. Managed skills are copied from `assets/skills` to the selected agents' skill directories.
 
 ### Examples
 
