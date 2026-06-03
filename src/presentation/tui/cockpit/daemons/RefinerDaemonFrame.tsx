@@ -1,6 +1,6 @@
 import React from "react";
-import { GlyphCellDaemonFrame } from "../DaemonFrameViews.js";
 import { getRefinerFrame } from "../CockpitDaemonFrames.js";
+import { GlyphCellDaemonFrame } from "../GlyphCellDaemonFrame.js";
 import type { IDaemonFrame } from "./IDaemonFrame.js";
 
 export function RefinerDaemonFrame({

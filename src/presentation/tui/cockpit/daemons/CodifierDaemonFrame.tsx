@@ -1,6 +1,6 @@
 import React from "react";
-import { CodifierDaemonFrame as CodifierDaemonFrameView } from "../DaemonFrameViews.js";
 import { getCodifierFrame } from "../CockpitDaemonFrames.js";
+import { CodifierGlyphDaemonFrame } from "../CodifierGlyphDaemonFrame.js";
 import type { IDaemonFrame } from "./IDaemonFrame.js";
 
 export function CodifierDaemonFrame({
@@ -10,7 +10,7 @@ export function CodifierDaemonFrame({
   codifierGlyphColors,
 }: IDaemonFrame): React.ReactElement {
   return (
-    <CodifierDaemonFrameView
+    <CodifierGlyphDaemonFrame
       frame={getCodifierFrame(frameIndex)}
       frameIndex={frameIndex}
       glyphColors={codifierGlyphColors}
