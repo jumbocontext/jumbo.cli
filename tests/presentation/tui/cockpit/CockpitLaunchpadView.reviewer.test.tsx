@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import {
   getReviewerFrame,
-} from "../../../../src/presentation/tui/cockpit/CockpitLaunchpadView.js";
+} from "../../../../src/presentation/tui/cockpit/CockpitDaemonFrames.js";
 
 const glyphPalette = ["#111111", "#222222"] as const;
 
