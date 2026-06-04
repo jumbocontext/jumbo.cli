@@ -1,21 +1,16 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { Box } from "ink";
-import { AnimatedBanner } from "./AnimatedBanner.js";
-import { generateCustomInfoBoxLines } from "../../cli/banner/AnimationFrames.js";
-import { CockpitGreeterView } from "./CockpitGreeterView.js";
-import { CockpitUnprimedView } from "./CockpitUnprimedView.js";
-import { CockpitPrimedEmptyView } from "./CockpitPrimedEmptyView.js";
-import { CockpitLaunchpadView } from "./CockpitLaunchpadView.js";
 import type { LaunchAnimationRenderer } from "./CockpitLaunchpadView.js";
 import type { ISettingsReader } from "../../../application/settings/ISettingsReader.js";
 import { ProjectLifecycle } from "../../../domain/project/Constants.js";
-import { CockpitScreenCopy } from "./CockpitScreenCopy.js";
 import { CockpitScreenDefaults } from "./CockpitScreenDefaults.js";
-
-export type CockpitState =
-  (typeof ProjectLifecycle)[keyof typeof ProjectLifecycle];
-
-const PLACEHOLDER_COCKPIT_STATE: CockpitState = ProjectLifecycle.UNINITIALIZED;
+import { CockpitScreenBanner } from "./CockpitScreenBanner.js";
+import { CockpitScreenContent } from "./CockpitScreenContent.js";
+import { getCockpitLaunchAnimationSize } from "./CockpitLaunchAnimationSize.js";
+import {
+  CockpitPlaceholderState,
+  type CockpitState,
+} from "./CockpitState.js";
 
 interface CockpitScreenProps {
   state?: CockpitState;
@@ -32,7 +27,7 @@ interface CockpitScreenProps {
 }
 
 export function CockpitScreen({
-  state = PLACEHOLDER_COCKPIT_STATE,
+  state = CockpitPlaceholderState,
   shortcutsEnabled = true,
   terminalWidth = CockpitScreenDefaults.terminalWidth,
   terminalHeight = CockpitScreenDefaults.bodyHeight,
@@ -61,10 +56,7 @@ export function CockpitScreen({
     state !== ProjectLifecycle.PRIMED && (bannerAnimationActive || bannerPersists);
   const shouldRenderContent = state === ProjectLifecycle.PRIMED || bannerComplete;
   const launchAnimationSize = useMemo(
-    () => ({
-      height: Math.max(1, Math.floor(terminalHeight)),
-      width: Math.max(1, Math.floor(terminalWidth)),
-    }),
+    () => getCockpitLaunchAnimationSize(terminalWidth, terminalHeight),
     [terminalHeight, terminalWidth],
   );
 
@@ -73,56 +65,26 @@ export function CockpitScreen({
     onBannerAnimationComplete?.();
   }, [onBannerAnimationComplete]);
 
-  const infoBoxLines = useMemo(() => {
-    if (state === ProjectLifecycle.UNINITIALIZED) {
-      return generateCustomInfoBoxLines([
-        { label: CockpitScreenCopy.directoryLabel, value: process.cwd() },
-        {
-          label: CockpitScreenCopy.statusLabel,
-          value: CockpitScreenCopy.uninitializedStatus,
-        },
-      ]);
-    }
-    if (state === ProjectLifecycle.UNPRIMED) {
-      return generateCustomInfoBoxLines([
-        { label: CockpitScreenCopy.directoryLabel, value: process.cwd() },
-        { label: CockpitScreenCopy.statusLabel, value: CockpitScreenCopy.readyStatus },
-      ]);
-    }
-    return undefined;
-  }, [state]);
-
   return (
     <Box flexDirection="column" flexGrow={1} width="100%">
-      {shouldRenderBanner && (
-        <Box alignSelf="center" marginTop={1} flexShrink={0}>
-          <AnimatedBanner
-            onComplete={handleBannerComplete}
-            persist={bannerPersists}
-            version={CockpitScreenDefaults.placeholderVersion}
-            infoBoxLines={infoBoxLines}
-            animated={bannerAnimationActive}
-          />
-        </Box>
-      )}
-      {shouldRenderContent && (
-        <Box flexDirection="column" flexGrow={1} width="100%">
-          {state === ProjectLifecycle.UNINITIALIZED && <CockpitGreeterView />}
-          {state === ProjectLifecycle.UNPRIMED && <CockpitUnprimedView />}
-          {state === ProjectLifecycle.PRIMED_EMPTY && <CockpitPrimedEmptyView />}
-          {state === ProjectLifecycle.PRIMED && (
-            <CockpitLaunchpadView
-              shortcutsEnabled={shortcutsEnabled}
-              launchAnimationSize={
-                billboardAnimationActive ? launchAnimationSize : undefined
-              }
-              onLaunchAnimationDone={onBillboardAnimationComplete}
-              launchAnimationRenderer={launchAnimationRenderer}
-              settingsReader={settingsReader}
-            />
-          )}
-        </Box>
-      )}
+      <CockpitScreenBanner
+        state={state}
+        shouldRenderBanner={shouldRenderBanner}
+        bannerAnimationActive={bannerAnimationActive}
+        bannerPersists={bannerPersists}
+        onBannerAnimationComplete={handleBannerComplete}
+      />
+      <CockpitScreenContent
+        state={state}
+        shortcutsEnabled={shortcutsEnabled}
+        shouldRenderContent={shouldRenderContent}
+        launchAnimationSize={
+          billboardAnimationActive ? launchAnimationSize : undefined
+        }
+        onBillboardAnimationComplete={onBillboardAnimationComplete}
+        launchAnimationRenderer={launchAnimationRenderer}
+        settingsReader={settingsReader}
+      />
     </Box>
   );
 }

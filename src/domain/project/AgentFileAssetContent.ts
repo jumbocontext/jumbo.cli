@@ -13,7 +13,10 @@ const assetRoot = path.resolve(
 
 export class AgentFileAssetContent {
   static readMarkdown(fileName: string): string {
-    return this.withTrailingNewline(readFileSync(path.join(assetRoot, "markdown", fileName), "utf-8"));
+    return this.withTrailingNewline(
+      readFileSync(path.join(assetRoot, "markdown", fileName), "utf-8")
+        .replace(/\r\n/g, "\n")
+    );
   }
 
   static readJson<T = any>(fileName: string): T {

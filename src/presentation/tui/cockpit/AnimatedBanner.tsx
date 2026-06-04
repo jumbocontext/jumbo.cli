@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Box, Text } from "ink";
-import {
-  getAnimationFrame,
-  getFrameCount,
-} from "../../cli/banner/AnimationFrames.js";
-import { SemanticColors } from "../../shared/DesignTokens.js";
+import { getAnimationFrame } from "../../cli/banner/AnimationFrames.js";
+import { getAnimatedBannerColorGradientHex } from "./AnimatedBannerColorGradient.js";
+import { getAnimatedBannerLineColorSegments } from "./AnimatedBannerLineColorSegments.js";
+import { AnimatedBannerTiming } from "./AnimatedBannerTiming.js";
 
 interface AnimatedBannerProps {
   onComplete: () => void;
@@ -15,147 +14,7 @@ interface AnimatedBannerProps {
   animated?: boolean;
 }
 
-const TOTAL_FRAMES = getFrameCount();
-const MID_POINT = Math.floor(TOTAL_FRAMES / 2);
-const FRAME_DURATION_MS = 9;
-const TICK_MS = 4;
-const HOLD_DELAY_MS = 1120;
-const ERASE_INTERVAL_MS = 15;
-
 type BannerPhase = "walking" | "holding" | "erasing" | "persisted" | "complete";
-
-type RGB = [number, number, number];
-
-const ANCHOR_COLORS: RGB[] = [
-  [102, 180, 244],
-  [170, 0, 212],
-  [255, 42, 42],
-  [255, 131, 7],
-  [255, 204, 0],
-  [68, 170, 0],
-];
-
-const ANCHOR_COLORS_HEX = [
-  "#66b4f4",
-  "#aa00d4",
-  "#ff2a2a",
-  "#ff8307",
-  "#ffcc00",
-  "#44aa00",
-];
-
-function lerpRgb(a: RGB, b: RGB, t: number): RGB {
-  return [
-    Math.round(a[0] + (b[0] - a[0]) * t),
-    Math.round(a[1] + (b[1] - a[1]) * t),
-    Math.round(a[2] + (b[2] - a[2]) * t),
-  ];
-}
-
-function rgbToHex(r: number, g: number, b: number): string {
-  return (
-    "#" +
-    r.toString(16).padStart(2, "0") +
-    g.toString(16).padStart(2, "0") +
-    b.toString(16).padStart(2, "0")
-  );
-}
-
-export function getGradientHex(progress: number): string {
-  const clamped = Math.max(0, Math.min(1, progress));
-  const segments = ANCHOR_COLORS.length - 1;
-  const segmentLength = 1 / segments;
-  const segmentIndex = Math.min(
-    Math.floor(clamped / segmentLength),
-    segments - 1,
-  );
-  const segmentProgress =
-    (clamped - segmentIndex * segmentLength) / segmentLength;
-  const [r, g, b] = lerpRgb(
-    ANCHOR_COLORS[segmentIndex],
-    ANCHOR_COLORS[segmentIndex + 1],
-    segmentProgress,
-  );
-  return rgbToHex(r, g, b);
-}
-
-interface ColorSegment {
-  text: string;
-  color?: string;
-  inverse?: boolean;
-}
-
-function colorizeLineToSegments(
-  line: string,
-  elephantHex: string,
-): ColorSegment[] {
-  const segments: ColorSegment[] = [];
-  let i = 0;
-
-  while (i < line.length) {
-    const char = line[i];
-
-    if (char === "▓" || char === "▒") {
-      let elephantSegment = "";
-      while (
-        i < line.length &&
-        (line[i] === "▓" || line[i] === "▒" || line[i] === "█")
-      ) {
-        const nearbyContext = line.slice(
-          Math.max(0, i - 3),
-          Math.min(line.length, i + 4),
-        );
-        const hasShading =
-          nearbyContext.includes("▓") || nearbyContext.includes("▒");
-        if (line[i] === "█" && !hasShading) break;
-        elephantSegment += line[i];
-        i++;
-      }
-      const vibrant = elephantSegment.replace(/▓/g, "░").replace(/[▒█]/g, " ");
-      segments.push({ text: vibrant, color: elephantHex, inverse: true });
-    } else if (char === "█" || char === "░") {
-      let textSegment = "";
-      while (i < line.length && (line[i] === "█" || line[i] === "░")) {
-        textSegment += line[i];
-        i++;
-      }
-      segments.push({ text: textSegment, color: "#c8c8c8" });
-    } else if ("╭╮╰╯│─".includes(char)) {
-      let boxSegment = "";
-      while (i < line.length && "╭╮╰╯│─".includes(line[i])) {
-        boxSegment += line[i];
-        i++;
-      }
-      segments.push({ text: boxSegment, color: SemanticColors.keyBadge });
-    } else if (
-      char === "A" &&
-      line.slice(i).startsWith("Agent Context Orchestration")
-    ) {
-      const tagline = "Agent Context Orchestration";
-      segments.push({ text: tagline, color: "#808080" });
-      i += tagline.length;
-    } else {
-      let plainSegment = "";
-      while (
-        i < line.length &&
-        line[i] !== "▓" &&
-        line[i] !== "▒" &&
-        line[i] !== "█" &&
-        line[i] !== "░" &&
-        !"╭╮╰╯│─".includes(line[i]) &&
-        !(line[i] === "A" && line.slice(i).startsWith("Agent Context Orchestration"))
-      ) {
-        plainSegment += line[i];
-        i++;
-      }
-      if (plainSegment.length > 0) {
-        segments.push({ text: plainSegment });
-      }
-    }
-  }
-
-  return segments;
-}
 
 export function AnimatedBanner({
   onComplete,
@@ -165,7 +24,9 @@ export function AnimatedBanner({
   infoBoxLines,
   animated = true,
 }: AnimatedBannerProps): React.ReactElement | null {
-  const [frame, setFrame] = useState(animated ? 0 : TOTAL_FRAMES - 1);
+  const [frame, setFrame] = useState(
+    animated ? 0 : AnimatedBannerTiming.totalFrames - 1,
+  );
   const [phase, setPhase] = useState<BannerPhase>(
     animated ? "walking" : persist ? "persisted" : "complete",
   );
@@ -181,7 +42,7 @@ export function AnimatedBanner({
       return;
     }
 
-    setFrame(TOTAL_FRAMES - 1);
+    setFrame(AnimatedBannerTiming.totalFrames - 1);
     setPhase(persist ? "persisted" : "complete");
     setVisibleLines(null);
   }, [animated, persist]);
@@ -191,17 +52,17 @@ export function AnimatedBanner({
     const timer = setInterval(() => {
       const elapsed = performance.now() - startTimeRef.current;
       const targetFrame = Math.min(
-        Math.floor(elapsed / FRAME_DURATION_MS),
-        TOTAL_FRAMES - 1,
+        Math.floor(elapsed / AnimatedBannerTiming.frameDurationMs),
+        AnimatedBannerTiming.totalFrames - 1,
       );
       setFrame((prev) => {
-        if (targetFrame >= TOTAL_FRAMES - 1) {
+        if (targetFrame >= AnimatedBannerTiming.totalFrames - 1) {
           setPhase("holding");
-          return TOTAL_FRAMES - 1;
+          return AnimatedBannerTiming.totalFrames - 1;
         }
         return targetFrame > prev ? targetFrame : prev;
       });
-    }, TICK_MS);
+    }, AnimatedBannerTiming.tickMs);
     return () => clearInterval(timer);
   }, [phase]);
 
@@ -209,7 +70,7 @@ export function AnimatedBanner({
     if (phase !== "holding") return;
     const timer = setTimeout(() => {
       setPhase(persist ? "persisted" : "erasing");
-    }, HOLD_DELAY_MS);
+    }, AnimatedBannerTiming.holdDelayMs);
     return () => clearTimeout(timer);
   }, [phase, persist]);
 
@@ -221,7 +82,7 @@ export function AnimatedBanner({
   useEffect(() => {
     if (phase !== "erasing") return;
     const finalFrame = getAnimationFrame(
-      TOTAL_FRAMES - 1,
+      AnimatedBannerTiming.totalFrames - 1,
       version,
       projectName,
       infoBoxLines,
@@ -238,7 +99,7 @@ export function AnimatedBanner({
         }
         return prev - 1;
       });
-    }, ERASE_INTERVAL_MS);
+    }, AnimatedBannerTiming.eraseIntervalMs);
     return () => clearInterval(timer);
   }, [phase, version, projectName, infoBoxLines]);
 
@@ -249,16 +110,26 @@ export function AnimatedBanner({
   if (phase === "complete") return null;
 
   let colorProgress: number;
-  if (frame <= MID_POINT) {
-    colorProgress = frame / MID_POINT;
+  if (frame <= AnimatedBannerTiming.midpointFrame) {
+    colorProgress = frame / AnimatedBannerTiming.midpointFrame;
   } else {
-    colorProgress = 1 - (frame - MID_POINT) / (TOTAL_FRAMES - MID_POINT - 1);
+    colorProgress =
+      1 -
+      (frame - AnimatedBannerTiming.midpointFrame) /
+        (AnimatedBannerTiming.totalFrames -
+          AnimatedBannerTiming.midpointFrame -
+          1);
   }
-  const elephantHex = getGradientHex(colorProgress);
+  const elephantHex = getAnimatedBannerColorGradientHex(colorProgress);
 
   const currentFrame = phase === "walking"
     ? getAnimationFrame(frame, version, projectName, infoBoxLines)
-    : getAnimationFrame(TOTAL_FRAMES - 1, version, projectName, infoBoxLines);
+    : getAnimationFrame(
+        AnimatedBannerTiming.totalFrames - 1,
+        version,
+        projectName,
+        infoBoxLines,
+      );
 
   const linesToRender =
     visibleLines !== null ? currentFrame.slice(0, visibleLines) : currentFrame;
@@ -267,18 +138,19 @@ export function AnimatedBanner({
     <Box flexDirection="column">
       {linesToRender.map((line, lineIndex) => (
         <Text key={lineIndex}>
-          {colorizeLineToSegments(line, elephantHex).map((segment, segIndex) =>
-            segment.color ? (
-              <Text
-                key={segIndex}
-                color={segment.color}
-                inverse={segment.inverse}
-              >
-                {segment.text}
-              </Text>
-            ) : (
-              <Text key={segIndex}>{segment.text}</Text>
-            ),
+          {getAnimatedBannerLineColorSegments(line, elephantHex).map(
+            (segment, segIndex) =>
+              segment.color ? (
+                <Text
+                  key={segIndex}
+                  color={segment.color}
+                  inverse={segment.inverse}
+                >
+                  {segment.text}
+                </Text>
+              ) : (
+                <Text key={segIndex}>{segment.text}</Text>
+              ),
           )}
         </Text>
       ))}

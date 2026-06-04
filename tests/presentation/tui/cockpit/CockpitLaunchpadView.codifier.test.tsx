@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { getCodifierFrame } from "../../../../src/presentation/tui/cockpit/CockpitLaunchpadView.js";
+import { getCodifierFrame } from "../../../../src/presentation/tui/cockpit/CockpitDaemonFrames.js";
 
 describe("getCodifierFrame", () => {
   it("renders 10 rows of 35 characters", () => {
