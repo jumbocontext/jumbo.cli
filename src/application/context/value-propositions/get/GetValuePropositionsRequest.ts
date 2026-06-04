@@ -1,1 +1,1 @@
-export interface GetValuePropositionsRequest {}
+export type GetValuePropositionsRequest = Record<string, never>;

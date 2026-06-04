@@ -1,1 +1,1 @@
-export interface ViewWorkerRequest {}
+export type ViewWorkerRequest = Record<string, never>;

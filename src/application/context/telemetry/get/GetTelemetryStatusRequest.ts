@@ -1,1 +1,1 @@
-export interface GetTelemetryStatusRequest {}
+export type GetTelemetryStatusRequest = Record<string, never>;

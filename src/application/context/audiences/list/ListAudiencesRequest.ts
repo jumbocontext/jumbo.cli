@@ -1,1 +1,1 @@
-export interface ListAudiencesRequest {}
+export type ListAudiencesRequest = Record<string, never>;

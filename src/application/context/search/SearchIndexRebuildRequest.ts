@@ -1,1 +1,1 @@
-export interface SearchIndexRebuildRequest {}
+export type SearchIndexRebuildRequest = Record<string, never>;
