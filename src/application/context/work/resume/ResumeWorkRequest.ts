@@ -5,4 +5,4 @@
  * The worker's paused goal is identified automatically.
  * Exists to follow the controller Request/Response convention.
  */
-export interface ResumeWorkRequest {}
+export type ResumeWorkRequest = Record<string, never>;

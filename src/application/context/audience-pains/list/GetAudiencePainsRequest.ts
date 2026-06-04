@@ -1,1 +1,1 @@
-export interface GetAudiencePainsRequest {}
+export type GetAudiencePainsRequest = Record<string, never>;

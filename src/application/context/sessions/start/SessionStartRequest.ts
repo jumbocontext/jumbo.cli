@@ -4,4 +4,4 @@
  * Currently empty as session start requires no parameters.
  * Exists to follow the controller Request/Response convention.
  */
-export interface SessionStartRequest {}
+export type SessionStartRequest = Record<string, never>;

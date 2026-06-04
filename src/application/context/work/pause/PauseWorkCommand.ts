@@ -3,6 +3,5 @@
  * This is a parameterless command that automatically identifies
  * the worker's active goal and pauses it.
  */
-export interface PauseWorkCommand {
-  // Parameterless - worker identity is resolved from IWorkerIdentityReader
-}
+// Parameterless - worker identity is resolved from IWorkerIdentityReader
+export type PauseWorkCommand = Record<string, never>;

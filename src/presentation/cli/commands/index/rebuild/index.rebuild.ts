@@ -24,7 +24,7 @@ export const metadata: CommandMetadata = {
   requiresProject: true,
 };
 
-interface IndexRebuildOptions {}
+type IndexRebuildOptions = Record<string, never>;
 
 export async function indexRebuild(_options: IndexRebuildOptions, container: IApplicationContainer): Promise<void> {
   const renderer = Renderer.getInstance();

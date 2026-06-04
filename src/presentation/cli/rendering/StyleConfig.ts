@@ -151,6 +151,7 @@ export const Templates = {
  * Helper to strip ANSI codes for length calculations
  */
 export function stripAnsi(str: string): string {
+  // eslint-disable-next-line no-control-regex
   const ansiRegex = /\x1B\[[0-?]*[ -/]*[@-~]/g;
   return str.replace(ansiRegex, "");
 }

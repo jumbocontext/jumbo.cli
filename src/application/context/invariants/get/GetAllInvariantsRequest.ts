@@ -1,1 +1,1 @@
-export interface GetAllInvariantsRequest {}
+export type GetAllInvariantsRequest = Record<string, never>;

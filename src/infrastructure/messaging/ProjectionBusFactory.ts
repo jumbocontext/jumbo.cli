@@ -13,7 +13,6 @@
 
 import Database from "better-sqlite3";
 import { IEventBus } from "../../application/messaging/IEventBus.js";
-import { IEventHandler } from "../../application/messaging/IEventHandler.js";
 import { BaseEvent } from "../../domain/BaseEvent.js";
 import { InProcessEventBus } from "./InProcessEventBus.js";
 import { SearchIndexEventHandler } from "../../application/context/search/SearchIndexEventHandler.js";
@@ -109,6 +108,102 @@ import { SqliteRelationRemovedProjector } from "../context/relations/remove/Sqli
 // Worker identity projectors
 import { SqliteWorkerIdentifiedProjector } from "../host/workers/identify/SqliteWorkerIdentifiedProjector.js";
 
+// Event types and interfaces for type-safe subscription
+import { ArchitectureEventType } from "../../domain/architecture/Constants.js";
+import { AudiencePainEventType } from "../../domain/audience-pains/Constants.js";
+import { AudienceEventType } from "../../domain/audiences/Constants.js";
+import { ComponentEventType } from "../../domain/components/Constants.js";
+import { DecisionEventType } from "../../domain/decisions/Constants.js";
+import { DependencyEventType } from "../../domain/dependencies/Constants.js";
+import { GoalEventType } from "../../domain/goals/Constants.js";
+import { GuidelineEventType } from "../../domain/guidelines/Constants.js";
+import { InvariantEventType } from "../../domain/invariants/Constants.js";
+import { ProjectEventType } from "../../domain/project/Constants.js";
+import { RelationEventType } from "../../domain/relations/Constants.js";
+import { SessionEventType } from "../../domain/sessions/Constants.js";
+import { ValuePropositionEventType } from "../../domain/value-propositions/Constants.js";
+import { WorkerEventType } from "../../domain/workers/identify/WorkerIdentifiedEvent.js";
+import type { ArchitectureDefinedEvent } from "../../domain/architecture/define/ArchitectureDefinedEvent.js";
+import type { ArchitectureDeprecatedEvent } from "../../domain/architecture/deprecate/ArchitectureDeprecatedEvent.js";
+import type { ArchitectureUpdatedEvent } from "../../domain/architecture/update/ArchitectureUpdatedEvent.js";
+import type { AudiencePainAddedEvent } from "../../domain/audience-pains/add/AudiencePainAddedEvent.js";
+import type { AudiencePainUpdatedEvent } from "../../domain/audience-pains/update/AudiencePainUpdatedEvent.js";
+import type { AudienceAddedEvent } from "../../domain/audiences/add/AudienceAddedEvent.js";
+import type { AudienceRemovedEvent } from "../../domain/audiences/remove/AudienceRemovedEvent.js";
+import type { AudienceUpdatedEvent } from "../../domain/audiences/update/AudienceUpdatedEvent.js";
+import type { ComponentAddedEvent } from "../../domain/components/add/ComponentAddedEvent.js";
+import type { ComponentDeprecatedEvent } from "../../domain/components/deprecate/ComponentDeprecatedEvent.js";
+import type { ComponentRemovedEvent } from "../../domain/components/remove/ComponentRemovedEvent.js";
+import type { ComponentRenamedEvent } from "../../domain/components/rename/ComponentRenamedEvent.js";
+import type { ComponentUndeprecatedEvent } from "../../domain/components/undeprecate/ComponentUndeprecatedEvent.js";
+import type { ComponentUpdatedEvent } from "../../domain/components/update/ComponentUpdatedEvent.js";
+import type { DecisionAddedEvent } from "../../domain/decisions/add/DecisionAddedEvent.js";
+import type { DecisionRestoredEvent } from "../../domain/decisions/restore/DecisionRestoredEvent.js";
+import type { DecisionReversedEvent } from "../../domain/decisions/reverse/DecisionReversedEvent.js";
+import type { DecisionSupersededEvent } from "../../domain/decisions/supersede/DecisionSupersededEvent.js";
+import type { DecisionUpdatedEvent } from "../../domain/decisions/update/DecisionUpdatedEvent.js";
+import type { DependencyAddedEvent } from "../../domain/dependencies/add/DependencyAddedEvent.js";
+import type { DependencyRemovedEvent } from "../../domain/dependencies/remove/DependencyRemovedEvent.js";
+import type { DependencyUpdatedEvent } from "../../domain/dependencies/update/DependencyUpdatedEvent.js";
+import type { GoalAddedEvent } from "../../domain/goals/add/GoalAddedEvent.js";
+import type { GoalApprovedEvent } from "../../domain/goals/approve/GoalApprovedEvent.js";
+import type { GoalBlockedEvent } from "../../domain/goals/block/GoalBlockedEvent.js";
+import type { GoalClosedEvent } from "../../domain/goals/close/GoalClosedEvent.js";
+import type { GoalCodifyingStartedEvent } from "../../domain/goals/codify/GoalCodifyingStartedEvent.js";
+import type { GoalCommittedEvent } from "../../domain/goals/commit/GoalCommittedEvent.js";
+import type { GoalCompletedEvent } from "../../domain/goals/complete/GoalCompletedEvent.js";
+import type { GoalStatusMigratedEvent } from "../../domain/goals/migrate/GoalStatusMigratedEvent.js";
+import type { GoalPausedEvent } from "../../domain/goals/pause/GoalPausedEvent.js";
+import type { GoalQualifiedEvent } from "../../domain/goals/qualify/GoalQualifiedEvent.js";
+import type { GoalRefinedEvent } from "../../domain/goals/refine/GoalRefinedEvent.js";
+import type { GoalRefinementStartedEvent } from "../../domain/goals/refine/GoalRefinementStartedEvent.js";
+import type { GoalRejectedEvent } from "../../domain/goals/reject/GoalRejectedEvent.js";
+import type { GoalRemovedEvent } from "../../domain/goals/remove/GoalRemovedEvent.js";
+import type { GoalResetEvent } from "../../domain/goals/reset/GoalResetEvent.js";
+import type { GoalResumedEvent } from "../../domain/goals/resume/GoalResumedEvent.js";
+import type { GoalSubmittedForReviewEvent } from "../../domain/goals/review/GoalSubmittedForReviewEvent.js";
+import type { GoalStartedEvent } from "../../domain/goals/start/GoalStartedEvent.js";
+import type { GoalSubmittedEvent } from "../../domain/goals/submit/GoalSubmittedEvent.js";
+import type { GoalUnblockedEvent } from "../../domain/goals/unblock/GoalUnblockedEvent.js";
+import type { GoalProgressUpdatedEvent } from "../../domain/goals/update-progress/GoalProgressUpdatedEvent.js";
+import type { GoalUpdatedEvent } from "../../domain/goals/update/GoalUpdatedEvent.js";
+import type { GuidelineAddedEvent } from "../../domain/guidelines/add/GuidelineAddedEvent.js";
+import type { GuidelineRemovedEvent } from "../../domain/guidelines/remove/GuidelineRemovedEvent.js";
+import type { GuidelineUpdatedEvent } from "../../domain/guidelines/update/GuidelineUpdatedEvent.js";
+import type { InvariantAddedEvent } from "../../domain/invariants/add/InvariantAddedEvent.js";
+import type { InvariantRemovedEvent } from "../../domain/invariants/remove/InvariantRemovedEvent.js";
+import type { InvariantUpdatedEvent } from "../../domain/invariants/update/InvariantUpdatedEvent.js";
+import type { ProjectInitializedEvent } from "../../domain/project/init/ProjectInitializedEvent.js";
+import type { ProjectUpdatedEvent } from "../../domain/project/update/ProjectUpdatedEvent.js";
+import type { RelationAddedEvent } from "../../domain/relations/add/RelationAddedEvent.js";
+import type { RelationDeactivatedEvent } from "../../domain/relations/deactivate/RelationDeactivatedEvent.js";
+import type { RelationReactivatedEvent } from "../../domain/relations/reactivate/RelationReactivatedEvent.js";
+import type { RelationRemovedEvent } from "../../domain/relations/remove/RelationRemovedEvent.js";
+import type { SessionEndedEvent } from "../../domain/sessions/end/SessionEndedEvent.js";
+import type { SessionStartedEvent } from "../../domain/sessions/start/SessionStartedEvent.js";
+import type { ValuePropositionAddedEvent } from "../../domain/value-propositions/add/ValuePropositionAddedEvent.js";
+import type { ValuePropositionRemovedEvent } from "../../domain/value-propositions/remove/ValuePropositionRemovedEvent.js";
+import type { ValuePropositionUpdatedEvent } from "../../domain/value-propositions/update/ValuePropositionUpdatedEvent.js";
+import type { WorkerIdentifiedEvent } from "../../domain/workers/identify/WorkerIdentifiedEvent.js";
+
+
+/**
+ * Type-safe event subscription helper.
+ * Narrows BaseEvent to the specific event type at the call site,
+ * concentrating the single unavoidable cast in one place.
+ */
+function on<E extends BaseEvent>(
+  bus: InProcessEventBus,
+  eventType: E["type"],
+  handler: (event: E) => void | Promise<void>,
+): void {
+  bus.subscribe(eventType, {
+    handle: async (event: BaseEvent) => {
+      await handler(event as E);
+    },
+  });
+}
+
 export class ProjectionBusFactory {
 
   /**
@@ -120,8 +215,8 @@ export class ProjectionBusFactory {
     // Session projections
     const sessionStartedProjector = new SqliteSessionStartedProjector(db);
     const sessionEndedProjector = new SqliteSessionEndedProjector(db);
-    bus.subscribe("SessionStartedEvent", this.wrap((e) => sessionStartedProjector.applySessionStarted(e as any)));
-    bus.subscribe("SessionEndedEvent", this.wrap((e) => sessionEndedProjector.applySessionEnded(e as any)));
+    on<SessionStartedEvent>(bus, SessionEventType.STARTED, (e) => sessionStartedProjector.applySessionStarted(e));
+    on<SessionEndedEvent>(bus, SessionEventType.ENDED, (e) => sessionEndedProjector.applySessionEnded(e));
 
     // Goal projections
     const goalAddedProjector = new SqliteGoalAddedProjector(db);
@@ -145,36 +240,36 @@ export class ProjectionBusFactory {
     const goalClosedProjector = new SqliteGoalClosedProjector(db);
     const goalApprovedProjector = new SqliteGoalApprovedProjector(db);
     const goalStatusMigratedProjector = new SqliteGoalStatusMigratedProjector(db);
-    bus.subscribe("GoalAddedEvent", this.wrap((e) => goalAddedProjector.applyGoalAdded(e as any)));
-    bus.subscribe("GoalStartedEvent", this.wrap((e) => goalStartedProjector.applyGoalStarted(e as any)));
-    bus.subscribe("GoalUpdatedEvent", this.wrap((e) => goalUpdatedProjector.applyGoalUpdated(e as any)));
-    bus.subscribe("GoalBlockedEvent", this.wrap((e) => goalBlockedProjector.applyGoalBlocked(e as any)));
-    bus.subscribe("GoalUnblockedEvent", this.wrap((e) => goalUnblockedProjector.applyGoalUnblocked(e as any)));
-    bus.subscribe("GoalPausedEvent", this.wrap((e) => goalPausedProjector.applyGoalPaused(e as any)));
-    bus.subscribe("GoalResumedEvent", this.wrap((e) => goalResumedProjector.applyGoalResumed(e as any)));
-    bus.subscribe("GoalCompletedEvent", this.wrap((e) => goalCompletedProjector.applyGoalCompleted(e as any)));
-    bus.subscribe("GoalRefinedEvent", this.wrap((e) => goalRefinedProjector.applyGoalRefined(e as any)));
-    bus.subscribe("GoalResetEvent", this.wrap((e) => goalResetProjector.applyGoalReset(e as any)));
-    bus.subscribe("GoalRemovedEvent", this.wrap((e) => goalRemovedProjector.applyGoalRemoved(e as any)));
-    bus.subscribe("GoalProgressUpdatedEvent", this.wrap((e) => goalProgressUpdatedProjector.applyGoalProgressUpdated(e as any)));
-    bus.subscribe("GoalSubmittedForReviewEvent", this.wrap((e) => goalSubmittedForReviewProjector.applyGoalSubmittedForReview(e as any)));
-    bus.subscribe("GoalQualifiedEvent", this.wrap((e) => goalQualifiedProjector.applyGoalQualified(e as any)));
-    bus.subscribe("GoalRefinementStartedEvent", this.wrap((e) => goalRefinedProjector.applyGoalRefinementStarted(e as any)));
-    bus.subscribe("GoalCommittedEvent", this.wrap((e) => goalCommittedProjector.applyGoalCommitted(e as any)));
-    bus.subscribe("GoalRejectedEvent", this.wrap((e) => goalRejectedProjector.applyGoalRejected(e as any)));
-    bus.subscribe("GoalSubmittedEvent", this.wrap((e) => goalSubmittedProjector.applyGoalSubmitted(e as any)));
-    bus.subscribe("GoalCodifyingStartedEvent", this.wrap((e) => goalCodifyingStartedProjector.applyGoalCodifyingStarted(e as any)));
-    bus.subscribe("GoalClosedEvent", this.wrap((e) => goalClosedProjector.applyGoalClosed(e as any)));
-    bus.subscribe("GoalApprovedEvent", this.wrap((e) => goalApprovedProjector.applyGoalApproved(e as any)));
-    bus.subscribe("GoalStatusMigratedEvent", this.wrap((e) => goalStatusMigratedProjector.applyGoalStatusMigrated(e as any)));
+    on<GoalAddedEvent>(bus, GoalEventType.ADDED, (e) => goalAddedProjector.applyGoalAdded(e));
+    on<GoalStartedEvent>(bus, GoalEventType.STARTED, (e) => goalStartedProjector.applyGoalStarted(e));
+    on<GoalUpdatedEvent>(bus, GoalEventType.UPDATED, (e) => goalUpdatedProjector.applyGoalUpdated(e));
+    on<GoalBlockedEvent>(bus, GoalEventType.BLOCKED, (e) => goalBlockedProjector.applyGoalBlocked(e));
+    on<GoalUnblockedEvent>(bus, GoalEventType.UNBLOCKED, (e) => goalUnblockedProjector.applyGoalUnblocked(e));
+    on<GoalPausedEvent>(bus, GoalEventType.PAUSED, (e) => goalPausedProjector.applyGoalPaused(e));
+    on<GoalResumedEvent>(bus, GoalEventType.RESUMED, (e) => goalResumedProjector.applyGoalResumed(e));
+    on<GoalCompletedEvent>(bus, GoalEventType.COMPLETED, (e) => goalCompletedProjector.applyGoalCompleted(e));
+    on<GoalRefinedEvent>(bus, GoalEventType.REFINED, (e) => goalRefinedProjector.applyGoalRefined(e));
+    on<GoalResetEvent>(bus, GoalEventType.RESET, (e) => goalResetProjector.applyGoalReset(e));
+    on<GoalRemovedEvent>(bus, GoalEventType.REMOVED, (e) => goalRemovedProjector.applyGoalRemoved(e));
+    on<GoalProgressUpdatedEvent>(bus, GoalEventType.PROGRESS_UPDATED, (e) => goalProgressUpdatedProjector.applyGoalProgressUpdated(e));
+    on<GoalSubmittedForReviewEvent>(bus, GoalEventType.SUBMITTED_FOR_REVIEW, (e) => goalSubmittedForReviewProjector.applyGoalSubmittedForReview(e));
+    on<GoalQualifiedEvent>(bus, GoalEventType.QUALIFIED, (e) => goalQualifiedProjector.applyGoalQualified(e));
+    on<GoalRefinementStartedEvent>(bus, GoalEventType.REFINEMENT_STARTED, (e) => goalRefinedProjector.applyGoalRefinementStarted(e));
+    on<GoalCommittedEvent>(bus, GoalEventType.COMMITTED, (e) => goalCommittedProjector.applyGoalCommitted(e));
+    on<GoalRejectedEvent>(bus, GoalEventType.REJECTED, (e) => goalRejectedProjector.applyGoalRejected(e));
+    on<GoalSubmittedEvent>(bus, GoalEventType.SUBMITTED, (e) => goalSubmittedProjector.applyGoalSubmitted(e));
+    on<GoalCodifyingStartedEvent>(bus, GoalEventType.CODIFYING_STARTED, (e) => goalCodifyingStartedProjector.applyGoalCodifyingStarted(e));
+    on<GoalClosedEvent>(bus, GoalEventType.CLOSED, (e) => goalClosedProjector.applyGoalClosed(e));
+    on<GoalApprovedEvent>(bus, GoalEventType.APPROVED, (e) => goalApprovedProjector.applyGoalApproved(e));
+    on<GoalStatusMigratedEvent>(bus, GoalEventType.STATUS_MIGRATED, (e) => goalStatusMigratedProjector.applyGoalStatusMigrated(e));
 
     // Architecture projections
     const architectureDefinedProjector = new SqliteArchitectureDefinedProjector(db);
     const architectureUpdatedProjector = new SqliteArchitectureUpdatedProjector(db);
     const architectureDeprecatedProjector = new SqliteArchitectureDeprecatedProjector(db);
-    bus.subscribe("ArchitectureDefinedEvent", this.wrap((e) => architectureDefinedProjector.applyArchitectureDefined(e as any)));
-    bus.subscribe("ArchitectureUpdatedEvent", this.wrap((e) => architectureUpdatedProjector.applyArchitectureUpdated(e as any)));
-    bus.subscribe("ArchitectureDeprecatedEvent", this.wrap((e) => architectureDeprecatedProjector.applyArchitectureDeprecated(e as any)));
+    on<ArchitectureDefinedEvent>(bus, ArchitectureEventType.DEFINED, (e) => architectureDefinedProjector.applyArchitectureDefined(e));
+    on<ArchitectureUpdatedEvent>(bus, ArchitectureEventType.UPDATED, (e) => architectureUpdatedProjector.applyArchitectureUpdated(e));
+    on<ArchitectureDeprecatedEvent>(bus, ArchitectureEventType.DEPRECATED, (e) => architectureDeprecatedProjector.applyArchitectureDeprecated(e));
 
     // Component projections (projection-only — no cascades)
     const componentAddedProjector = new SqliteComponentAddedProjector(db);
@@ -183,20 +278,20 @@ export class ProjectionBusFactory {
     const componentUndeprecatedProjector = new SqliteComponentUndeprecatedProjector(db);
     const componentRemovedProjector = new SqliteComponentRemovedProjector(db);
     const componentRenamedProjector = new SqliteComponentRenamedProjector(db);
-    bus.subscribe("ComponentAddedEvent", this.wrap((e) => componentAddedProjector.applyComponentAdded(e as any)));
-    bus.subscribe("ComponentUpdatedEvent", this.wrap((e) => componentUpdatedProjector.applyComponentUpdated(e as any)));
-    bus.subscribe("ComponentDeprecatedEvent", this.wrap((e) => componentDeprecatedProjector.applyComponentDeprecated(e as any)));
-    bus.subscribe("ComponentUndeprecatedEvent", this.wrap((e) => componentUndeprecatedProjector.applyComponentUndeprecated(e as any)));
-    bus.subscribe("ComponentRemovedEvent", this.wrap((e) => componentRemovedProjector.applyComponentRemoved(e as any)));
-    bus.subscribe("ComponentRenamedEvent", this.wrap((e) => componentRenamedProjector.applyComponentRenamed(e as any)));
+    on<ComponentAddedEvent>(bus, ComponentEventType.ADDED, (e) => componentAddedProjector.applyComponentAdded(e));
+    on<ComponentUpdatedEvent>(bus, ComponentEventType.UPDATED, (e) => componentUpdatedProjector.applyComponentUpdated(e));
+    on<ComponentDeprecatedEvent>(bus, ComponentEventType.DEPRECATED, (e) => componentDeprecatedProjector.applyComponentDeprecated(e));
+    on<ComponentUndeprecatedEvent>(bus, ComponentEventType.UNDEPRECATED, (e) => componentUndeprecatedProjector.applyComponentUndeprecated(e));
+    on<ComponentRemovedEvent>(bus, ComponentEventType.REMOVED, (e) => componentRemovedProjector.applyComponentRemoved(e));
+    on<ComponentRenamedEvent>(bus, ComponentEventType.RENAMED, (e) => componentRenamedProjector.applyComponentRenamed(e));
 
     // Dependency projections
     const dependencyAddedProjector = new SqliteDependencyAddedProjector(db);
     const dependencyUpdatedProjector = new SqliteDependencyUpdatedProjector(db);
     const dependencyRemovedProjector = new SqliteDependencyRemovedProjector(db);
-    bus.subscribe("DependencyAddedEvent", this.wrap((e) => dependencyAddedProjector.applyDependencyAdded(e as any)));
-    bus.subscribe("DependencyUpdatedEvent", this.wrap((e) => dependencyUpdatedProjector.applyDependencyUpdated(e as any)));
-    bus.subscribe("DependencyRemovedEvent", this.wrap((e) => dependencyRemovedProjector.applyDependencyRemoved(e as any)));
+    on<DependencyAddedEvent>(bus, DependencyEventType.ADDED, (e) => dependencyAddedProjector.applyDependencyAdded(e));
+    on<DependencyUpdatedEvent>(bus, DependencyEventType.UPDATED, (e) => dependencyUpdatedProjector.applyDependencyUpdated(e));
+    on<DependencyRemovedEvent>(bus, DependencyEventType.REMOVED, (e) => dependencyRemovedProjector.applyDependencyRemoved(e));
 
     // Decision projections (projection-only — no cascades)
     const decisionAddedProjector = new SqliteDecisionAddedProjector(db);
@@ -204,27 +299,27 @@ export class ProjectionBusFactory {
     const decisionReversedProjector = new SqliteDecisionReversedProjector(db);
     const decisionRestoredProjector = new SqliteDecisionRestoredProjector(db);
     const decisionSupersededProjector = new SqliteDecisionSupersededProjector(db);
-    bus.subscribe("DecisionAddedEvent", this.wrap((e) => decisionAddedProjector.applyDecisionAdded(e as any)));
-    bus.subscribe("DecisionUpdatedEvent", this.wrap((e) => decisionUpdatedProjector.applyDecisionUpdated(e as any)));
-    bus.subscribe("DecisionReversedEvent", this.wrap((e) => decisionReversedProjector.applyDecisionReversed(e as any)));
-    bus.subscribe("DecisionRestoredEvent", this.wrap((e) => decisionRestoredProjector.applyDecisionRestored(e as any)));
-    bus.subscribe("DecisionSupersededEvent", this.wrap((e) => decisionSupersededProjector.applyDecisionSuperseded(e as any)));
+    on<DecisionAddedEvent>(bus, DecisionEventType.ADDED, (e) => decisionAddedProjector.applyDecisionAdded(e));
+    on<DecisionUpdatedEvent>(bus, DecisionEventType.UPDATED, (e) => decisionUpdatedProjector.applyDecisionUpdated(e));
+    on<DecisionReversedEvent>(bus, DecisionEventType.REVERSED, (e) => decisionReversedProjector.applyDecisionReversed(e));
+    on<DecisionRestoredEvent>(bus, DecisionEventType.RESTORED, (e) => decisionRestoredProjector.applyDecisionRestored(e));
+    on<DecisionSupersededEvent>(bus, DecisionEventType.SUPERSEDED, (e) => decisionSupersededProjector.applyDecisionSuperseded(e));
 
     // Guideline projections
     const guidelineAddedProjector = new SqliteGuidelineAddedProjector(db);
     const guidelineUpdatedProjector = new SqliteGuidelineUpdatedProjector(db);
     const guidelineRemovedProjector = new SqliteGuidelineRemovedProjector(db);
-    bus.subscribe("GuidelineAddedEvent", this.wrap((e) => guidelineAddedProjector.applyGuidelineAdded(e as any)));
-    bus.subscribe("GuidelineUpdatedEvent", this.wrap((e) => guidelineUpdatedProjector.applyGuidelineUpdated(e as any)));
-    bus.subscribe("GuidelineRemovedEvent", this.wrap((e) => guidelineRemovedProjector.applyGuidelineRemoved(e as any)));
+    on<GuidelineAddedEvent>(bus, GuidelineEventType.ADDED, (e) => guidelineAddedProjector.applyGuidelineAdded(e));
+    on<GuidelineUpdatedEvent>(bus, GuidelineEventType.UPDATED, (e) => guidelineUpdatedProjector.applyGuidelineUpdated(e));
+    on<GuidelineRemovedEvent>(bus, GuidelineEventType.REMOVED, (e) => guidelineRemovedProjector.applyGuidelineRemoved(e));
 
     // Invariant projections
     const invariantAddedProjector = new SqliteInvariantAddedProjector(db);
     const invariantUpdatedProjector = new SqliteInvariantUpdatedProjector(db);
     const invariantRemovedProjector = new SqliteInvariantRemovedProjector(db);
-    bus.subscribe("InvariantAddedEvent", this.wrap((e) => invariantAddedProjector.applyInvariantAdded(e as any)));
-    bus.subscribe("InvariantUpdatedEvent", this.wrap((e) => invariantUpdatedProjector.applyInvariantUpdated(e as any)));
-    bus.subscribe("InvariantRemovedEvent", this.wrap((e) => invariantRemovedProjector.applyInvariantRemoved(e as any)));
+    on<InvariantAddedEvent>(bus, InvariantEventType.ADDED, (e) => invariantAddedProjector.applyInvariantAdded(e));
+    on<InvariantUpdatedEvent>(bus, InvariantEventType.UPDATED, (e) => invariantUpdatedProjector.applyInvariantUpdated(e));
+    on<InvariantRemovedEvent>(bus, InvariantEventType.REMOVED, (e) => invariantRemovedProjector.applyInvariantRemoved(e));
 
     // Global search index projections
     const searchIndexStore = new SqliteSearchIndexStore(db);
@@ -239,53 +334,46 @@ export class ProjectionBusFactory {
     // Project projections
     const projectInitializedProjector = new SqliteProjectInitializedProjector(db);
     const projectUpdatedProjector = new SqliteProjectUpdatedProjector(db);
-    bus.subscribe("ProjectInitializedEvent", this.wrap((e) => projectInitializedProjector.applyProjectInitialized(e as any)));
-    bus.subscribe("ProjectUpdatedEvent", this.wrap((e) => projectUpdatedProjector.applyProjectUpdated(e as any)));
+    on<ProjectInitializedEvent>(bus, ProjectEventType.INITIALIZED, (e) => projectInitializedProjector.applyProjectInitialized(e));
+    on<ProjectUpdatedEvent>(bus, ProjectEventType.UPDATED, (e) => projectUpdatedProjector.applyProjectUpdated(e));
 
     // Audience pain projections
     const audiencePainAddedProjector = new SqliteAudiencePainAddedProjector(db);
     const audiencePainUpdatedProjector = new SqliteAudiencePainUpdatedProjector(db);
-    bus.subscribe("AudiencePainAddedEvent", this.wrap((e) => audiencePainAddedProjector.applyAudiencePainAdded(e as any)));
-    bus.subscribe("AudiencePainUpdatedEvent", this.wrap((e) => audiencePainUpdatedProjector.applyAudiencePainUpdated(e as any)));
+    on<AudiencePainAddedEvent>(bus, AudiencePainEventType.ADDED, (e) => audiencePainAddedProjector.applyAudiencePainAdded(e));
+    on<AudiencePainUpdatedEvent>(bus, AudiencePainEventType.UPDATED, (e) => audiencePainUpdatedProjector.applyAudiencePainUpdated(e));
 
     // Audience projections
     const audienceAddedProjector = new SqliteAudienceAddedProjector(db);
     const audienceUpdatedProjector = new SqliteAudienceUpdatedProjector(db);
     const audienceRemovedProjector = new SqliteAudienceRemovedProjector(db);
-    bus.subscribe("AudienceAddedEvent", this.wrap((e) => audienceAddedProjector.applyAudienceAdded(e as any)));
-    bus.subscribe("AudienceUpdatedEvent", this.wrap((e) => audienceUpdatedProjector.applyAudienceUpdated(e as any)));
-    bus.subscribe("AudienceRemovedEvent", this.wrap((e) => audienceRemovedProjector.applyAudienceRemoved(e as any)));
+    on<AudienceAddedEvent>(bus, AudienceEventType.ADDED, (e) => audienceAddedProjector.applyAudienceAdded(e));
+    on<AudienceUpdatedEvent>(bus, AudienceEventType.UPDATED, (e) => audienceUpdatedProjector.applyAudienceUpdated(e));
+    on<AudienceRemovedEvent>(bus, AudienceEventType.REMOVED, (e) => audienceRemovedProjector.applyAudienceRemoved(e));
 
     // Value proposition projections
     const valuePropositionAddedProjector = new SqliteValuePropositionAddedProjector(db);
     const valuePropositionUpdatedProjector = new SqliteValuePropositionUpdatedProjector(db);
     const valuePropositionRemovedProjector = new SqliteValuePropositionRemovedProjector(db);
-    bus.subscribe("ValuePropositionAddedEvent", this.wrap((e) => valuePropositionAddedProjector.applyValuePropositionAdded(e as any)));
-    bus.subscribe("ValuePropositionUpdatedEvent", this.wrap((e) => valuePropositionUpdatedProjector.applyValuePropositionUpdated(e as any)));
-    bus.subscribe("ValuePropositionRemovedEvent", this.wrap((e) => valuePropositionRemovedProjector.applyValuePropositionRemoved(e as any)));
+    on<ValuePropositionAddedEvent>(bus, ValuePropositionEventType.ADDED, (e) => valuePropositionAddedProjector.applyValuePropositionAdded(e));
+    on<ValuePropositionUpdatedEvent>(bus, ValuePropositionEventType.UPDATED, (e) => valuePropositionUpdatedProjector.applyValuePropositionUpdated(e));
+    on<ValuePropositionRemovedEvent>(bus, ValuePropositionEventType.REMOVED, (e) => valuePropositionRemovedProjector.applyValuePropositionRemoved(e));
 
     // Relation projections
     const relationAddedProjector = new SqliteRelationAddedProjector(db);
     const relationDeactivatedProjector = new SqliteRelationDeactivatedProjector(db);
     const relationReactivatedProjector = new SqliteRelationReactivatedProjector(db);
     const relationRemovedProjector = new SqliteRelationRemovedProjector(db);
-    bus.subscribe("RelationAddedEvent", this.wrap((e) => relationAddedProjector.applyRelationAdded(e as any)));
-    bus.subscribe("RelationDeactivatedEvent", this.wrap((e) => relationDeactivatedProjector.applyRelationDeactivated(e as any)));
-    bus.subscribe("RelationReactivatedEvent", this.wrap((e) => relationReactivatedProjector.applyRelationReactivated(e as any)));
-    bus.subscribe("RelationRemovedEvent", this.wrap((e) => relationRemovedProjector.applyRelationRemoved(e as any)));
+    on<RelationAddedEvent>(bus, RelationEventType.ADDED, (e) => relationAddedProjector.applyRelationAdded(e));
+    on<RelationDeactivatedEvent>(bus, RelationEventType.DEACTIVATED, (e) => relationDeactivatedProjector.applyRelationDeactivated(e));
+    on<RelationReactivatedEvent>(bus, RelationEventType.REACTIVATED, (e) => relationReactivatedProjector.applyRelationReactivated(e));
+    on<RelationRemovedEvent>(bus, RelationEventType.REMOVED, (e) => relationRemovedProjector.applyRelationRemoved(e));
 
     // Worker identity projections
     const workerIdentifiedProjector = new SqliteWorkerIdentifiedProjector(db);
-    bus.subscribe("WorkerIdentifiedEvent", this.wrap((e) => workerIdentifiedProjector.applyWorkerIdentified(e as any)));
+    on<WorkerIdentifiedEvent>(bus, WorkerEventType.IDENTIFIED, (e) => workerIdentifiedProjector.applyWorkerIdentified(e));
 
     return bus;
-  }
-
-  /**
-   * Wraps a projector method as an IEventHandler.
-   */
-  private wrap(fn: (event: BaseEvent) => void | Promise<void>): IEventHandler {
-    return { handle: async (event: BaseEvent) => { await fn(event); } };
   }
 
   private subscribeSearchIndexEvents(bus: InProcessEventBus, handler: SearchIndexEventHandler): void {
