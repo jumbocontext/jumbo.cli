@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.1] - 2026-06-06
+
+### Changed
+
+- **Internal**: Decomposed Cockpit screen into focused collaborators (`AnimatedBannerColorGradient`, `AnimatedBannerLineColorSegments`, `AnimatedBannerTiming`, `CockpitDaemonAgentConfigCycler`, `CockpitDaemonConfigsUpdater`, `CockpitDaemonEventSnapshot`) for improved testability and separation of concerns.
+- **Internal**: Replaced 62 `as-any` casts in `ProjectionBusFactory` with type-safe event dispatch, eliminating unsafe type coercions across the projection bus.
+
+### Fixed
+
+- **CI gate**: Added PR gate workflow for lint, type-check, and build validation on pull requests.
+- **Lint errors**: Resolved all ESLint errors introduced during TUI decomposition.
+- **Test stability**: Fixed flaky tests and added missing test coverage for daemon panel status labels, codifier daemon constants, and `CenteredPrompt`.
+
 ## [3.6.0] - 2026-06-02
 
 ### Changed
