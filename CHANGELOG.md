@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.1] - 2026-06-08
+
+### Fixed
+
+- **Test stability**: Removed brittle copy/label assertions and oversized snapshot tests for Cockpit stats panel, welcome copy, and HorizontalRule primitive. Refactored `project stats` command handler to eliminate a redundant handler class.
+
 ## [3.7.0] - 2026-06-08
 
 ### Added
