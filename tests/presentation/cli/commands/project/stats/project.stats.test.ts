@@ -8,12 +8,12 @@ import {
 } from "@jest/globals";
 import type { IApplicationContainer } from "../../../../../../src/application/host/IApplicationContainer.js";
 import type { ProjectStatsController } from "../../../../../../src/application/context/project/stats/ProjectStatsController.js";
-import { projectStatsCommand } from "../../../../../../src/presentation/cli/commands/project/stats/project.stats.js";
+import { projectStats } from "../../../../../../src/presentation/cli/commands/project/stats/project.stats.js";
 import { Renderer } from "../../../../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("project.stats command", () => {
-  let consoleSpy: jest.SpiedFunction<typeof console.log>;
   let mockController: jest.Mocked<Pick<ProjectStatsController, "handle">>;
+  let consoleSpy: jest.SpiedFunction<typeof console.log>;
   let container: Partial<IApplicationContainer>;
 
   beforeEach(() => {
@@ -82,13 +82,13 @@ describe("project.stats command", () => {
   });
 
   it("requests the current stats snapshot", async () => {
-    await projectStatsCommand.handler({}, container as IApplicationContainer);
+    await projectStats({}, container as IApplicationContainer);
 
     expect(mockController.handle).toHaveBeenCalledWith({ currentOnly: true });
   });
 
   it("emits one complete JSON object without extra stdout calls", async () => {
-    await projectStatsCommand.handler({}, container as IApplicationContainer);
+    await projectStats({}, container as IApplicationContainer);
 
     expect(consoleSpy).toHaveBeenCalledTimes(1);
     const parsed = JSON.parse(consoleSpy.mock.calls[0][0] as string);
