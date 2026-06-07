@@ -36,6 +36,8 @@ import { toggleCockpitDaemon } from "./toggleCockpitDaemon.js";
 import { useCockpitLaunchpadWelcomeVisibility } from "./useCockpitLaunchpadWelcomeVisibility.js";
 import { useDaemonAnimationFrames } from "./useDaemonAnimationFrames.js";
 import { useDaemonStatusPolling } from "./useDaemonStatusPolling.js";
+import { BaseColors } from "../../shared/DesignTokens.js";
+import { HorizontalRule } from "../ui-primitives/HorizontalRule.js";
 
 interface LaunchAnimationSize {
   readonly width: number;
@@ -243,6 +245,7 @@ export function CockpitLaunchpadView({
 
   return (
     <Box flexDirection="column" width="100%" height="100%" paddingX={1}>
+      <HorizontalRule color={BaseColors.shade6} />
       {welcomeVisible === true && <CockpitLaunchpadWelcome />}
       <CockpitProjectStatsPanel />
       <CockpitLaunchpadDaemonPanels

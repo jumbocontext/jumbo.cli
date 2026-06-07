@@ -4,28 +4,50 @@ import type { IProjectStatsQuery } from "../../../../../src/application/context/
 import type { ProjectStatsSnapshotView } from "../../../../../src/application/context/project/stats/ProjectStatsSnapshotView.js";
 
 const snapshot: ProjectStatsSnapshotView = {
-  memoryCounts: {
-    goals: 2,
-    components: 1,
-    dependencies: 1,
-    decisions: 1,
-    relations: 2,
-    sessions: 1,
-    guidelines: 1,
-    invariants: 1,
-    blockers: 0,
+  project: {
+    audiences: {
+      totalAudiences: 3,
+      primaryAudiences: 1,
+      secondaryAudiences: 2,
+    },
+    audiencePains: {
+      audiencePainsCount: 2,
+    },
+    valuePropositions: {
+      valuePropositionsCount: 1,
+    },
   },
-  goalFlow: {
-    byStatus: [{ status: "refined", count: 2 }],
-    activeBlockers: 0,
-    refinedGoalsReady: 2,
+  work: {
+    goals: {
+      definedGoalsCount: 1,
+      refinedGoalsCount: 2,
+      inProgressGoalsCount: 1,
+      submittedGoalsCount: 1,
+      closedGoalsCount: 0,
+    },
+    sessions: {
+      sessionsCount: 1,
+    },
   },
-  contextCoverage: {
-    totalRelations: 2,
-    relationTypesRepresented: 1,
-    goalsWithContextRelations: 1,
-    goalsWithoutContextRelations: 1,
-    goalContextCoverageRatio: 0.5,
+  memory: {
+    decisions: {
+      decisionsCount: 1,
+    },
+    components: {
+      componentsCount: 1,
+    },
+    dependencies: {
+      dependenciesCount: 1,
+    },
+    invariants: {
+      invariantsCount: 1,
+    },
+    guidelines: {
+      guidelinesCount: 1,
+    },
+  },
+  graph: {
+    relationCount: 2,
   },
 };
 

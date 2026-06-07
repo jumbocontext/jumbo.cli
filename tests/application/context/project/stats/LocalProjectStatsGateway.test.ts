@@ -5,28 +5,50 @@ import type { GetProjectStatsQueryHandler } from "../../../../../src/application
 describe("LocalProjectStatsGateway", () => {
   it("wraps the query snapshot in a response", async () => {
     const snapshot = {
-      memoryCounts: {
-        goals: 1,
-        components: 0,
-        dependencies: 0,
-        decisions: 0,
-        relations: 0,
-        sessions: 0,
-        guidelines: 0,
-        invariants: 0,
-        blockers: 0,
+      project: {
+        audiences: {
+          totalAudiences: 0,
+          primaryAudiences: 0,
+          secondaryAudiences: 0,
+        },
+        audiencePains: {
+          audiencePainsCount: 0,
+        },
+        valuePropositions: {
+          valuePropositionsCount: 0,
+        },
       },
-      goalFlow: {
-        byStatus: [{ status: "defined", count: 1 }],
-        activeBlockers: 0,
-        refinedGoalsReady: 0,
+      work: {
+        goals: {
+          definedGoalsCount: 1,
+          refinedGoalsCount: 0,
+          inProgressGoalsCount: 0,
+          submittedGoalsCount: 0,
+          closedGoalsCount: 0,
+        },
+        sessions: {
+          sessionsCount: 0,
+        },
       },
-      contextCoverage: {
-        totalRelations: 0,
-        relationTypesRepresented: 0,
-        goalsWithContextRelations: 0,
-        goalsWithoutContextRelations: 1,
-        goalContextCoverageRatio: 0,
+      memory: {
+        decisions: {
+          decisionsCount: 0,
+        },
+        components: {
+          componentsCount: 0,
+        },
+        dependencies: {
+          dependenciesCount: 0,
+        },
+        invariants: {
+          invariantsCount: 0,
+        },
+        guidelines: {
+          guidelinesCount: 0,
+        },
+      },
+      graph: {
+        relationCount: 0,
       },
     };
     const queryHandler = {

@@ -26,31 +26,50 @@ describe("CockpitProjectStatsPanel", () => {
     const projectStatsController = {
       handle: async () => ({
         snapshot: {
-          memoryCounts: {
-            goals: 3,
-            components: 2,
-            dependencies: 1,
-            decisions: 4,
-            relations: 6,
-            sessions: 2,
-            guidelines: 1,
-            invariants: 1,
-            blockers: 1,
+          project: {
+            audiences: {
+              totalAudiences: 3,
+              primaryAudiences: 1,
+              secondaryAudiences: 2,
+            },
+            audiencePains: {
+              audiencePainsCount: 4,
+            },
+            valuePropositions: {
+              valuePropositionsCount: 2,
+            },
           },
-          goalFlow: {
-            byStatus: [
-              { status: "blocked", count: 1 },
-              { status: "refined", count: 2 },
-            ],
-            activeBlockers: 1,
-            refinedGoalsReady: 2,
+          work: {
+            goals: {
+              definedGoalsCount: 1,
+              refinedGoalsCount: 2,
+              inProgressGoalsCount: 1,
+              submittedGoalsCount: 1,
+              closedGoalsCount: 0,
+            },
+            sessions: {
+              sessionsCount: 2,
+            },
           },
-          contextCoverage: {
-            totalRelations: 6,
-            relationTypesRepresented: 3,
-            goalsWithContextRelations: 2,
-            goalsWithoutContextRelations: 1,
-            goalContextCoverageRatio: 2 / 3,
+          memory: {
+            decisions: {
+              decisionsCount: 4,
+            },
+            components: {
+              componentsCount: 2,
+            },
+            dependencies: {
+              dependenciesCount: 1,
+            },
+            invariants: {
+              invariantsCount: 1,
+            },
+            guidelines: {
+              guidelinesCount: 1,
+            },
+          },
+          graph: {
+            relationCount: 6,
           },
         },
       }),
@@ -65,11 +84,11 @@ describe("CockpitProjectStatsPanel", () => {
       </TuiStateReaderProvider>,
     );
 
-    const frame = await waitForFrame(lastFrame, "goals 3");
+    const frame = await waitForFrame(lastFrame, "audiences 3");
 
-    expect(frame).toContain("goals 3");
+    expect(frame).toContain("audiences 3");
+    expect(frame).toContain("refined 2");
     expect(frame).toContain("relations 6");
-    expect(frame).toContain("context coverage 67%");
     expect(frame).not.toContain("goal_orphan");
     expect(frame).not.toContain("component_without_goal");
     expect(frame).not.toMatch(/architecture/i);

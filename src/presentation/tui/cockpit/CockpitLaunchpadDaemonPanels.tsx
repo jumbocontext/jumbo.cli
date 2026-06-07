@@ -1,5 +1,6 @@
 import React from "react";
-import { Box } from "ink";
+import { Box, Text } from "ink";
+import { BaseColors } from "../../shared/DesignTokens.js";
 import type { GlyphColorMap, GlyphPalette } from "./CockpitDaemonFrames.js";
 import { CockpitDaemonEvents } from "./CockpitDaemonEvents.js";
 import { CockpitDaemonPanel } from "./CockpitDaemonPanel.js";
@@ -10,6 +11,7 @@ import type {
   TuiDaemonName,
   TuiSubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
+import { HorizontalRule } from "../ui-primitives/HorizontalRule.js";
 
 interface CockpitLaunchpadDaemonPanelsProps {
   readonly selectedDaemon: TuiDaemonName;
@@ -35,34 +37,36 @@ export function CockpitLaunchpadDaemonPanels({
   codifierGlyphColors,
 }: CockpitLaunchpadDaemonPanelsProps): React.ReactElement {
   return (
-    <Box flexDirection="row" flexShrink={0} height={13} width="100%" gap={1} marginY={1}>
-      {CockpitLaunchpadDaemonDefinitions.all.map((daemonUiDefinition) => {
-        const { constants: daemonConstants, Frame } = daemonUiDefinition;
-        const name = daemonConstants.name;
-        const snapshot = CockpitDaemonEvents.findStatus(daemonStatuses, name);
-        const statusLabel = getDaemonPanelStatusLabel(snapshot, daemonConstants);
+    <Box width="100%" flexDirection="column">
+      <Box flexDirection="row" flexShrink={0} height={13} width="100%" gap={1} marginY={1}>
+        {CockpitLaunchpadDaemonDefinitions.all.map((daemonUiDefinition) => {
+          const { constants: daemonConstants, Frame } = daemonUiDefinition;
+          const name = daemonConstants.name;
+          const snapshot = CockpitDaemonEvents.findStatus(daemonStatuses, name);
+          const statusLabel = getDaemonPanelStatusLabel(snapshot, daemonConstants);
 
-        return (
-          <CockpitDaemonPanel
-            key={name}
-            daemonConstants={daemonConstants}
-            selected={selectedDaemon === name}
-            configuring={configuredDaemon === name}
-            infoVisible={infoDaemon === name}
-            snapshot={snapshot}
-            pendingConfig={daemonConfigs[name]}
-          >
-            <Frame
-              frameIndex={daemonFrameIndexByName[name]}
+          return (
+            <CockpitDaemonPanel
+              key={name}
+              daemonConstants={daemonConstants}
+              selected={selectedDaemon === name}
+              configuring={configuredDaemon === name}
+              infoVisible={infoDaemon === name}
               snapshot={snapshot}
-              statusLabel={statusLabel}
-              refinerGlyphPalette={refinerGlyphPalette}
-              reviewerGlyphPalette={reviewerGlyphPalette}
-              codifierGlyphColors={codifierGlyphColors}
-            />
-          </CockpitDaemonPanel>
-        );
-      })}
+              pendingConfig={daemonConfigs[name]}
+            >
+              <Frame
+                frameIndex={daemonFrameIndexByName[name]}
+                snapshot={snapshot}
+                statusLabel={statusLabel}
+                refinerGlyphPalette={refinerGlyphPalette}
+                reviewerGlyphPalette={reviewerGlyphPalette}
+                codifierGlyphColors={codifierGlyphColors}
+              />
+            </CockpitDaemonPanel>
+          );
+        })}
+      </Box>
     </Box>
   );
 }

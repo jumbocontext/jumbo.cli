@@ -51,17 +51,24 @@ import { Renderer } from "../../../src/presentation/cli/rendering/Renderer.js";
 
 describe("AppRunner", () => {
   let originalArgv: string[];
+  let originalNodeEnv: string | undefined;
   let consoleLogSpy: jest.SpiedFunction<typeof console.log>;
   let consoleErrorSpy: jest.SpiedFunction<typeof console.error>;
 
   beforeEach(() => {
     originalArgv = [...process.argv];
+    originalNodeEnv = process.env.NODE_ENV;
     consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {});
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
     process.argv = originalArgv;
+    if (originalNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
     consoleLogSpy.mockRestore();
     consoleErrorSpy.mockRestore();
     Renderer.reset();
@@ -84,6 +91,26 @@ describe("AppRunner", () => {
       undefined,
     );
     expect(createProgram).not.toHaveBeenCalled();
+  });
+
+  it("defaults bare TUI launches to production before loading Ink", async () => {
+    process.argv = ["node", "jumbo"];
+    delete process.env.NODE_ENV;
+
+    const runner = new AppRunner("1.2.3", null);
+    await runner.run();
+
+    expect(process.env.NODE_ENV).toBe("production");
+  });
+
+  it("preserves explicit Node environment values for bare TUI launches", async () => {
+    process.argv = ["node", "jumbo"];
+    process.env.NODE_ENV = "development";
+
+    const runner = new AppRunner("1.2.3", null);
+    await runner.run();
+
+    expect(process.env.NODE_ENV).toBe("development");
   });
 
   it("passes fallback init action controllers to bare TUI launches", async () => {

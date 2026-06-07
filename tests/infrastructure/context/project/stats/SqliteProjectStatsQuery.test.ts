@@ -8,6 +8,9 @@ describe("SqliteProjectStatsQuery", () => {
   beforeEach(() => {
     db = new Database(":memory:");
     db.exec(`
+      CREATE TABLE audience_views (audienceId TEXT PRIMARY KEY, priority TEXT, isRemoved INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE audience_pain_views (painId TEXT PRIMARY KEY, status TEXT NOT NULL);
+      CREATE TABLE value_proposition_views (valuePropositionId TEXT PRIMARY KEY);
       CREATE TABLE goal_views (goalId TEXT PRIMARY KEY, status TEXT NOT NULL);
       CREATE TABLE component_views (componentId TEXT PRIMARY KEY, status TEXT NOT NULL);
       CREATE TABLE dependency_views (dependencyId TEXT PRIMARY KEY, status TEXT NOT NULL);
@@ -33,17 +36,60 @@ describe("SqliteProjectStatsQuery", () => {
   });
 
   it("maps current materialized views into aggregate project stats", async () => {
+    db.prepare("INSERT INTO audience_views (audienceId, priority, isRemoved) VALUES (?, ?, ?)").run(
+      "audience_1",
+      "primary",
+      0,
+    );
+    db.prepare("INSERT INTO audience_views (audienceId, priority, isRemoved) VALUES (?, ?, ?)").run(
+      "audience_2",
+      "secondary",
+      0,
+    );
+    db.prepare("INSERT INTO audience_views (audienceId, priority, isRemoved) VALUES (?, ?, ?)").run(
+      "audience_3",
+      "secondary",
+      0,
+    );
+    db.prepare("INSERT INTO audience_views (audienceId, priority, isRemoved) VALUES (?, ?, ?)").run(
+      "audience_removed",
+      "primary",
+      1,
+    );
+    db.prepare("INSERT INTO audience_pain_views (painId, status) VALUES (?, ?)").run(
+      "pain_1",
+      "active",
+    );
+    db.prepare("INSERT INTO audience_pain_views (painId, status) VALUES (?, ?)").run(
+      "pain_resolved",
+      "resolved",
+    );
+    db.prepare("INSERT INTO value_proposition_views (valuePropositionId) VALUES (?)").run(
+      "value_1",
+    );
     db.prepare("INSERT INTO goal_views (goalId, status) VALUES (?, ?)").run(
       "goal_1",
       "refined",
     );
     db.prepare("INSERT INTO goal_views (goalId, status) VALUES (?, ?)").run(
       "goal_2",
-      "blocked",
+      "doing",
     );
     db.prepare("INSERT INTO goal_views (goalId, status) VALUES (?, ?)").run(
       "goal_3",
       "done",
+    );
+    db.prepare("INSERT INTO goal_views (goalId, status) VALUES (?, ?)").run(
+      "goal_4",
+      "defined",
+    );
+    db.prepare("INSERT INTO goal_views (goalId, status) VALUES (?, ?)").run(
+      "goal_5",
+      "submitted",
+    );
+    db.prepare("INSERT INTO goal_views (goalId, status) VALUES (?, ?)").run(
+      "goal_6",
+      "in-review",
     );
     db.prepare("INSERT INTO component_views (componentId, status) VALUES (?, ?)").run(
       "component_1",
@@ -125,29 +171,50 @@ describe("SqliteProjectStatsQuery", () => {
 
     const snapshot = await query.currentSnapshot();
 
-    expect(snapshot.memoryCounts).toEqual({
-      goals: 3,
-      components: 1,
-      dependencies: 1,
-      decisions: 1,
-      relations: 3,
-      sessions: 1,
-      guidelines: 1,
-      invariants: 1,
-      blockers: 1,
+    expect(snapshot.project).toEqual({
+      audiences: {
+        totalAudiences: 3,
+        primaryAudiences: 1,
+        secondaryAudiences: 2,
+      },
+      audiencePains: {
+        audiencePainsCount: 1,
+      },
+      valuePropositions: {
+        valuePropositionsCount: 1,
+      },
     });
-    expect(snapshot.goalFlow.byStatus).toEqual([
-      { status: "blocked", count: 1 },
-      { status: "done", count: 1 },
-      { status: "refined", count: 1 },
-    ]);
-    expect(snapshot.goalFlow.refinedGoalsReady).toBe(1);
-    expect(snapshot.contextCoverage).toEqual({
-      totalRelations: 3,
-      relationTypesRepresented: 3,
-      goalsWithContextRelations: 2,
-      goalsWithoutContextRelations: 1,
-      goalContextCoverageRatio: 2 / 3,
+    expect(snapshot.work).toEqual({
+      goals: {
+        definedGoalsCount: 1,
+        refinedGoalsCount: 1,
+        inProgressGoalsCount: 2,
+        submittedGoalsCount: 1,
+        closedGoalsCount: 1,
+      },
+      sessions: {
+        sessionsCount: 1,
+      },
+    });
+    expect(snapshot.memory).toEqual({
+      decisions: {
+        decisionsCount: 1,
+      },
+      components: {
+        componentsCount: 1,
+      },
+      dependencies: {
+        dependenciesCount: 1,
+      },
+      invariants: {
+        invariantsCount: 1,
+      },
+      guidelines: {
+        guidelinesCount: 1,
+      },
+    });
+    expect(snapshot.graph).toEqual({
+      relationCount: 3,
     });
   });
 });

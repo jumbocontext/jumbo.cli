@@ -22,28 +22,50 @@ describe("project.stats command", () => {
     mockController = {
       handle: jest.fn().mockResolvedValue({
         snapshot: {
-          memoryCounts: {
-            goals: 1,
-            components: 0,
-            dependencies: 0,
-            decisions: 0,
-            relations: 0,
-            sessions: 0,
-            guidelines: 0,
-            invariants: 0,
-            blockers: 0,
+          project: {
+            audiences: {
+              totalAudiences: 0,
+              primaryAudiences: 0,
+              secondaryAudiences: 0,
+            },
+            audiencePains: {
+              audiencePainsCount: 0,
+            },
+            valuePropositions: {
+              valuePropositionsCount: 0,
+            },
           },
-          goalFlow: {
-            byStatus: [{ status: "refined", count: 1 }],
-            activeBlockers: 0,
-            refinedGoalsReady: 1,
+          work: {
+            goals: {
+              definedGoalsCount: 0,
+              refinedGoalsCount: 1,
+              inProgressGoalsCount: 0,
+              submittedGoalsCount: 0,
+              closedGoalsCount: 0,
+            },
+            sessions: {
+              sessionsCount: 0,
+            },
           },
-          contextCoverage: {
-            totalRelations: 0,
-            relationTypesRepresented: 0,
-            goalsWithContextRelations: 0,
-            goalsWithoutContextRelations: 1,
-            goalContextCoverageRatio: 0,
+          memory: {
+            decisions: {
+              decisionsCount: 0,
+            },
+            components: {
+              componentsCount: 0,
+            },
+            dependencies: {
+              dependenciesCount: 0,
+            },
+            invariants: {
+              invariantsCount: 0,
+            },
+            guidelines: {
+              guidelinesCount: 0,
+            },
+          },
+          graph: {
+            relationCount: 0,
           },
         },
       }),
@@ -70,6 +92,6 @@ describe("project.stats command", () => {
 
     expect(consoleSpy).toHaveBeenCalledTimes(1);
     const parsed = JSON.parse(consoleSpy.mock.calls[0][0] as string);
-    expect(parsed.projectStats.memoryCounts.goals).toBe(1);
+    expect(parsed.projectStats.work.goals.refinedGoalsCount).toBe(1);
   });
 });
