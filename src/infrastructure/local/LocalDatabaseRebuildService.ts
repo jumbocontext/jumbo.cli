@@ -42,6 +42,7 @@ export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
   async rebuild(): Promise<DatabaseRebuildResult> {
     this.logger.info(`${this.tag} Starting database rebuild`);
     const dbPath = path.join(this.rootDir, "jumbo.db");
+    const rebuildPath = `${dbPath}.rebuild`;
 
     // Step 1: Close existing database connection
     this.logger.debug(`${this.tag} Closing existing database connection`);
@@ -50,17 +51,15 @@ export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
       this.db.close();
     }
 
-    // Step 2: Delete the database file and WAL/SHM files
-    for (const filePath of [dbPath, `${dbPath}-wal`, `${dbPath}-shm`]) {
+    // Step 2: Create rebuild database at a temporary path
+    this.logger.debug(`${this.tag} Creating rebuild database`);
+    for (const filePath of [rebuildPath, `${rebuildPath}-wal`, `${rebuildPath}-shm`]) {
       if (await fs.pathExists(filePath)) {
-        this.logger.debug(`${this.tag} Deleting file`, { filePath });
         await fs.remove(filePath);
       }
     }
 
-    // Step 3: Create new database connection and run migrations
-    this.logger.debug(`${this.tag} Creating new database and running migrations`);
-    const newDb = new Database(dbPath);
+    const newDb = new Database(rebuildPath);
     newDb.pragma("journal_mode = WAL");
 
     const infrastructureDir = path.resolve(__dirname, "..");
@@ -69,34 +68,43 @@ export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
     migrationRunner.runNamespaceMigrations(migrations);
     this.logger.debug(`${this.tag} Migrations complete`);
 
-    // Step 4: Create projection-only event bus
+    // Step 3: Replay all events in a single transaction
     const projectionBus = this.createProjectionBus(newDb);
-
-    // Step 5: Replay all events through projection-only handlers
-    this.logger.debug(`${this.tag} Loading events from event store`);
     const events = await this.eventStore.getAllEvents();
     this.logger.info(`${this.tag} Loaded events for replay`, { eventCount: events.length });
 
     let processedCount = 0;
-    for (const event of events) {
-      try {
+    newDb.exec("BEGIN");
+    try {
+      for (const event of events) {
         await projectionBus.publish(event);
         processedCount++;
-      } catch (error) {
-        this.logger.error(`${this.tag} Failed to replay event`, error instanceof Error ? error : undefined, {
-          eventType: event.type,
-          aggregateId: event.aggregateId,
-          processedSoFar: processedCount,
-        });
-        throw error;
       }
+      newDb.exec("COMMIT");
+    } catch (error) {
+      newDb.exec("ROLLBACK");
+      this.closeAndRemove(newDb, rebuildPath);
+      const failedEvent = events[processedCount];
+      this.logger.error(`${this.tag} Failed to replay event`, error instanceof Error ? error : undefined, {
+        eventType: failedEvent?.type,
+        aggregateId: failedEvent?.aggregateId,
+        processedSoFar: processedCount,
+      });
+      throw error;
     }
 
-    // Step 6: Close the rebuild database connection
-    if (newDb && newDb.open) {
+    // Step 4: Swap rebuild database over the original
+    if (newDb.open) {
       newDb.pragma("wal_checkpoint(TRUNCATE)");
       newDb.close();
     }
+
+    for (const filePath of [dbPath, `${dbPath}-wal`, `${dbPath}-shm`]) {
+      if (await fs.pathExists(filePath)) {
+        await fs.remove(filePath);
+      }
+    }
+    await fs.move(rebuildPath, dbPath);
 
     this.logger.info(`${this.tag} Database rebuild complete`, { eventsReplayed: processedCount });
 
@@ -104,5 +112,14 @@ export class LocalDatabaseRebuildService implements IDatabaseRebuildService {
       eventsReplayed: processedCount,
       success: true,
     };
+  }
+
+  private closeAndRemove(db: Database.Database, dbPath: string): void {
+    try {
+      if (db.open) db.close();
+    } catch { /* best-effort cleanup */ }
+    for (const suffix of ["", "-wal", "-shm"]) {
+      try { fs.removeSync(`${dbPath}${suffix}`); } catch { /* best-effort */ }
+    }
   }
 }
