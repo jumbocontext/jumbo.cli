@@ -24,6 +24,7 @@ describe("ManagedSubprocess", () => {
       exitCode: null,
       exitSignal: null,
       stopRequested: false,
+      terminationTimedOut: false,
     };
 
     expect(process).toEqual(expect.objectContaining({
@@ -31,6 +32,7 @@ describe("ManagedSubprocess", () => {
       child,
       status: "running",
       stopRequested: false,
+      terminationTimedOut: false,
     }));
   });
 });

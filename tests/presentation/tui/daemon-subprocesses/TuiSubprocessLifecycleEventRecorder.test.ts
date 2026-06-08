@@ -28,6 +28,7 @@ function managedSubprocess(): ManagedSubprocess {
     events: [],
     status: "running",
     stopRequested: false,
+    terminationTimedOut: false,
   };
 }
 

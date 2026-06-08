@@ -28,6 +28,7 @@ export class TuiSubprocessSnapshotMapper {
       exitCode: process.exitCode,
       exitSignal: process.exitSignal,
       stopRequested: process.stopRequested,
+      terminationTimedOut: process.terminationTimedOut,
     };
   }
 }

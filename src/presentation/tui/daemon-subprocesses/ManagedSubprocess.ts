@@ -2,6 +2,7 @@ import type { WorkerDaemonProcess } from "../../../application/daemons/IWorkerDa
 import type { TuiDaemonConfig } from "./TuiDaemonConfig.js";
 import type { TuiDaemonEventSnapshot } from "./TuiDaemonEventSnapshot.js";
 import type { TuiDaemonName } from "./TuiDaemonName.js";
+import type { TuiSubprocessSnapshot } from "./TuiSubprocessSnapshot.js";
 import type { TuiSubprocessStatusValue } from "./TuiSubprocessStatus.js";
 
 export interface ManagedSubprocess {
@@ -15,4 +16,6 @@ export interface ManagedSubprocess {
   exitCode?: number | null;
   exitSignal?: string | null;
   stopRequested: boolean;
+  terminationTimedOut: boolean;
+  termination?: Promise<TuiSubprocessSnapshot>;
 }

@@ -5,6 +5,8 @@ import type { ILogger } from "../../../../src/application/logging/ILogger.js";
 import type {
   IWorkerDaemonProcessController,
   WorkerDaemonProcess,
+  WorkerDaemonTerminationResult,
+  WorkerDaemonTerminationStrategy,
 } from "../../../../src/application/daemons/IWorkerDaemonProcessController.js";
 import { TuiSubprocessManager } from "../../../../src/presentation/tui/daemon-subprocesses/TuiSubprocessManager.js";
 
@@ -30,14 +32,27 @@ function childProcess(pid = 123): WorkerDaemonProcess & EventEmitter {
 }
 
 function processController(child: WorkerDaemonProcess): jest.Mocked<IWorkerDaemonProcessController> {
+  const strategy: WorkerDaemonTerminationStrategy = {
+    kind: "unix-process-group",
+    signal: "SIGTERM",
+    escalationSignal: "SIGKILL",
+    pid: -(child.pid ?? 0),
+  };
   return {
     spawnDaemonProcess: jest.fn(() => child),
-    terminateDaemonProcess: jest.fn<() => Promise<void>>().mockResolvedValue(),
-    getTerminationStrategy: jest.fn(() => ({
-      kind: "unix-process-group",
-      signal: "SIGTERM",
-      pid: -(child.pid ?? 0),
-    })),
+    terminateDaemonProcess: jest.fn(
+      () => new Promise<WorkerDaemonTerminationResult>((resolve) => {
+        child.on("close", (exitCode, exitSignal) => {
+          resolve({
+            status: "closed",
+            strategy,
+            exitCode,
+            exitSignal,
+          });
+        });
+      }),
+    ),
+    getTerminationStrategy: jest.fn(() => strategy),
   };
 }
 
@@ -261,28 +276,104 @@ describe("TuiSubprocessManager", () => {
     jest.spyOn(Date, "now").mockReturnValue(1767272400000);
 
     await manager.spawn("reviewer");
-    const terminated = await manager.terminate("reviewer");
+    const termination = manager.terminate("reviewer");
+
+    expect(manager.getStatus("reviewer")).toEqual(expect.objectContaining({
+      status: "stopping",
+      stopRequested: true,
+    }));
+    child.emit("close", 0, null);
+    const terminated = await termination;
 
     expect(controller.getTerminationStrategy).toHaveBeenCalledWith(child);
     expect(controller.terminateDaemonProcess).toHaveBeenCalledWith(child);
     expect(terminated.events).toEqual([
-      {
+      expect.objectContaining({
         daemon: "reviewer",
         status: "stopping",
         source: "reviewer",
         category: "stopping",
         message: "termination requested",
         timestampMs: 1767272400000,
-      },
-      {
+      }),
+      expect.objectContaining({
         daemon: "reviewer",
         status: "stopped",
         source: "reviewer",
         category: "stopped",
         message: "process stopped",
         timestampMs: 1767272400000,
-      },
+        exitCode: 0,
+      }),
     ]);
+  });
+
+  it("prevents duplicate daemon spawns while a previous child is stopping", async () => {
+    const child = childProcess(457);
+    const controller = processController(child);
+    const manager = new TuiSubprocessManager(controller);
+
+    await manager.spawn("reviewer");
+    const termination = manager.terminate("reviewer");
+    const snapshot = await manager.spawn("reviewer");
+
+    expect(snapshot).toEqual(expect.objectContaining({
+      status: "stopping",
+      pid: 457,
+      stopRequested: true,
+    }));
+    expect(controller.spawnDaemonProcess).toHaveBeenCalledTimes(1);
+
+    child.emit("close", 0, null);
+    await termination;
+  });
+
+  it("marks timeout escalation as failed and keeps later closes failed", async () => {
+    const child = childProcess(458);
+    const controller = processController(child);
+    controller.terminateDaemonProcess.mockResolvedValue({
+      status: "timeout",
+      strategy: {
+        kind: "unix-process-group",
+        signal: "SIGTERM",
+        escalationSignal: "SIGKILL",
+        pid: -458,
+      },
+      timeoutMs: 25,
+      escalation: {
+        kind: "unix-process-group-kill",
+        signal: "SIGKILL",
+        pid: -458,
+      },
+    });
+    const testLogger = logger();
+    const manager = new TuiSubprocessManager(controller, testLogger);
+
+    await manager.spawn("reviewer");
+    const snapshot = await manager.terminate("reviewer");
+    child.emit("close", null, "SIGKILL");
+
+    expect(snapshot).toEqual(expect.objectContaining({
+      status: "failed",
+      terminationTimedOut: true,
+      stderr: expect.arrayContaining([
+        "Timed out after 25ms waiting for daemon process close.",
+      ]),
+    }));
+    expect(manager.getStatus("reviewer")).toEqual(expect.objectContaining({
+      status: "failed",
+      exitSignal: "SIGKILL",
+      terminationTimedOut: true,
+    }));
+    expect(testLogger.error).toHaveBeenCalledWith(
+      "Daemon subprocess termination timed out",
+      expect.any(Error),
+      expect.objectContaining({
+        daemon: "reviewer",
+        pid: 458,
+        timeoutMs: 25,
+      }),
+    );
   });
 
   it("captures termination failures without throwing into the TUI input handler", async () => {
@@ -312,9 +403,17 @@ describe("TuiSubprocessManager", () => {
     const manager = new TuiSubprocessManager(processController(child), testLogger);
 
     await manager.spawn("codifier");
-    await manager.terminate("codifier");
+    const termination = manager.terminate("codifier");
     child.emit("error", new Error("process already terminated"));
+
+    expect(manager.getStatus("codifier")).toEqual(expect.objectContaining({
+      status: "stopping",
+      stopRequested: true,
+      stderr: expect.arrayContaining(["process already terminated"]),
+    }));
+
     child.emit("close", null, "SIGTERM");
+    await termination;
 
     expect(manager.getStatus("codifier")).toEqual(expect.objectContaining({
       status: "stopped",
@@ -326,7 +425,7 @@ describe("TuiSubprocessManager", () => {
     expect(testLogger.error).toHaveBeenCalledWith(
       "Daemon subprocess error",
       expect.any(Error),
-      { daemon: "codifier", stopRequested: true, status: "stopped" },
+      { daemon: "codifier", stopRequested: true, status: "stopping" },
     );
   });
 

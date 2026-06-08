@@ -38,8 +38,7 @@ function getLifecycleEventRow(
   observedAtMs: number,
 ): DaemonEventRow | undefined {
   if (
-    snapshot.status === TuiSubprocessStatus.RUNNING &&
-    snapshot.stopRequested === true
+    snapshot.status === TuiSubprocessStatus.STOPPING
   ) {
     return createDaemonEventRow(
       snapshot,

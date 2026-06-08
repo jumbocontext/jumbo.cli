@@ -17,10 +17,7 @@ export function DaemonActionLine({
   readonly selected: boolean;
   readonly infoVisible: boolean;
 }): React.ReactElement {
-  const action =
-    snapshot.status === TuiSubprocessStatus.RUNNING
-      ? CockpitDaemonPanelCopy.action.stop
-      : CockpitDaemonPanelCopy.action.start;
+  const action = getDaemonAction(snapshot);
   const badgeColor = getDaemonShortcutBadgeColor(selected);
 
   return (
@@ -49,4 +46,18 @@ export function DaemonActionLine({
       />
     </Box>
   );
+}
+
+function getDaemonAction(
+  snapshot: TuiSubprocessSnapshot,
+): string {
+  if (snapshot.status === TuiSubprocessStatus.RUNNING) {
+    return CockpitDaemonPanelCopy.action.stop;
+  }
+
+  if (snapshot.status === TuiSubprocessStatus.STOPPING) {
+    return CockpitDaemonPanelCopy.action.wait;
+  }
+
+  return CockpitDaemonPanelCopy.action.start;
 }

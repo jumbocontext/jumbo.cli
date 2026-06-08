@@ -5,8 +5,13 @@ import { promisify } from "node:util";
 import type { WorkerDaemonConfig, WorkerDaemonName } from "../../application/daemons/WorkerDaemonCatalog.js";
 import type {
   IWorkerDaemonProcessController,
+  WorkerDaemonTerminationEscalation,
+  WorkerDaemonTerminationResult,
   WorkerDaemonProcess,
   WorkerDaemonTerminationStrategy,
+} from "../../application/daemons/IWorkerDaemonProcessController.js";
+import {
+  DEFAULT_WORKER_DAEMON_TERMINATION_TIMEOUT_MS,
 } from "../../application/daemons/IWorkerDaemonProcessController.js";
 
 const execFileAsync = promisify(execFile);
@@ -34,18 +39,23 @@ export class NodeWorkerDaemonProcessController implements IWorkerDaemonProcessCo
     });
   }
 
-  async terminateDaemonProcess(process: WorkerDaemonProcess): Promise<void> {
+  async terminateDaemonProcess(
+    process: WorkerDaemonProcess,
+    timeoutMs = DEFAULT_WORKER_DAEMON_TERMINATION_TIMEOUT_MS,
+  ): Promise<WorkerDaemonTerminationResult> {
     const strategy = this.getTerminationStrategy(process);
     if (strategy.kind === "no-pid") {
-      return;
+      return { status: "no-pid", strategy };
     }
 
+    const closePromise = waitForWorkerDaemonClose(process, strategy, timeoutMs);
     if (strategy.kind === "windows-tree") {
       await execFileAsync(strategy.command, [...strategy.args]);
-      return;
+      return closePromise;
     }
 
     globalThis.process.kill(strategy.pid, strategy.signal);
+    return closePromise;
   }
 
   getTerminationStrategy(process: WorkerDaemonProcess): WorkerDaemonTerminationStrategy {
@@ -73,9 +83,63 @@ export function getNodeWorkerDaemonTerminationStrategy(
     return {
       kind: "windows-tree",
       command: "taskkill",
-      args: ["/F", "/T", "/PID", String(pid)],
+      args: ["/T", "/PID", String(pid)],
+      escalationArgs: ["/F", "/T", "/PID", String(pid)],
     };
   }
 
-  return { kind: "unix-process-group", signal: "SIGTERM", pid: -pid };
+  return {
+    kind: "unix-process-group",
+    signal: "SIGTERM",
+    escalationSignal: "SIGKILL",
+    pid: -pid,
+  };
+}
+
+function waitForWorkerDaemonClose(
+  process: WorkerDaemonProcess,
+  strategy: Exclude<WorkerDaemonTerminationStrategy, { readonly kind: "no-pid" }>,
+  timeoutMs: number,
+): Promise<WorkerDaemonTerminationResult> {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      const escalation = escalateWorkerDaemonTermination(strategy);
+      resolve({
+        status: "timeout",
+        strategy,
+        timeoutMs,
+        escalation,
+      });
+    }, timeoutMs);
+
+    process.on("close", (exitCode, exitSignal) => {
+      clearTimeout(timeout);
+      resolve({
+        status: "closed",
+        strategy,
+        exitCode,
+        exitSignal,
+      });
+    });
+  });
+}
+
+function escalateWorkerDaemonTermination(
+  strategy: Exclude<WorkerDaemonTerminationStrategy, { readonly kind: "no-pid" }>,
+): WorkerDaemonTerminationEscalation {
+  if (strategy.kind === "windows-tree") {
+    void execFileAsync(strategy.command, [...strategy.escalationArgs]).catch(() => undefined);
+    return {
+      kind: "windows-tree-force",
+      command: strategy.command,
+      args: strategy.escalationArgs,
+    };
+  }
+
+  globalThis.process.kill(strategy.pid, strategy.escalationSignal);
+  return {
+    kind: "unix-process-group-kill",
+    signal: strategy.escalationSignal,
+    pid: strategy.pid,
+  };
 }

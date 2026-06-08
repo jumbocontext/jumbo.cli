@@ -1,6 +1,7 @@
 import type { ILogger } from "../../../application/logging/ILogger.js";
 import type {
   IWorkerDaemonProcessController,
+  WorkerDaemonTerminationResult,
 } from "../../../application/daemons/IWorkerDaemonProcessController.js";
 import {
   WORKER_DAEMON_NAMES,
@@ -42,7 +43,10 @@ export class TuiSubprocessManager implements ISubprocessManager {
 
   async spawn(name: TuiDaemonName, config: Partial<TuiDaemonConfig> = {}): Promise<TuiSubprocessSnapshot> {
     const existing = this.processes.get(name);
-    if (existing?.status === TuiSubprocessStatus.RUNNING) {
+    if (
+      existing?.status === TuiSubprocessStatus.RUNNING ||
+      existing?.status === TuiSubprocessStatus.STOPPING
+    ) {
       return this.snapshotMapper.fromManagedSubprocess(existing);
     }
 
@@ -62,6 +66,7 @@ export class TuiSubprocessManager implements ISubprocessManager {
       events: [],
       status: TuiSubprocessStatus.RUNNING,
       stopRequested: false,
+      terminationTimedOut: false,
     };
     this.processes.set(name, managed);
     this.logger.info(TuiSubprocessCopy.startedLog, {
@@ -97,12 +102,15 @@ export class TuiSubprocessManager implements ISubprocessManager {
       });
     });
     child.on("error", (error) => {
-      managed.status = managed.stopRequested
-        ? TuiSubprocessStatus.STOPPED
-        : TuiSubprocessStatus.FAILED;
       const errorMessage = this.outputEventParser.boundTextField(error.message);
       this.outputRingBuffer.appendLines(managed.stderr, errorMessage);
-      this.lifecycleEventRecorder.recordTerminalEvent(managed, errorMessage);
+      if (!managed.stopRequested || managed.terminationTimedOut) {
+        managed.status = TuiSubprocessStatus.FAILED;
+        this.lifecycleEventRecorder.recordTerminalEvent(managed, errorMessage);
+      } else if (managed.status !== TuiSubprocessStatus.STOPPING) {
+        managed.status = TuiSubprocessStatus.STOPPED;
+        this.lifecycleEventRecorder.recordTerminalEvent(managed, errorMessage);
+      }
       this.logger.error(TuiSubprocessCopy.errorLog, this.lifecycleEventRecorder.boundErrorForLog(error), {
         daemon: name,
         stopRequested: managed.stopRequested,
@@ -115,42 +123,15 @@ export class TuiSubprocessManager implements ISubprocessManager {
 
   async terminate(name: TuiDaemonName): Promise<TuiSubprocessSnapshot> {
     const managed = this.processes.get(name);
+    if (managed?.status === TuiSubprocessStatus.STOPPING && managed.termination !== undefined) {
+      return managed.termination;
+    }
     if (managed === undefined || managed.status !== TuiSubprocessStatus.RUNNING) {
       return this.getStatus(name);
     }
 
-    try {
-      managed.stopRequested = true;
-      const strategy = managed.child.pid === undefined
-        ? { kind: "no-pid" as const }
-        : this.processController.getTerminationStrategy(managed.child);
-      this.lifecycleEventRecorder.recordStopping(managed);
-      this.logger.info(TuiSubprocessCopy.terminationRequestedLog, {
-        daemon: name,
-        pid: managed.child.pid,
-        strategy,
-      });
-      await this.processController.terminateDaemonProcess(managed.child);
-      managed.status = TuiSubprocessStatus.STOPPED;
-      this.lifecycleEventRecorder.recordStopped(managed);
-      this.logger.info(TuiSubprocessCopy.terminationCompletedLog, {
-        daemon: name,
-        pid: managed.child.pid,
-        stopRequested: managed.stopRequested,
-      });
-    } catch (error) {
-      managed.stopRequested = false;
-      managed.status = TuiSubprocessStatus.FAILED;
-      const errorMessage = this.outputEventParser.boundTextField(error instanceof Error ? error.message : String(error));
-      this.outputRingBuffer.appendLines(managed.stderr, errorMessage);
-      this.lifecycleEventRecorder.recordFailed(managed, errorMessage);
-      this.logger.error(TuiSubprocessCopy.terminationFailedLog, this.lifecycleEventRecorder.boundErrorForLog(error), {
-        daemon: name,
-        pid: managed.child.pid,
-        stopRequested: managed.stopRequested,
-      });
-    }
-    return this.snapshotMapper.fromManagedSubprocess(managed);
+    managed.termination = this.terminateManagedSubprocess(managed);
+    return managed.termination;
   }
 
   async terminateAll(): Promise<void> {
@@ -170,14 +151,103 @@ export class TuiSubprocessManager implements ISubprocessManager {
     return WORKER_DAEMON_NAMES.map((name) => this.getStatus(name));
   }
 
+  private async terminateManagedSubprocess(
+    managed: ManagedSubprocess,
+  ): Promise<TuiSubprocessSnapshot> {
+    const name = managed.name;
+    const strategy = managed.child.pid === undefined
+      ? { kind: "no-pid" as const }
+      : this.processController.getTerminationStrategy(managed.child);
+    try {
+      managed.stopRequested = true;
+      managed.status = TuiSubprocessStatus.STOPPING;
+      this.lifecycleEventRecorder.recordStopping(managed);
+      this.logger.info(TuiSubprocessCopy.terminationRequestedLog, {
+        daemon: name,
+        pid: managed.child.pid,
+        strategy,
+      });
+      const result = await this.processController.terminateDaemonProcess(managed.child);
+      this.applyTerminationResult(managed, result);
+    } catch (error) {
+      managed.stopRequested = false;
+      managed.status = TuiSubprocessStatus.FAILED;
+      const errorMessage = this.outputEventParser.boundTextField(error instanceof Error ? error.message : String(error));
+      this.outputRingBuffer.appendLines(managed.stderr, errorMessage);
+      this.lifecycleEventRecorder.recordFailed(managed, errorMessage);
+      this.logger.error(TuiSubprocessCopy.terminationFailedLog, this.lifecycleEventRecorder.boundErrorForLog(error), {
+        daemon: name,
+        pid: managed.child.pid,
+        stopRequested: managed.stopRequested,
+      });
+    } finally {
+      managed.termination = undefined;
+    }
+    return this.snapshotMapper.fromManagedSubprocess(managed);
+  }
+
   private resolveClosedStatus(
     process: ManagedSubprocess,
     code: number | null,
   ): TuiSubprocessStatusValue {
+    if (process.terminationTimedOut) {
+      return TuiSubprocessStatus.FAILED;
+    }
+
     if (process.stopRequested) {
       return TuiSubprocessStatus.STOPPED;
     }
 
     return code === 0 ? TuiSubprocessStatus.STOPPED : TuiSubprocessStatus.FAILED;
+  }
+
+  private applyTerminationResult(
+    managed: ManagedSubprocess,
+    result: WorkerDaemonTerminationResult,
+  ): void {
+    if (result.status === "timeout") {
+      this.recordTerminationTimeout(managed, result);
+      return;
+    }
+
+    if (result.status === "no-pid") {
+      managed.status = TuiSubprocessStatus.STOPPED;
+      this.lifecycleEventRecorder.recordStopped(managed);
+    }
+
+    if (result.status === "closed" && managed.status === TuiSubprocessStatus.STOPPING) {
+      managed.exitCode = result.exitCode;
+      managed.exitSignal = result.exitSignal;
+      managed.status = TuiSubprocessStatus.STOPPED;
+      this.lifecycleEventRecorder.recordStopped(managed);
+    }
+
+    this.logger.info(TuiSubprocessCopy.terminationCompletedLog, {
+      daemon: managed.name,
+      pid: managed.child.pid,
+      stopRequested: managed.stopRequested,
+      status: managed.status,
+    });
+  }
+
+  private recordTerminationTimeout(
+    managed: ManagedSubprocess,
+    result: Extract<WorkerDaemonTerminationResult, { readonly status: "timeout" }>,
+  ): void {
+    managed.terminationTimedOut = true;
+    managed.status = TuiSubprocessStatus.FAILED;
+    const errorMessage = this.outputEventParser.boundTextField(
+      `Timed out after ${result.timeoutMs}ms waiting for daemon process close.`,
+    );
+    this.outputRingBuffer.appendLines(managed.stderr, errorMessage);
+    this.lifecycleEventRecorder.recordFailed(managed, errorMessage);
+    this.logger.error(TuiSubprocessCopy.terminationTimedOutLog, new Error(errorMessage), {
+      daemon: managed.name,
+      pid: managed.child.pid,
+      stopRequested: managed.stopRequested,
+      timeoutMs: result.timeoutMs,
+      strategy: result.strategy,
+      escalation: result.escalation,
+    });
   }
 }

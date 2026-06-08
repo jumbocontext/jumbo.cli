@@ -11,5 +11,6 @@ export const TuiSubprocessCopy = {
   terminationRequestedLog: "Daemon subprocess termination requested",
   terminationCompletedLog: "Daemon subprocess termination completed",
   terminationFailedLog: "Daemon subprocess termination failed",
+  terminationTimedOutLog: "Daemon subprocess termination timed out",
   eventLog: "Daemon subprocess event",
 } as const;
