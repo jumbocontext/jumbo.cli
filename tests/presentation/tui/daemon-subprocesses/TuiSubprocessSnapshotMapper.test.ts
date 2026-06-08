@@ -41,6 +41,7 @@ describe("TuiSubprocessSnapshotMapper", () => {
       exitCode: 1,
       exitSignal: null,
       stopRequested: false,
+      terminationTimedOut: false,
     };
 
     const snapshot = mapper.fromManagedSubprocess(process);
@@ -54,6 +55,7 @@ describe("TuiSubprocessSnapshotMapper", () => {
       pid: 42,
       status: "failed",
       exitCode: 1,
+      terminationTimedOut: false,
     }));
   });
 });

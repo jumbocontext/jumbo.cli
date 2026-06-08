@@ -57,4 +57,18 @@ describe("DaemonActionLine", () => {
     expect(lastFrame()).toContain(CockpitDaemonPanelCopy.action.infoOpen);
     unmount();
   });
+
+  it("renders wait controls for stopping daemons", () => {
+    const { lastFrame, unmount } = render(
+      <DaemonActionLine
+        snapshot={createSnapshot("stopping")}
+        selected={false}
+        infoVisible={false}
+      />,
+    );
+
+    expect(lastFrame()).toContain(CockpitDaemonPanelCopy.action.wait);
+    expect(lastFrame()).toContain(CockpitDaemonPanelCopy.action.config);
+    unmount();
+  });
 });

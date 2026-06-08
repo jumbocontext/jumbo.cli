@@ -18,7 +18,7 @@ export async function toggleCockpitDaemon(
   const snapshot = manager.getStatus(name);
   if (snapshot.status === TuiSubprocessStatus.RUNNING) {
     await manager.terminate(name);
-  } else {
+  } else if (snapshot.status !== TuiSubprocessStatus.STOPPING) {
     await manager.spawn(name, config);
   }
   const snapshots = manager.getAllStatuses();

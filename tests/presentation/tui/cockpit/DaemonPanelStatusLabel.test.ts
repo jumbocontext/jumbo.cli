@@ -36,6 +36,13 @@ describe("getDaemonPanelStatusLabel", () => {
       eventStatuses: [TuiDaemonEventStatus.IDLE],
     }), daemonConstants)).toBe("[ stopped ]");
   });
+
+  it("uses stopping status while daemon termination is waiting on close", () => {
+    expect(getDaemonPanelStatusLabel(snapshot({
+      status: TuiSubprocessStatus.STOPPING,
+      eventStatuses: [TuiDaemonEventStatus.PROCESSING],
+    }), daemonConstants)).toBe("[ stopping ]");
+  });
 });
 
 const daemonConstants: IDaemonConstants = {

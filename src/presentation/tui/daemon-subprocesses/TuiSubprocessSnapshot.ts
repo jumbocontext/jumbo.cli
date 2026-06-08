@@ -14,4 +14,5 @@ export interface TuiSubprocessSnapshot {
   readonly exitCode?: number | null;
   readonly exitSignal?: string | null;
   readonly stopRequested?: boolean;
+  readonly terminationTimedOut?: boolean;
 }

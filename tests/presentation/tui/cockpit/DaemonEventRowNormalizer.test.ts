@@ -30,7 +30,7 @@ describe("DaemonEventRowNormalizer", () => {
   it("adds lifecycle rows for visible daemon state transitions", () => {
     expect(DaemonEventRowNormalizer.fromSnapshot(snapshot("running"), 1000)[0].category).toBe("starting");
     expect(DaemonEventRowNormalizer.fromSnapshot({
-      ...snapshot("running"),
+      ...snapshot("stopping"),
       stopRequested: true,
     }, 1000)[0].category).toBe("stopping");
     expect(DaemonEventRowNormalizer.fromSnapshot({
@@ -44,7 +44,7 @@ describe("DaemonEventRowNormalizer", () => {
   });
 });
 
-function snapshot(status: "failed" | "running" | "stopped"): TuiSubprocessSnapshot {
+function snapshot(status: "failed" | "running" | "stopped" | "stopping"): TuiSubprocessSnapshot {
   return {
     name: "reviewer",
     status,

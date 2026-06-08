@@ -4,6 +4,7 @@ export const CockpitDaemonPanelCopy = {
   action: {
     start: "start",
     stop: "stop",
+    wait: "wait",
     config: "config",
     info: "info",
     infoOpen: "info open",

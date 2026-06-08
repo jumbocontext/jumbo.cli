@@ -1,6 +1,7 @@
 export const TuiSubprocessStatus = {
   STOPPED: "stopped",
   RUNNING: "running",
+  STOPPING: "stopping",
   FAILED: "failed",
 } as const;
 

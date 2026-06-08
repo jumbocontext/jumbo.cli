@@ -6,6 +6,7 @@ describe("TuiSubprocessStatus", () => {
     expect(TuiSubprocessStatus).toEqual({
       STOPPED: "stopped",
       RUNNING: "running",
+      STOPPING: "stopping",
       FAILED: "failed",
     });
   });

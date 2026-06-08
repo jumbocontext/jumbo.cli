@@ -79,4 +79,22 @@ describe("toggleCockpitDaemon", () => {
       }),
     ]);
   });
+
+  it("does not spawn or terminate daemons that are already stopping", async () => {
+    const manager = createManager(createSnapshot("stopping"));
+    const setDaemonStatuses = jest.fn();
+    const setDaemonEventRows = jest.fn();
+
+    await toggleCockpitDaemon(
+      "refiner",
+      manager,
+      DEFAULT_WORKER_DAEMON_CONFIG,
+      setDaemonStatuses,
+      setDaemonEventRows,
+    );
+
+    expect(manager.spawn).not.toHaveBeenCalled();
+    expect(manager.terminate).not.toHaveBeenCalled();
+    expect(setDaemonStatuses).toHaveBeenCalledWith([createSnapshot("stopping")]);
+  });
 });
