@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.2] - 2026-06-08
+
 ### Fixed
 
 - **TUI worker daemons**: Daemon stop controls now wait for real child-process close, prevent duplicate starts while stopping, and escalate process-tree termination after a bounded timeout.
