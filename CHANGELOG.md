@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.3] - 2026-06-08
+
+### Changed
+
+- **Performance**: `heal` and `evolve` rebuild now replays events into a temporary database inside a single transaction, then swaps it over the original on success. Delivers ~4-5x replay speedup from batched writes and guarantees the original database is untouched if a corrupt event causes replay to fail. Contributed by [Allan Kimmer Jensen](https://github.com/Saturate).
+
 ## [3.7.2] - 2026-06-08
 
 ### Fixed
