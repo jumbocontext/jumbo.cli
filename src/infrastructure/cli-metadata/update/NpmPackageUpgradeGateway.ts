@@ -276,7 +276,8 @@ export class NpmPackageUpgradeGateway implements ICliPackageUpgradeGateway {
 
     const normalizedTarget = target
       .replace(/%~dp0%?[\\/]?/gi, "")
-      .replace(/\$basedir[\\/]?/gi, "");
+      .replace(/\$basedir[\\/]?/gi, "")
+      .replace(/[\\/]/g, path.sep);
     return path.resolve(path.dirname(shimPath), normalizedTarget);
   }
 
