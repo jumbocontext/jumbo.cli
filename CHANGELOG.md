@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.8.1] - 2026-06-10
+
+### Fixed
+
+- **CLI self-upgrade**: npm shim path resolution now normalizes path separators before resolving, fixing self-upgrade detection failures on Windows.
+
 ## [3.8.0] - 2026-06-09
 
 ### Added
