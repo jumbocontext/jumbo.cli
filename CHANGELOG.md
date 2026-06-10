@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.8.2] - 2026-06-10
+
+### Changed
+
+- **CI security**: GitHub Actions workflows now pin all actions to full commit SHAs instead of mutable version tags, eliminating supply-chain risk from tag mutation.
+
 ## [3.8.1] - 2026-06-10
 
 ### Fixed
