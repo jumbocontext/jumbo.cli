@@ -654,6 +654,11 @@ describe("TuiApp", () => {
   }, 10000);
 
   it("routes to the primed cockpit after creating a goal even before the summary reader catches up", async () => {
+    const addGoalController = {
+      handle: jest.fn(async (_request: AddGoalRequest) => ({
+        goalId: "goal_created",
+      })),
+    };
     const { stdin, lastFrame, unmount } = render(
       <TuiApp
         settingsReader={hiddenLaunchpadWelcomeSettingsReader()}
@@ -662,59 +667,60 @@ describe("TuiApp", () => {
             projectSummaryController("primed-empty"),
         }}
         actionControllers={{
-          addGoalController: {
-            handle: async (_request: AddGoalRequest) => ({
-              goalId: "goal_created",
-            }),
-          },
+          addGoalController,
         }}
       />,
     );
 
-    await waitForFrame(lastFrame, (frame) =>
-      frame.includes("Ready to create your first goal."),
-    );
-    stdin.write("g");
-    await waitForFrame(lastFrame, (frame) => frame.includes("Author Goal"));
+    try {
+      await waitForFrame(lastFrame, (frame) =>
+        frame.includes("Ready to create your first goal."),
+      );
+      stdin.write("g");
+      await waitForFrame(lastFrame, (frame) => frame.includes("Author Goal"));
 
-    stdin.write("Prototype Cockpit goal authoring");
-    await tick();
-    stdin.write("\r");
-    await tick();
-    stdin.write("Open goal authoring from Cockpit");
-    await tick();
-    stdin.write("\r");
-    await tick();
-    stdin.write("Wizard opens and closes");
-    await tick();
-    stdin.write("\r");
-    await tick();
-    stdin.write("\r");
-    await waitForFrame(lastFrame, (frame) => frame.includes("Scope in"));
+      stdin.write("Prototype Cockpit goal authoring");
+      await tick();
+      stdin.write("\r");
+      await tick();
+      stdin.write("Open goal authoring from Cockpit");
+      await tick();
+      stdin.write("\r");
+      await tick();
+      stdin.write("Wizard opens and closes");
+      await tick();
+      stdin.write("\r");
+      await tick();
+      stdin.write("\r");
+      await waitForFrame(lastFrame, (frame) => frame.includes("Scope in"));
 
-    stdin.write("\r");
-    await tick();
-    stdin.write("\r");
-    await waitForFrame(lastFrame, (frame) => frame.includes("Previous goal"));
+      stdin.write("\r");
+      await tick();
+      stdin.write("\r");
+      await waitForFrame(lastFrame, (frame) => frame.includes("Previous goal"));
 
-    stdin.write("\r");
-    await tick();
-    stdin.write("\r");
-    await tick();
-    stdin.write("\r");
-    await waitForFrame(lastFrame, (frame) => frame.includes("Branch"));
+      stdin.write("\r");
+      await tick();
+      stdin.write("\r");
+      await tick();
+      stdin.write("\r");
+      await waitForFrame(lastFrame, (frame) => frame.includes("Branch"));
 
-    stdin.write("\r");
-    await tick();
-    stdin.write("\r");
+      stdin.write("\r");
+      await tick();
+      stdin.write("\r");
+      await waitForFrame(
+        lastFrame,
+        () => addGoalController.handle.mock.calls.length > 0,
+      );
 
-    await waitForFrame(lastFrame, (frame) =>
-      !frame.includes("Ready to create your first goal."),
-    );
+      await waitForFrame(lastFrame, (frame) => frame.includes("EVENTS//"));
 
-    expect(lastFrame()).not.toContain("to add a goal");
-    expect(lastFrame()).toContain("EVENTS//");
-    unmount();
+      expect(lastFrame()).not.toContain("to add a goal");
+      expect(lastFrame()).toContain("EVENTS//");
+    } finally {
+      unmount();
+    }
   }, 10000);
 
 });
