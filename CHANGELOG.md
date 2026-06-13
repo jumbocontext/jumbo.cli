@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.0] - 2026-06-13
+
+### Added
+
+- **Formalize objectives skill**: New shipped `formalize-objectives` skill that, when a user prompt carries an objective not already defined as a Jumbo goal and the structured process has not been explicitly bypassed, transforms the prompt into a structured objective via `jumbo-design-goal` and `define-jumbo-goals`.
+
+### Changed
+
+- **README**: Refreshed positioning copy with an agent-onboarding hook and a bulleted capabilities list (memory, cross-session continuity, automatic goal specification, extended context windows, concurrent agents, harness/model agnostic), and added a star-history chart.
+
+### Fixed
+
+- **Test stability**: Stabilized TUI application-shell interaction tests and Cockpit launchpad daemon tests.
+
 ## [3.8.2] - 2026-06-10
 
 ### Changed
