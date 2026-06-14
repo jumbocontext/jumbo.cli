@@ -50,6 +50,7 @@ import { SearchIndexEventHandler } from "../../application/context/search/Search
 import { SearchDocumentProjectorRegistry } from "../../application/context/search/SearchDocumentProjectorRegistry.js";
 import { SqliteSearchIndexStore } from "../context/search/SqliteSearchIndexStore.js";
 import { ProjectedSearchIndexProvider } from "../context/search/ProjectedSearchIndexProvider.js";
+import { ProjectIdentityResolver } from "../../application/identity/ProjectIdentityResolver.js";
 
 // Session Event Stores - decomposed by use case
 import { FsSessionStartedEventStore } from "../context/sessions/start/FsSessionStartedEventStore.js";
@@ -636,6 +637,7 @@ export class HostBuilder {
     await settingsInitializer.ensureSettingsFileExists();
 
     const settingsReader = new FsSettingsReader(this.rootDir);
+    const projectIdentityResolver = new ProjectIdentityResolver(settingsReader);
     const telemetryEnvironmentReader = new ProcessTelemetryEnvironmentReader();
     const telemetryConsentStatusResolver = new TelemetryConsentStatusResolver();
     const settings = await settingsReader.read();
@@ -997,7 +999,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const updateProjectCommandHandler = new UpdateProjectCommandHandler(
       projectUpdatedEventStore,
       eventBus,
-      projectUpdatedProjector
+      projectUpdatedProjector,
+      projectIdentityResolver
     );
     const updateProjectGateway = new LocalUpdateProjectGateway(
       updateProjectCommandHandler,
@@ -1692,7 +1695,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       projectInitializedProjector,
       agentFileProtocol,
       settingsInitializer,
-      gitignoreProtocol
+      gitignoreProtocol,
+      projectIdentityResolver
     );
     const localPlanProjectInitGateway = new LocalPlanProjectInitGateway(
       agentFileProtocol,

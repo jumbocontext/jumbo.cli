@@ -31,7 +31,7 @@ The `.jumbo/` directory is Jumbo's local project memory. Everything Jumbo knows 
 |---|---|
 | `events/` | Append-only event store organized by aggregate UUID |
 | `jumbo.db` | SQLite database used as a CQRS read projection |
-| `settings.jsonc` | User settings (QA turn limits, claim duration) |
+| `settings.jsonc` | Project identity and user settings (QA turn limits, claim duration, telemetry, TUI, session preview) |
 | `logs/jumbo.log` | Runtime log output |
 
 ---
@@ -111,6 +111,12 @@ Default contents:
 
 ```jsonc
 {
+  // Stable project identity
+  "project": {
+    // Generated at project initialization and reused for project event streams
+    "id": "<generated-uuid>"
+  },
+
   // Quality Assurance settings for goal completion
   "qa": {
     // Default turn limit for QA iterations on goal completion
@@ -123,14 +129,42 @@ Default contents:
     // Duration in minutes that a goal claim remains valid
     // After this duration, the claim expires and another worker can claim the goal
     "claimDurationMinutes": 30
+  },
+
+  // Telemetry consent and anonymous identity settings
+  "telemetry": {
+    // Whether anonymous usage telemetry is enabled (opt-out model)
+    "enabled": true,
+    // Anonymous identifier used for telemetry events after consent
+    "anonymousId": null,
+    // Whether the user has explicitly made a telemetry consent decision
+    "consentGiven": false
+  },
+
+  // TUI presentation preferences
+  "tui": {
+    // Whether the Cockpit launchpad welcome panel should be shown
+    "showLaunchpadWelcome": true
+  },
+
+  // Session workflow preferences
+  "session": {
+    // Maximum number of available backlog goals to include in session start
+    "backlogPreviewSize": 5
   }
 }
 ```
 
 | Setting | Default | Description |
 |---|---|---|
+| `project.id` | Generated UUID | Stable project aggregate id reused across updates and projection rebuilds |
 | `qa.defaultTurnLimit` | `3` | Maximum QA review iterations before auto-completing a goal |
 | `claims.claimDurationMinutes` | `30` | How long a goal claim stays valid before expiring |
+| `telemetry.enabled` | `true` | Stored telemetry consent preference |
+| `telemetry.anonymousId` | `null` | Anonymous telemetry id generated after consent |
+| `telemetry.consentGiven` | `false` | Whether the user has explicitly made a telemetry consent decision |
+| `tui.showLaunchpadWelcome` | `true` | Whether to show the Cockpit launchpad welcome panel |
+| `session.backlogPreviewSize` | `5` | Maximum available backlog goals included in session start |
 
 ---
 

@@ -86,6 +86,9 @@ export class FsSettingsReader implements ISettingsReader {
    */
   private mergeWithDefaults(settings: Partial<Settings>): Settings {
     return {
+      project: {
+        id: settings.project?.id ?? DEFAULT_SETTINGS.project!.id,
+      },
       qa: {
         defaultTurnLimit:
           settings.qa?.defaultTurnLimit ?? DEFAULT_SETTINGS.qa.defaultTurnLimit,
@@ -117,11 +120,20 @@ export class FsSettingsReader implements ISettingsReader {
   }
 
   private buildSettingsFileContent(settings: Settings): string {
+    const projectIdValue = settings.project?.id === null
+      ? "null"
+      : `"${settings.project!.id}"`;
     const anonymousIdValue = settings.telemetry.anonymousId === null
       ? "null"
       : `"${settings.telemetry.anonymousId}"`;
 
     return `{
+  // Stable project identity
+  "project": {
+    // Generated at project initialization and reused for project event streams
+    "id": ${projectIdValue}
+  },
+
   // Quality Assurance settings for goal completion
   "qa": {
     // Default turn limit for QA iterations on goal completion

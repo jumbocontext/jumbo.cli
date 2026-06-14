@@ -19,6 +19,16 @@ afterEach(async () => {
 });
 
 describe("FsSettingsInitializer", () => {
+  it("creates settings with null project identity", async () => {
+    const tempDir = await createTempDir();
+    const initializer = new FsSettingsInitializer(tempDir);
+
+    await initializer.ensureSettingsFileExists();
+
+    const settings = await new FsSettingsReader(tempDir).read();
+    expect(settings.project).toEqual(DEFAULT_SETTINGS.project);
+  });
+
   it("creates settings with default session backlog preview size", async () => {
     const tempDir = await createTempDir();
     const initializer = new FsSettingsInitializer(tempDir);

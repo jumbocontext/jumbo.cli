@@ -9,6 +9,9 @@ import {
  * or when creating a new settings file.
  */
 export const DEFAULT_SETTINGS: Settings = {
+  project: {
+    id: null,
+  },
   qa: {
     defaultTurnLimit: 3,
   },

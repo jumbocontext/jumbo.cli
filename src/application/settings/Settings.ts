@@ -12,6 +12,16 @@ export interface QASettings {
   defaultTurnLimit: number;
 }
 
+export interface ProjectSettings {
+  /**
+   * Stable project aggregate identity.
+   *
+   * New projects receive a generated UUID at initialization. Existing projects
+   * created before this setting is populated migrate to their projected id.
+   */
+  id: string | null;
+}
+
 /**
  * Default claim duration in milliseconds (30 minutes).
  * Used as the fallback when no custom duration is configured.
@@ -76,6 +86,11 @@ export interface SessionSettings {
 }
 
 export interface Settings {
+  /**
+   * Project identity settings
+   */
+  project?: ProjectSettings;
+
   /**
    * QA (Quality Assurance) settings for goal completion
    */

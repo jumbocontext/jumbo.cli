@@ -23,6 +23,12 @@ export class FsSettingsInitializer implements ISettingsInitializer {
     }
 
     const content = `{
+  // Stable project identity
+  "project": {
+    // Generated at project initialization and reused for project event streams
+    "id": null
+  },
+
   // Quality Assurance settings for goal completion
   "qa": {
     // Default turn limit for QA iterations on goal completion

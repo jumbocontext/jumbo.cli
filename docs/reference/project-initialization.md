@@ -15,6 +15,7 @@ Configure Jumbo for your project.
 
 - **Event store** — Append-only log of all project knowledge
 - **Projections** — Read-optimized views for fast queries
+- **Project settings** — Stable project identity and local Jumbo preferences
 - **Agent files** — Bootstrap instructions, lifecycle hooks, settings fragments, and managed skills for selected AI coding assistants
 
 ---
@@ -74,8 +75,9 @@ Contains the event store and projection databases:
 
 ```
 .jumbo/
-├── events.db       # Immutable event history
-└── projections.db  # Read-optimized views
+├── events/         # Immutable event history
+├── jumbo.db        # Read-optimized SQLite projection
+└── settings.jsonc  # Stable project identity and local settings
 ```
 
 ### Agent hooks
@@ -106,18 +108,6 @@ After initialization, update settings with:
 
 ```bash
 > jumbo project update --purpose "New project purpose"
-```
-
-Update boundaries:
-
-```bash
-> jumbo project update --boundary "Does not replace git" --boundary "No cloud storage"
-```
-
-Update multiple fields:
-
-```bash
-> jumbo project update --purpose "Updated purpose" --boundary "New boundary"
 ```
 
 ---

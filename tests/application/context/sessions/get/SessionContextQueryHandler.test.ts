@@ -84,7 +84,11 @@ describe("SessionContextQueryHandler", () => {
   });
 
   it("should assemble core projectContext without north-star data", async () => {
-    const project = { name: "TestProject", purpose: "Testing" };
+    const project = {
+      projectId: "11111111-1111-4111-8111-111111111111",
+      name: "TestProject",
+      purpose: "Testing",
+    };
 
     projectContextReader.getProject.mockResolvedValue(project as any);
 
@@ -92,6 +96,7 @@ describe("SessionContextQueryHandler", () => {
     const result = await handler.execute();
 
     expect(result.context.projectContext).toBe(project);
+    expect(result.context.projectContext?.projectId).toBe(project.projectId);
   });
 
   it("should separate doing, blocked, in-review, and qualified goals as activeGoals", async () => {

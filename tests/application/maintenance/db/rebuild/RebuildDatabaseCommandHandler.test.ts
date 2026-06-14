@@ -134,6 +134,39 @@ describe("RebuildDatabaseCommandHandler", () => {
     expect(eventBus.publish).toHaveBeenNthCalledWith(3, events[2]);
   });
 
+  it("should replay project events with their persisted aggregate id intact", async () => {
+    const projectId = "11111111-1111-4111-8111-111111111111";
+    const events: BaseEvent[] = [
+      {
+        type: "ProjectInitializedEvent",
+        aggregateId: projectId,
+        version: 1,
+        timestamp: "2025-01-01T10:00:00Z",
+        payload: {
+          name: "Jumbo",
+          purpose: "Context orchestration",
+        },
+      },
+      {
+        type: "ProjectUpdatedEvent",
+        aggregateId: projectId,
+        version: 2,
+        timestamp: "2025-01-01T10:05:00Z",
+        payload: {
+          purpose: "Stable identity",
+        },
+      },
+    ];
+
+    eventStore.getAllEvents.mockResolvedValue(events);
+
+    const result = await handler.handle({ skipConfirmation: true });
+
+    expect(eventBus.publish).toHaveBeenNthCalledWith(1, events[0]);
+    expect(eventBus.publish).toHaveBeenNthCalledWith(2, events[1]);
+    expect(result.eventsReplayed).toBe(2);
+  });
+
   it("should continue replaying even if a single event handler fails", async () => {
     // Arrange
     const events: BaseEvent[] = [

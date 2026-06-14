@@ -18,6 +18,24 @@ afterEach(async () => {
 });
 
 describe("FsSettingsReader", () => {
+  it("merges project identity defaults when existing settings do not include them", async () => {
+    const tempDir = await createTempDir();
+    await fs.writeFile(
+      path.join(tempDir, "settings.jsonc"),
+      JSON.stringify({
+        qa: { defaultTurnLimit: 7 },
+        claims: { claimDurationMinutes: 45 },
+        telemetry: { enabled: false, anonymousId: null, consentGiven: true },
+      }),
+      "utf-8",
+    );
+    const reader = new FsSettingsReader(tempDir);
+
+    const settings = await reader.read();
+
+    expect(settings.project).toEqual(DEFAULT_SETTINGS.project);
+  });
+
   it("merges TUI defaults when existing settings do not include them", async () => {
     const tempDir = await createTempDir();
     await fs.writeFile(
@@ -66,6 +84,22 @@ describe("FsSettingsReader", () => {
     await expect(reader.read()).resolves.toEqual({
       ...DEFAULT_SETTINGS,
       tui: { showLaunchpadWelcome: false },
+    });
+  });
+
+  it("persists project identity through the settings file", async () => {
+    const tempDir = await createTempDir();
+    const reader = new FsSettingsReader(tempDir);
+    const projectId = "11111111-1111-4111-8111-111111111111";
+
+    await reader.write({
+      ...DEFAULT_SETTINGS,
+      project: { id: projectId },
+    });
+
+    await expect(reader.read()).resolves.toEqual({
+      ...DEFAULT_SETTINGS,
+      project: { id: projectId },
     });
   });
 

@@ -13,6 +13,7 @@ import { UpdateProjectCommand } from "./UpdateProjectCommand.js";
 import { IProjectUpdatedEventWriter } from "./IProjectUpdatedEventWriter.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { IProjectUpdateReader } from "./IProjectUpdateReader.js";
+import { IProjectIdentityResolver } from "../../../identity/IProjectIdentityResolver.js";
 import { Project } from "../../../../domain/project/Project.js";
 import { ProjectErrorMessages } from "../../../../domain/project/Constants.js";
 
@@ -20,7 +21,8 @@ export class UpdateProjectCommandHandler {
   constructor(
     private readonly eventWriter: IProjectUpdatedEventWriter,
     private readonly eventBus: IEventBus,
-    private readonly reader: IProjectUpdateReader
+    private readonly reader: IProjectUpdateReader,
+    private readonly projectIdentityResolver: IProjectIdentityResolver
   ) {}
 
   async execute(command: UpdateProjectCommand): Promise<{
@@ -34,7 +36,11 @@ export class UpdateProjectCommandHandler {
     }
 
     // 2. Rehydrate aggregate from event history
-    const projectId = "project"; // Single project per codebase
+    const projectId = await this.projectIdentityResolver.resolveExistingProjectId(
+      existingView.projectId,
+      async (candidateProjectId) =>
+        (await this.eventWriter.readStream(candidateProjectId)).length > 0,
+    );
     const history = await this.eventWriter.readStream(projectId);
     const project = Project.rehydrate(projectId, history as any);
 

@@ -7,6 +7,7 @@ import { UpdateProjectCommand } from "../../../../../src/application/context/pro
 import { IProjectUpdatedEventWriter } from "../../../../../src/application/context/project/update/IProjectUpdatedEventWriter";
 import { IProjectUpdateReader } from "../../../../../src/application/context/project/update/IProjectUpdateReader";
 import { IEventBus } from "../../../../../src/application/messaging/IEventBus";
+import { IProjectIdentityResolver } from "../../../../../src/application/identity/IProjectIdentityResolver";
 import { ProjectEvent, ProjectUpdatedEvent } from "../../../../../src/domain/project/EventIndex";
 import { ProjectEventType } from "../../../../../src/domain/project/Constants";
 import { ProjectView } from "../../../../../src/application/context/project/ProjectView";
@@ -17,6 +18,7 @@ describe("UpdateProjectCommandHandler", () => {
   let mockEventWriter: jest.Mocked<IProjectUpdatedEventWriter>;
   let mockEventBus: jest.Mocked<IEventBus>;
   let mockReader: jest.Mocked<IProjectUpdateReader>;
+  let mockProjectIdentityResolver: jest.Mocked<IProjectIdentityResolver>;
   let handler: UpdateProjectCommandHandler;
 
   beforeEach(() => {
@@ -34,7 +36,18 @@ describe("UpdateProjectCommandHandler", () => {
       getProject: jest.fn(),
     };
 
-    handler = new UpdateProjectCommandHandler(mockEventWriter, mockEventBus, mockReader);
+    mockProjectIdentityResolver = {
+      generateProjectId: jest.fn(),
+      persistProjectId: jest.fn(),
+      resolveExistingProjectId: jest.fn(async (projectedProjectId) => projectedProjectId),
+    };
+
+    handler = new UpdateProjectCommandHandler(
+      mockEventWriter,
+      mockEventBus,
+      mockReader,
+      mockProjectIdentityResolver,
+    );
   });
 
   describe("execute()", () => {
@@ -89,6 +102,8 @@ describe("UpdateProjectCommandHandler", () => {
       // Assert
       expect(result.updated).toBe(true);
       expect(result.changedFields).toEqual(["purpose"]);
+      expect(mockProjectIdentityResolver.resolveExistingProjectId)
+        .toHaveBeenCalledWith("project", expect.any(Function));
 
       // Verify event was appended to event store
       expect(mockEventWriter.append).toHaveBeenCalledTimes(1);
@@ -101,6 +116,66 @@ describe("UpdateProjectCommandHandler", () => {
       // Verify event was published to event bus
       expect(mockEventBus.publish).toHaveBeenCalledTimes(1);
       expect(mockEventBus.publish).toHaveBeenCalledWith(appendedEvent);
+    });
+
+    it("should read history from the persisted project id when settings provide one", async () => {
+      const persistedProjectId = "11111111-1111-4111-8111-111111111111";
+      const existingView: ProjectView = {
+        projectId: persistedProjectId,
+        name: "My Project",
+        purpose: "Original purpose",
+        version: 1,
+        createdAt: "2025-01-01T00:00:00.000Z",
+        updatedAt: "2025-01-01T00:00:00.000Z",
+      };
+      const initEvent: ProjectEvent = {
+        type: ProjectEventType.INITIALIZED,
+        aggregateId: persistedProjectId,
+        version: 1,
+        timestamp: "2025-01-01T00:00:00.000Z",
+        payload: {
+          name: "My Project",
+          purpose: "Original purpose",
+        },
+      };
+      mockReader.getProject.mockResolvedValue(existingView);
+      mockProjectIdentityResolver.resolveExistingProjectId.mockResolvedValue(persistedProjectId);
+      mockEventWriter.readStream.mockResolvedValue([initEvent]);
+
+      await handler.execute({ purpose: "New purpose" });
+
+      expect(mockEventWriter.readStream).toHaveBeenCalledWith(persistedProjectId);
+      const appendedEvent = mockEventWriter.append.mock.calls[0][0] as ProjectUpdatedEvent;
+      expect(appendedEvent.aggregateId).toBe(persistedProjectId);
+    });
+
+    it("should pass the projected project id to identity migration for legacy projects", async () => {
+      const existingView: ProjectView = {
+        projectId: "project",
+        name: "My Project",
+        purpose: "Original purpose",
+        version: 1,
+        createdAt: "2025-01-01T00:00:00.000Z",
+        updatedAt: "2025-01-01T00:00:00.000Z",
+      };
+      const initEvent: ProjectEvent = {
+        type: ProjectEventType.INITIALIZED,
+        aggregateId: "project",
+        version: 1,
+        timestamp: "2025-01-01T00:00:00.000Z",
+        payload: {
+          name: "My Project",
+          purpose: "Original purpose",
+        },
+      };
+      mockReader.getProject.mockResolvedValue(existingView);
+      mockEventWriter.readStream.mockResolvedValue([initEvent]);
+
+      await handler.execute({ purpose: "New purpose" });
+
+      expect(mockProjectIdentityResolver.resolveExistingProjectId)
+        .toHaveBeenCalledWith("project", expect.any(Function));
+      expect(mockEventWriter.readStream).toHaveBeenCalledWith("project");
     });
 
     it("should return false if no changes detected (idempotent)", async () => {

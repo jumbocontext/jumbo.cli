@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Project identity stability**: New project initialization now generates a stable UUID project id, persists it in `.jumbo/settings.jsonc`, and reuses it for project updates and projection rebuilds. Existing projects without a persisted id migrate to their current projected identity.
+
 ## [3.9.0] - 2026-06-13
 
 ### Added

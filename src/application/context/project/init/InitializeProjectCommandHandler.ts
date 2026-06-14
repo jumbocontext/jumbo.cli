@@ -20,6 +20,7 @@ import { IAgentFileProtocol } from "./IAgentFileProtocol.js";
 import { AgentId } from "./AgentSelection.js";
 import { IGitignoreProtocol } from "./IGitignoreProtocol.js";
 import { ISettingsInitializer } from "../../../settings/ISettingsInitializer.js";
+import { IProjectIdentityResolver } from "../../../identity/IProjectIdentityResolver.js";
 import { Project } from "../../../../domain/project/Project.js";
 import { ProjectErrorMessages } from "../../../../domain/project/Constants.js";
 
@@ -30,7 +31,8 @@ export class InitializeProjectCommandHandler {
     private readonly reader: IProjectInitReader,
     private readonly agentFileProtocol: IAgentFileProtocol,
     private readonly settingsInitializer: ISettingsInitializer,
-    private readonly gitignoreProtocol: IGitignoreProtocol
+    private readonly gitignoreProtocol: IGitignoreProtocol,
+    private readonly projectIdentityResolver: IProjectIdentityResolver
   ) {}
 
   async execute(
@@ -45,7 +47,7 @@ export class InitializeProjectCommandHandler {
     }
 
     // 1. Create new aggregate
-    const projectId = "project"; // Single project per codebase
+    const projectId = this.projectIdentityResolver.generateProjectId();
     const project = Project.create(projectId);
 
     // 2. Domain logic produces event
@@ -60,14 +62,15 @@ export class InitializeProjectCommandHandler {
     // 4. Publish event to bus (projections will update via subscriptions)
     await this.eventBus.publish(event);
 
-    // 5. Create/update AGENTS.md (side effect)
+    // 5. Persist project settings identity for future updates and rebuilds
+    await this.settingsInitializer.ensureSettingsFileExists();
+    await this.projectIdentityResolver.persistProjectId(projectId);
+
+    // 6. Create/update AGENTS.md (side effect)
     await this.agentFileProtocol.ensureAgentsMd(projectRoot);
 
-    // 6. Configure all supported agents (side effect)
+    // 7. Configure all supported agents (side effect)
     await this.agentFileProtocol.ensureAgentConfigurations(projectRoot, selectedAgentIds);
-
-    // 7. Ensure default settings file exists (side effect)
-    await this.settingsInitializer.ensureSettingsFileExists();
 
     // 8. Ensure .gitignore excludes Jumbo internal state (side effect)
     await this.gitignoreProtocol.ensureExclusions(projectRoot);
