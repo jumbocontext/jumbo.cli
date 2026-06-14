@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, jest } from "@jest/globals";
 import { render } from "ink-testing-library";
-import { AnimatedBanner } from "../../../../src/presentation/tui/cockpit/AnimatedBanner.js";
+import { AnimatedBanner } from "../../../../src/presentation/tui/animated-banner/Banner.js";
 
 describe("AnimatedBanner", () => {
   it("renders a non-empty frame on mount", () => {

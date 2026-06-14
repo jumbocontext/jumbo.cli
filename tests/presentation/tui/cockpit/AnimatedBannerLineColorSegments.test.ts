@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { getAnimatedBannerLineColorSegments } from "../../../../src/presentation/tui/cockpit/AnimatedBannerLineColorSegments.js";
+import { getAnimatedBannerLineColorSegments } from "../../../../src/presentation/tui/animated-banner/LineColorSegments.js";
 import { SemanticColors } from "../../../../src/presentation/shared/DesignTokens.js";
 
 describe("getAnimatedBannerLineColorSegments", () => {

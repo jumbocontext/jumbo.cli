@@ -5,7 +5,19 @@ import { CockpitLaunchpadView } from "../../../../src/presentation/tui/cockpit/C
 import { TuiStateReaderProvider } from "../../../../src/presentation/tui/state-reading/TuiStateReader.js";
 import type { Settings } from "../../../../src/application/settings/Settings.js";
 
-const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
+const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
+const waitForCondition = async (
+  predicate: () => boolean,
+  failureMessage: string,
+) => {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    await tick();
+    if (predicate()) {
+      return;
+    }
+  }
+  throw new Error(failureMessage);
+};
 const defaultSettings: Settings = {
   qa: { defaultTurnLimit: 3 },
   claims: { claimDurationMinutes: 30 },
@@ -58,15 +70,25 @@ describe("CockpitLaunchpadView launchpad header", () => {
       />,
     );
 
-    await tick();
-    stdin.write("x");
-    await tick();
+    try {
+      await waitForCondition(
+        () => settingsReader.read.mock.calls.length > 0,
+        "Timed out waiting for launchpad welcome preference read",
+      );
+      await tick();
+      stdin.write("x");
+      await waitForCondition(
+        () => settingsReader.write.mock.calls.length > 0,
+        "Timed out waiting for launchpad welcome dismissal write",
+      );
 
-    expect(settingsReader.write).toHaveBeenCalledWith({
-      ...defaultSettings,
-      tui: { showLaunchpadWelcome: false },
-    });
-    unmount();
+      expect(settingsReader.write).toHaveBeenCalledWith({
+        ...defaultSettings,
+        tui: { showLaunchpadWelcome: false },
+      });
+    } finally {
+      unmount();
+    }
   });
 
   it("does not rewrite settings when the stored preference already hides the welcome panel", async () => {
@@ -86,11 +108,14 @@ describe("CockpitLaunchpadView launchpad header", () => {
       />,
     );
 
-    await tick();
-    stdin.write("x");
-    await tick();
+    try {
+      await tick();
+      stdin.write("x");
+      await tick();
 
-    expect(settingsReader.write).not.toHaveBeenCalled();
-    unmount();
+      expect(settingsReader.write).not.toHaveBeenCalled();
+    } finally {
+      unmount();
+    }
   });
 });

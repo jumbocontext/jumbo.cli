@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { getAnimatedBannerColorGradientHex } from "../../../../src/presentation/tui/cockpit/AnimatedBannerColorGradient.js";
+import { getAnimatedBannerColorGradientHex } from "../../../../src/presentation/tui/animated-banner/ColorGradient.js";
 
 describe("getAnimatedBannerColorGradientHex", () => {
   it("returns a valid hex color string for any progress value", () => {

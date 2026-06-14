@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Box, Text } from "ink";
 import { getAnimationFrame } from "../../cli/banner/AnimationFrames.js";
-import { getAnimatedBannerColorGradientHex } from "./AnimatedBannerColorGradient.js";
-import { getAnimatedBannerLineColorSegments } from "./AnimatedBannerLineColorSegments.js";
-import { AnimatedBannerTiming } from "./AnimatedBannerTiming.js";
+import { getAnimatedBannerColorGradientHex } from "./ColorGradient.js";
+import { getAnimatedBannerLineColorSegments } from "./LineColorSegments.js";
+import { AnimatedBannerTiming } from "./Timing.js";
 
 interface AnimatedBannerProps {
   onComplete: () => void;

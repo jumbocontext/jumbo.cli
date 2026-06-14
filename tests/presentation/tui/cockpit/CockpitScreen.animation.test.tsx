@@ -29,7 +29,7 @@ const mockBillboardTrigger = jest.fn((input: BillboardInput) =>
 );
 
 jest.unstable_mockModule(
-  "../../../../src/presentation/tui/cockpit/AnimatedBanner.js",
+  "../../../../src/presentation/tui/animated-banner/Banner.js",
   () => ({
     AnimatedBanner: mockAnimatedBanner,
   }),

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Box } from "ink";
-import { AnimatedBanner } from "./AnimatedBanner.js";
+import { AnimatedBanner } from "../animated-banner/Banner.js";
 import { CockpitScreenDefaults } from "./CockpitScreenDefaults.js";
 import { getCockpitScreenInfoBoxLines } from "./CockpitScreenInfoBoxLines.js";
 import type { CockpitState } from "./CockpitState.js";

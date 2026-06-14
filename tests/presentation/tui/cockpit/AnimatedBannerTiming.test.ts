@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { getFrameCount } from "../../../../src/presentation/cli/banner/AnimationFrames.js";
-import { AnimatedBannerTiming } from "../../../../src/presentation/tui/cockpit/AnimatedBannerTiming.js";
+import { AnimatedBannerTiming } from "../../../../src/presentation/tui/animated-banner/Timing.js";
 
 describe("AnimatedBannerTiming", () => {
   it("derives frame boundaries from the shared banner animation frames", () => {
