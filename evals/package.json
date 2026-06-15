@@ -1,0 +1,42 @@
+{
+  "name": "jumbo-evals",
+  "version": "0.1.0",
+  "description": "Longitudinal eval system for measuring Jumbo's workflow efficacy across agent harnesses and sessions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "eval": "dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathIgnorePatterns=/tests/integration/",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathIgnorePatterns=/node_modules/ --testPathPatterns=/tests/integration/",
+    "build:jumbo": "npm --prefix .. run build",
+    "test:integration:source": "node scripts/with-jumbo-source.mjs npm run test:integration",
+    "smoke:jumbo": "node scripts/with-jumbo-source.mjs node scripts/jumbo-contract-smoke.mjs",
+    "clean": "rimraf dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@jest/globals": "^30.3.0",
+    "@swc/core": "^1.15.18",
+    "@swc/jest": "^0.2.39",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "ink-testing-library": "^4.0.0",
+    "jest": "^30.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "test-exclude": "^8.0.0"
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "ink": "^7.0.1",
+    "react": "^19.2.5"
+  }
+}

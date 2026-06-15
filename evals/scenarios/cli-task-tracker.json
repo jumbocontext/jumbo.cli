@@ -1,0 +1,51 @@
+{
+  "name": "CLI Task Tracker with State Machine",
+  "initialPrompt": "Build a CLI task tracker in TypeScript using a state machine for task lifecycle. Tasks move through states: draft -> active -> blocked | completed, with blocked -> active allowed. Use a state machine pattern where each transition is validated — invalid transitions throw a TransitionError with the current state, attempted state, and task ID. Storage is a single JSON file (~/.tasks.json). Commands: 'task add <title>', 'task list [--state <state>]', 'task start <id>', 'task complete <id>', 'task block <id> --reason <reason>'. Use Commander for CLI. File structure: src/domain/task.ts (Task type + state machine), src/domain/transitions.ts (valid transitions map), src/storage/json-store.ts, src/cli/commands.ts.",
+  "continuationPrompt": "Continue building the task tracker. Review the existing state machine, commands, and storage layer. Add the next feature while maintaining the state machine pattern and established conventions.",
+  "sessionCount": 6,
+  "expectedFiles": [
+    "src/domain/task.ts",
+    "src/domain/transitions.ts",
+    "src/storage/json-store.ts",
+    "src/cli/commands.ts"
+  ],
+  "retentionPatterns": [
+    "TransitionError",
+    "draft",
+    "active",
+    "blocked",
+    "completed",
+    "state machine",
+    "transition",
+    "~/.tasks.json"
+  ],
+  "expectedJumboMemoryCaptures": [
+    {
+      "kind": "decision",
+      "match": "Commander"
+    },
+    {
+      "kind": "component",
+      "match": "state machine"
+    },
+    {
+      "kind": "invariant",
+      "match": "append only",
+      "sessionNumber": 4
+    }
+  ],
+  "disruptions": [
+    {
+      "type": "correction",
+      "sessionNumber": 3,
+      "content": "Add an 'archived' state. Completed tasks can be archived (completed -> archived). Archived tasks are excluded from 'task list' by default but shown with '--include-archived'. The archive transition must record an archivedAt timestamp.",
+      "recoveryPatterns": ["archived", "archivedAt", "include-archived"]
+    },
+    {
+      "type": "new-constraint",
+      "sessionNumber": 4,
+      "content": "Tasks must now track their full state history as an audit trail. Each transition appends to a 'history' array: { fromState, toState, timestamp, reason? }. The 'task show <id>' command displays the history timeline. Never mutate history entries — append only.",
+      "recoveryPatterns": ["history", "audit trail", "fromState", "toState", "append only"]
+    }
+  ]
+}

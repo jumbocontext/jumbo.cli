@@ -54,3 +54,34 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+
+  # Guards the evals/jumbo CLI contract: builds jumbo from THIS commit's source
+  # and runs the evals against it (not a published binary), so a primitive
+  # refactor that breaks the CLI surface the evals depend on fails the PR here.
+  evals:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # intended version: actions/checkout v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # intended version: actions/setup-node v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Build jumbo from source → dist/cli.js (the binary the evals will exercise).
+      - run: npm ci
+      - run: npm run build
+
+      # Evals as an independent nested project, run against the freshly-built jumbo.
+      - run: npm ci
+        working-directory: evals
+      # Eval self-consistency (does not invoke jumbo).
+      - run: npm test
+        working-directory: evals
+      # The evals/jumbo CLI contract guard — exercises real jumbo (from source)
+      # through the surface the evals depend on. This is what catches a primitive
+      # refactor that would otherwise silently rot the evals.
+      - run: npm run smoke:jumbo
+        working-directory: evals
