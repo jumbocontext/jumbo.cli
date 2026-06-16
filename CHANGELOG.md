@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.9.2] - 2026-06-16
+
+### Added
+
+- **Co-located evals project**: The eval framework (previously the standalone `jumbocontext/evals` repo) now lives in `evals/` as an independent nested npm project so Jumbo primitives and the evals that exercise them are versioned and tested together. Evals run against Jumbo from source (via a build shim that resolves `jumbo` to `dist/cli.js`) rather than a published binary, eliminating version skew.
+- **CI contract guard**: A new `evals` job in `.github/workflows/pr-gate.yml` builds Jumbo from the PR's source and runs the evals plus a contract smoke test (`scripts/jumbo-contract-smoke.mjs`) that exercises the CLI surface the evals depend on (init, decision/component/goal add, JSON list output, and the `.jumbo/events/<seq>.<EventType>.json` layout), so a primitive refactor that breaks the CLI contract fails the PR.
+
 ### Changed
 
 - **Internal type safety**: Eliminated explicit TypeScript `any` usage across the codebase and now enforce `@typescript-eslint/no-explicit-any` as an ESLint error.
