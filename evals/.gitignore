@@ -1,0 +1,17 @@
+.jumbo/
+.jumbo/jumbo.db
+node_modules/
+dist/
+.env*
+*.tsbuildinfo
+.eval-store
+.agents
+.claude
+.gemini
+.github
+.vibe
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+VIBE.md
+JUMBO.md

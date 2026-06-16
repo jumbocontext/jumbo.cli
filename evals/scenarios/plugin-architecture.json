@@ -1,0 +1,53 @@
+{
+  "name": "Extensible Plugin Architecture",
+  "initialPrompt": "Build a plugin system in TypeScript for a document processing pipeline. The core pipeline loads plugins at startup, each plugin implements a DocumentPlugin interface with hooks: beforeProcess, transform, afterProcess, onError. Plugins are discovered from a plugins/ directory. The pipeline executes hooks in registration order. Start with: src/core/pipeline.ts (orchestrator), src/core/plugin-loader.ts (discovery and loading), src/core/types.ts (Plugin interface, DocumentContext, HookResult). Use a strict contract — plugins that throw during loading are skipped with a warning, not a crash.",
+  "continuationPrompt": "Continue building the plugin system. Review the existing plugin interface, pipeline, and any plugins already created. Add the next capability while maintaining the established patterns and plugin contract.",
+  "sessionCount": 6,
+  "expectedFiles": [
+    "src/core/pipeline.ts",
+    "src/core/plugin-loader.ts",
+    "src/core/types.ts",
+    "src/plugins/markdown-plugin.ts",
+    "src/plugins/metadata-plugin.ts"
+  ],
+  "retentionPatterns": [
+    "DocumentPlugin",
+    "beforeProcess",
+    "transform",
+    "afterProcess",
+    "onError",
+    "HookResult",
+    "DocumentContext",
+    "registration order"
+  ],
+  "expectedJumboMemoryCaptures": [
+    {
+      "kind": "component",
+      "match": "plugin"
+    },
+    {
+      "kind": "guideline",
+      "match": "priority",
+      "sessionNumber": 3
+    },
+    {
+      "kind": "decision",
+      "match": "topological",
+      "sessionNumber": 5
+    }
+  ],
+  "disruptions": [
+    {
+      "type": "correction",
+      "sessionNumber": 3,
+      "content": "The plugin interface is missing a priority field. Add 'priority: number' to DocumentPlugin. Plugins execute in priority order (lowest first), not registration order. Update the pipeline to sort by priority before executing each hook phase. Default priority is 100.",
+      "recoveryPatterns": ["priority", "lowest first", "sort"]
+    },
+    {
+      "type": "scope-change",
+      "sessionNumber": 5,
+      "content": "Add plugin dependency resolution. Plugins can declare 'dependencies: string[]' listing other plugin names they require. The loader must topologically sort plugins so dependencies load first. Circular dependencies are a fatal error with a clear message naming the cycle.",
+      "recoveryPatterns": ["dependencies", "topological", "circular"]
+    }
+  ]
+}
