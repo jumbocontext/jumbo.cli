@@ -3,6 +3,7 @@ export { scoreKnowledgeRetention, scoreKnowledgeRetentionTimeline } from './know
 export { scoreStructuralAssertions, scoreStructuralAssertionsTimeline } from './structural-assertion-scorer.js';
 export { scoreDisruptionRecovery, scoreDisruptionRecoveryTimeline } from './disruption-recovery-scorer.js';
 export { scoreJumboMemoryCapture, scoreJumboMemoryCaptureTimeline, baselineJumboMemoryCaptureScore } from './jumbo-memory-capture-scorer.js';
+export { scoreJumboEventCapture, baselineJumboEventCaptureScore, scoreJumboEventCaptureTimeline, resolveAddedEventTypeForKind, addedEventTypeByKind } from './jumbo-event-capture-scorer.js';
 export { scoreProtocolAdherence, scoreProtocolAdherenceTimeline, baselineProtocolAdherenceScore, adherenceForSession, PROTOCOL_STEPS } from './protocol-adherence-scorer.js';
 export type { ProtocolStep, ProtocolStepResult, SessionAdherence } from './protocol-adherence-scorer.js';
 export { scoreTokenEfficiency, compareTokenEfficiency, tokenUsageTimeline } from './token-efficiency-scorer.js';

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { TestScenario, ComparisonResult, SessionRecord, PerSessionScore, JumboLifecycleAudit, JumboLifecycleCommandResult, JumboLifecycleEvidence, JumboMemoryCommandResult, JumboMemoryEntity, JumboMemoryKind, JumboMemorySnapshot, SessionHeartbeat, SessionPhaseTimings, TimingSpan, TamperEvent, RunControlFile, JumboPlan, JumboPlanEntry, JumboPlanGoal } from './domain/types.js';
+import type { TestScenario, ComparisonResult, SessionRecord, PerSessionScore, DimensionScore, JumboLifecycleAudit, JumboLifecycleCommandResult, JumboLifecycleEvidence, JumboMemoryCommandResult, JumboMemoryEntity, JumboMemoryKind, JumboMemorySnapshot, SessionHeartbeat, SessionPhaseTimings, TimingSpan, TamperEvent, RunControlFile, JumboPlan, JumboPlanEntry, JumboPlanGoal } from './domain/types.js';
 import { createTestResult, createComparisonResult } from './domain/types.js';
 import type { ResultStore } from './storage/result-store.js';
 import { LocalExecutor } from './infrastructure/local-executor.js';
@@ -10,8 +10,10 @@ import type { HarnessAdapter } from './harness/harness-adapter.js';
 import { runSession } from './run-session.js';
 import { scoreFileAccuracy } from './scoring/file-accuracy-scorer.js';
 import { scoreKnowledgeRetention, scoreKnowledgeRetentionTimeline } from './scoring/knowledge-retention-scorer.js';
+import { scoreStructuralAssertions, scoreStructuralAssertionsTimeline } from './scoring/structural-assertion-scorer.js';
 import { scoreDisruptionRecovery, scoreDisruptionRecoveryTimeline } from './scoring/disruption-recovery-scorer.js';
 import { baselineJumboMemoryCaptureScore, scoreJumboMemoryCapture, scoreJumboMemoryCaptureTimeline } from './scoring/jumbo-memory-capture-scorer.js';
+import { baselineJumboEventCaptureScore, scoreJumboEventCapture, scoreJumboEventCaptureTimeline } from './scoring/jumbo-event-capture-scorer.js';
 import { baselineProtocolAdherenceScore, scoreProtocolAdherence, scoreProtocolAdherenceTimeline } from './scoring/protocol-adherence-scorer.js';
 import { compareTokenEfficiency, tokenUsageTimeline } from './scoring/token-efficiency-scorer.js';
 import type { JudgeConfig, JudgeFn } from './scoring/llm-judge-scorer.js';
@@ -1186,6 +1188,7 @@ export async function runABComparison(config: ABRunConfig): Promise<ComparisonRe
     // Score both runs — aggregate across all sessions
     const expectedFiles = scenario.expectedFiles ?? [];
     const retentionPatterns = scenario.retentionPatterns ?? [];
+    const structuralAssertions = scenario.structuralAssertions ?? [];
     const disruptions = scenario.disruptions ?? [];
     const expectedJumboMemoryCaptures = scenario.expectedJumboMemoryCaptures ?? [];
 
@@ -1194,23 +1197,36 @@ export async function runABComparison(config: ABRunConfig): Promise<ComparisonRe
 
     const jumboFileScore = scoreFileAccuracy(jumboCleanRecords, expectedFiles);
     const jumboRetentionScore = scoreKnowledgeRetention(jumboCleanRecords, retentionPatterns);
+    const jumboStructuralScore = scoreStructuralAssertions(jumboCleanRecords, structuralAssertions);
     const jumboDisruptionScore = scoreDisruptionRecovery(jumboCleanRecords, disruptions);
     const jumboMemoryScore = scoreJumboMemoryCapture(jumboCleanRecords, expectedJumboMemoryCaptures);
+    const jumboEventCaptureScore = scoreJumboEventCapture(jumboCleanRecords, expectedJumboMemoryCaptures);
     const jumboProtocolScore = scoreProtocolAdherence(jumboCleanRecords);
 
     const baselineFileScore = scoreFileAccuracy(baselineCleanRecords, expectedFiles);
     const baselineRetentionScore = scoreKnowledgeRetention(baselineCleanRecords, retentionPatterns);
+    const baselineStructuralScore = scoreStructuralAssertions(baselineCleanRecords, structuralAssertions);
     const baselineDisruptionScore = scoreDisruptionRecovery(baselineCleanRecords, disruptions);
     const baselineMemoryScore = baselineJumboMemoryCaptureScore(expectedJumboMemoryCaptures);
+    const baselineEventCaptureScore = baselineJumboEventCaptureScore(expectedJumboMemoryCaptures);
     const baselineProtocolScore = baselineProtocolAdherenceScore();
 
-    // Token efficiency: compare tokens-per-quality-point
-    const jumboAvgQuality = (jumboFileScore.score + jumboRetentionScore.score) / 2;
-    const baselineAvgQuality = (baselineFileScore.score + baselineRetentionScore.score) / 2;
+    // Token efficiency: tokens-per-quality-point. When the scenario declares
+    // structural assertions, retention is measured on artefacts, so the
+    // structural-retention score is the quality denominator (GOAL.md
+    // "Comparing token usage fairly"). Otherwise fall back to the
+    // file+keyword-retention average.
+    const hasStructuralAssertions = structuralAssertions.length > 0;
+    const jumboAvgQuality = hasStructuralAssertions
+      ? jumboStructuralScore.score
+      : (jumboFileScore.score + jumboRetentionScore.score) / 2;
+    const baselineAvgQuality = hasStructuralAssertions
+      ? baselineStructuralScore.score
+      : (baselineFileScore.score + baselineRetentionScore.score) / 2;
     const tokenEfficiencyScore = compareTokenEfficiency(jumboCleanRecords, baselineCleanRecords, jumboAvgQuality, baselineAvgQuality);
 
-    const jumboScores = [jumboFileScore, jumboRetentionScore, jumboDisruptionScore, jumboMemoryScore, jumboProtocolScore, tokenEfficiencyScore];
-    const baselineScores = [baselineFileScore, baselineRetentionScore, baselineDisruptionScore, baselineMemoryScore, baselineProtocolScore, tokenEfficiencyScore];
+    const jumboScores = [jumboFileScore, jumboRetentionScore, jumboStructuralScore, jumboDisruptionScore, jumboMemoryScore, jumboEventCaptureScore, jumboProtocolScore, tokenEfficiencyScore];
+    const baselineScores = [baselineFileScore, baselineRetentionScore, baselineStructuralScore, baselineDisruptionScore, baselineMemoryScore, baselineEventCaptureScore, baselineProtocolScore, tokenEfficiencyScore];
 
     // LLM-judge scoring (optional — requires both judgeConfig and judgeFn)
     if (judgeConfig && judgeFn) {
@@ -1231,12 +1247,26 @@ export async function runABComparison(config: ABRunConfig): Promise<ComparisonRe
     // Build per-session timelines
     const jumboRetentionTimeline = scoreKnowledgeRetentionTimeline(jumboRecords, retentionPatterns);
     const baselineRetentionTimeline = scoreKnowledgeRetentionTimeline(baselineRecords, retentionPatterns);
+    // Structural-retention timelines are sparse — one entry per session that
+    // has assertions due, in ascending session order (the scorer's contract).
+    // Re-key them by session number so they attach to the right session below.
+    const dueStructuralSessions = [...new Set(structuralAssertions.map((a) => a.sessionNumber))].sort((a, b) => a - b);
+    const jumboStructuralTimeline = scoreStructuralAssertionsTimeline(jumboRecords, structuralAssertions);
+    const baselineStructuralTimeline = scoreStructuralAssertionsTimeline(baselineRecords, structuralAssertions);
+    const jumboStructuralBySession = new Map<number, DimensionScore>();
+    const baselineStructuralBySession = new Map<number, DimensionScore>();
+    dueStructuralSessions.forEach((sessionNumber, idx) => {
+      if (jumboStructuralTimeline[idx]) jumboStructuralBySession.set(sessionNumber, jumboStructuralTimeline[idx]);
+      if (baselineStructuralTimeline[idx]) baselineStructuralBySession.set(sessionNumber, baselineStructuralTimeline[idx]);
+    });
     const jumboDisruptionTimeline = scoreDisruptionRecoveryTimeline(jumboRecords, disruptions);
     const baselineDisruptionTimeline = scoreDisruptionRecoveryTimeline(baselineRecords, disruptions);
     const jumboTokenTimeline = tokenUsageTimeline(jumboRecords);
     const baselineTokenTimeline = tokenUsageTimeline(baselineRecords);
     const jumboMemoryTimeline = scoreJumboMemoryCaptureTimeline(jumboRecords, expectedJumboMemoryCaptures);
     const baselineMemoryTimeline = baselineRecords.map(() => baselineMemoryScore);
+    const jumboEventCaptureTimeline = scoreJumboEventCaptureTimeline(jumboRecords, expectedJumboMemoryCaptures);
+    const baselineEventCaptureTimeline = baselineRecords.map(() => baselineEventCaptureScore);
     const jumboProtocolTimeline = scoreProtocolAdherenceTimeline(jumboRecords);
     const baselineProtocolTimeline = baselineRecords.map(() => baselineProtocolScore);
 
@@ -1245,8 +1275,10 @@ export async function runABComparison(config: ABRunConfig): Promise<ComparisonRe
       scores: [
         scoreFileAccuracy([r], expectedFiles),
         ...(jumboRetentionTimeline[i] ? [jumboRetentionTimeline[i]] : []),
+        ...(jumboStructuralBySession.has(r.sessionNumber) ? [jumboStructuralBySession.get(r.sessionNumber)!] : []),
         ...(jumboDisruptionTimeline[i] ? [jumboDisruptionTimeline[i]] : []),
         ...(jumboMemoryTimeline[i] ? [jumboMemoryTimeline[i]] : []),
+        ...(jumboEventCaptureTimeline[i] ? [jumboEventCaptureTimeline[i]] : []),
         ...(jumboProtocolTimeline[i] ? [jumboProtocolTimeline[i]] : []),
         ...(jumboTokenTimeline[i] ? [jumboTokenTimeline[i]] : []),
       ],
@@ -1257,8 +1289,10 @@ export async function runABComparison(config: ABRunConfig): Promise<ComparisonRe
       scores: [
         scoreFileAccuracy([r], expectedFiles),
         ...(baselineRetentionTimeline[i] ? [baselineRetentionTimeline[i]] : []),
+        ...(baselineStructuralBySession.has(r.sessionNumber) ? [baselineStructuralBySession.get(r.sessionNumber)!] : []),
         ...(baselineDisruptionTimeline[i] ? [baselineDisruptionTimeline[i]] : []),
         ...(baselineMemoryTimeline[i] ? [baselineMemoryTimeline[i]] : []),
+        ...(baselineEventCaptureTimeline[i] ? [baselineEventCaptureTimeline[i]] : []),
         ...(baselineProtocolTimeline[i] ? [baselineProtocolTimeline[i]] : []),
         ...(baselineTokenTimeline[i] ? [baselineTokenTimeline[i]] : []),
       ],
