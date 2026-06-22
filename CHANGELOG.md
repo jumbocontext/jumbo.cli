@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.10.1] - 2026-06-22
+
+### Changed
+
+- **Evals A/B scoring (Outcome 4)**: The eval A/B runner now scores the Jumbo arm on structural retention and direct `.jumbo/events/` workspace evidence. A new `jumbo-event-capture` scorer confirms the Jumbo arm registered the expected entities by reading the captured event log directly — independent of any CLI command output — via an explicit, exhaustive memory-kind → domain-event-type map. The `jumbo-contract-smoke` validates that map against the real CLI in CI, so a Jumbo event-type rename fails loudly instead of silently under-counting.
+- **README**: Refreshed README copy, added a demo gif (`this-is-jumbo.gif`), and removed the stale `docs/flows/cmd-jumbo-flow.md` flow doc.
+- **Internal**: Cleaned up TUI namespace and file names by dropping redundant `Tui` prefixes across the presentation TUI modules (e.g. `TuiApp` → `App`, `TuiStateReader` → `StateReader`, `TuiSubprocessManager` → `SubprocessManager`) and split shared TUI constants into focused modules.
+
 ## [3.10.0] - 2026-06-17
 
 ### Changed
