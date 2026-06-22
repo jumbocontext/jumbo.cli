@@ -151,6 +151,15 @@ export class GoalShowOutputBuilder {
       }
     }
 
+    // Current Progress — mirrors goal.start progress rendering
+    if (goal.progress.length > 0) {
+      lines.push("");
+      lines.push(heading("Current Progress"));
+      for (const progressEntry of goal.progress) {
+        lines.push(...wrapBulletContinuation(progressEntry));
+      }
+    }
+
     // Scope
     if (goal.scopeIn.length > 0 || goal.scopeOut.length > 0) {
       lines.push("");
@@ -296,6 +305,7 @@ export class GoalShowOutputBuilder {
         updatedAt: goal.updatedAt,
         note: goal.note,
         reviewIssues: goal.reviewIssues,
+        progress: goal.progress,
         nextGoalId: goal.nextGoalId,
         prerequisiteGoals: goal.prerequisiteGoals,
         claimedBy: goal.claimedBy,

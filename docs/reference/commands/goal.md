@@ -513,7 +513,7 @@ Append a task description to a goal's progress log.
 
 ## jumbo goal show
 
-Display full goal details.
+Display full goal details, including recorded progress entries.
 
 ### Synopsis
 

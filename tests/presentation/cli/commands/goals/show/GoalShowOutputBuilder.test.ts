@@ -149,6 +149,33 @@ describe("GoalShowOutputBuilder", () => {
       expect(criterionLines.length).toBeGreaterThanOrEqual(2);
     });
 
+    it("should render progress entries when present", () => {
+      const view = makeContextualView({
+        progress: ["Implemented data flow", "Verified command output"],
+      });
+      const text = stripAnsi(builder.build(view).toHumanReadable());
+
+      expect(text).toContain("Implemented data flow");
+      expect(text).toContain("Verified command output");
+    });
+
+    it("should word-wrap long progress entries with continuation at indent column", () => {
+      const longProgressEntry = "Completed a long implementation step that should wrap at the indent column width and keep continuation text aligned with the progress item text";
+      const view = makeContextualView({ progress: [longProgressEntry] });
+      const text = stripAnsi(builder.build(view).toHumanReadable());
+      const lines = text.split("\n");
+
+      const progressLines = lines.filter(l => l.includes("implementation step") || l.includes("continuation text") || l.includes("progress item"));
+      expect(progressLines.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("should omit progress section when no progress exists", () => {
+      const view = makeContextualView({ progress: [] });
+      const text = stripAnsi(builder.build(view).toHumanReadable());
+
+      expect(text).not.toContain("Current Progress");
+    });
+
     it("should render scope with in/out indicators", () => {
       const view = makeContextualView();
       const text = stripAnsi(builder.build(view).toHumanReadable());
@@ -374,10 +401,30 @@ describe("GoalShowOutputBuilder", () => {
       expect(data.goal.objective).toBe("Implement feature X");
       expect(data.goal.status).toBe("defined");
       expect(data.goal.note).toBe("A note");
+      expect(data.goal.progress).toEqual([]);
       expect(data.goal.nextGoalId).toBe("next_1");
       expect(data.goal.prerequisiteGoals).toEqual(["prereq_1"]);
       expect(data.goal.branch).toBe("feat/x");
       expect(data.goal.claimedBy).toBe("worker_1");
+    });
+
+    it("should include progress entries in structured output preserving order", () => {
+      const progress = ["Completed first task", "Completed second task"];
+      const view = makeContextualView({ progress });
+      const output = builder.buildStructuredOutput(view);
+      const sections = output.getSections();
+      const data = sections.find(s => s.type === "data")!.content as { goal: GoalView } & GoalContext;
+
+      expect(data.goal.progress).toEqual(progress);
+    });
+
+    it("should emit an empty progress array in structured output when no progress exists", () => {
+      const view = makeContextualView({ progress: [] });
+      const output = builder.buildStructuredOutput(view);
+      const sections = output.getSections();
+      const data = sections.find(s => s.type === "data")!.content as { goal: GoalView } & GoalContext;
+
+      expect(data.goal.progress).toEqual([]);
     });
 
     it("should include context arrays in structured output", () => {

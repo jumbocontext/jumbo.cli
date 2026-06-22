@@ -3,11 +3,10 @@
 </p>
 
 # Jumbo Context
-### Tired of constantly onboarding Claude, Codex, Gemini, Copilot and their cohorts?
+### Tired of repeating yourself to Claude, Codex, Gemini, Copilot and their cohorts?
 
-Stop repeating yourself and getting frustrated when they make mistakes you've already corrected. Keep your coding agents operating within the guardrails you define.  
-
-Jumbo gives your agents:
+Agents shouldn't have to be re-taught your project every session.
+Jumbo gives them the context they're missing, so you don't have to. 
 
 - Memory (Capture important details about your project _once_)
 - Continuity across sessions
@@ -16,17 +15,7 @@ Jumbo gives your agents:
 - Concurrent agents
 - Harness and model agnostic
 
-_An elephant never forgets. Neither should <img src="assets/claude-logo.svg" alt="Claude Code" height="16"> <img src="assets/codex-logo.svg" alt="Codex" height="16"> <img src="assets/gemini-logo.svg" alt="Gemini" height="16"> <img src="assets/github-copilot-logo.svg" alt="Copilot CLI" height="16"> <img src="assets/mistral-logo.svg" alt="Mistral Vibe CLI" height="16"> <img src="assets/cursor-logo.svg" alt="Cursor" height="16"> <img src="assets/vscode-logo.svg" alt="VS Code" height="16"> <img src="assets/amp-logo.svg" alt="Amp" height="16"> <img src="assets/warp-logo.svg" alt="Warp" height="16">_
-  
-    
-
-<a href="https://www.star-history.com/?repos=jumbocontext%2Fjumbo.cli&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=jumbocontext/jumbo.cli&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=jumbocontext/jumbo.cli&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=jumbocontext/jumbo.cli&type=date&legend=top-left" />
- </picture>
-</a>
+![](/assets/images/this-is-jumbo.gif)
 
 ## Can we address the elephant in the room?
 <sub style="color:#898989">(a.k.a. What problems does this solve?)</sub>
@@ -264,6 +253,7 @@ Jumbo adds the `.jumbo/` folder to your `.gitignore` by default. Jumbo employs t
 Love Jumbo and want to use it in your team? A cloud version is coming soon. Sign up to get notified when it's launched [here](https://jumbocontext.com/herd).
 </details>
 
+_An elephant never forgets. Neither should your agent_
 
 ## License
 
