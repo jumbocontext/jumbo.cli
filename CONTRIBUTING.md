@@ -37,7 +37,7 @@ Short description of the change.
 
 Use `patch` for fixes, `minor` for new features, `major` for breaking changes.
 
-For PRs that don't affect users (refactors, docs, CI), add an empty changeset instead:
+For PRs that don't need a release note (docs, CI), add an empty changeset instead:
 
 ```md
 ---
