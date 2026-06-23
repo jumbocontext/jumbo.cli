@@ -16,4 +16,13 @@ When a PR changes user-facing behavior, add a changeset file in `.changeset/` wi
 Description of the change.
 ```
 
-Use `patch` for fixes, `minor` for new features, `major` for breaking changes. Internal refactors, CI changes, and docs-only changes don't need a changeset.
+Use `patch` for fixes, `minor` for new features, `major` for breaking changes.
+
+For PRs that don't affect users (refactors, docs, CI), add an empty changeset instead:
+
+```md
+---
+---
+```
+
+Every PR needs a changeset file; the CI gate enforces this.
