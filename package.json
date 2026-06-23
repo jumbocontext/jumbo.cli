@@ -84,6 +84,10 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.0.0"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "engines": {
     "node": ">=18.18.0"
   }
