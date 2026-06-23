@@ -21,6 +21,30 @@ Pull requests are welcome. Before submitting:
 2. Keep PRs focused - one feature or fix per PR
 3. Follow existing code style and patterns
 4. Include tests for new functionality
+5. Add a changeset if your change affects users (see below)
+
+### Changesets
+
+We use [changesets](https://github.com/changesets/changesets) to track what changed and generate release notes. If your PR changes user-facing behavior, add a changeset file in `.changeset/`:
+
+```md
+---
+"jumbo-cli": patch
+---
+
+Short description of the change.
+```
+
+Use `patch` for fixes, `minor` for new features, `major` for breaking changes.
+
+For PRs that don't need a release note (docs, CI), add an empty changeset instead:
+
+```md
+---
+---
+```
+
+Every PR needs a changeset file; the CI gate enforces this.
 
 ### Contributor License Agreement
 
