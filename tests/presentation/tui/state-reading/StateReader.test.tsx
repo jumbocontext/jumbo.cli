@@ -8,7 +8,9 @@ import {
 import { useGoalsList } from "../../../../src/presentation/tui/state-reading/useGoalsList.js";
 import { useProjectContext } from "../../../../src/presentation/tui/state-reading/useProjectContext.js";
 import { useProjectStats } from "../../../../src/presentation/tui/state-reading/useProjectStats.js";
+import { useGlobalSearch } from "../../../../src/presentation/tui/state-reading/useGlobalSearch.js";
 import type { GoalView } from "../../../../src/application/context/goals/GoalView.js";
+import type { SearchResponse } from "../../../../src/application/context/search/SearchResponse.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -66,6 +68,17 @@ function ProjectStatsProbe(): React.ReactElement {
       {projectStats.data?.snapshot.work.goals.refinedGoalsCount ?? "loading"}
     </Text>
   );
+}
+
+function GlobalSearchProbe(): React.ReactElement {
+  const globalSearch = useGlobalSearch();
+  useInput((input) => {
+    if (input === "s") {
+      void globalSearch.search("memory");
+    }
+  });
+
+  return <Text>{globalSearch.data?.hits.length ?? "idle"}</Text>;
 }
 
 describe("StateReader", () => {
@@ -217,6 +230,53 @@ describe("StateReader", () => {
     await tick();
 
     expect(lastFrame()).toContain("2");
+    unmount();
+  });
+
+  it("dispatches global search requests through the injected controller", async () => {
+    const response: SearchResponse = {
+      hits: [
+        {
+          source: { type: "component", id: "component_reader" },
+          category: "component",
+          title: "Reader",
+          summary: null,
+          snippet: null,
+          facets: {},
+          score: 10,
+        },
+      ],
+      groups: [],
+    };
+    const searchRequests: unknown[] = [];
+    const searchController = {
+      handle: async (request: unknown) => {
+        searchRequests.push(request);
+        return response;
+      },
+    };
+
+    const { stdin, lastFrame, unmount } = render(
+      <StateReaderProvider
+        controllers={{ searchController }}
+        options={{ tickMs: 0 }}
+      >
+        <GlobalSearchProbe />
+      </StateReaderProvider>,
+    );
+
+    stdin.write("s");
+    const frame = await waitForFrame(lastFrame, "1");
+
+    expect(frame).toContain("1");
+    expect(searchRequests).toEqual([
+      {
+        criteria: {
+          query: "memory",
+          limit: 25,
+        },
+      },
+    ]);
     unmount();
   });
 

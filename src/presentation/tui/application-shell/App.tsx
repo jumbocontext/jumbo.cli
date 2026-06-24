@@ -3,6 +3,7 @@ import { Box, useApp, useInput, useStdout } from "ink";
 import { Header } from "./Header.js";
 import { Footer } from "./Footer.js";
 import { ScreenRouter } from "../navigation/ScreenRouter.js";
+import { SearchOverlay } from "../search/SearchOverlay.js";
 import { InitFlow } from "../project-initialization/InitFlow.js";
 import type { InitFlowActionControllers } from "../project-initialization/InitFlow.js";
 import { GoalAuthoringFlow } from "../goals/GoalAuthoringFlow.js";
@@ -35,9 +36,11 @@ import {
 } from "./AppConstants.js";
 
 const COCKPIT_FOOTER_SHORTCUTS = [
+  AppShortcut.SEARCH,
   AppShortcut.TOGGLE_WORKER,
   AppShortcut.CREATE_GOAL,
 ] as const;
+const DEFAULT_FOOTER_SHORTCUTS = [AppShortcut.SEARCH] as const;
 const CLI_UPDATE_NOTIFICATION_ID = "cli-update-available";
 const CLI_UPDATE_ACTION_CHAR = "u";
 const CLI_UPDATE_PROGRESS_INTERVAL_MS = 160;
@@ -185,6 +188,7 @@ function AppFrame({
   );
   const [initFlowOpen, setInitFlowOpen] = useState(false);
   const [goalAuthoringOpen, setGoalAuthoringOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [goalAuthoringError, setGoalAuthoringError] = useState<string | null>(null);
   const [goalAuthoringWorking, setGoalAuthoringWorking] = useState(false);
   const [lifecycleRouteOverride, setLifecycleRouteOverride] =
@@ -216,10 +220,11 @@ function AppFrame({
     !projectContext.loading &&
     projectLifecycleState === ProjectLifecycle.UNINITIALIZED;
   const frameShortcutsEnabled =
-    !initFlowOpen && !goalAuthoringOpen;
+    !initFlowOpen && !goalAuthoringOpen && !searchOpen;
   const cockpitLaunchpadVisible =
     !initFlowOpen &&
     !goalAuthoringOpen &&
+    !searchOpen &&
     activeScreenIndex === DEFAULT_SCREEN_INDEX &&
     routedProjectLifecycleState === ProjectLifecycle.PRIMED;
   const goalAuthoringShortcutEnabled =
@@ -304,11 +309,14 @@ function AppFrame({
   }, [cliUpgradeWorking]);
 
   useInput((input) => {
-    if (initFlowOpen || goalAuthoringOpen) {
+    if (initFlowOpen || goalAuthoringOpen || searchOpen) {
       return;
     }
     if (input === "q") {
       exit();
+    }
+    if (input === AppShortcut.SEARCH.char) {
+      setSearchOpen(true);
     }
     // MegaMenu is preserved for iteration but hidden from production users.
     // if (input === "m" || input === "M") {
@@ -494,12 +502,32 @@ function AppFrame({
             />
           </Box>
         )}
+        {searchOpen && (
+          <Box
+            position="absolute"
+            width="100%"
+            height="100%"
+            flexDirection="column"
+          >
+            <SearchOverlay
+              onClose={() => setSearchOpen(false)}
+              terminalWidth={columns}
+              terminalHeight={Math.max(1, rows - FRAME_CHROME_ROWS)}
+            />
+          </Box>
+        )}
       </Box>
       <Box flexShrink={0}>
         <Footer
           terminalWidth={columns}
           shortcutsEnabled={frameShortcutsEnabled}
-          contextualShortcuts={cockpitLaunchpadVisible ? COCKPIT_FOOTER_SHORTCUTS : []}
+          contextualShortcuts={
+            searchOpen
+              ? []
+              : cockpitLaunchpadVisible
+              ? COCKPIT_FOOTER_SHORTCUTS
+              : DEFAULT_FOOTER_SHORTCUTS
+          }
           notifications={buildNotifications(
             daemonStatuses,
             cliUpdateCheck,

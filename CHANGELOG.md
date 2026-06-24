@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **TUI global search**: Press `/` in the TUI to search the projected global memory index interactively, with grouped result metadata and a focused generic detail preview for the current hit.
+
 ## [3.10.1] - 2026-06-22
 
 ### Changed

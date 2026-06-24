@@ -7,6 +7,7 @@ import type { GetInvariantsController } from "../../../application/context/invar
 import type { ProjectStatsController } from "../../../application/context/project/stats/ProjectStatsController.js";
 import type { GetProjectSummaryQueryHandler } from "../../../application/context/project/query/GetProjectSummaryQueryHandler.js";
 import type { GetSessionsController } from "../../../application/context/sessions/get/GetSessionsController.js";
+import type { SearchController } from "../../../application/context/search/SearchController.js";
 
 export interface StateReaderControllers {
   readonly getProjectSummaryQueryHandler?: Pick<
@@ -27,4 +28,5 @@ export interface StateReaderControllers {
     "getAllInvariants"
   >;
   readonly projectStatsController?: Pick<ProjectStatsController, "handle">;
+  readonly searchController?: Pick<SearchController, "handle">;
 }

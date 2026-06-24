@@ -8,7 +8,13 @@ const INVARIANTS_SCREEN_COPY = {
   subtitle: "Focused invariant memory list and selected invariant detail",
 } as const;
 
-export function InvariantsScreen(): React.ReactElement {
+interface InvariantsScreenProps {
+  readonly shortcutsEnabled?: boolean;
+}
+
+export function InvariantsScreen(
+  { shortcutsEnabled = true }: InvariantsScreenProps = {},
+): React.ReactElement {
   const invariantsList = useInvariantsList();
 
   return (
@@ -19,6 +25,7 @@ export function InvariantsScreen(): React.ReactElement {
       rows={(invariantsList.data?.invariants ?? []).map(toInvariantEntityRow)}
       loading={invariantsList.loading}
       error={invariantsList.error}
+      shortcutsEnabled={shortcutsEnabled}
     />
   );
 }

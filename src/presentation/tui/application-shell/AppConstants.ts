@@ -6,6 +6,10 @@ export const AppCopy = {
 } as const;
 
 export const AppShortcut = {
+  SEARCH: {
+    char: "/",
+    label: "search",
+  },
   TOGGLE_WORKER: {
     char: "tab",
     label: "toggle worker",

@@ -48,6 +48,7 @@ interface MemoryEntityScreenProps {
   readonly rows: readonly MemoryEntityRow[];
   readonly loading?: boolean;
   readonly error?: Error | null;
+  readonly shortcutsEnabled?: boolean;
 }
 
 export function MemoryEntityScreen({
@@ -57,33 +58,37 @@ export function MemoryEntityScreen({
   rows,
   loading = false,
   error = null,
+  shortcutsEnabled = true,
 }: MemoryEntityScreenProps): React.ReactElement {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [eventIndex, setEventIndex] = useState(0);
   const selectedEntity = rows[selectedIndex];
 
-  useInput((input, key) => {
-    if (key.downArrow && selectedIndex < rows.length - 1) {
-      setSelectedIndex(selectedIndex + 1);
-      return;
-    }
+  useInput(
+    (input, key) => {
+      if (key.downArrow && selectedIndex < rows.length - 1) {
+        setSelectedIndex(selectedIndex + 1);
+        return;
+      }
 
-    if (key.upArrow && selectedIndex > 0) {
-      setSelectedIndex(selectedIndex - 1);
-      return;
-    }
+      if (key.upArrow && selectedIndex > 0) {
+        setSelectedIndex(selectedIndex - 1);
+        return;
+      }
 
-    if (input === "]") {
-      setEventIndex((eventIndex + 1) % MEMORY_REPLAY_EVENTS.length);
-      return;
-    }
+      if (input === "]") {
+        setEventIndex((eventIndex + 1) % MEMORY_REPLAY_EVENTS.length);
+        return;
+      }
 
-    if (input === "[") {
-      const nextEventIndex =
-        eventIndex === 0 ? MEMORY_REPLAY_EVENTS.length - 1 : eventIndex - 1;
-      setEventIndex(nextEventIndex);
-    }
-  });
+      if (input === "[") {
+        const nextEventIndex =
+          eventIndex === 0 ? MEMORY_REPLAY_EVENTS.length - 1 : eventIndex - 1;
+        setEventIndex(nextEventIndex);
+      }
+    },
+    { isActive: shortcutsEnabled },
+  );
 
   return (
     <Box flexDirection="column" paddingX={1} paddingTop={1} gap={1}>

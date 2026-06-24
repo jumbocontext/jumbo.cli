@@ -7,6 +7,10 @@ sidebar:
 
 Query the projected Jumbo memory search index from the terminal.
 
+The same projected memory index is also available in the TUI. Run `jumbo`,
+then press `/` to open interactive search, type a query, and use the arrow keys
+to move through focused result previews.
+
 ---
 
 ## jumbo search

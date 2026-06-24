@@ -8,7 +8,13 @@ const GUIDELINES_SCREEN_COPY = {
   subtitle: "Focused guideline memory list and selected guideline detail",
 } as const;
 
-export function GuidelinesScreen(): React.ReactElement {
+interface GuidelinesScreenProps {
+  readonly shortcutsEnabled?: boolean;
+}
+
+export function GuidelinesScreen(
+  { shortcutsEnabled = true }: GuidelinesScreenProps = {},
+): React.ReactElement {
   const guidelinesList = useGuidelinesList();
 
   return (
@@ -19,6 +25,7 @@ export function GuidelinesScreen(): React.ReactElement {
       rows={(guidelinesList.data?.guidelines ?? []).map(toGuidelineEntityRow)}
       loading={guidelinesList.loading}
       error={guidelinesList.error}
+      shortcutsEnabled={shortcutsEnabled}
     />
   );
 }

@@ -8,7 +8,13 @@ const DECISIONS_SCREEN_COPY = {
   subtitle: "Focused decision memory list and selected decision detail",
 } as const;
 
-export function DecisionsScreen(): React.ReactElement {
+interface DecisionsScreenProps {
+  readonly shortcutsEnabled?: boolean;
+}
+
+export function DecisionsScreen(
+  { shortcutsEnabled = true }: DecisionsScreenProps = {},
+): React.ReactElement {
   const decisionsList = useDecisionsList();
 
   return (
@@ -19,6 +25,7 @@ export function DecisionsScreen(): React.ReactElement {
       rows={(decisionsList.data?.decisions ?? []).map(toDecisionEntityRow)}
       loading={decisionsList.loading}
       error={decisionsList.error}
+      shortcutsEnabled={shortcutsEnabled}
     />
   );
 }

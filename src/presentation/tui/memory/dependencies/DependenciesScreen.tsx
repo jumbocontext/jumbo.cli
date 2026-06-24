@@ -8,7 +8,13 @@ const DEPENDENCIES_SCREEN_COPY = {
   subtitle: "Focused dependency memory list and selected dependency detail",
 } as const;
 
-export function DependenciesScreen(): React.ReactElement {
+interface DependenciesScreenProps {
+  readonly shortcutsEnabled?: boolean;
+}
+
+export function DependenciesScreen(
+  { shortcutsEnabled = true }: DependenciesScreenProps = {},
+): React.ReactElement {
   const dependenciesList = useDependenciesList();
 
   return (
@@ -19,6 +25,7 @@ export function DependenciesScreen(): React.ReactElement {
       rows={(dependenciesList.data?.dependencies ?? []).map(toDependencyEntityRow)}
       loading={dependenciesList.loading}
       error={dependenciesList.error}
+      shortcutsEnabled={shortcutsEnabled}
     />
   );
 }

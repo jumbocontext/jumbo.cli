@@ -60,6 +60,7 @@ export class ApplicationLauncher {
       getGuidelinesController: container.getGuidelinesController,
       getInvariantsController: container.getInvariantsController,
       projectStatsController: container.projectStatsController,
+      searchController: container.searchController,
     };
   }
 
