@@ -18,3 +18,4 @@ export * from './session.js';
 export * from './heartbeat.js';
 export * from './result.js';
 export * from './result-factories.js';
+export * from './replication.js';
