@@ -17,6 +17,21 @@ function getModifiedFiles(record: SessionRecord): readonly string[] {
 }
 
 /**
+ * Whether every expected file was produced (recall === 1) across the given
+ * sessions — one half of the token-efficiency output-equivalence gate
+ * (GOAL.md "Comparing token usage fairly"). Vacuously true when no files are
+ * expected. Independent of precision: extra files do not fail this check.
+ */
+export function producedAllExpectedFiles(
+  sessionRecords: readonly SessionRecord[],
+  expectedFiles: readonly string[],
+): boolean {
+  if (expectedFiles.length === 0) return true;
+  const allModified = new Set(sessionRecords.flatMap((r) => getModifiedFiles(r)));
+  return expectedFiles.every((expected) => allModified.has(expected));
+}
+
+/**
  * Pure deterministic scorer: compares files modified in a session
  * against the expected file list from the scenario.
  *

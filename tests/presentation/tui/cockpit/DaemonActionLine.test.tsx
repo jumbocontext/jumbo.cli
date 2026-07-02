@@ -4,19 +4,19 @@ import { render } from "ink-testing-library";
 import { CockpitDaemonPanelCopy } from "../../../../src/presentation/tui/cockpit/CockpitDaemonPanelCopy.js";
 import { DaemonActionLine } from "../../../../src/presentation/tui/cockpit/DaemonActionLine.js";
 import type {
-  TuiDaemonConfig,
-  TuiSubprocessSnapshot,
+  DaemonConfig,
+  SubprocessSnapshot,
 } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
-const daemonConfig: TuiDaemonConfig = {
+const daemonConfig: DaemonConfig = {
   agentId: "codex",
   pollIntervalMs: 30000,
   maxRetries: 3,
 };
 
 function createSnapshot(
-  status: TuiSubprocessSnapshot["status"],
-): TuiSubprocessSnapshot {
+  status: SubprocessSnapshot["status"],
+): SubprocessSnapshot {
   return {
     name: "refiner",
     status,

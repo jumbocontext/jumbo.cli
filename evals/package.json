@@ -13,7 +13,7 @@
     "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathIgnorePatterns=/node_modules/ --testPathPatterns=/tests/integration/",
     "build:jumbo": "npm --prefix .. run build",
     "test:integration:source": "node scripts/with-jumbo-source.mjs npm run test:integration",
-    "smoke:jumbo": "node scripts/with-jumbo-source.mjs node scripts/jumbo-contract-smoke.mjs",
+    "smoke:jumbo": "npm run build && node scripts/with-jumbo-source.mjs node scripts/jumbo-contract-smoke.mjs",
     "clean": "rimraf dist"
   },
   "keywords": [],

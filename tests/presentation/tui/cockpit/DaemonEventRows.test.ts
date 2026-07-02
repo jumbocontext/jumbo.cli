@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { DEFAULT_WORKER_DAEMON_CONFIG } from "../../../../src/application/daemons/WorkerDaemonCatalog.js";
 import { DaemonEventRows } from "../../../../src/presentation/tui/cockpit/DaemonEventRows.js";
-import type { TuiSubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
+import type { SubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
 describe("DaemonEventRows", () => {
   it("normalizes snapshots into newest-first bounded rows", () => {
@@ -43,7 +43,7 @@ describe("DaemonEventRows", () => {
   });
 });
 
-function snapshot(message: string, timestampMs: number): TuiSubprocessSnapshot {
+function snapshot(message: string, timestampMs: number): SubprocessSnapshot {
   return {
     name: "refiner",
     status: "running",

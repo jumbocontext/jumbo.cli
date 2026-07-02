@@ -1,5 +1,5 @@
 import { BaseColors } from "../../shared/DesignTokens.js";
-import { TuiSubprocessStatus } from "../daemon-subprocesses/TuiSubprocessStatus.js";
+import { SubprocessStatus } from "../daemon-subprocesses/SubprocessStatus.js";
 import type { CockpitDaemonSnapshot } from "./CockpitDaemonSnapshot.js";
 import type { DaemonFrameGlyphCell } from "./DaemonFrameGlyphTypes.js";
 
@@ -28,7 +28,7 @@ function getDaemonGlyphColor(
   snapshot: CockpitDaemonSnapshot,
   animatedColor: string,
 ): string {
-  return snapshot.status === TuiSubprocessStatus.RUNNING
+  return snapshot.status === SubprocessStatus.RUNNING
     ? animatedColor
     : BaseColors.shade6;
 }

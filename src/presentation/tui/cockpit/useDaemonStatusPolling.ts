@@ -4,18 +4,18 @@ import { CockpitDaemonEvents } from "./CockpitDaemonEvents.js";
 import type { DaemonEventRow } from "./DaemonEventRow.js";
 import type {
   ISubprocessManager,
-  TuiSubprocessSnapshot,
+  SubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
 
 export function useDaemonStatusPolling(
   subprocessManager: ISubprocessManager,
 ): {
-  readonly daemonStatuses: readonly TuiSubprocessSnapshot[];
+  readonly daemonStatuses: readonly SubprocessSnapshot[];
   readonly daemonEventRows: readonly DaemonEventRow[];
-  readonly setDaemonStatuses: React.Dispatch<React.SetStateAction<readonly TuiSubprocessSnapshot[]>>;
+  readonly setDaemonStatuses: React.Dispatch<React.SetStateAction<readonly SubprocessSnapshot[]>>;
   readonly setDaemonEventRows: React.Dispatch<React.SetStateAction<readonly DaemonEventRow[]>>;
 } {
-  const [daemonStatuses, setDaemonStatuses] = useState<readonly TuiSubprocessSnapshot[]>(
+  const [daemonStatuses, setDaemonStatuses] = useState<readonly SubprocessSnapshot[]>(
     subprocessManager.getAllStatuses(),
   );
   const [daemonEventRows, setDaemonEventRows] = useState<readonly DaemonEventRow[]>(() =>

@@ -2,7 +2,7 @@ import React from "react";
 import { jest, describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { CockpitLaunchpadView } from "../../../../src/presentation/tui/cockpit/CockpitLaunchpadView.js";
-import { TuiStateReaderProvider } from "../../../../src/presentation/tui/state-reading/TuiStateReader.js";
+import { StateReaderProvider } from "../../../../src/presentation/tui/state-reading/StateReader.js";
 import type { Settings } from "../../../../src/application/settings/Settings.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
@@ -40,7 +40,7 @@ describe("CockpitLaunchpadView launchpad header", () => {
       lifecycleState: "primed",
     }));
     const { unmount } = render(
-      <TuiStateReaderProvider
+      <StateReaderProvider
         controllers={{
           getProjectSummaryQueryHandler: {
             execute,
@@ -49,7 +49,7 @@ describe("CockpitLaunchpadView launchpad header", () => {
         options={{ tickMs: 0 }}
       >
         <CockpitLaunchpadView />
-      </TuiStateReaderProvider>,
+      </StateReaderProvider>,
     );
 
     expect(execute).not.toHaveBeenCalled();

@@ -3,7 +3,7 @@ import { jest, describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { CockpitLaunchpadView } from "../../../../src/presentation/tui/cockpit/CockpitLaunchpadView.js";
 import { SubprocessManagerProvider } from "../../../../src/presentation/tui/daemon-subprocesses/SubprocessManagerProvider.js";
-import type { ISubprocessManager, TuiDaemonConfig, TuiDaemonName, TuiSubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
+import type { ISubprocessManager, DaemonConfig, DaemonName, SubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 10));
 const waitForCondition = async (
@@ -24,8 +24,8 @@ const defaultConfig = {
   maxRetries: 3,
 };
 
-function createSnapshots(config: TuiDaemonConfig = defaultConfig): Map<TuiDaemonName, TuiSubprocessSnapshot> {
-  return new Map<TuiDaemonName, TuiSubprocessSnapshot>([
+function createSnapshots(config: DaemonConfig = defaultConfig): Map<DaemonName, SubprocessSnapshot> {
+  return new Map<DaemonName, SubprocessSnapshot>([
     ["reviewer", { name: "reviewer", status: "stopped", config, stdout: [], stderr: [], events: [] }],
     ["refiner", { name: "refiner", status: "stopped", config, stdout: [], stderr: [], events: [] }],
     ["codifier", { name: "codifier", status: "stopped", config, stdout: [], stderr: [], events: [] }],
@@ -35,7 +35,7 @@ function createSnapshots(config: TuiDaemonConfig = defaultConfig): Map<TuiDaemon
 describe("CockpitLaunchpadView daemon controls", () => {
   it("starts and stops real daemon targets through ISubprocessManager without replacing launchpad panels", async () => {
     const snapshots = createSnapshots();
-    const spawn = jest.fn(async (name: TuiDaemonName, config = defaultConfig) => {
+    const spawn = jest.fn(async (name: DaemonName, config = defaultConfig) => {
       const next = {
         name,
         status: "running" as const,
@@ -48,7 +48,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
       snapshots.set(name, next);
       return next;
     });
-    const terminate = jest.fn(async (name: TuiDaemonName) => {
+    const terminate = jest.fn(async (name: DaemonName) => {
       const next = { name, status: "stopped" as const, config: defaultConfig, stdout: ["stopped"], stderr: [], events: [] };
       snapshots.set(name, next);
       return next;
@@ -57,7 +57,7 @@ describe("CockpitLaunchpadView daemon controls", () => {
       spawn,
       terminate,
       terminateAll: jest.fn(async () => {}),
-      getStatus: jest.fn((name: TuiDaemonName) => snapshots.get(name)!),
+      getStatus: jest.fn((name: DaemonName) => snapshots.get(name)!),
       getAllStatuses: jest.fn(() => Array.from(snapshots.values())),
     };
 
@@ -110,20 +110,20 @@ describe("CockpitLaunchpadView daemon controls", () => {
 
   it("cycles focused daemon panels with tab and toggles the focused daemon with s", async () => {
     const snapshots = createSnapshots();
-    const spawn = jest.fn(async (name: TuiDaemonName, config = defaultConfig) => {
+    const spawn = jest.fn(async (name: DaemonName, config = defaultConfig) => {
       const next = { name, status: "running" as const, config: { ...defaultConfig, ...config }, pid: 123, stdout: [], stderr: [], events: [] };
       snapshots.set(name, next);
       return next;
     });
     const manager: ISubprocessManager = {
       spawn,
-      terminate: jest.fn(async (name: TuiDaemonName) => {
+      terminate: jest.fn(async (name: DaemonName) => {
         const next = { name, status: "stopped" as const, config: defaultConfig, stdout: ["stopped"], stderr: [], events: [] };
         snapshots.set(name, next);
         return next;
       }),
       terminateAll: jest.fn(async () => {}),
-      getStatus: jest.fn((name: TuiDaemonName) => snapshots.get(name)!),
+      getStatus: jest.fn((name: DaemonName) => snapshots.get(name)!),
       getAllStatuses: jest.fn(() => Array.from(snapshots.values())),
     };
 

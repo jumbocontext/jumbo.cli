@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { TuiSubprocessStatus } from "../../../../src/presentation/tui/daemon-subprocesses/TuiSubprocessStatus.js";
+import { SubprocessStatus } from "../../../../src/presentation/tui/daemon-subprocesses/SubprocessStatus.js";
 import { RenderedDaemonFrame } from "../../../../src/presentation/tui/cockpit/RenderedDaemonFrame.js";
 
 describe("RenderedDaemonFrame", () => {
@@ -15,11 +15,11 @@ describe("RenderedDaemonFrame", () => {
   
   it("uses animated frame indexes only while the daemon is running", () => {
     expect(RenderedDaemonFrame.getIndex({
-      status: TuiSubprocessStatus.RUNNING,
+      status: SubprocessStatus.RUNNING,
       events: [],
     }, 3)).toBe(3);
     expect(RenderedDaemonFrame.getIndex({
-      status: TuiSubprocessStatus.STOPPED,
+      status: SubprocessStatus.STOPPED,
       events: [],
     }, 3)).toBe(0);
   });

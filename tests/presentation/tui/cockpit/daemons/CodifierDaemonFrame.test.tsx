@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { Text } from "ink";
 import { render } from "ink-testing-library";
 import { BaseColors } from "../../../../../src/presentation/shared/DesignTokens.js";
-import { TuiSubprocessStatus } from "../../../../../src/presentation/tui/daemon-subprocesses/TuiSubprocessStatus.js";
+import { SubprocessStatus } from "../../../../../src/presentation/tui/daemon-subprocesses/SubprocessStatus.js";
 import type { IDaemonFrame } from "../../../../../src/presentation/tui/cockpit/daemons/IDaemonFrame.js";
 
 const codifierFrame = ["abcde", "fghij", "klmno"] as const;
@@ -31,7 +31,7 @@ const { CodifierDaemonFrame } = await import(
 );
 
 const runningSnapshot = {
-  status: TuiSubprocessStatus.RUNNING,
+  status: SubprocessStatus.RUNNING,
   events: [],
 } as const;
 

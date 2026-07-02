@@ -2,8 +2,8 @@ import React, { useMemo, useState } from "react";
 import { Box, Text } from "ink";
 import { Wizard } from "../wizard/Wizard.js";
 import type { WizardInputKey, WizardStepDefinition } from "../wizard/Wizard.js";
-import { TuiActionDispatcher } from "../action-dispatch/TuiActionDispatcher.js";
-import type { TuiRequestController } from "../action-dispatch/TuiRequestController.js";
+import { ActionDispatcher } from "../action-dispatch/ActionDispatcher.js";
+import type { RequestController } from "../action-dispatch/RequestController.js";
 import type { PlanProjectInitRequest } from "../../../application/context/project/init/PlanProjectInitRequest.js";
 import type { PlanProjectInitResponse } from "../../../application/context/project/init/PlanProjectInitResponse.js";
 import type { InitializeProjectRequest } from "../../../application/context/project/init/InitializeProjectRequest.js";
@@ -66,19 +66,19 @@ interface ProjectDetails {
 }
 
 export interface InitFlowActionControllers {
-  readonly planProjectInitController?: TuiRequestController<
+  readonly planProjectInitController?: RequestController<
     PlanProjectInitRequest,
     PlanProjectInitResponse
   >;
-  readonly initializeProjectController?: TuiRequestController<
+  readonly initializeProjectController?: RequestController<
     InitializeProjectRequest,
     InitializeProjectResponse
   >;
-  readonly addAudienceController?: TuiRequestController<
+  readonly addAudienceController?: RequestController<
     AddAudienceRequest,
     AddAudienceResponse
   >;
-  readonly addValuePropositionController?: TuiRequestController<
+  readonly addValuePropositionController?: RequestController<
     AddValuePropositionRequest,
     AddValuePropositionResponse
   >;
@@ -456,7 +456,7 @@ export function InitFlow({
 
     setWorking(true);
     setDispatchError(null);
-    const result = await TuiActionDispatcher.dispatch(controller, {
+    const result = await ActionDispatcher.dispatch(controller, {
       projectRoot: process.cwd(),
       selectedAgentIds: nextSelectedAgentIds,
     });
@@ -491,7 +491,7 @@ export function InitFlow({
 
     setWorking(true);
     setDispatchError(null);
-    const initResult = await TuiActionDispatcher.dispatch(initializeController, {
+    const initResult = await ActionDispatcher.dispatch(initializeController, {
       name: projectDetails.name,
       purpose: projectDetails.purpose,
       projectRoot: process.cwd(),
@@ -887,7 +887,7 @@ async function persistCollectedPrimitives(
         error: new Error(InitFlowControllerErrorCopy.requiredAudience),
       };
     }
-    const result = await TuiActionDispatcher.dispatch(
+    const result = await ActionDispatcher.dispatch(
       controllers.addAudienceController,
       audience,
     );
@@ -903,7 +903,7 @@ async function persistCollectedPrimitives(
         error: new Error(InitFlowControllerErrorCopy.requiredValueProposition),
       };
     }
-    const result = await TuiActionDispatcher.dispatch(
+    const result = await ActionDispatcher.dispatch(
       controllers.addValuePropositionController,
       valueProposition,
     );

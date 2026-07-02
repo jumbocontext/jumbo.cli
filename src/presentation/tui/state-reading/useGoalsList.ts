@@ -2,15 +2,15 @@ import { useCallback, useContext } from "react";
 import type { GetGoalsRequest } from "../../../application/context/goals/get/GetGoalsRequest.js";
 import type { GetGoalsResponse } from "../../../application/context/goals/get/GetGoalsResponse.js";
 import type { GoalStatusType } from "../../../domain/goals/Constants.js";
-import { TuiStateReaderContext } from "./TuiStateReaderContext.js";
-import { DEFAULT_TUI_STATE_READER_TICK_MS } from "./TuiStateReaderDefaults.js";
-import type { TuiStateSnapshot } from "./TuiStateSnapshot.js";
+import { StateReaderContext } from "./StateReaderContext.js";
+import { DEFAULT_STATE_READER_TICK_MS } from "./StateReaderDefaults.js";
+import type { StateSnapshot } from "./StateSnapshot.js";
 import { useTickingReadModel } from "./useTickingReadModel.js";
 
 export function useGoalsList(
   statusFilter?: GoalStatusType,
-): TuiStateSnapshot<GetGoalsResponse> {
-  const context = useContext(TuiStateReaderContext);
+): StateSnapshot<GetGoalsResponse> {
+  const context = useContext(StateReaderContext);
   const controller = context?.controllers.getGoalsController;
 
   return useTickingReadModel<GetGoalsResponse>(
@@ -25,6 +25,6 @@ export function useGoalsList(
     }, [controller, statusFilter]),
     controller === undefined
       ? 0
-      : context?.tickMs ?? DEFAULT_TUI_STATE_READER_TICK_MS,
+      : context?.tickMs ?? DEFAULT_STATE_READER_TICK_MS,
   );
 }

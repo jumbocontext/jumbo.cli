@@ -42,6 +42,14 @@ const SCREEN_COMPONENTS: Record<
   session: SessionScreen,
 };
 
+const MEMORY_SCREEN_KEYS = new Set([
+  "components",
+  "decisions",
+  "dependencies",
+  "guidelines",
+  "invariants",
+]);
+
 export function ScreenRouter({
   activeScreenIndex,
   projectLifecycleState,
@@ -77,6 +85,21 @@ export function ScreenRouter({
         settingsReader={settingsReader}
       />
     );
+  }
+
+  if (definition !== undefined && MEMORY_SCREEN_KEYS.has(definition.key)) {
+    switch (definition.key) {
+      case "components":
+        return <ComponentsScreen shortcutsEnabled={shortcutsEnabled} />;
+      case "decisions":
+        return <DecisionsScreen shortcutsEnabled={shortcutsEnabled} />;
+      case "dependencies":
+        return <DependenciesScreen shortcutsEnabled={shortcutsEnabled} />;
+      case "guidelines":
+        return <GuidelinesScreen shortcutsEnabled={shortcutsEnabled} />;
+      case "invariants":
+        return <InvariantsScreen shortcutsEnabled={shortcutsEnabled} />;
+    }
   }
 
   return <ScreenComponent />;

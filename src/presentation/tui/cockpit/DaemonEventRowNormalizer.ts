@@ -1,11 +1,11 @@
 import { BaseColors } from "../../shared/DesignTokens.js";
 import type {
-  TuiDaemonEventSnapshot,
-  TuiDaemonEventStatus,
-  TuiSubprocessSnapshot,
+  DaemonEventSnapshot,
+  DaemonEventStatus,
+  SubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
-import { TuiDaemonEventStatus as TuiDaemonEventStatusValues } from "../daemon-subprocesses/TuiDaemonEventStatus.js";
-import { TuiSubprocessStatus } from "../daemon-subprocesses/TuiSubprocessStatus.js";
+import { DaemonEventStatus as DaemonEventStatusValues } from "../daemon-subprocesses/DaemonEventStatus.js";
+import { SubprocessStatus } from "../daemon-subprocesses/SubprocessStatus.js";
 import type { DaemonEventRow } from "./DaemonEventRow.js";
 import { DaemonEventRowMessageFormatter } from "./DaemonEventRowMessageFormatter.js";
 
@@ -17,7 +17,7 @@ export const DaemonEventRowNormalizer = {
 } as const;
 
 function fromSnapshot(
-  snapshot: TuiSubprocessSnapshot,
+  snapshot: SubprocessSnapshot,
   observedAtMs: number,
 ): readonly DaemonEventRow[] {
   const eventRows = snapshot.events.map((event, eventIndex) =>
@@ -33,41 +33,41 @@ function fromSnapshot(
 }
 
 function getLifecycleEventRow(
-  snapshot: TuiSubprocessSnapshot,
+  snapshot: SubprocessSnapshot,
   eventIndex: number,
   observedAtMs: number,
 ): DaemonEventRow | undefined {
   if (
-    snapshot.status === TuiSubprocessStatus.STOPPING
+    snapshot.status === SubprocessStatus.STOPPING
   ) {
     return createDaemonEventRow(
       snapshot,
-      TuiDaemonEventStatusValues.STOPPING,
+      DaemonEventStatusValues.STOPPING,
       eventIndex,
       observedAtMs,
     );
   }
   if (
-    snapshot.status === TuiSubprocessStatus.RUNNING &&
+    snapshot.status === SubprocessStatus.RUNNING &&
     snapshot.events.length === 0
   ) {
     return createDaemonEventRow(
       snapshot,
-      TuiDaemonEventStatusValues.STARTING,
+      DaemonEventStatusValues.STARTING,
       eventIndex,
       observedAtMs,
     );
   }
-  if (snapshot.status === TuiSubprocessStatus.FAILED) {
+  if (snapshot.status === SubprocessStatus.FAILED) {
     return createDaemonEventRow(
       snapshot,
-      TuiDaemonEventStatusValues.FAILED,
+      DaemonEventStatusValues.FAILED,
       eventIndex,
       observedAtMs,
     );
   }
   if (
-    snapshot.status === TuiSubprocessStatus.STOPPED &&
+    snapshot.status === SubprocessStatus.STOPPED &&
     (
       snapshot.stopRequested === true ||
       snapshot.exitCode !== undefined ||
@@ -76,7 +76,7 @@ function getLifecycleEventRow(
   ) {
     return createDaemonEventRow(
       snapshot,
-      TuiDaemonEventStatusValues.STOPPED,
+      DaemonEventStatusValues.STOPPED,
       eventIndex,
       observedAtMs,
     );
@@ -85,8 +85,8 @@ function getLifecycleEventRow(
 }
 
 function createDaemonEventRow(
-  snapshot: TuiSubprocessSnapshot,
-  status: TuiDaemonEventStatus,
+  snapshot: SubprocessSnapshot,
+  status: DaemonEventStatus,
   eventIndex: number,
   observedAtMs: number,
 ): DaemonEventRow {
@@ -104,8 +104,8 @@ function createDaemonEventRow(
 }
 
 function toDaemonEventRow(
-  snapshot: TuiSubprocessSnapshot,
-  event: TuiDaemonEventSnapshot,
+  snapshot: SubprocessSnapshot,
+  event: DaemonEventSnapshot,
   eventIndex: number,
   observedAtMs: number,
 ): DaemonEventRow {
@@ -125,21 +125,21 @@ function toDaemonEventRow(
   };
 }
 
-function normalizeDaemonEventStatus(status: string): TuiDaemonEventStatus {
+function normalizeDaemonEventStatus(status: string): DaemonEventStatus {
   if (
-    Object.values(TuiDaemonEventStatusValues).includes(
-      status as TuiDaemonEventStatus,
+    Object.values(DaemonEventStatusValues).includes(
+      status as DaemonEventStatus,
     )
   ) {
-    return status as TuiDaemonEventStatus;
+    return status as DaemonEventStatus;
   }
 
-  return TuiDaemonEventStatusValues.PROCESSING;
+  return DaemonEventStatusValues.PROCESSING;
 }
 
 function normalizeDaemonEventSource(
-  snapshot: TuiSubprocessSnapshot,
-  event: TuiDaemonEventSnapshot,
+  snapshot: SubprocessSnapshot,
+  event: DaemonEventSnapshot,
 ): string {
   return truncateTail(
     event.source ?? event.daemon ?? snapshot.name,
@@ -148,30 +148,30 @@ function normalizeDaemonEventSource(
 }
 
 function normalizeDaemonEventCategory(
-  event: TuiDaemonEventSnapshot,
-  status: TuiDaemonEventStatus,
+  event: DaemonEventSnapshot,
+  status: DaemonEventStatus,
 ): string {
   return truncateTail(event.category ?? status, DAEMON_EVENT_CATEGORY_WIDTH);
 }
 
-function getDaemonEventColor(status: TuiDaemonEventStatus): string {
-  if (status === TuiDaemonEventStatusValues.FAILED) {
+function getDaemonEventColor(status: DaemonEventStatus): string {
+  if (status === DaemonEventStatusValues.FAILED) {
     return BaseColors.brandRed;
   }
-  if (status === TuiDaemonEventStatusValues.COMPLETED) {
+  if (status === DaemonEventStatusValues.COMPLETED) {
     return BaseColors.brandGreen;
   }
   if (
-    status === TuiDaemonEventStatusValues.SKIPPED ||
-    status === TuiDaemonEventStatusValues.EXHAUSTED
+    status === DaemonEventStatusValues.SKIPPED ||
+    status === DaemonEventStatusValues.EXHAUSTED
   ) {
     return BaseColors.brandYellow;
   }
   if (
-    status === TuiDaemonEventStatusValues.PROCESSING ||
-    status === TuiDaemonEventStatusValues.CODIFYING ||
-    status === TuiDaemonEventStatusValues.STARTING ||
-    status === TuiDaemonEventStatusValues.STOPPING
+    status === DaemonEventStatusValues.PROCESSING ||
+    status === DaemonEventStatusValues.CODIFYING ||
+    status === DaemonEventStatusValues.STARTING ||
+    status === DaemonEventStatusValues.STOPPING
   ) {
     return BaseColors.brandBlue;
   }

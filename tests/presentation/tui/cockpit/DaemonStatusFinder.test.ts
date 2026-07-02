@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { DEFAULT_WORKER_DAEMON_CONFIG } from "../../../../src/application/daemons/WorkerDaemonCatalog.js";
 import { DaemonStatusFinder } from "../../../../src/presentation/tui/cockpit/DaemonStatusFinder.js";
-import type { TuiSubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
+import type { SubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
 describe("DaemonStatusFinder", () => {
   it("returns the matching daemon snapshot", () => {
@@ -25,7 +25,7 @@ describe("DaemonStatusFinder", () => {
 function snapshot(
   name: "refiner" | "reviewer",
   status: "running" | "stopped",
-): TuiSubprocessSnapshot {
+): SubprocessSnapshot {
   return {
     name,
     status,

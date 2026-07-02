@@ -8,7 +8,13 @@ const COMPONENTS_SCREEN_COPY = {
   subtitle: "Focused component memory list and selected component detail",
 } as const;
 
-export function ComponentsScreen(): React.ReactElement {
+interface ComponentsScreenProps {
+  readonly shortcutsEnabled?: boolean;
+}
+
+export function ComponentsScreen(
+  { shortcutsEnabled = true }: ComponentsScreenProps = {},
+): React.ReactElement {
   const componentsList = useComponentsList();
 
   return (
@@ -19,6 +25,7 @@ export function ComponentsScreen(): React.ReactElement {
       rows={(componentsList.data?.components ?? []).map(toComponentEntityRow)}
       loading={componentsList.loading}
       error={componentsList.error}
+      shortcutsEnabled={shortcutsEnabled}
     />
   );
 }

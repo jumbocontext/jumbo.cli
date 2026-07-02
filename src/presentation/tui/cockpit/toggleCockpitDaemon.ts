@@ -2,23 +2,23 @@ import { CockpitDaemonEvents } from "./CockpitDaemonEvents.js";
 import type { DaemonEventRow } from "./DaemonEventRow.js";
 import type {
   ISubprocessManager,
-  TuiDaemonConfig,
-  TuiDaemonName,
-  TuiSubprocessSnapshot,
+  DaemonConfig,
+  DaemonName,
+  SubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
-import { TuiSubprocessStatus } from "../daemon-subprocesses/TuiSubprocessStatus.js";
+import { SubprocessStatus } from "../daemon-subprocesses/SubprocessStatus.js";
 
 export async function toggleCockpitDaemon(
-  name: TuiDaemonName,
+  name: DaemonName,
   manager: ISubprocessManager,
-  config: TuiDaemonConfig,
-  setDaemonStatuses: (statuses: readonly TuiSubprocessSnapshot[]) => void,
+  config: DaemonConfig,
+  setDaemonStatuses: (statuses: readonly SubprocessSnapshot[]) => void,
   setDaemonEventRows: (update: (currentRows: readonly DaemonEventRow[]) => readonly DaemonEventRow[]) => void,
 ): Promise<void> {
   const snapshot = manager.getStatus(name);
-  if (snapshot.status === TuiSubprocessStatus.RUNNING) {
+  if (snapshot.status === SubprocessStatus.RUNNING) {
     await manager.terminate(name);
-  } else if (snapshot.status !== TuiSubprocessStatus.STOPPING) {
+  } else if (snapshot.status !== SubprocessStatus.STOPPING) {
     await manager.spawn(name, config);
   }
   const snapshots = manager.getAllStatuses();

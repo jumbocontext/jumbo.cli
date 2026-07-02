@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { BaseColors } from "../../../../src/presentation/shared/DesignTokens.js";
-import { TuiSubprocessStatus } from "../../../../src/presentation/tui/daemon-subprocesses/TuiSubprocessStatus.js";
+import { SubprocessStatus } from "../../../../src/presentation/tui/daemon-subprocesses/SubprocessStatus.js";
 import {
   CODIFIER_FRAME_COUNT,
   DAEMON_PANEL_CONTENT_WIDTH,
@@ -52,11 +52,11 @@ describe("CockpitDaemonFrames", () => {
       4,
     ]);
     expect(getRenderedFrameIndex({
-      status: TuiSubprocessStatus.RUNNING,
+      status: SubprocessStatus.RUNNING,
       events: [],
     }, 2)).toBe(2);
     expect(getRenderedFrameIndex({
-      status: TuiSubprocessStatus.STOPPED,
+      status: SubprocessStatus.STOPPED,
       events: [],
     }, 2)).toBe(0);
   });
@@ -88,13 +88,13 @@ describe("CockpitDaemonFrames", () => {
       { glyph: "a", color: "#111111" },
       { glyph: "b", color: "#111111" },
     ], {
-      status: TuiSubprocessStatus.RUNNING,
+      status: SubprocessStatus.RUNNING,
       events: [],
     })).toEqual([{ text: "ab", color: "#111111" }]);
     expect(getStyledGlyphSegments("█", {
       "█": "#111111",
     }, {
-      status: TuiSubprocessStatus.RUNNING,
+      status: SubprocessStatus.RUNNING,
       events: [],
     })).toEqual([{ text: "█", color: "#111111", dimColor: undefined }]);
   });

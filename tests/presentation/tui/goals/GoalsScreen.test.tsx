@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { GoalsScreen } from "../../../../src/presentation/tui/goals/GoalsScreen.js";
-import { TuiStateReaderProvider } from "../../../../src/presentation/tui/state-reading/TuiStateReader.js";
+import { StateReaderProvider } from "../../../../src/presentation/tui/state-reading/StateReader.js";
 
 async function waitForFrame(readFrame: () => string | undefined, text: string) {
   for (let attempt = 0; attempt < 20; attempt += 1) {
@@ -15,7 +15,7 @@ async function waitForFrame(readFrame: () => string | undefined, text: string) {
 
 function renderGoalsScreen(): ReturnType<typeof render> {
   return render(
-    <TuiStateReaderProvider
+    <StateReaderProvider
       controllers={{
         getGoalsController: {
           handle: async () => ({
@@ -42,7 +42,7 @@ function renderGoalsScreen(): ReturnType<typeof render> {
       options={{ tickMs: 0 }}
     >
       <GoalsScreen />
-    </TuiStateReaderProvider>,
+    </StateReaderProvider>,
   );
 }
 

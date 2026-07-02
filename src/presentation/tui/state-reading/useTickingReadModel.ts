@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import type { TuiStateSnapshot } from "./TuiStateSnapshot.js";
+import type { StateSnapshot } from "./StateSnapshot.js";
 
 export function useTickingReadModel<TData>(
   read: () => Promise<TData | null>,
   tickMs: number,
-): TuiStateSnapshot<TData> {
+): StateSnapshot<TData> {
   const [data, setData] = useState<TData | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);

@@ -1,7 +1,7 @@
 import type {
-  TuiDaemonEventStatusValue,
-} from "../daemon-subprocesses/TuiDaemonEventStatus.js";
+  DaemonEventStatusValue,
+} from "../daemon-subprocesses/DaemonEventStatus.js";
 
 export interface CockpitDaemonEventSnapshot {
-  readonly status: TuiDaemonEventStatusValue | (string & {});
+  readonly status: DaemonEventStatusValue | (string & {});
 }

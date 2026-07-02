@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { InvariantsScreen } from "../../../../../src/presentation/tui/memory/invariants/InvariantsScreen.js";
-import { TuiStateReaderProvider } from "../../../../../src/presentation/tui/state-reading/TuiStateReader.js";
+import { StateReaderProvider } from "../../../../../src/presentation/tui/state-reading/StateReader.js";
 
 async function waitForFrame(readFrame: () => string | undefined, text: string) {
   for (let attempt = 0; attempt < 20; attempt += 1) {
@@ -16,7 +16,7 @@ async function waitForFrame(readFrame: () => string | undefined, text: string) {
 describe("InvariantsScreen", () => {
   it("renders a focused invariant list and selected detail", async () => {
     const { lastFrame, unmount } = render(
-      <TuiStateReaderProvider
+      <StateReaderProvider
         controllers={{
           getInvariantsController: {
             getAllInvariants: async () => ({
@@ -35,7 +35,7 @@ describe("InvariantsScreen", () => {
         options={{ tickMs: 0 }}
       >
         <InvariantsScreen />
-      </TuiStateReaderProvider>,
+      </StateReaderProvider>,
     );
     const frame = await waitForFrame(lastFrame, "invariant_real");
 

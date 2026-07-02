@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { SessionScreen } from "../../../../src/presentation/tui/sessions/SessionScreen.js";
-import { TuiStateReaderProvider } from "../../../../src/presentation/tui/state-reading/TuiStateReader.js";
+import { StateReaderProvider } from "../../../../src/presentation/tui/state-reading/StateReader.js";
 
 async function waitForFrame(readFrame: () => string | undefined, text: string) {
   for (let attempt = 0; attempt < 20; attempt += 1) {
@@ -16,7 +16,7 @@ async function waitForFrame(readFrame: () => string | undefined, text: string) {
 describe("SessionScreen", () => {
   it("renders sessions from GetSessionsResponse", async () => {
     const { lastFrame, unmount } = render(
-      <TuiStateReaderProvider
+      <StateReaderProvider
         controllers={{
           getSessionsController: {
             handle: async () => ({
@@ -39,7 +39,7 @@ describe("SessionScreen", () => {
         options={{ tickMs: 0 }}
       >
         <SessionScreen />
-      </TuiStateReaderProvider>,
+      </StateReaderProvider>,
     );
 
     const frame = await waitForFrame(lastFrame, "session_real");

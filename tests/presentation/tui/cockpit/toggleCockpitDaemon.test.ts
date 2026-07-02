@@ -4,13 +4,13 @@ import { toggleCockpitDaemon } from "../../../../src/presentation/tui/cockpit/to
 import type { DaemonEventRow } from "../../../../src/presentation/tui/cockpit/DaemonEventRow.js";
 import type {
   ISubprocessManager,
-  TuiDaemonName,
-  TuiSubprocessSnapshot,
+  DaemonName,
+  SubprocessSnapshot,
 } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
 function createSnapshot(
-  status: TuiSubprocessSnapshot["status"],
-): TuiSubprocessSnapshot {
+  status: SubprocessSnapshot["status"],
+): SubprocessSnapshot {
   return {
     name: "refiner",
     status,
@@ -21,12 +21,12 @@ function createSnapshot(
   };
 }
 
-function createManager(snapshot: TuiSubprocessSnapshot): ISubprocessManager {
+function createManager(snapshot: SubprocessSnapshot): ISubprocessManager {
   return {
     spawn: jest.fn(async () => createSnapshot("running")),
     terminate: jest.fn(async () => createSnapshot("stopped")),
     terminateAll: jest.fn(async () => {}),
-    getStatus: jest.fn((name: TuiDaemonName) => ({ ...snapshot, name })),
+    getStatus: jest.fn((name: DaemonName) => ({ ...snapshot, name })),
     getAllStatuses: jest.fn(() => [snapshot]),
   };
 }

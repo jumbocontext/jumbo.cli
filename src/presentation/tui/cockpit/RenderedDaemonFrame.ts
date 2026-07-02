@@ -1,4 +1,4 @@
-import { TuiSubprocessStatus } from "../daemon-subprocesses/TuiSubprocessStatus.js";
+import { SubprocessStatus } from "../daemon-subprocesses/SubprocessStatus.js";
 import type { CockpitDaemonSnapshot } from "./CockpitDaemonSnapshot.js";
 import { DaemonFrameDimensions } from "./DaemonFrameDimensions.js";
 
@@ -15,5 +15,5 @@ function getIndex(
   snapshot: CockpitDaemonSnapshot,
   animatedFrameIndex: number,
 ): number {
-  return snapshot.status === TuiSubprocessStatus.RUNNING ? animatedFrameIndex : 0;
+  return snapshot.status === SubprocessStatus.RUNNING ? animatedFrameIndex : 0;
 }

@@ -25,8 +25,8 @@ import {
   isBareCommand,
 } from "./banner/BannerOrchestrator.js";
 import { Renderer } from "./rendering/Renderer.js";
-import type { TuiSubprocessManagerFactory } from "../tui/application-shell/TuiApplicationLauncher.js";
-import type { TuiStateReaderControllers } from "../tui/state-reading/TuiStateReaderControllers.js";
+import type { SubprocessManagerFactory } from "../tui/application-shell/ApplicationLauncher.js";
+import type { StateReaderControllers } from "../tui/state-reading/StateReaderControllers.js";
 import type { InitFlowActionControllers } from "../tui/project-initialization/InitFlow.js";
 import {
   CLI_FLAGS,
@@ -103,8 +103,8 @@ export class AppRunner {
   private readonly container: IApplicationContainer | null;
   private readonly version: string;
   private readonly bareTuiActionControllers: InitFlowActionControllers;
-  private readonly bareTuiStateReaderControllerFactory?: () => Promise<TuiStateReaderControllers>;
-  private readonly tuiSubprocessManagerFactory?: TuiSubprocessManagerFactory;
+  private readonly bareStateReaderControllerFactory?: () => Promise<StateReaderControllers>;
+  private readonly tuiSubprocessManagerFactory?: SubprocessManagerFactory;
 
   /**
    * Creates a new AppRunner.
@@ -116,14 +116,14 @@ export class AppRunner {
     version: string,
     container: IApplicationContainer | null = null,
     bareTuiActionControllers: InitFlowActionControllers = {},
-    bareTuiStateReaderControllerFactory?: () => Promise<TuiStateReaderControllers>,
-    tuiSubprocessManagerFactory?: TuiSubprocessManagerFactory,
+    bareStateReaderControllerFactory?: () => Promise<StateReaderControllers>,
+    tuiSubprocessManagerFactory?: SubprocessManagerFactory,
   ) {
     this.version = version;
     this.container = container;
     this.bareTuiActionControllers = bareTuiActionControllers;
-    this.bareTuiStateReaderControllerFactory =
-      bareTuiStateReaderControllerFactory;
+    this.bareStateReaderControllerFactory =
+      bareStateReaderControllerFactory;
     this.tuiSubprocessManagerFactory = tuiSubprocessManagerFactory;
   }
 
@@ -139,14 +139,14 @@ export class AppRunner {
     // Handle bare 'jumbo' command - launch the Ink TUI.
     if (invocationType === "banner") {
       process.env.NODE_ENV ??= "production";
-      const { TuiApplicationLauncher } = await import(
-        "../tui/application-shell/TuiApplicationLauncher.js"
+      const { ApplicationLauncher } = await import(
+        "../tui/application-shell/ApplicationLauncher.js"
       );
-      await new TuiApplicationLauncher(
+      await new ApplicationLauncher(
         this.version,
         this.container,
         this.bareTuiActionControllers,
-        this.bareTuiStateReaderControllerFactory,
+        this.bareStateReaderControllerFactory,
         this.tuiSubprocessManagerFactory,
         undefined,
         this.container?.cliUpdateController,

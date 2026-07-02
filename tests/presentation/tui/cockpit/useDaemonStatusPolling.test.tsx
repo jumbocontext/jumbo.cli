@@ -7,14 +7,14 @@ import { DEFAULT_WORKER_DAEMON_CONFIG } from "../../../../src/application/daemon
 import { useDaemonStatusPolling } from "../../../../src/presentation/tui/cockpit/useDaemonStatusPolling.js";
 import type {
   ISubprocessManager,
-  TuiDaemonName,
-  TuiSubprocessSnapshot,
+  DaemonName,
+  SubprocessSnapshot,
 } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
 function createSnapshot(
-  status: TuiSubprocessSnapshot["status"],
-  events: TuiSubprocessSnapshot["events"] = [],
-): TuiSubprocessSnapshot {
+  status: SubprocessSnapshot["status"],
+  events: SubprocessSnapshot["events"] = [],
+): SubprocessSnapshot {
   return {
     name: "reviewer",
     status,
@@ -46,14 +46,14 @@ describe("useDaemonStatusPolling", () => {
 
   it("polls subprocess statuses and appends daemon event rows", () => {
     jest.useFakeTimers();
-    let snapshots: readonly TuiSubprocessSnapshot[] = [
+    let snapshots: readonly SubprocessSnapshot[] = [
       createSnapshot("stopped"),
     ];
     const manager: ISubprocessManager = {
       spawn: jest.fn(async () => createSnapshot("running")),
       terminate: jest.fn(async () => createSnapshot("stopped")),
       terminateAll: jest.fn(async () => {}),
-      getStatus: jest.fn((name: TuiDaemonName) => ({
+      getStatus: jest.fn((name: DaemonName) => ({
         ...createSnapshot("stopped"),
         name,
       })),

@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.11.0] - 2026-06-24
+
+### Added
+
+- **TUI global search**: Press `/` in the TUI to search the projected global memory index interactively, with grouped result metadata and a focused generic detail preview for the current hit.
+- **Evals replication statistics (Outcome 5, 1/2)**: Added a pure `aggregateReplications` aggregator that combines K replicated A/B comparisons of the same scenario into a `ReplicationReport`, reporting per-dimension mean lift, sample standard deviation, and a t-statistic against the K=5 one-tailed alpha=0.05 threshold so lift can be reported with statistical confidence instead of single-point estimates. Token-efficiency replications scored N/A are excluded and counted separately.
+
+### Changed
+
+- **Evals token-efficiency equivalence gating (Outcome 4)**: Token efficiency is now reported only when both arms are output-equivalent (both produced every expected file and both reached a structural-assertion score >= 0.8); otherwise it is reported as N/A so the ratio never compares the cost of producing different things. The Jumbo arm's lifecycle adherence rate is now surfaced separately in the protocol-adherence dimension rather than averaged into quality lift, keeping quality scores symmetric across arms.
+- **CI**: Upgraded GitHub Actions workflows to Node.js 22 (`actions/checkout` v4 → v7, `actions/setup-node` v4 → v6), clearing the Node.js 20 runner deprecation warning. Contributed by [Allan Kimmer Jensen](https://github.com/Saturate).
+
+## [3.10.1] - 2026-06-22
+
+### Changed
+
+- **Evals A/B scoring (Outcome 4)**: The eval A/B runner now scores the Jumbo arm on structural retention and direct `.jumbo/events/` workspace evidence. A new `jumbo-event-capture` scorer confirms the Jumbo arm registered the expected entities by reading the captured event log directly — independent of any CLI command output — via an explicit, exhaustive memory-kind → domain-event-type map. The `jumbo-contract-smoke` validates that map against the real CLI in CI, so a Jumbo event-type rename fails loudly instead of silently under-counting.
+- **README**: Refreshed README copy, added a demo gif (`this-is-jumbo.gif`), and removed the stale `docs/flows/cmd-jumbo-flow.md` flow doc.
+- **Internal**: Cleaned up TUI namespace and file names by dropping redundant `Tui` prefixes across the presentation TUI modules (e.g. `TuiApp` → `App`, `TuiStateReader` → `StateReader`, `TuiSubprocessManager` → `SubprocessManager`) and split shared TUI constants into focused modules.
+
 ## [3.10.0] - 2026-06-17
 
 ### Changed

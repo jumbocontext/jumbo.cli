@@ -1,16 +1,16 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import type { ISubprocessManager } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
-import type { TuiDaemonConfig } from "../../../../src/presentation/tui/daemon-subprocesses/TuiDaemonConfig.js";
-import type { TuiDaemonName } from "../../../../src/presentation/tui/daemon-subprocesses/TuiDaemonName.js";
-import type { TuiSubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/TuiSubprocessSnapshot.js";
+import type { DaemonConfig } from "../../../../src/presentation/tui/daemon-subprocesses/DaemonConfig.js";
+import type { DaemonName } from "../../../../src/presentation/tui/daemon-subprocesses/DaemonName.js";
+import type { SubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/SubprocessSnapshot.js";
 
-const config: TuiDaemonConfig = {
+const config: DaemonConfig = {
   agentId: "codex",
   pollIntervalMs: 30000,
   maxRetries: 3,
 };
 
-const snapshot: TuiSubprocessSnapshot = {
+const snapshot: SubprocessSnapshot = {
   name: "refiner",
   status: "running",
   config,
@@ -22,10 +22,10 @@ const snapshot: TuiSubprocessSnapshot = {
 describe("ISubprocessManager", () => {
   it("defines the subprocess-control contract around explicit daemon snapshot concepts", async () => {
     const manager: ISubprocessManager = {
-      spawn: jest.fn(async (_name: TuiDaemonName, _config?: Partial<TuiDaemonConfig>) => snapshot),
-      terminate: jest.fn(async (_name: TuiDaemonName) => ({ ...snapshot, status: "stopped" })),
+      spawn: jest.fn(async (_name: DaemonName, _config?: Partial<DaemonConfig>) => snapshot),
+      terminate: jest.fn(async (_name: DaemonName) => ({ ...snapshot, status: "stopped" })),
       terminateAll: jest.fn<() => Promise<void>>().mockResolvedValue(),
-      getStatus: jest.fn((_name: TuiDaemonName) => snapshot),
+      getStatus: jest.fn((_name: DaemonName) => snapshot),
       getAllStatuses: jest.fn(() => [snapshot]),
     };
 

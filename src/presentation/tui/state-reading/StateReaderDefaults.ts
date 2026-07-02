@@ -1,0 +1,1 @@
+export const DEFAULT_STATE_READER_TICK_MS = 2000;

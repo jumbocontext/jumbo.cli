@@ -243,6 +243,109 @@ describe('runABComparison', () => {
     expect(workDirs.size).toBe(2);
   });
 
+  it('includes a structural-retention dimension in scores, deltas, and timelines when the scenario declares structural assertions', async () => {
+    const scenario = createTestScenario({
+      id: 'scenario-structural',
+      name: 'Structural retention',
+      initialPrompt: 'Build',
+      sessionCount: 1,
+      structuralAssertions: [
+        { id: 'index-exists', file: 'src/index.ts', sessionNumber: 1, matcher: { kind: 'fileExists' } },
+      ],
+    });
+
+    const baseExec = createMockExecutor();
+    const executor = {
+      ...baseExec,
+      captureWorkspaceSnapshot: async () => ({
+        capturedAt: new Date().toISOString(),
+        files: [{ path: 'src/index.ts', content: 'export const x = 1;' }],
+      }),
+    } as typeof baseExec;
+    const adapter = createMockAdapter();
+    const store = createMockStore();
+
+    const result = await runABComparison({ scenario, adapter, executor, store });
+
+    const dims = (scores: readonly { dimension: string }[]) => scores.map((s) => s.dimension);
+    expect(dims(result.jumboScores)).toContain('structural-retention');
+    expect(dims(result.baselineScores)).toContain('structural-retention');
+    expect(dims(result.deltas)).toContain('structural-retention');
+    expect(result.jumboTimeline?.some((ps) => dims(ps.scores).includes('structural-retention'))).toBe(true);
+    expect(result.baselineTimeline?.some((ps) => dims(ps.scores).includes('structural-retention'))).toBe(true);
+  });
+
+  it('reports token-efficiency as N/A when the two arms are not output-equivalent', async () => {
+    // A structural assertion neither arm can satisfy (mock snapshots are empty)
+    // drives both structural scores below the 0.8 equivalence threshold.
+    const scenario = createTestScenario({
+      id: 'scenario-not-equivalent',
+      name: 'Not equivalent',
+      initialPrompt: 'Build',
+      sessionCount: 1,
+      structuralAssertions: [
+        { id: 'needs-file', file: 'src/needed.ts', sessionNumber: 1, matcher: { kind: 'fileExists' } },
+      ],
+    });
+    const result = await runABComparison({
+      scenario,
+      adapter: createMockAdapter(),
+      executor: createMockExecutor(),
+      store: createMockStore(),
+    });
+    const te = result.jumboScores.find((s) => s.dimension === 'token-efficiency');
+    expect(te?.maxScore).toBe(0);
+    expect(te?.details).toContain('N/A');
+    expect(te?.details).toContain('not equivalent');
+  });
+
+  it('reports token-efficiency (not N/A) when both arms are output-equivalent', async () => {
+    const scenario = createTestScenario({
+      id: 'scenario-equivalent',
+      name: 'Equivalent',
+      initialPrompt: 'Build',
+      sessionCount: 1,
+      structuralAssertions: [
+        { id: 'index-exists', file: 'src/index.ts', sessionNumber: 1, matcher: { kind: 'fileExists' } },
+      ],
+    });
+    const baseExec = createMockExecutor();
+    const executor = {
+      ...baseExec,
+      captureWorkspaceSnapshot: async () => ({
+        capturedAt: new Date().toISOString(),
+        files: [{ path: 'src/index.ts', content: 'export const x = 1;' }],
+      }),
+    } as typeof baseExec;
+    const result = await runABComparison({
+      scenario,
+      adapter: createMockAdapter(),
+      executor,
+      store: createMockStore(),
+    });
+    const te = result.jumboScores.find((s) => s.dimension === 'token-efficiency');
+    expect(te?.maxScore).toBe(1);
+    expect(te?.details ?? '').not.toContain('not equivalent');
+  });
+
+  it('surfaces the Jumbo adherence rate in the protocol-adherence details', async () => {
+    const scenario = createTestScenario({
+      id: 'scenario-adherence-rate',
+      name: 'Adherence rate',
+      initialPrompt: 'Build',
+      sessionCount: 1,
+    });
+    const result = await runABComparison({
+      scenario,
+      adapter: createMockAdapter(),
+      executor: createMockExecutor(),
+      store: createMockStore(),
+    });
+    const pa = result.jumboScores.find((s) => s.dimension === 'protocol-adherence');
+    expect(pa?.details).toContain('adherence-rate=');
+    expect(pa?.details).toContain('threshold=0.5');
+  });
+
   it('uses identical scenario prompts for both runs before variant wrapping', async () => {
     // Without a jumboPlan, the Jumbo arm has no active goal-id, so its
     // prompt is the bare scenario prompt — byte-identical to baseline.
@@ -498,15 +601,17 @@ describe('runABComparison', () => {
     expect(result.scenarioId).toBe('scenario-1');
     expect(result.jumboResult.sessionRecords).toHaveLength(1);
     expect(result.baselineResult.sessionRecords).toHaveLength(1);
-    expect(result.jumboScores).toHaveLength(6);
-    expect(result.baselineScores).toHaveLength(6);
-    expect(result.deltas).toHaveLength(6);
+    expect(result.jumboScores).toHaveLength(8);
+    expect(result.baselineScores).toHaveLength(8);
+    expect(result.deltas).toHaveLength(8);
     expect(result.jumboScores[0].dimension).toBe('file-accuracy');
     expect(result.jumboScores[1].dimension).toBe('knowledge-retention');
-    expect(result.jumboScores[2].dimension).toBe('disruption-recovery');
-    expect(result.jumboScores[3].dimension).toBe('jumbo-memory-capture');
-    expect(result.jumboScores[4].dimension).toBe('protocol-adherence');
-    expect(result.jumboScores[5].dimension).toBe('token-efficiency');
+    expect(result.jumboScores[2].dimension).toBe('structural-retention');
+    expect(result.jumboScores[3].dimension).toBe('disruption-recovery');
+    expect(result.jumboScores[4].dimension).toBe('jumbo-memory-capture');
+    expect(result.jumboScores[5].dimension).toBe('jumbo-event-capture');
+    expect(result.jumboScores[6].dimension).toBe('protocol-adherence');
+    expect(result.jumboScores[7].dimension).toBe('token-efficiency');
   });
 
   it('captures Jumbo project memory after each session with JSON list commands', async () => {

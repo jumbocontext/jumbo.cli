@@ -1,14 +1,14 @@
 import type {
-  TuiDaemonConfig,
-  TuiDaemonConfigs,
-  TuiDaemonName,
+  DaemonConfig,
+  DaemonConfigs,
+  DaemonName,
 } from "../daemon-subprocesses/ISubprocessManager.js";
 
 export function updateSelectedCockpitDaemonConfig(
-  configs: TuiDaemonConfigs,
-  selectedDaemon: TuiDaemonName,
-  nextConfig: (config: TuiDaemonConfig) => TuiDaemonConfig,
-): TuiDaemonConfigs {
+  configs: DaemonConfigs,
+  selectedDaemon: DaemonName,
+  nextConfig: (config: DaemonConfig) => DaemonConfig,
+): DaemonConfigs {
   return {
     ...configs,
     [selectedDaemon]: nextConfig(configs[selectedDaemon]),

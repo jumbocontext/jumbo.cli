@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { BaseColors } from "../../../../src/presentation/shared/DesignTokens.js";
-import { TuiSubprocessStatus } from "../../../../src/presentation/tui/daemon-subprocesses/TuiSubprocessStatus.js";
+import { SubprocessStatus } from "../../../../src/presentation/tui/daemon-subprocesses/SubprocessStatus.js";
 import { getGlyphCellSegments } from "../../../../src/presentation/tui/cockpit/GlyphCellSegments.js";
 
 describe("getGlyphCellSegments", () => {
@@ -10,7 +10,7 @@ describe("getGlyphCellSegments", () => {
       { glyph: "b", color: "#111111" },
       { glyph: "c", color: "#222222" },
     ], {
-      status: TuiSubprocessStatus.RUNNING,
+      status: SubprocessStatus.RUNNING,
       events: [],
     });
 
@@ -25,7 +25,7 @@ describe("getGlyphCellSegments", () => {
       { glyph: "a", color: "#111111" },
       { glyph: "b", color: "#222222" },
     ], {
-      status: TuiSubprocessStatus.STOPPED,
+      status: SubprocessStatus.STOPPED,
       events: [],
     });
 

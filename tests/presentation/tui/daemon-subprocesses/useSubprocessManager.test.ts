@@ -6,10 +6,10 @@ import { SubprocessManagerProvider } from "../../../../src/presentation/tui/daem
 import { useSubprocessManager } from "../../../../src/presentation/tui/daemon-subprocesses/useSubprocessManager.js";
 import type {
   ISubprocessManager,
-  TuiSubprocessSnapshot,
+  SubprocessSnapshot,
 } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
-function createSnapshot(): TuiSubprocessSnapshot {
+function createSnapshot(): SubprocessSnapshot {
   return {
     name: "refiner",
     status: "running",

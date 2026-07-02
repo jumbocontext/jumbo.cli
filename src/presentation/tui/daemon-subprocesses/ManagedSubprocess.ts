@@ -1,21 +1,21 @@
 import type { WorkerDaemonProcess } from "../../../application/daemons/IWorkerDaemonProcessController.js";
-import type { TuiDaemonConfig } from "./TuiDaemonConfig.js";
-import type { TuiDaemonEventSnapshot } from "./TuiDaemonEventSnapshot.js";
-import type { TuiDaemonName } from "./TuiDaemonName.js";
-import type { TuiSubprocessSnapshot } from "./TuiSubprocessSnapshot.js";
-import type { TuiSubprocessStatusValue } from "./TuiSubprocessStatus.js";
+import type { DaemonConfig } from "./DaemonConfig.js";
+import type { DaemonEventSnapshot } from "./DaemonEventSnapshot.js";
+import type { DaemonName } from "./DaemonName.js";
+import type { SubprocessSnapshot } from "./SubprocessSnapshot.js";
+import type { SubprocessStatusValue } from "./SubprocessStatus.js";
 
 export interface ManagedSubprocess {
-  readonly name: TuiDaemonName;
+  readonly name: DaemonName;
   readonly child: WorkerDaemonProcess;
-  readonly config: TuiDaemonConfig;
+  readonly config: DaemonConfig;
   readonly stdout: string[];
   readonly stderr: string[];
-  readonly events: TuiDaemonEventSnapshot[];
-  status: TuiSubprocessStatusValue;
+  readonly events: DaemonEventSnapshot[];
+  status: SubprocessStatusValue;
   exitCode?: number | null;
   exitSignal?: string | null;
   stopRequested: boolean;
   terminationTimedOut: boolean;
-  termination?: Promise<TuiSubprocessSnapshot>;
+  termination?: Promise<SubprocessSnapshot>;
 }

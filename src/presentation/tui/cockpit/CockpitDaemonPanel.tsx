@@ -2,7 +2,7 @@ import React from "react";
 import { Box } from "ink";
 import { BaseColors } from "../../shared/DesignTokens.js";
 import { Panel } from "../ui-primitives/Panel.js";
-import type { TuiDaemonConfig, TuiSubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
+import type { DaemonConfig, SubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
 import { DaemonActionLine } from "./DaemonActionLine.js";
 import { DaemonConfigWizard } from "./DaemonConfigWizard.js";
 import type { IDaemonConstants } from "./daemons/IDaemonConstants.js";
@@ -17,8 +17,8 @@ export function CockpitDaemonPanel({
   children,
 }: {
   readonly daemonConstants: IDaemonConstants;
-  readonly snapshot: TuiSubprocessSnapshot;
-  readonly pendingConfig: TuiDaemonConfig;
+  readonly snapshot: SubprocessSnapshot;
+  readonly pendingConfig: DaemonConfig;
   readonly selected: boolean;
   readonly configuring: boolean;
   readonly infoVisible: boolean;

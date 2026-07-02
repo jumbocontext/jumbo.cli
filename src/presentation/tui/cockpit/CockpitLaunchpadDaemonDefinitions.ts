@@ -1,4 +1,4 @@
-import type { TuiDaemonName } from "../daemon-subprocesses/ISubprocessManager.js";
+import type { DaemonName } from "../daemon-subprocesses/ISubprocessManager.js";
 import { CodifierDaemonConstants } from "./daemons/CodifierDaemonConstants.js";
 import { CodifierDaemonFrame } from "./daemons/CodifierDaemonFrame.js";
 import type { IDaemonUiDefinition } from "./daemons/IDaemonUiDefinition.js";
@@ -26,5 +26,5 @@ export const CockpitLaunchpadDaemonDefinitions = {
   all: daemonUiDefinitions,
   focusOrder: daemonUiDefinitions.map(
     (daemonUiDefinition) => daemonUiDefinition.constants.name,
-  ) as readonly TuiDaemonName[],
+  ) as readonly DaemonName[],
 } as const;

@@ -4,7 +4,7 @@ import { render } from "ink-testing-library";
 import { DEFAULT_WORKER_DAEMON_CONFIGS } from "../../../../src/application/daemons/WorkerDaemonCatalog.js";
 import { CockpitLaunchpadDaemonPanels } from "../../../../src/presentation/tui/cockpit/CockpitLaunchpadDaemonPanels.js";
 import { CockpitDaemonPanelCopy } from "../../../../src/presentation/tui/cockpit/CockpitDaemonPanelCopy.js";
-import type { TuiSubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
+import type { SubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
 const daemonFrameIndexByName = {
   refiner: 0,
@@ -13,9 +13,9 @@ const daemonFrameIndexByName = {
 } as const;
 
 function createSnapshot(
-  name: TuiSubprocessSnapshot["name"],
-  status: TuiSubprocessSnapshot["status"],
-): TuiSubprocessSnapshot {
+  name: SubprocessSnapshot["name"],
+  status: SubprocessSnapshot["status"],
+): SubprocessSnapshot {
   return {
     name,
     status,

@@ -1,6 +1,6 @@
 import type {
-  TuiDaemonEventSnapshot,
-  TuiSubprocessSnapshot,
+  DaemonEventSnapshot,
+  SubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
 
 const DAEMON_EVENT_MESSAGE_WIDTH = 52;
@@ -10,8 +10,8 @@ export const DaemonEventRowMessageFormatter = {
 } as const;
 
 function format(
-  snapshot: TuiSubprocessSnapshot,
-  event: TuiDaemonEventSnapshot,
+  snapshot: SubprocessSnapshot,
+  event: DaemonEventSnapshot,
 ): string {
   const parts = [
     event.message === undefined || event.message.trim().length === 0
@@ -26,7 +26,7 @@ function format(
   return truncateTail(parts.join(" "), DAEMON_EVENT_MESSAGE_WIDTH);
 }
 
-function formatAttemptDetails(event: TuiDaemonEventSnapshot): string | undefined {
+function formatAttemptDetails(event: DaemonEventSnapshot): string | undefined {
   if (event.attempt === undefined && event.maxRetries === undefined) {
     return undefined;
   }
@@ -34,7 +34,7 @@ function formatAttemptDetails(event: TuiDaemonEventSnapshot): string | undefined
   return `${event.attempt ?? "-"}/${event.maxRetries ?? "-"}`;
 }
 
-function formatExitDetails(event: TuiDaemonEventSnapshot): string | undefined {
+function formatExitDetails(event: DaemonEventSnapshot): string | undefined {
   return event.exitCode === undefined ? undefined : `exit ${event.exitCode}`;
 }
 

@@ -7,19 +7,19 @@ import { CockpitDaemonPanel } from "./CockpitDaemonPanel.js";
 import { getDaemonPanelStatusLabel } from "./DaemonPanelStatusLabel.js";
 import { CockpitLaunchpadDaemonDefinitions } from "./CockpitLaunchpadDaemonDefinitions.js";
 import type {
-  TuiDaemonConfigs,
-  TuiDaemonName,
-  TuiSubprocessSnapshot,
+  DaemonConfigs,
+  DaemonName,
+  SubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
 import { HorizontalRule } from "../ui-primitives/HorizontalRule.js";
 
 interface CockpitLaunchpadDaemonPanelsProps {
-  readonly selectedDaemon: TuiDaemonName;
-  readonly configuredDaemon: TuiDaemonName | undefined;
-  readonly infoDaemon: TuiDaemonName | undefined;
-  readonly daemonStatuses: readonly TuiSubprocessSnapshot[];
-  readonly daemonConfigs: TuiDaemonConfigs;
-  readonly daemonFrameIndexByName: Record<TuiDaemonName, number>;
+  readonly selectedDaemon: DaemonName;
+  readonly configuredDaemon: DaemonName | undefined;
+  readonly infoDaemon: DaemonName | undefined;
+  readonly daemonStatuses: readonly SubprocessSnapshot[];
+  readonly daemonConfigs: DaemonConfigs;
+  readonly daemonFrameIndexByName: Record<DaemonName, number>;
   readonly refinerGlyphPalette: GlyphPalette;
   readonly reviewerGlyphPalette: GlyphPalette;
   readonly codifierGlyphColors: GlyphColorMap;

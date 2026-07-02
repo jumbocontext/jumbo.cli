@@ -2,8 +2,8 @@ import React from "react";
 import { Box, Text } from "ink";
 import { BaseColors } from "../../shared/DesignTokens.js";
 import { KeyBadge } from "../ui-primitives/KeyBadge.js";
-import type { TuiDaemonConfig, TuiSubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
-import { TuiSubprocessStatus } from "../daemon-subprocesses/TuiSubprocessStatus.js";
+import type { DaemonConfig, SubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
+import { SubprocessStatus } from "../daemon-subprocesses/SubprocessStatus.js";
 import { DAEMON_PANEL_CONTENT_WIDTH } from "./CockpitDaemonFrames.js";
 import { CockpitDaemonPanelCopy } from "./CockpitDaemonPanelCopy.js";
 import { getDaemonShortcutBadgeColor } from "./DaemonShortcutBadgeColor.js";
@@ -13,12 +13,12 @@ export function DaemonConfigWizard({
   pendingConfig,
   selected,
 }: {
-  readonly snapshot: TuiSubprocessSnapshot;
-  readonly pendingConfig: TuiDaemonConfig;
+  readonly snapshot: SubprocessSnapshot;
+  readonly pendingConfig: DaemonConfig;
   readonly selected: boolean;
 }): React.ReactElement {
   const config =
-    snapshot.status === TuiSubprocessStatus.RUNNING
+    snapshot.status === SubprocessStatus.RUNNING
       ? snapshot.config
       : pendingConfig;
   const badgeColor = getDaemonShortcutBadgeColor(selected);

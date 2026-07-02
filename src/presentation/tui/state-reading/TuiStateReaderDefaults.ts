@@ -1,1 +1,0 @@
-export const DEFAULT_TUI_STATE_READER_TICK_MS = 2000;

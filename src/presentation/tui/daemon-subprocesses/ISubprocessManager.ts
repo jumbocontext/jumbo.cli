@@ -1,19 +1,19 @@
-import type { TuiDaemonConfig } from "./TuiDaemonConfig.js";
-import type { TuiDaemonName } from "./TuiDaemonName.js";
-import type { TuiSubprocessSnapshot } from "./TuiSubprocessSnapshot.js";
+import type { DaemonConfig } from "./DaemonConfig.js";
+import type { DaemonName } from "./DaemonName.js";
+import type { SubprocessSnapshot } from "./SubprocessSnapshot.js";
 
-export type { TuiDaemonConfig, TuiDaemonConfigs } from "./TuiDaemonConfig.js";
-export type { TuiDaemonEventSnapshot } from "./TuiDaemonEventSnapshot.js";
-export type { TuiDaemonEventStatusValue as TuiDaemonEventStatus } from "./TuiDaemonEventStatus.js";
-export type { TuiDaemonName } from "./TuiDaemonName.js";
-export type { TuiDaemonCounts } from "./TuiDaemonCounts.js";
-export type { TuiSubprocessSnapshot } from "./TuiSubprocessSnapshot.js";
-export type { TuiSubprocessStatusValue as TuiSubprocessStatus } from "./TuiSubprocessStatus.js";
+export type { DaemonConfig, DaemonConfigs } from "./DaemonConfig.js";
+export type { DaemonEventSnapshot } from "./DaemonEventSnapshot.js";
+export type { DaemonEventStatusValue as DaemonEventStatus } from "./DaemonEventStatus.js";
+export type { DaemonName } from "./DaemonName.js";
+export type { DaemonCounts } from "./DaemonCounts.js";
+export type { SubprocessSnapshot } from "./SubprocessSnapshot.js";
+export type { SubprocessStatusValue as SubprocessStatus } from "./SubprocessStatus.js";
 
 export interface ISubprocessManager {
-  spawn(name: TuiDaemonName, config?: Partial<TuiDaemonConfig>): Promise<TuiSubprocessSnapshot>;
-  terminate(name: TuiDaemonName): Promise<TuiSubprocessSnapshot>;
+  spawn(name: DaemonName, config?: Partial<DaemonConfig>): Promise<SubprocessSnapshot>;
+  terminate(name: DaemonName): Promise<SubprocessSnapshot>;
   terminateAll(): Promise<void>;
-  getStatus(name: TuiDaemonName): TuiSubprocessSnapshot;
-  getAllStatuses(): readonly TuiSubprocessSnapshot[];
+  getStatus(name: DaemonName): SubprocessSnapshot;
+  getAllStatuses(): readonly SubprocessSnapshot[];
 }

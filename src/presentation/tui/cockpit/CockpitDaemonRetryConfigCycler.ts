@@ -1,8 +1,8 @@
-import type { TuiDaemonConfig } from "../daemon-subprocesses/ISubprocessManager.js";
+import type { DaemonConfig } from "../daemon-subprocesses/ISubprocessManager.js";
 
 const COCKPIT_DAEMON_RETRY_OPTIONS = [1, 2, 3, 5] as const;
 
-export function getNextCockpitDaemonRetryConfig(config: TuiDaemonConfig): TuiDaemonConfig {
+export function getNextCockpitDaemonRetryConfig(config: DaemonConfig): DaemonConfig {
   const currentIndex = COCKPIT_DAEMON_RETRY_OPTIONS.indexOf(
     config.maxRetries as typeof COCKPIT_DAEMON_RETRY_OPTIONS[number],
   );

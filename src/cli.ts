@@ -25,9 +25,9 @@ import { ARGV, FAILURE_EXIT_CODE } from "./presentation/cli/Constants.js";
 import { ProjectRootResolver } from "./infrastructure/context/project/ProjectRootResolver.js";
 import { planCliBootstrap } from "./presentation/cli/CliBootstrapPlan.js";
 import type { InitFlowActionControllers } from "./presentation/tui/project-initialization/InitFlow.js";
-import type { TuiStateReaderControllers } from "./presentation/tui/state-reading/TuiStateReaderControllers.js";
-import type { TuiSubprocessManagerFactory } from "./presentation/tui/application-shell/TuiApplicationLauncher.js";
-import { TuiSubprocessManager } from "./presentation/tui/daemon-subprocesses/TuiSubprocessManager.js";
+import type { StateReaderControllers } from "./presentation/tui/state-reading/StateReaderControllers.js";
+import type { SubprocessManagerFactory } from "./presentation/tui/application-shell/ApplicationLauncher.js";
+import { SubprocessManager } from "./presentation/tui/daemon-subprocesses/SubprocessManager.js";
 import type { InitializeProjectRequest } from "./application/context/project/init/InitializeProjectRequest.js";
 import type { InitializeProjectResponse } from "./application/context/project/init/InitializeProjectResponse.js";
 import type { AddAudienceRequest } from "./application/context/audiences/add/AddAudienceRequest.js";
@@ -123,8 +123,8 @@ async function main(): Promise<void> {
   // Step 4: Build container if needed
   let container: IApplicationContainer | null = null;
   let bareTuiActionControllers: InitFlowActionControllers = {};
-  let bareTuiStateReaderControllerFactory:
-    | (() => Promise<TuiStateReaderControllers>)
+  let bareStateReaderControllerFactory:
+    | (() => Promise<StateReaderControllers>)
     | undefined;
 
   if (bootstrapPlan.requiresInfrastructure) {
@@ -134,8 +134,8 @@ async function main(): Promise<void> {
     container = await builder.build();
   } else if (argv.length === ARGV.NODE_AND_SCRIPT_ARG_COUNT) {
     bareTuiActionControllers = buildBareTuiActionControllers(process.cwd());
-    bareTuiStateReaderControllerFactory = async () =>
-      buildTuiStateReaderControllers(
+    bareStateReaderControllerFactory = async () =>
+      buildStateReaderControllers(
         await buildContainerForProjectRoot(process.cwd()),
       );
   }
@@ -145,14 +145,14 @@ async function main(): Promise<void> {
     version,
     container,
     bareTuiActionControllers,
-    bareTuiStateReaderControllerFactory,
-    createTuiSubprocessManager,
+    bareStateReaderControllerFactory,
+    createSubprocessManager,
   );
   await appRunner.run();
 }
 
-const createTuiSubprocessManager: TuiSubprocessManagerFactory = (logger) =>
-  new TuiSubprocessManager(new NodeWorkerDaemonProcessController(), logger);
+const createSubprocessManager: SubprocessManagerFactory = (logger) =>
+  new SubprocessManager(new NodeWorkerDaemonProcessController(), logger);
 
 function buildBareTuiActionControllers(cwd: string): InitFlowActionControllers {
   const jumboRoot = path.join(cwd, ".jumbo");
@@ -203,9 +203,9 @@ async function buildContainerForProjectRoot(
   return container;
 }
 
-function buildTuiStateReaderControllers(
+function buildStateReaderControllers(
   container: IApplicationContainer,
-): TuiStateReaderControllers {
+): StateReaderControllers {
   return {
     getProjectSummaryQueryHandler: new GetProjectSummaryQueryHandler(
       container.projectContextReader,

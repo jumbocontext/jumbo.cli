@@ -1,8 +1,8 @@
-import type { TuiDaemonConfig } from "../daemon-subprocesses/ISubprocessManager.js";
+import type { DaemonConfig } from "../daemon-subprocesses/ISubprocessManager.js";
 
 const COCKPIT_DAEMON_POLL_INTERVAL_OPTIONS_MS = [10_000, 30_000, 60_000, 120_000] as const;
 
-export function getNextCockpitDaemonPollConfig(config: TuiDaemonConfig): TuiDaemonConfig {
+export function getNextCockpitDaemonPollConfig(config: DaemonConfig): DaemonConfig {
   const currentIndex = COCKPIT_DAEMON_POLL_INTERVAL_OPTIONS_MS.indexOf(
     config.pollIntervalMs as typeof COCKPIT_DAEMON_POLL_INTERVAL_OPTIONS_MS[number],
   );

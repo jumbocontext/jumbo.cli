@@ -10,8 +10,8 @@ jest.unstable_mockModule("../../../src/presentation/cli/program/GlobalOptionsHan
 
 const mockLaunchTui = jest.fn<() => Promise<void>>().mockResolvedValue();
 
-jest.unstable_mockModule("../../../src/presentation/tui/application-shell/TuiApplicationLauncher.js", () => ({
-  TuiApplicationLauncher: jest.fn().mockImplementation(() => ({
+jest.unstable_mockModule("../../../src/presentation/tui/application-shell/ApplicationLauncher.js", () => ({
+  ApplicationLauncher: jest.fn().mockImplementation(() => ({
     launch: mockLaunchTui,
   })),
 }));
@@ -43,8 +43,8 @@ jest.unstable_mockModule(
 
 const { createProgram } = await import("../../../src/presentation/cli/program/ProgramFactory.js");
 import type { IApplicationContainer } from "../../../src/application/host/IApplicationContainer.js";
-const { TuiApplicationLauncher } = await import(
-  "../../../src/presentation/tui/application-shell/TuiApplicationLauncher.js"
+const { ApplicationLauncher } = await import(
+  "../../../src/presentation/tui/application-shell/ApplicationLauncher.js"
 );
 const { AppRunner } = await import("../../../src/presentation/cli/AppRunner.js");
 import { Renderer } from "../../../src/presentation/cli/rendering/Renderer.js";
@@ -83,7 +83,7 @@ describe("AppRunner", () => {
     await runner.run();
 
     expect(mockLaunchTui).toHaveBeenCalledTimes(1);
-    expect(TuiApplicationLauncher).toHaveBeenCalledWith(
+    expect(ApplicationLauncher).toHaveBeenCalledWith(
       "1.2.3",
       null,
       {},
@@ -124,7 +124,7 @@ describe("AppRunner", () => {
     const runner = new AppRunner("1.2.3", null, actionControllers);
     await runner.run();
 
-    expect(TuiApplicationLauncher).toHaveBeenCalledWith(
+    expect(ApplicationLauncher).toHaveBeenCalledWith(
       "1.2.3",
       null,
       actionControllers,
@@ -142,7 +142,7 @@ describe("AppRunner", () => {
     const runner = new AppRunner("1.2.3", null, {}, factory);
     await runner.run();
 
-    expect(TuiApplicationLauncher).toHaveBeenCalledWith(
+    expect(ApplicationLauncher).toHaveBeenCalledWith(
       "1.2.3",
       null,
       {},
@@ -166,7 +166,7 @@ describe("AppRunner", () => {
     const runner = new AppRunner("1.2.3", container as IApplicationContainer);
     await runner.run();
 
-    expect(TuiApplicationLauncher).toHaveBeenCalledWith(
+    expect(ApplicationLauncher).toHaveBeenCalledWith(
       "1.2.3",
       container,
       {},

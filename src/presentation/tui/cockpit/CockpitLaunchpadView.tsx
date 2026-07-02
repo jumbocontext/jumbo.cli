@@ -5,9 +5,9 @@ import type { ISettingsReader } from "../../../application/settings/ISettingsRea
 import AnimatedBillboard from "../billboard/AnimatedBillboard.js";
 import type { AnimatedBillboardTriggerInput } from "../billboard/AnimatedBillboard.js";
 import type {
-  TuiDaemonConfigs,
-  TuiDaemonName,
-  TuiSubprocessSnapshot,
+  DaemonConfigs,
+  DaemonName,
+  SubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
 import { useSubprocessManager } from "../daemon-subprocesses/useSubprocessManager.js";
 import { CockpitDaemonEvents } from "./CockpitDaemonEvents.js";
@@ -82,14 +82,14 @@ export function CockpitLaunchpadView({
   const [reviewerFrameIndex, setReviewerFrameIndex] = useState(0);
   const [refinerFrameIndex, setRefinerFrameIndex] = useState(0);
   const [codifierFrameIndex, setCodifierFrameIndex] = useState(0);
-  const [selectedDaemon, setSelectedDaemon] = useState<TuiDaemonName>("refiner");
+  const [selectedDaemon, setSelectedDaemon] = useState<DaemonName>("refiner");
   const [configuredDaemon, setConfiguredDaemon] = useState<
-    TuiDaemonName | undefined
+    DaemonName | undefined
   >(undefined);
-  const [infoDaemon, setInfoDaemon] = useState<TuiDaemonName | undefined>(
+  const [infoDaemon, setInfoDaemon] = useState<DaemonName | undefined>(
     undefined,
   );
-  const [daemonConfigs, setDaemonConfigs] = useState<TuiDaemonConfigs>(
+  const [daemonConfigs, setDaemonConfigs] = useState<DaemonConfigs>(
     DEFAULT_WORKER_DAEMON_CONFIGS,
   );
   const { welcomeVisible, hideWelcome } =
@@ -209,7 +209,7 @@ export function CockpitLaunchpadView({
         daemonUiDefinition.constants.name,
       ),
     ]),
-  ) as Record<TuiDaemonName, TuiSubprocessSnapshot>;
+  ) as Record<DaemonName, SubprocessSnapshot>;
   const daemonFrameIndexByName = {
     refiner: getRenderedFrameIndex(
       daemonStatusByName.refiner,
@@ -223,7 +223,7 @@ export function CockpitLaunchpadView({
       daemonStatusByName.codifier,
       codifierFrameIndex,
     ),
-  } as const satisfies Record<TuiDaemonName, number>;
+  } as const satisfies Record<DaemonName, number>;
   const infoDaemonConstants =
     infoDaemon === undefined
       ? undefined

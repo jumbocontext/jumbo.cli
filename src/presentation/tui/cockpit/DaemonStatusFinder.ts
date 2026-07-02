@@ -1,21 +1,21 @@
 import { DEFAULT_WORKER_DAEMON_CONFIG } from "../../../application/daemons/WorkerDaemonCatalog.js";
 import type {
-  TuiDaemonName,
-  TuiSubprocessSnapshot,
+  DaemonName,
+  SubprocessSnapshot,
 } from "../daemon-subprocesses/ISubprocessManager.js";
-import { TuiSubprocessStatus } from "../daemon-subprocesses/TuiSubprocessStatus.js";
+import { SubprocessStatus } from "../daemon-subprocesses/SubprocessStatus.js";
 
 export const DaemonStatusFinder = {
   find,
 } as const;
 
 function find(
-  statuses: readonly TuiSubprocessSnapshot[],
-  name: TuiDaemonName,
-): TuiSubprocessSnapshot {
+  statuses: readonly SubprocessSnapshot[],
+  name: DaemonName,
+): SubprocessSnapshot {
   return statuses.find((status) => status.name === name) ?? {
     name,
-    status: TuiSubprocessStatus.STOPPED,
+    status: SubprocessStatus.STOPPED,
     config: DEFAULT_WORKER_DAEMON_CONFIG,
     stdout: [],
     stderr: [],

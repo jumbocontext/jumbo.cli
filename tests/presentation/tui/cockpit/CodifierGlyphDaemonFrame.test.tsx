@@ -4,10 +4,10 @@ import { render } from "ink-testing-library";
 import stripAnsi from "strip-ansi";
 import { BaseColors } from "../../../../src/presentation/shared/DesignTokens.js";
 import { CodifierGlyphDaemonFrame } from "../../../../src/presentation/tui/cockpit/CodifierGlyphDaemonFrame.js";
-import { TuiSubprocessStatus } from "../../../../src/presentation/tui/daemon-subprocesses/TuiSubprocessStatus.js";
+import { SubprocessStatus } from "../../../../src/presentation/tui/daemon-subprocesses/SubprocessStatus.js";
 
 const runningSnapshot = {
-  status: TuiSubprocessStatus.RUNNING,
+  status: SubprocessStatus.RUNNING,
   events: [],
 } as const;
 

@@ -1,4 +1,4 @@
-import type { TuiSubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
+import type { SubprocessSnapshot } from "../daemon-subprocesses/ISubprocessManager.js";
 import type { DaemonEventRow } from "./DaemonEventRow.js";
 import { DaemonEventRowNormalizer } from "./DaemonEventRowNormalizer.js";
 
@@ -10,7 +10,7 @@ export const DaemonEventRows = {
 } as const;
 
 function fromSnapshots(
-  snapshots: readonly TuiSubprocessSnapshot[],
+  snapshots: readonly SubprocessSnapshot[],
   observedAtMs: number,
 ): readonly DaemonEventRow[] {
   const rows = snapshots.flatMap((snapshot) =>

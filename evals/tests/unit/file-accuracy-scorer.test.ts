@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import { scoreFileAccuracy } from '../../src/scoring/file-accuracy-scorer.js';
+import { scoreFileAccuracy, producedAllExpectedFiles } from '../../src/scoring/file-accuracy-scorer.js';
 import { createSessionRecord } from '../../src/domain/types.js';
 import type { WorkspaceSnapshot } from '../../src/domain/types.js';
 
@@ -24,6 +24,27 @@ function makeSnapshot(paths: string[]): WorkspaceSnapshot {
     files: paths.map((path) => ({ path, content: '' })),
   };
 }
+
+describe('producedAllExpectedFiles', () => {
+  it('is true when every expected file was produced (recall = 1), ignoring extras', () => {
+    const record = makeRecord(['src/index.ts', 'src/utils.ts', 'src/extra.ts']);
+    expect(producedAllExpectedFiles([record], ['src/index.ts', 'src/utils.ts'])).toBe(true);
+  });
+
+  it('is false when any expected file is missing', () => {
+    const record = makeRecord(['src/index.ts']);
+    expect(producedAllExpectedFiles([record], ['src/index.ts', 'src/utils.ts'])).toBe(false);
+  });
+
+  it('is vacuously true when no files are expected', () => {
+    expect(producedAllExpectedFiles([makeRecord([])], [])).toBe(true);
+  });
+
+  it('falls back to workspace snapshot paths when filesModified is empty', () => {
+    const record = makeRecord([], makeSnapshot(['src/index.ts', 'src/utils.ts']));
+    expect(producedAllExpectedFiles([record], ['src/index.ts', 'src/utils.ts'])).toBe(true);
+  });
+});
 
 describe('scoreFileAccuracy', () => {
   it('returns perfect score when all expected files are modified and nothing extra', () => {

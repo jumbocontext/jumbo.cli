@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { DEFAULT_WORKER_DAEMON_CONFIG } from "../../../../src/application/daemons/WorkerDaemonCatalog.js";
 import { DaemonEventRowNormalizer } from "../../../../src/presentation/tui/cockpit/DaemonEventRowNormalizer.js";
-import type { TuiSubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
+import type { SubprocessSnapshot } from "../../../../src/presentation/tui/daemon-subprocesses/ISubprocessManager.js";
 
 describe("DaemonEventRowNormalizer", () => {
   it("normalizes event fields into display rows", () => {
@@ -44,7 +44,7 @@ describe("DaemonEventRowNormalizer", () => {
   });
 });
 
-function snapshot(status: "failed" | "running" | "stopped" | "stopping"): TuiSubprocessSnapshot {
+function snapshot(status: "failed" | "running" | "stopped" | "stopping"): SubprocessSnapshot {
   return {
     name: "reviewer",
     status,

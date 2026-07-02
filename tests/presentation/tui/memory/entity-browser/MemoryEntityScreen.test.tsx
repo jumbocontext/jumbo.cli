@@ -77,4 +77,25 @@ describe("MemoryEntityScreen", () => {
     expect(lastFrame() ?? "").not.toEqual(beforeFrame);
     unmount();
   });
+
+  it("ignores contextual input when shortcuts are disabled", async () => {
+    const { lastFrame, stdin, unmount } = render(
+      <MemoryEntityScreen
+        entityType="decision"
+        title="Decisions"
+        subtitle="Focused decision memory list"
+        rows={DECISION_ROWS}
+        shortcutsEnabled={false}
+      />,
+    );
+    const beforeFrame = lastFrame() ?? "";
+
+    stdin.write(DOWN_ARROW);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    stdin.write("]");
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(lastFrame() ?? "").toEqual(beforeFrame);
+    unmount();
+  });
 });

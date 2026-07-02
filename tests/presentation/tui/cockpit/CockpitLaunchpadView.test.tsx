@@ -3,7 +3,7 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { Text } from "ink";
 import { render } from "ink-testing-library";
 import { CockpitLaunchpadView } from "../../../../src/presentation/tui/cockpit/CockpitLaunchpadView.js";
-import { TuiStateReaderProvider } from "../../../../src/presentation/tui/state-reading/TuiStateReader.js";
+import { StateReaderProvider } from "../../../../src/presentation/tui/state-reading/StateReader.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -96,7 +96,7 @@ describe("CockpitLaunchpadView", () => {
     };
 
     const { lastFrame, unmount } = render(
-      <TuiStateReaderProvider
+      <StateReaderProvider
         controllers={{ projectStatsController }}
         options={{ tickMs: 0 }}
       >
@@ -105,7 +105,7 @@ describe("CockpitLaunchpadView", () => {
           refinerFrameDurationMs={0}
           codifierFrameDurationMs={0}
         />
-      </TuiStateReaderProvider>,
+      </StateReaderProvider>,
     );
 
     await tick();
