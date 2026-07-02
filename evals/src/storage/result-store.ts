@@ -1,4 +1,4 @@
-import type { EvalRunRecord, RunControlFile, RunHeartbeat, TestScenario, SessionRecord, TestResult } from '../domain/types.js';
+import type { EvalRunRecord, ReplicationReport, RunControlFile, RunHeartbeat, TestScenario, SessionRecord, TestResult } from '../domain/types.js';
 
 /**
  * Abstract storage interface for eval artifacts.
@@ -25,4 +25,8 @@ export interface ResultStore {
 
   writeRunControl(runId: string, control: RunControlFile): Promise<void>;
   readRunControl(runId: string): Promise<RunControlFile | null>;
+
+  /** Persists the Outcome 5 replication report for a run (one statistical artifact per runId). */
+  saveReplicationReport(runId: string, report: ReplicationReport): Promise<void>;
+  getReplicationReport(runId: string): Promise<ReplicationReport | null>;
 }

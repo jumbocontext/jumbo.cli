@@ -4,6 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { JsonResultStore } from '../../src/storage/json-result-store.js';
 import { createTestScenario, createSessionRecord, createTestResult } from '../../src/domain/types.js';
+import type { ReplicationReport } from '../../src/domain/types.js';
 
 describe('JsonResultStore', () => {
   let tmpDir: string;
@@ -133,6 +134,39 @@ describe('JsonResultStore', () => {
 
       const results = await store.listTestResults();
       expect(results).toHaveLength(2);
+    });
+  });
+
+  describe('replication reports', () => {
+    const report: ReplicationReport = {
+      scenarioId: 's1',
+      harness: 'claude-code',
+      k: 5,
+      dimensions: [
+        {
+          dimension: 'file-accuracy',
+          k: 5,
+          applicableReplications: 5,
+          meanJumbo: 0.9,
+          meanBaseline: 0.5,
+          meanLift: 0.4,
+          sdLift: 0.2,
+          tStatistic: 4.47,
+          isSignal: true,
+        },
+      ],
+      significance: { rule: 'isSignal = |meanLift| > sdLift', tCriticalOneTailed05: 2.132, note: 'note' },
+      createdAt: '2026-03-21T10:05:00Z',
+    };
+
+    it('persists and retrieves a replication report by runId (survives a fresh store instance)', async () => {
+      await store.saveReplicationReport('run-123', report);
+      const reopened = new JsonResultStore(tmpDir);
+      expect(await reopened.getReplicationReport('run-123')).toEqual(report);
+    });
+
+    it('returns null when no replication report exists for the runId', async () => {
+      expect(await store.getReplicationReport('absent')).toBeNull();
     });
   });
 });

@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { createProgram } from '../../src/cli/index.js';
 import type { ResultStore } from '../../src/storage/result-store.js';
-import type { TestScenario, SessionRecord, TestResult, ComparisonResult } from '../../src/domain/types.js';
+import type { TestScenario, SessionRecord, TestResult, ComparisonResult, ReplicationReport } from '../../src/domain/types.js';
 import { handleScenarioCreate } from '../../src/cli/commands/scenario-create.js';
 import { formatScenarioList } from '../../src/cli/commands/scenario-list.js';
 import { validateHarnesses } from '../../src/cli/commands/run.js';
@@ -101,6 +101,13 @@ class InMemoryStore implements ResultStore {
   }
   async listTestResults(scenarioId?: string): Promise<TestResult[]> {
     return scenarioId ? this.results.filter((r) => r.scenarioId === scenarioId) : [...this.results];
+  }
+  replicationReports = new Map<string, ReplicationReport>();
+  async saveReplicationReport(runId: string, report: ReplicationReport): Promise<void> {
+    this.replicationReports.set(runId, report);
+  }
+  async getReplicationReport(runId: string): Promise<ReplicationReport | null> {
+    return this.replicationReports.get(runId) ?? null;
   }
 }
 
@@ -958,6 +965,61 @@ describe('run command', () => {
     const output = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
     expect(output).toContain('JUMBO EVALUATION REPORT');
     expect(output).toContain('sid-report');
+  });
+
+  it('runs K replications per harness and persists a ReplicationReport retrievable by runId (--replicate 5)', async () => {
+    const scenario = createTestScenario({ id: 'sid-rep', name: 'S', initialPrompt: 'p', sessionCount: 1 });
+    store.scenarios.push(scenario);
+
+    const abRunner = jest.fn(async (config: { scenario: TestScenario; adapter: { name: string } }) =>
+      makeFakeComparison(config.scenario.id, config.adapter.name),
+    );
+    const program = createProgram({ storeProvider: async () => store, abRunner: abRunner as never });
+
+    await program.parseAsync(['node', 'eval', 'run', '--scenario', 'sid-rep', '--replicate', '5']);
+
+    expect(abRunner).toHaveBeenCalledTimes(5); // 5 replications × 1 harness
+
+    const runIdLine = logSpy.mock.calls.map((c) => String(c[0])).find((l) => l.startsWith('Run ID: '));
+    const runId = runIdLine!.replace('Run ID: ', '').trim();
+    const report = await store.getReplicationReport(runId);
+    expect(report).not.toBeNull();
+    expect(report!.k).toBe(5);
+    expect(report!.harness).toBe('claude-code');
+
+    const output = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    expect(output).toContain('REPLICATION REPORT');
+  });
+
+  it('keeps single-run behavior and produces no replication report for --replicate 1', async () => {
+    const scenario = createTestScenario({ id: 'sid-rep1', name: 'S', initialPrompt: 'p', sessionCount: 1 });
+    store.scenarios.push(scenario);
+
+    const abRunner = jest.fn(async (config: { scenario: TestScenario; adapter: { name: string } }) =>
+      makeFakeComparison(config.scenario.id, config.adapter.name),
+    );
+    const program = createProgram({ storeProvider: async () => store, abRunner: abRunner as never });
+
+    await program.parseAsync(['node', 'eval', 'run', '--scenario', 'sid-rep1', '--replicate', '1']);
+
+    expect(abRunner).toHaveBeenCalledTimes(1);
+    const output = logSpy.mock.calls.map((c) => String(c[0])).join('\n');
+    expect(output).toContain('JUMBO EVALUATION REPORT');
+    expect(output).not.toContain('REPLICATION REPORT');
+    expect(store.replicationReports.size).toBe(0);
+  });
+
+  it('errors when --replicate is below 1', async () => {
+    const scenario = createTestScenario({ id: 'sid-rep0', name: 'S', initialPrompt: 'p', sessionCount: 1 });
+    store.scenarios.push(scenario);
+
+    const abRunner = jest.fn();
+    const program = createProgram({ storeProvider: async () => store, abRunner: abRunner as never });
+
+    await expect(
+      program.parseAsync(['node', 'eval', 'run', '--scenario', 'sid-rep0', '--replicate', '0']),
+    ).rejects.toThrow(/--replicate must be an integer >= 1/);
+    expect(abRunner).not.toHaveBeenCalled();
   });
 
   it('emits empty-state message when no comparisons were produced', async () => {

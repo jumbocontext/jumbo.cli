@@ -1,7 +1,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import type { EvalRunRecord, RunControlFile, RunHeartbeat, TestScenario, SessionRecord, TestResult } from '../domain/types.js';
+import type { EvalRunRecord, ReplicationReport, RunControlFile, RunHeartbeat, TestScenario, SessionRecord, TestResult } from '../domain/types.js';
 import type { ResultStore } from './result-store.js';
 
 function isEnoent(err: unknown): boolean {
@@ -123,6 +123,16 @@ export class JsonResultStore implements ResultStore {
 
   async readRunControl(runId: string): Promise<RunControlFile | null> {
     return this.readJson<RunControlFile>(path.join(this.runDir(runId), 'control.json'));
+  }
+
+  async saveReplicationReport(runId: string, report: ReplicationReport): Promise<void> {
+    const runDir = this.runDir(runId);
+    await fs.mkdir(runDir, { recursive: true });
+    await this.atomicWriteJson(path.join(runDir, 'replication.json'), report);
+  }
+
+  async getReplicationReport(runId: string): Promise<ReplicationReport | null> {
+    return this.readJson<ReplicationReport>(path.join(this.runDir(runId), 'replication.json'));
   }
 
   private runDir(runId: string): string {

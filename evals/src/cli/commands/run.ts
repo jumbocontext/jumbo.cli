@@ -10,6 +10,8 @@ import { ClaudeCodeAdapter, CodexCliAdapter, GeminiCliAdapter } from '../../harn
 import { formatComparisonOutput } from '../../output/comparison-display.js';
 import { formatCrossHarnessComparison } from '../../output/cross-harness-display.js';
 import { generateFullReport, formatFullReport } from '../../output/report-generator.js';
+import { formatReplicationReport } from '../../output/replication-display.js';
+import { aggregateReplications } from '../../analysis/replication-stats.js';
 
 const VALID_HARNESSES = ['claude-code', 'codex-cli', 'gemini-cli'] as const;
 type HarnessName = typeof VALID_HARNESSES[number];
@@ -53,14 +55,24 @@ export function registerRunCommand(program: Command, deps: RunDeps): void {
     .requiredOption('--scenario <id>', 'Scenario ID to run')
     .option('--harness <harnesses...>', 'Harness(es) to run against', ['claude-code'])
     .option('--sessions <count>', 'Override scenario session count', parseInt)
+    .option('--replicate <count>', 'Run K replications per arm and report lift as mean +/- SD (Outcome 5)', (v) => parseInt(v, 10), 1)
     .addHelpText('after', `
 Examples:
   eval run --scenario abc123
   eval run --scenario abc123 --harness claude-code codex-cli
   eval run --scenario abc123 --harness gemini-cli --sessions 5
+  eval run --scenario abc123 --replicate 5
     `)
-    .action(async (opts: { scenario: string; harness: string[]; sessions?: number }) => {
+    .action(async (opts: { scenario: string; harness: string[]; sessions?: number; replicate: number }) => {
       const harnesses = validateHarnesses(opts.harness) as HarnessName[];
+
+      const replicate = opts.replicate ?? 1;
+      if (!Number.isInteger(replicate) || replicate < 1) {
+        throw new Error(`--replicate must be an integer >= 1 (got ${String(opts.replicate)})`);
+      }
+      if (replicate > 1 && replicate < 5) {
+        console.warn(`[WARNING] --replicate ${replicate}: K>=5 is the minimum for a credible signal (GOAL.md); below K=5, lift cannot be reliably distinguished from noise.`);
+      }
 
       const store = await deps.storeProvider();
       const scenario = await store.getScenario(opts.scenario);
@@ -102,19 +114,25 @@ Examples:
       console.log(`Run ID: ${runId}`);
 
       const comparisons: ComparisonResult[] = [];
+      const replicationsByHarness: ComparisonResult[][] = [];
       try {
         for (const name of harnesses) {
           const adapter = deps.adapterProvider?.(name) ?? buildAdapter(name);
-          const comparison = await abRunner({
-            scenario: effectiveScenario,
-            adapter,
-            executor,
-            store,
-            runId,
-            heartbeatWriter,
-          });
-          comparisons.push(comparison);
-          console.log(formatComparisonOutput(comparison, scenario.disruptions));
+          const replications: ComparisonResult[] = [];
+          for (let rep = 0; rep < replicate; rep++) {
+            const comparison = await abRunner({
+              scenario: effectiveScenario,
+              adapter,
+              executor,
+              store,
+              runId,
+              heartbeatWriter,
+            });
+            replications.push(comparison);
+            comparisons.push(comparison);
+            console.log(formatComparisonOutput(comparison, scenario.disruptions));
+          }
+          replicationsByHarness.push(replications);
         }
 
         if (supportsRunState) {
@@ -135,13 +153,29 @@ Examples:
         throw err;
       }
 
-      if (comparisons.length > 1) {
-        console.log(formatCrossHarnessComparison(comparisons));
-      }
-
       if (comparisons.length === 0) {
         console.log('No comparisons produced; skipping report.');
         return;
+      }
+
+      // Replication mode (K>1): the statistical artifact (per-dimension lift as
+      // mean +/- SD with a one-SD significance flag) per harness is produced,
+      // persisted by runId, and displayed. The single-run cross-harness/full-
+      // report view below is left exactly as-is for K=1.
+      if (replicate > 1) {
+        const canPersistReplication = typeof (store as Partial<ResultStore>).saveReplicationReport === 'function';
+        for (const replications of replicationsByHarness) {
+          const replicationReport = aggregateReplications(replications);
+          if (canPersistReplication) {
+            await store.saveReplicationReport(runId, replicationReport);
+          }
+          console.log(formatReplicationReport(replicationReport));
+        }
+        return;
+      }
+
+      if (comparisons.length > 1) {
+        console.log(formatCrossHarnessComparison(comparisons));
       }
 
       const tamperedExcluded = comparisons.filter((c) => c.tampered);
