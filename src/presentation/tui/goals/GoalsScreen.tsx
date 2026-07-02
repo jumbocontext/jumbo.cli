@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Box, Text, useInput } from "ink";
 import {
   BaseColors,
@@ -53,17 +53,28 @@ const STATUS_COLORS: Record<GoalStatusType, string> = {
   [GoalStatus.UNBLOCKED]: SemanticColors.warning,
 };
 
-export function GoalsScreen(): React.ReactElement {
+interface GoalsScreenProps {
+  readonly statusFilter?: readonly GoalStatusType[];
+}
+
+export function GoalsScreen({
+  statusFilter,
+}: GoalsScreenProps = {}): React.ReactElement {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [filterIndex, setFilterIndex] = useState(0);
+  const [menuStatusFilter, setMenuStatusFilter] = useState(statusFilter);
   const [authoringOpen, setAuthoringOpen] = useState(false);
 
   const activeFilter = GOAL_STATUS_FILTERS[filterIndex];
-  const requestedStatus =
-    activeFilter === GOAL_STATUS_FILTER_ALL
-      ? undefined
-      : (activeFilter as GoalStatusType);
-  const goalsList = useGoalsList(requestedStatus);
+  const requestedStatusFilter = useMemo(
+    () =>
+      menuStatusFilter ??
+      (activeFilter === GOAL_STATUS_FILTER_ALL
+        ? undefined
+        : ([activeFilter] as readonly GoalStatusType[])),
+    [activeFilter, menuStatusFilter],
+  );
+  const goalsList = useGoalsList(requestedStatusFilter);
   const visibleGoals = useMemo(
     () => {
       const responseGoals = goalsList.data?.goals;
@@ -78,6 +89,11 @@ export function GoalsScreen(): React.ReactElement {
   );
   const selectedGoal = visibleGoals[selectedIndex] ?? visibleGoals[0];
 
+  useEffect(() => {
+    setMenuStatusFilter(statusFilter);
+    setSelectedIndex(0);
+  }, [statusFilter]);
+
   useInput((input, key) => {
     if (authoringOpen) {
       return;
@@ -85,6 +101,7 @@ export function GoalsScreen(): React.ReactElement {
 
     if (key.rightArrow) {
       const nextFilterIndex = (filterIndex + 1) % GOAL_STATUS_FILTERS.length;
+      setMenuStatusFilter(undefined);
       setFilterIndex(nextFilterIndex);
       setSelectedIndex(0);
       return;
@@ -93,6 +110,7 @@ export function GoalsScreen(): React.ReactElement {
     if (key.leftArrow) {
       const nextFilterIndex =
         filterIndex === 0 ? GOAL_STATUS_FILTERS.length - 1 : filterIndex - 1;
+      setMenuStatusFilter(undefined);
       setFilterIndex(nextFilterIndex);
       setSelectedIndex(0);
       return;

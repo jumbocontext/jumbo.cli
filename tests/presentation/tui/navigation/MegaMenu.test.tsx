@@ -1,8 +1,12 @@
 import React from "react";
 import { describe, expect, it, jest } from "@jest/globals";
+import { Box, Text } from "ink";
 import { render } from "ink-testing-library";
 import { MegaMenu } from "../../../../src/presentation/tui/navigation/MegaMenu.js";
-import { MEGA_MENU_SECTIONS } from "../../../../src/presentation/tui/navigation/MegaMenuDefinitions.js";
+import {
+  MEGA_MENU_GOAL_STATUS_FILTERS,
+  MEGA_MENU_SECTIONS,
+} from "../../../../src/presentation/tui/navigation/MegaMenuDefinitions.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -33,6 +37,26 @@ describe("MegaMenu", () => {
       expect(lastFrame()).toContain("┌");
     });
 
+    it("paints an opaque panel over underlying content", () => {
+      const { lastFrame } = render(
+        <Box width={100} flexDirection="column" position="relative">
+          <Text>
+            UNDERLYING CONTENT SHOULD NOT BLEED THROUGH THE MEGA MENU PANEL
+          </Text>
+          <Text>
+            MORE UNDERLYING CONTENT SHOULD NOT BLEED THROUGH THE MENU COLUMNS
+          </Text>
+          <Box position="absolute" width="100%">
+            <MegaMenu {...defaultProps} />
+          </Box>
+        </Box>,
+      );
+
+      expect(lastFrame()).toContain("Navigate");
+      expect(lastFrame()).not.toContain("UNDERLYING CONTENT");
+      expect(lastFrame()).not.toContain("MORE UNDERLYING CONTENT");
+    });
+
     it("shows selector glyph on the highlighted section", () => {
       const { lastFrame } = render(<MegaMenu {...defaultProps} />);
       expect(lastFrame()).toContain("▸");
@@ -54,15 +78,14 @@ describe("MegaMenu", () => {
   });
 
   describe("level 2 rendering", () => {
-    it("renders level 2 items for the highlighted section", () => {
+    it("does not render lower-level items for Cockpit", () => {
       const { lastFrame } = render(<MegaMenu {...defaultProps} />);
-      const children = MEGA_MENU_SECTIONS[0].children;
-      for (const child of children) {
-        expect(lastFrame()).toContain(child.label);
-      }
+
+      expect(lastFrame()).not.toContain("Project Overview");
+      expect(lastFrame()).not.toContain("Goal Summary");
     });
 
-    it("renders level 2 items for a different section when highlighted", async () => {
+    it("renders level 2 items for Goals when highlighted", async () => {
       const { lastFrame, stdin } = render(<MegaMenu {...defaultProps} />);
       stdin.write("\x1B[B");
       await tick();
@@ -74,9 +97,11 @@ describe("MegaMenu", () => {
   });
 
   describe("level 3 rendering", () => {
-    it("renders level 3 items for the highlighted level 2 item", () => {
-      const { lastFrame } = render(<MegaMenu {...defaultProps} />);
-      const level3Items = MEGA_MENU_SECTIONS[0].children[0].children!;
+    it("renders level 3 items for the highlighted Goals item", async () => {
+      const { lastFrame, stdin } = render(<MegaMenu {...defaultProps} />);
+      stdin.write("\x1B[B");
+      await tick();
+      const level3Items = MEGA_MENU_SECTIONS[1].children[0].children!;
       for (const item of level3Items) {
         expect(lastFrame()).toContain(item.label);
       }
@@ -126,9 +151,11 @@ describe("MegaMenu", () => {
       const { lastFrame, stdin } = render(
         <MegaMenu {...defaultProps} terminalWidth={120} />,
       );
+      stdin.write("\x1B[B");
+      await tick();
       stdin.write("\x1B[C");
       await tick();
-      const firstChild = MEGA_MENU_SECTIONS[0].children[0];
+      const firstChild = MEGA_MENU_SECTIONS[1].children[0];
       expect(lastFrame()).toContain(`▸ ${firstChild.label}`);
     });
 
@@ -136,11 +163,13 @@ describe("MegaMenu", () => {
       const { lastFrame, stdin } = render(
         <MegaMenu {...defaultProps} terminalWidth={120} />,
       );
-      stdin.write("\x1B[C");
+      stdin.write("\x1B[B");
       await tick();
       stdin.write("\x1B[C");
       await tick();
-      const firstGrandchild = MEGA_MENU_SECTIONS[0].children[0].children![0];
+      stdin.write("\x1B[C");
+      await tick();
+      const firstGrandchild = MEGA_MENU_SECTIONS[1].children[0].children![0];
       expect(lastFrame()).toContain(`▸ ${firstGrandchild.label}`);
     });
 
@@ -148,22 +177,26 @@ describe("MegaMenu", () => {
       const { lastFrame, stdin } = render(
         <MegaMenu {...defaultProps} terminalWidth={120} />,
       );
+      stdin.write("\x1B[B");
+      await tick();
       stdin.write("\x1B[C");
       await tick();
       stdin.write("\x1B[D");
       await tick();
-      expect(lastFrame()).toContain("▸ [Cockpit]");
+      expect(lastFrame()).toContain("▸ Goals");
     });
 
     it("navigates vertically within level 2", async () => {
       const { lastFrame, stdin } = render(
         <MegaMenu {...defaultProps} terminalWidth={120} />,
       );
+      stdin.write("\x1B[B");
+      await tick();
       stdin.write("\x1B[C");
       await tick();
       stdin.write("\x1B[B");
       await tick();
-      const secondChild = MEGA_MENU_SECTIONS[0].children[1];
+      const secondChild = MEGA_MENU_SECTIONS[1].children[1];
       expect(lastFrame()).toContain(`▸ ${secondChild.label}`);
     });
   });
@@ -178,7 +211,49 @@ describe("MegaMenu", () => {
       await tick();
       stdin.write("\r");
       await tick();
-      expect(onScreenSelect).toHaveBeenCalledWith(1);
+      expect(onScreenSelect).toHaveBeenCalledWith({ screenIndex: 1 });
+    });
+
+    it("selects a Goals group with its grouped status filter", async () => {
+      const onScreenSelect = jest.fn();
+      const { stdin } = render(
+        <MegaMenu {...defaultProps} onScreenSelect={onScreenSelect} />,
+      );
+
+      stdin.write("\x1B[B");
+      await tick();
+      stdin.write("\x1B[C");
+      await tick();
+      stdin.write("\r");
+      await tick();
+
+      expect(onScreenSelect).toHaveBeenCalledWith({
+        screenIndex: 1,
+        goalStatusFilter: MEGA_MENU_GOAL_STATUS_FILTERS.backlog,
+      });
+    });
+
+    it("selects a Goals leaf with its leaf status filter", async () => {
+      const onScreenSelect = jest.fn();
+      const { stdin } = render(
+        <MegaMenu {...defaultProps} onScreenSelect={onScreenSelect} />,
+      );
+
+      stdin.write("\x1B[B");
+      await tick();
+      stdin.write("\x1B[C");
+      await tick();
+      stdin.write("\x1B[C");
+      await tick();
+      stdin.write("\x1B[B");
+      await tick();
+      stdin.write("\r");
+      await tick();
+
+      expect(onScreenSelect).toHaveBeenCalledWith({
+        screenIndex: 1,
+        goalStatusFilter: MEGA_MENU_GOAL_STATUS_FILTERS.refined,
+      });
     });
 
     it("does not select Memory at level 1 and drills into entity pages instead", async () => {
@@ -204,7 +279,7 @@ describe("MegaMenu", () => {
       stdin.write("\r");
       await tick();
 
-      expect(onScreenSelect).toHaveBeenCalledWith(2);
+      expect(onScreenSelect).toHaveBeenCalledWith({ screenIndex: 2 });
     });
 
     it("does not respond to number key presses", () => {
@@ -233,9 +308,11 @@ describe("MegaMenu", () => {
       const { lastFrame, stdin } = render(
         <MegaMenu {...defaultProps} onClose={onClose} terminalWidth={120} />,
       );
+      stdin.write("\x1B[B");
+      await tick();
       stdin.write("\x1B[C");
       await tick();
-      const firstChild = MEGA_MENU_SECTIONS[0].children[0];
+      const firstChild = MEGA_MENU_SECTIONS[1].children[0];
       expect(lastFrame()).toContain(`▸ ${firstChild.label}`);
       stdin.write("\x1B");
       await tick();

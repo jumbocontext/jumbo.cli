@@ -13,6 +13,10 @@ describe("FooterShortcutDescriptor", () => {
     expect(FooterShortcut.NOTIFICATIONS).toEqual({ char: "n" });
   });
 
+  it("defines the MegaMenu shortcut descriptor", () => {
+    expect(FooterShortcut.MEGA_MENU).toEqual({ char: "m", label: "menu" });
+  });
+
   it("models contextual shortcuts as shortcuts with labels", () => {
     const contextualShortcut: FooterContextualShortcutDescriptor = {
       char: "g",

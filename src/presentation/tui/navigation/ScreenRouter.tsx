@@ -10,9 +10,10 @@ import { DependenciesScreen } from "../memory/dependencies/DependenciesScreen.js
 import { GoalsScreen } from "../goals/GoalsScreen.js";
 import { GuidelinesScreen } from "../memory/guidelines/GuidelinesScreen.js";
 import { InvariantsScreen } from "../memory/invariants/InvariantsScreen.js";
-import { SessionScreen } from "../sessions/SessionScreen.js";
+import { SettingsScreen } from "../settings/SettingsScreen.js";
 import type { ProjectLifecycleState } from "../../../application/context/project/ProjectLifecycleState.js";
 import type { ISettingsReader } from "../../../application/settings/ISettingsReader.js";
+import type { GoalStatusType } from "../../../domain/goals/Constants.js";
 
 interface ScreenRouterProps {
   activeScreenIndex: number;
@@ -23,6 +24,7 @@ interface ScreenRouterProps {
   launchAnimationEnabled?: boolean;
   bannerAnimationComplete?: boolean;
   billboardAnimationComplete?: boolean;
+  goalStatusFilter?: readonly GoalStatusType[];
   onBannerAnimationComplete?: () => void;
   onBillboardAnimationComplete?: () => void;
   settingsReader?: Pick<ISettingsReader, "read" | "write">;
@@ -39,7 +41,7 @@ const SCREEN_COMPONENTS: Record<
   goals: GoalsScreen,
   guidelines: GuidelinesScreen,
   invariants: InvariantsScreen,
-  session: SessionScreen,
+  settings: SettingsScreen,
 };
 
 const MEMORY_SCREEN_KEYS = new Set([
@@ -59,6 +61,7 @@ export function ScreenRouter({
   launchAnimationEnabled = true,
   bannerAnimationComplete,
   billboardAnimationComplete,
+  goalStatusFilter,
   onBannerAnimationComplete,
   onBillboardAnimationComplete,
   settingsReader,
@@ -100,6 +103,10 @@ export function ScreenRouter({
       case "invariants":
         return <InvariantsScreen shortcutsEnabled={shortcutsEnabled} />;
     }
+  }
+
+  if (definition?.key === "goals") {
+    return <GoalsScreen statusFilter={goalStatusFilter} />;
   }
 
   return <ScreenComponent />;

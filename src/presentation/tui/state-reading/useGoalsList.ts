@@ -8,7 +8,7 @@ import type { StateSnapshot } from "./StateSnapshot.js";
 import { useTickingReadModel } from "./useTickingReadModel.js";
 
 export function useGoalsList(
-  statusFilter?: GoalStatusType,
+  statusFilter?: readonly GoalStatusType[],
 ): StateSnapshot<GetGoalsResponse> {
   const context = useContext(StateReaderContext);
   const controller = context?.controllers.getGoalsController;
@@ -20,7 +20,7 @@ export function useGoalsList(
       }
 
       const request: GetGoalsRequest =
-        statusFilter === undefined ? {} : { statuses: [statusFilter] };
+        statusFilter === undefined ? {} : { statuses: [...statusFilter] };
       return controller.handle(request);
     }, [controller, statusFilter]),
     controller === undefined

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **TUI Mega Menu**: Restored the `m` / `M` footer shortcut and overlay navigation menu, with goal-status menu entries that route directly into filtered Goals views and a Settings placeholder route.
+
+### Fixed
+
+- **TUI shortcut ownership**: The restored Mega Menu shortcut now stays disabled while another overlay, drawer, wizard, or text-entry flow owns input.
+
 ## [3.11.0] - 2026-06-24
 
 ### Added

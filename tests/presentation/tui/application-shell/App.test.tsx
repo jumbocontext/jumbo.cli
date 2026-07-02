@@ -135,15 +135,28 @@ describe("App", () => {
     unmount();
   });
 
-  it("does not open the MegaMenu when m is pressed", async () => {
+  it("opens the MegaMenu from the lowercase global shortcut", async () => {
     const { stdin, lastFrame, unmount } = render(
       <App settingsReader={hiddenLaunchpadWelcomeSettingsReader()} />,
     );
-    const before = lastFrame();
+
     stdin.write("m");
-    await tick();
-    expect(lastFrame()).toBe(before);
-    expect(lastFrame()).not.toContain("Navigate");
+    await waitForFrame(lastFrame, (frame) => frame.includes("Navigate"));
+
+    expect(lastFrame()).toContain("Navigate");
+    expect(lastFrame()).toContain("[Cockpit]");
+    unmount();
+  });
+
+  it("opens the MegaMenu from the uppercase global shortcut", async () => {
+    const { stdin, lastFrame, unmount } = render(
+      <App settingsReader={hiddenLaunchpadWelcomeSettingsReader()} />,
+    );
+
+    stdin.write("M");
+    await waitForFrame(lastFrame, (frame) => frame.includes("Navigate"));
+
+    expect(lastFrame()).toContain("Navigate");
     unmount();
   });
 
@@ -226,27 +239,6 @@ describe("App", () => {
     stdin.write("g");
     await waitForFrame(lastFrame, (frame) => frame.includes("Author Goal"));
     expect(lastFrame()).not.toContain("create goal");
-    unmount();
-  }, 10000);
-
-  it("keeps launchpad footer badges visible when the disabled menu key is pressed", async () => {
-    const { stdin, lastFrame, unmount } = render(
-      <App
-        settingsReader={hiddenLaunchpadWelcomeSettingsReader()}
-        stateReaderControllers={{
-          getProjectSummaryQueryHandler: projectSummaryController("primed"),
-        }}
-      />,
-    );
-
-    await waitForFrame(lastFrame, (frame) => frame.includes("EVENTS//"));
-    expect(lastFrame()).toContain("create goal");
-
-    stdin.write("m");
-    await tick();
-
-    expect(lastFrame()).not.toContain("Navigate");
-    expect(lastFrame()).toContain("create goal");
     unmount();
   }, 10000);
 
@@ -396,6 +388,54 @@ describe("App", () => {
     expect(lastFrame()).toContain("Author Goal");
     expect(lastFrame()).not.toContain("Navigate");
     expect(lastFrame()).not.toContain("Notifications");
+    unmount();
+  }, 10000);
+
+  it("does not open the MegaMenu while search owns text input", async () => {
+    const searchController = {
+      handle: jest.fn(async () => ({ hits: [], groups: [] })),
+    };
+    const { stdin, lastFrame, unmount } = render(
+      <App
+        settingsReader={hiddenLaunchpadWelcomeSettingsReader()}
+        stateReaderControllers={{
+          searchController,
+        }}
+      />,
+    );
+
+    stdin.write("/");
+    await waitForFrame(lastFrame, (frame) => frame.includes("search memory"));
+
+    stdin.write("m");
+    await waitForFrame(
+      lastFrame,
+      () => searchController.handle.mock.calls.length > 0,
+    );
+
+    expect(searchController.handle).toHaveBeenCalledWith({
+      criteria: {
+        query: "m",
+        limit: expect.any(Number),
+      },
+    });
+    expect(lastFrame()).not.toContain("Navigate");
+    unmount();
+  }, 10000);
+
+  it("does not open the MegaMenu while the notification drawer owns input", async () => {
+    const { stdin, lastFrame, unmount } = render(
+      <App settingsReader={hiddenLaunchpadWelcomeSettingsReader()} />,
+    );
+
+    stdin.write("n");
+    await waitForFrame(lastFrame, (frame) => frame.includes("Notifications"));
+
+    stdin.write("M");
+    await tick();
+
+    expect(lastFrame()).toContain("Notifications");
+    expect(lastFrame()).not.toContain("Navigate");
     unmount();
   }, 10000);
 

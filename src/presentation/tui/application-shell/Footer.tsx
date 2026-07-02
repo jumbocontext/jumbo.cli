@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { BaseColors, TuiGlyphs } from "../../shared/DesignTokens.js";
 import { KeyBadge } from "../ui-primitives/KeyBadge.js";
@@ -20,6 +20,7 @@ interface FooterProps {
   contextualShortcuts?: readonly FooterContextualShortcutDescriptor[];
   notifications?: readonly NotificationDrawerNotification[];
   onNotificationAction?: (id: string) => void;
+  onNotificationDrawerOpenChange?: (isOpen: boolean) => void;
 }
 
 export function Footer({
@@ -28,6 +29,7 @@ export function Footer({
   contextualShortcuts = [],
   notifications = [],
   onNotificationAction,
+  onNotificationDrawerOpenChange,
 }: FooterProps): React.ReactElement {
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
   const { dismissedNotificationIds, handleDismissNotification } =
@@ -43,6 +45,13 @@ export function Footer({
   const unreadNotificationCount = FooterUnreadNotificationCounter(
     visibleNotifications,
   );
+  const updateNotificationDrawerOpen = useCallback(
+    (isOpen: boolean) => {
+      setNotificationDrawerOpen(isOpen);
+      onNotificationDrawerOpenChange?.(isOpen);
+    },
+    [onNotificationDrawerOpenChange],
+  );
 
   useInput((input) => {
     if (!shortcutsEnabled) {
@@ -53,7 +62,8 @@ export function Footer({
       input === FooterShortcut.NOTIFICATIONS.char ||
       input === FooterShortcut.NOTIFICATIONS.char.toUpperCase()
     ) {
-      setNotificationDrawerOpen((isOpen) => !isOpen);
+      const nextOpen = !notificationDrawerOpen;
+      updateNotificationDrawerOpen(nextOpen);
     }
   });
 
@@ -64,7 +74,7 @@ export function Footer({
           notifications={visibleNotifications}
           onDismiss={handleDismissNotification}
           onAction={onNotificationAction}
-          onClose={() => setNotificationDrawerOpen(false)}
+          onClose={() => updateNotificationDrawerOpen(false)}
           terminalWidth={terminalWidth}
         />
       )}
@@ -73,6 +83,10 @@ export function Footer({
           <KeyBadge
             char={FooterShortcut.QUIT.char}
             label={FooterShortcut.QUIT.label}
+          />
+          <KeyBadge
+            char={FooterShortcut.MEGA_MENU.char}
+            label={FooterShortcut.MEGA_MENU.label}
           />
           {contextualShortcuts.map((shortcut) => (
             <KeyBadge

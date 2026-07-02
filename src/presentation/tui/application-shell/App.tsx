@@ -3,6 +3,8 @@ import { Box, useApp, useInput, useStdout } from "ink";
 import { Header } from "./Header.js";
 import { Footer } from "./Footer.js";
 import { ScreenRouter } from "../navigation/ScreenRouter.js";
+import { MegaMenu } from "../navigation/MegaMenu.js";
+import type { MegaMenuScreenSelection } from "../navigation/MegaMenu.js";
 import { SearchOverlay } from "../search/SearchOverlay.js";
 import { InitFlow } from "../project-initialization/InitFlow.js";
 import type { InitFlowActionControllers } from "../project-initialization/InitFlow.js";
@@ -26,6 +28,7 @@ import type { AddGoalRequest } from "../../../application/context/goals/add/AddG
 import type { AddGoalResponse } from "../../../application/context/goals/add/AddGoalResponse.js";
 import type { ProjectLifecycleState } from "../../../application/context/project/ProjectLifecycleState.js";
 import type { ISettingsReader } from "../../../application/settings/ISettingsReader.js";
+import type { GoalStatusType } from "../../../domain/goals/Constants.js";
 import { ProjectLifecycle } from "../../../domain/project/Constants.js";
 import { SubprocessStatus } from "../daemon-subprocesses/SubprocessStatus.js";
 import {
@@ -189,6 +192,10 @@ function AppFrame({
   const [initFlowOpen, setInitFlowOpen] = useState(false);
   const [goalAuthoringOpen, setGoalAuthoringOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
+  const [goalStatusFilter, setGoalStatusFilter] =
+    useState<readonly GoalStatusType[] | undefined>(undefined);
   const [goalAuthoringError, setGoalAuthoringError] = useState<string | null>(null);
   const [goalAuthoringWorking, setGoalAuthoringWorking] = useState(false);
   const [lifecycleRouteOverride, setLifecycleRouteOverride] =
@@ -219,12 +226,15 @@ function AppFrame({
   const initShortcutEnabled =
     !projectContext.loading &&
     projectLifecycleState === ProjectLifecycle.UNINITIALIZED;
-  const frameShortcutsEnabled =
-    !initFlowOpen && !goalAuthoringOpen && !searchOpen;
+  const footerShortcutsEnabled =
+    !initFlowOpen && !goalAuthoringOpen && !searchOpen && !megaMenuOpen;
+  const contentShortcutsEnabled =
+    footerShortcutsEnabled && !notificationDrawerOpen;
   const cockpitLaunchpadVisible =
     !initFlowOpen &&
     !goalAuthoringOpen &&
     !searchOpen &&
+    !megaMenuOpen &&
     activeScreenIndex === DEFAULT_SCREEN_INDEX &&
     routedProjectLifecycleState === ProjectLifecycle.PRIMED;
   const goalAuthoringShortcutEnabled =
@@ -309,7 +319,7 @@ function AppFrame({
   }, [cliUpgradeWorking]);
 
   useInput((input) => {
-    if (initFlowOpen || goalAuthoringOpen || searchOpen) {
+    if (!contentShortcutsEnabled) {
       return;
     }
     if (input === "q") {
@@ -318,10 +328,9 @@ function AppFrame({
     if (input === AppShortcut.SEARCH.char) {
       setSearchOpen(true);
     }
-    // MegaMenu is preserved for iteration but hidden from production users.
-    // if (input === "m" || input === "M") {
-    //   setMegaMenuOpen(true);
-    // }
+    if (input === "m" || input === "M") {
+      setMegaMenuOpen(true);
+    }
     if (initShortcutEnabled && (input === "i" || input === "I")) {
       setInitFlowOpen(true);
     }
@@ -447,6 +456,15 @@ function AppFrame({
     setBillboardAnimationComplete(true);
   }, []);
 
+  const handleMegaMenuScreenSelect = useCallback(
+    (selection: MegaMenuScreenSelection) => {
+      setActiveScreenIndex(selection.screenIndex);
+      setGoalStatusFilter(selection.goalStatusFilter);
+      setMegaMenuOpen(false);
+    },
+    [],
+  );
+
   return (
     <Box flexDirection="column" width={columns} height={rows}>
       <Box flexShrink={0}>
@@ -462,9 +480,10 @@ function AppFrame({
           <ScreenRouter
             activeScreenIndex={activeScreenIndex}
             projectLifecycleState={routedProjectLifecycleState}
-            shortcutsEnabled={frameShortcutsEnabled}
+            shortcutsEnabled={contentShortcutsEnabled}
             terminalWidth={columns}
             terminalHeight={Math.max(1, rows - FRAME_CHROME_ROWS)}
+            goalStatusFilter={goalStatusFilter}
             settingsReader={settingsReader}
             launchAnimationEnabled={launchAnimationEnabled}
             bannerAnimationComplete={bannerAnimationComplete}
@@ -473,6 +492,21 @@ function AppFrame({
             onBillboardAnimationComplete={handleBillboardAnimationComplete}
           />
         </Box>
+        {megaMenuOpen && (
+          <Box
+            position="absolute"
+            width="100%"
+            height="100%"
+            flexDirection="column"
+          >
+            <MegaMenu
+              activeScreenIndex={activeScreenIndex}
+              onScreenSelect={handleMegaMenuScreenSelect}
+              onClose={() => setMegaMenuOpen(false)}
+              terminalWidth={columns}
+            />
+          </Box>
+        )}
         {initFlowOpen && (
           <Box
             position="absolute"
@@ -520,7 +554,7 @@ function AppFrame({
       <Box flexShrink={0}>
         <Footer
           terminalWidth={columns}
-          shortcutsEnabled={frameShortcutsEnabled}
+          shortcutsEnabled={footerShortcutsEnabled}
           contextualShortcuts={
             searchOpen
               ? []
@@ -536,6 +570,7 @@ function AppFrame({
             cliUpgradeProgressFrame,
           )}
           onNotificationAction={handleNotificationAction}
+          onNotificationDrawerOpenChange={setNotificationDrawerOpen}
         />
       </Box>
     </Box>

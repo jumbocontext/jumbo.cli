@@ -11,6 +11,10 @@ export const FooterShortcut = {
     char: "q",
     label: "quit",
   },
+  MEGA_MENU: {
+    char: "m",
+    label: "menu",
+  },
   NOTIFICATIONS: {
     char: "n",
   },

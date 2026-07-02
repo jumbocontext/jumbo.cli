@@ -14,12 +14,18 @@ import {
   MAX_MENU_DEPTH,
 } from "./MegaMenuDefinitions.js";
 import type { MegaMenuItem, MegaMenuSection } from "./MegaMenuDefinitions.js";
+import type { GoalStatusType } from "../../../domain/goals/Constants.js";
 
 interface MegaMenuProps {
   activeScreenIndex: number;
-  onScreenSelect: (index: number) => void;
+  onScreenSelect: (selection: MegaMenuScreenSelection) => void;
   onClose: () => void;
   terminalWidth: number;
+}
+
+export interface MegaMenuScreenSelection {
+  readonly screenIndex: number;
+  readonly goalStatusFilter?: readonly GoalStatusType[];
 }
 
 const COLUMN_WIDTH = 24;
@@ -102,6 +108,22 @@ function getItemsAtLevel(
   return items;
 }
 
+function getRenderedLevels(
+  highlightedIndices: readonly number[],
+): readonly number[] {
+  const levels: number[] = [];
+
+  for (let level = 0; level < MAX_MENU_DEPTH; level += 1) {
+    const items = getItemsAtLevel(level, highlightedIndices);
+    if (items.length === 0) {
+      break;
+    }
+    levels.push(level);
+  }
+
+  return levels;
+}
+
 function MenuColumn({
   items,
   highlightedIndex,
@@ -180,7 +202,14 @@ export function MegaMenu({
       if (highlightedItem?.screenKey) {
         const screenIndex = screenIndexForKey(highlightedItem.screenKey);
         if (screenIndex >= 0) {
-          onScreenSelect(screenIndex);
+          onScreenSelect(
+            highlightedItem.goalStatusFilter === undefined
+              ? { screenIndex }
+              : {
+                  screenIndex,
+                  goalStatusFilter: highlightedItem.goalStatusFilter,
+                },
+          );
         }
         return;
       }
@@ -240,10 +269,13 @@ export function MegaMenu({
 
   });
 
+  const renderedLevels = getRenderedLevels(highlightedIndices);
+
   return (
     <Box
       flexDirection="column"
       width={terminalWidth}
+      backgroundColor={SemanticColors.surface}
       borderStyle="single"
       borderColor={SemanticColors.muted}
       paddingX={1}
@@ -254,16 +286,8 @@ export function MegaMenu({
         </Text>
       </Box>
       <Box>
-        {[0, 1, 2].map((level) => {
+        {renderedLevels.map((level) => {
           const items = getItemsAtLevel(level, highlightedIndices);
-          if (items.length === 0) {
-            return (
-              <Box key={level} width={COLUMN_WIDTH}>
-                <Text color={SemanticColors.muted}> </Text>
-              </Box>
-            );
-          }
-
           return (
             <React.Fragment key={level}>
               {level > 0 && (

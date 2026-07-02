@@ -135,6 +135,8 @@ jumbo goal add \
 
 If you are using the TUI, run `jumbo` and press `g` from the primed-empty Cockpit screen to open the same goal authoring flow without leaving the interface.
 
+You can also press `m` anywhere the main TUI frame owns input to open the Mega Menu. Use the arrow keys and Enter to navigate between Cockpit, Goals, Memory, and Settings. Goal menu entries such as Backlog, Active, and Archive open the Goals screen with the matching status filter already applied.
+
 Output:
 
 ```

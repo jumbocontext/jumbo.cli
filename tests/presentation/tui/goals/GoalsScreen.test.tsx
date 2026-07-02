@@ -3,6 +3,8 @@ import { describe, expect, it } from "@jest/globals";
 import { render } from "ink-testing-library";
 import { GoalsScreen } from "../../../../src/presentation/tui/goals/GoalsScreen.js";
 import { StateReaderProvider } from "../../../../src/presentation/tui/state-reading/StateReader.js";
+import { GoalStatus } from "../../../../src/domain/goals/Constants.js";
+import type { GoalStatusType } from "../../../../src/domain/goals/Constants.js";
 
 async function waitForFrame(readFrame: () => string | undefined, text: string) {
   for (let attempt = 0; attempt < 20; attempt += 1) {
@@ -13,35 +15,44 @@ async function waitForFrame(readFrame: () => string | undefined, text: string) {
   return readFrame() ?? "";
 }
 
-function renderGoalsScreen(): ReturnType<typeof render> {
+function renderGoalsScreen(
+  options: {
+    readonly statusFilter?: readonly GoalStatusType[];
+    readonly handledRequests?: unknown[];
+  } = {},
+): ReturnType<typeof render> {
+  const handledRequests = options.handledRequests;
   return render(
     <StateReaderProvider
       controllers={{
         getGoalsController: {
-          handle: async () => ({
-            goals: [
-              {
-                goalId: "goal_real",
-                title: "Real goal",
-                objective: "Render a goal from GetGoalsResponse",
-                successCriteria: ["Goal response rendered"],
-                scopeIn: ["src/presentation/tui/goals"],
-                scopeOut: ["src/domain"],
-                status: "doing",
-                version: 1,
-                createdAt: "2026-05-15T00:00:00.000Z",
-                updatedAt: "2026-05-15T00:00:00.000Z",
-                progress: ["Wired to response"],
-                prerequisiteGoals: ["goal_dependency"],
-                nextGoalId: "goal_next",
-              },
-            ],
-          }),
+          handle: async (request: unknown) => {
+            handledRequests?.push(request);
+            return {
+              goals: [
+                {
+                  goalId: "goal_real",
+                  title: "Real goal",
+                  objective: "Render a goal from GetGoalsResponse",
+                  successCriteria: ["Goal response rendered"],
+                  scopeIn: ["src/presentation/tui/goals"],
+                  scopeOut: ["src/domain"],
+                  status: "doing",
+                  version: 1,
+                  createdAt: "2026-05-15T00:00:00.000Z",
+                  updatedAt: "2026-05-15T00:00:00.000Z",
+                  progress: ["Wired to response"],
+                  prerequisiteGoals: ["goal_dependency"],
+                  nextGoalId: "goal_next",
+                },
+              ],
+            };
+          },
         },
       }}
       options={{ tickMs: 0 }}
     >
-      <GoalsScreen />
+      <GoalsScreen statusFilter={options.statusFilter} />
     </StateReaderProvider>,
   );
 }
@@ -81,6 +92,21 @@ describe("GoalsScreen", () => {
 
     expect(lastFrame()).toContain("Author Goal");
     expect(lastFrame()).toContain("Objective");
+    unmount();
+  });
+
+  it("passes a supplied menu status filter to the goals reader", async () => {
+    const handledRequests: unknown[] = [];
+    const { lastFrame, unmount } = renderGoalsScreen({
+      statusFilter: [GoalStatus.TODO, GoalStatus.REFINED],
+      handledRequests,
+    });
+
+    await waitForFrame(lastFrame, "Real goal");
+
+    expect(handledRequests).toEqual([
+      { statuses: [GoalStatus.TODO, GoalStatus.REFINED] },
+    ]);
     unmount();
   });
 });
