@@ -5,7 +5,6 @@ import type { DependencyView } from "../../../../application/context/dependencie
 
 const DEPENDENCIES_SCREEN_COPY = {
   title: "Dependencies",
-  subtitle: "Focused dependency memory list and selected dependency detail",
 } as const;
 
 interface DependenciesScreenProps {
@@ -21,7 +20,6 @@ export function DependenciesScreen(
     <MemoryEntityScreen
       entityType="dependency"
       title={DEPENDENCIES_SCREEN_COPY.title}
-      subtitle={DEPENDENCIES_SCREEN_COPY.subtitle}
       rows={(dependenciesList.data?.dependencies ?? []).map(toDependencyEntityRow)}
       loading={dependenciesList.loading}
       error={dependenciesList.error}

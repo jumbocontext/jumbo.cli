@@ -5,7 +5,6 @@ import type { DecisionView } from "../../../../application/context/decisions/Dec
 
 const DECISIONS_SCREEN_COPY = {
   title: "Decisions",
-  subtitle: "Focused decision memory list and selected decision detail",
 } as const;
 
 interface DecisionsScreenProps {
@@ -21,7 +20,6 @@ export function DecisionsScreen(
     <MemoryEntityScreen
       entityType="decision"
       title={DECISIONS_SCREEN_COPY.title}
-      subtitle={DECISIONS_SCREEN_COPY.subtitle}
       rows={(decisionsList.data?.decisions ?? []).map(toDecisionEntityRow)}
       loading={decisionsList.loading}
       error={decisionsList.error}

@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { SemanticColors } from "../../../shared/DesignTokens.js";
 import { KeyBadge } from "../../ui-primitives/KeyBadge.js";
-import { Panel } from "../../ui-primitives/Panel.js";
-import { EntityColumn } from "./EntityColumn.js";
+import { HorizontalRule } from "../../ui-primitives/HorizontalRule.js";
 import { EntityDetailView } from "./EntityDetailView.js";
 import type {
   ComponentEntityRow,
@@ -15,36 +14,17 @@ import type {
   MemoryEntityType,
 } from "./MemoryEntityShapes.js";
 
-const LIST_WIDTH = 46;
-const DETAIL_WIDTH = 78;
-const LOADING_ENTRY_ID = "loading";
+const EMPTY_POSITION_INDICATOR = "0/0";
 const MEMORY_ENTITY_SCREEN_COPY = {
-  listTitleSuffix: "List",
+  showingLabel: "Showing:",
+  scrollBadge: "↑↓",
   loadingPrefix: "Loading",
-  readErrorTitle: "Read Error",
-  eventReplayTitle: "Event Replay",
-  actionHintsTitle: "Action Hints",
-  currentStatePrefix: "Current state",
-  eventLabel: "event",
-  eventReplayEvents: [
-    "Loaded entity read model",
-    "Selected entity row",
-    "Rendered projected detail view",
-  ],
-  actionHints: {
-    select: "select",
-    previousEvent: "previous event",
-    nextEvent: "next event",
-  },
+  emptySuffix: "available",
 } as const;
-const MEMORY_REPLAY_EVENTS = [
-  ...MEMORY_ENTITY_SCREEN_COPY.eventReplayEvents,
-] as const;
 
 interface MemoryEntityScreenProps {
   readonly entityType: MemoryEntityType;
   readonly title: string;
-  readonly subtitle: string;
   readonly rows: readonly MemoryEntityRow[];
   readonly loading?: boolean;
   readonly error?: Error | null;
@@ -54,115 +34,93 @@ interface MemoryEntityScreenProps {
 export function MemoryEntityScreen({
   entityType,
   title,
-  subtitle,
   rows,
   loading = false,
   error = null,
   shortcutsEnabled = true,
 }: MemoryEntityScreenProps): React.ReactElement {
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [eventIndex, setEventIndex] = useState(0);
-  const selectedEntity = rows[selectedIndex];
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const focusedEntity = rows[focusedIndex] ?? rows[0];
+  const positionIndicator =
+    focusedEntity === undefined
+      ? EMPTY_POSITION_INDICATOR
+      : `${Math.min(focusedIndex, rows.length - 1) + 1}/${rows.length}`;
+
+  useEffect(() => {
+    setFocusedIndex((currentIndex) => {
+      if (rows.length === 0) {
+        return 0;
+      }
+
+      return Math.min(currentIndex, rows.length - 1);
+    });
+  }, [rows.length]);
 
   useInput(
-    (input, key) => {
-      if (key.downArrow && selectedIndex < rows.length - 1) {
-        setSelectedIndex(selectedIndex + 1);
+    (_input, key) => {
+      if (rows.length === 0) {
         return;
       }
 
-      if (key.upArrow && selectedIndex > 0) {
-        setSelectedIndex(selectedIndex - 1);
+      if (key.upArrow) {
+        setFocusedIndex((currentIndex) =>
+          wrapIndex(currentIndex - 1, rows.length),
+        );
         return;
       }
 
-      if (input === "]") {
-        setEventIndex((eventIndex + 1) % MEMORY_REPLAY_EVENTS.length);
-        return;
-      }
-
-      if (input === "[") {
-        const nextEventIndex =
-          eventIndex === 0 ? MEMORY_REPLAY_EVENTS.length - 1 : eventIndex - 1;
-        setEventIndex(nextEventIndex);
+      if (key.downArrow) {
+        setFocusedIndex((currentIndex) =>
+          wrapIndex(currentIndex + 1, rows.length),
+        );
       }
     },
     { isActive: shortcutsEnabled },
   );
 
   return (
-    <Box flexDirection="column" paddingX={1} paddingTop={1} gap={1}>
-      <Box flexDirection="column">
-        <Text color={SemanticColors.headline} bold>
+    <Box flexDirection="column" paddingTop={1}>
+      <Box flexDirection="column" paddingX={1}>
+        <Text color={SemanticColors.h2} bold>
           {title}
         </Text>
-        <Text color={SemanticColors.secondary}>{subtitle}</Text>
+
+        <Box>
+          <Text color={SemanticColors.label}>
+            {MEMORY_ENTITY_SCREEN_COPY.showingLabel}{" "}
+          </Text>
+          <Text color={SemanticColors.primary}>{positionIndicator}</Text>
+          <KeyBadge char={MEMORY_ENTITY_SCREEN_COPY.scrollBadge} />
+        </Box>
       </Box>
 
-      <Box gap={2}>
-        <EntityColumn
-          title={`${title} ${MEMORY_ENTITY_SCREEN_COPY.listTitleSuffix}`}
-          entries={
-            loading && rows.length === 0
-              ? [
-                  {
-                    id: LOADING_ENTRY_ID,
-                    label: `${MEMORY_ENTITY_SCREEN_COPY.loadingPrefix} ${title.toLowerCase()}`,
-                  },
-                ]
-              : rows.map((row) => ({
-                  id: row.id,
-                  label: labelForRow(entityType, row),
-                }))
-          }
-          selectedId={selectedEntity?.id}
-          isActive={true}
-          width={LIST_WIDTH}
-        />
+      <HorizontalRule color={SemanticColors.label} />
 
-        {error !== null && (
-          <Panel title={MEMORY_ENTITY_SCREEN_COPY.readErrorTitle} width={DETAIL_WIDTH}>
-            <Text color={SemanticColors.error}>{error.message}</Text>
-          </Panel>
-        )}
-
-        {error === null && selectedEntity && (
+      <Box flexDirection="column" paddingX={1}>
+        {error !== null ? (
+          <Text color={SemanticColors.error}>{error.message}</Text>
+        ) : loading && focusedEntity === undefined ? (
+          <Text color={SemanticColors.muted}>
+            {MEMORY_ENTITY_SCREEN_COPY.loadingPrefix} {title.toLowerCase()}
+          </Text>
+        ) : focusedEntity === undefined ? (
+          <Text color={SemanticColors.muted} italic>
+            No {title.toLowerCase()} {MEMORY_ENTITY_SCREEN_COPY.emptySuffix}
+          </Text>
+        ) : (
           <EntityDetailView
             entityType={entityType}
-            entity={selectedEntity}
-            width={DETAIL_WIDTH}
+            entity={focusedEntity}
+            heading={labelForRow(entityType, focusedEntity)}
           />
         )}
       </Box>
-
-      <Panel title={MEMORY_ENTITY_SCREEN_COPY.eventReplayTitle}>
-        <Box flexDirection="column">
-          <Text color={SemanticColors.primary}>
-            {MEMORY_ENTITY_SCREEN_COPY.currentStatePrefix}:{" "}
-            {MEMORY_ENTITY_SCREEN_COPY.eventLabel} {eventIndex + 1} of{" "}
-            {MEMORY_REPLAY_EVENTS.length}
-          </Text>
-          <Text color={SemanticColors.secondary}>
-            {MEMORY_REPLAY_EVENTS[eventIndex]}
-          </Text>
-        </Box>
-      </Panel>
-
-      <Panel title={MEMORY_ENTITY_SCREEN_COPY.actionHintsTitle}>
-        <Box gap={2}>
-          <KeyBadge char="↑↓" label={MEMORY_ENTITY_SCREEN_COPY.actionHints.select} />
-          <KeyBadge
-            char="["
-            label={MEMORY_ENTITY_SCREEN_COPY.actionHints.previousEvent}
-          />
-          <KeyBadge
-            char="]"
-            label={MEMORY_ENTITY_SCREEN_COPY.actionHints.nextEvent}
-          />
-        </Box>
-      </Panel>
     </Box>
   );
+}
+
+function wrapIndex(index: number, itemCount: number): number {
+  return (index + itemCount) % itemCount;
 }
 
 function labelForRow(entityType: MemoryEntityType, row: MemoryEntityRow): string {

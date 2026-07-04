@@ -5,7 +5,6 @@ import type { InvariantView } from "../../../../application/context/invariants/I
 
 const INVARIANTS_SCREEN_COPY = {
   title: "Invariants",
-  subtitle: "Focused invariant memory list and selected invariant detail",
 } as const;
 
 interface InvariantsScreenProps {
@@ -21,7 +20,6 @@ export function InvariantsScreen(
     <MemoryEntityScreen
       entityType="invariant"
       title={INVARIANTS_SCREEN_COPY.title}
-      subtitle={INVARIANTS_SCREEN_COPY.subtitle}
       rows={(invariantsList.data?.invariants ?? []).map(toInvariantEntityRow)}
       loading={invariantsList.loading}
       error={invariantsList.error}
