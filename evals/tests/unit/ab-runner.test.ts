@@ -134,7 +134,7 @@ function createMockExecutor(options?: {
       }
       if (command[0] === 'jumbo' && command[3] === '--format' && command[4] === 'json') {
         const kind = command[1];
-        const callKey = `${workDir}::${kind}`;
+        const callKey = `${workDir}:${kind}`;
         const count = (memoryListCallsByDirKind.get(callKey) ?? 0) + 1;
         memoryListCallsByDirKind.set(callKey, count);
         // Pre-snapshot is empty; post-snapshot and audit reads return the

@@ -5,7 +5,6 @@ import type { ComponentView } from "../../../../application/context/components/C
 
 const COMPONENTS_SCREEN_COPY = {
   title: "Components",
-  subtitle: "Focused component memory list and selected component detail",
 } as const;
 
 interface ComponentsScreenProps {
@@ -21,7 +20,6 @@ export function ComponentsScreen(
     <MemoryEntityScreen
       entityType="component"
       title={COMPONENTS_SCREEN_COPY.title}
-      subtitle={COMPONENTS_SCREEN_COPY.subtitle}
       rows={(componentsList.data?.components ?? []).map(toComponentEntityRow)}
       loading={componentsList.loading}
       error={componentsList.error}

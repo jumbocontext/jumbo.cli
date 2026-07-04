@@ -11,10 +11,11 @@ describe("Footer", () => {
     expect((lastFrame() ?? "").trim().length).toBeGreaterThan(0);
   });
 
-  it("does not advertise menu or help shortcuts", () => {
+  it("advertises the menu shortcut without restoring help", () => {
     const { lastFrame } = render(<Footer terminalWidth={80} />);
 
-    expect(lastFrame()).not.toContain("menu");
+    expect(lastFrame()).toContain(" m ");
+    expect(lastFrame()).toContain("menu");
     expect(lastFrame()).not.toContain("help");
     expect(lastFrame()).not.toContain(" h ");
   });
@@ -31,22 +32,31 @@ describe("Footer", () => {
     expect(lastFrame()).toContain("create goal");
   });
 
-  it("toggles the notification drawer with n", async () => {
+  it("toggles the notification drawer with i", async () => {
+    const { lastFrame, stdin } = render(<Footer terminalWidth={80} />);
+
+    stdin.write("i");
+    await tick();
+    expect(lastFrame()).toContain("Notifications");
+
+    stdin.write("i");
+    await tick();
+    expect(lastFrame()).not.toContain("Notifications");
+  });
+
+  it("does not toggle the notification drawer with n", async () => {
     const { lastFrame, stdin } = render(<Footer terminalWidth={80} />);
 
     stdin.write("n");
     await tick();
-    expect(lastFrame()).toContain("Notifications");
 
-    stdin.write("n");
-    await tick();
     expect(lastFrame()).not.toContain("Notifications");
   });
 
   it("renders an empty notification drawer without placeholder daemon alerts", async () => {
     const { lastFrame, stdin } = render(<Footer terminalWidth={80} />);
 
-    stdin.write("n");
+    stdin.write("i");
     await tick();
 
     expect(lastFrame()).toContain("No notifications");
@@ -57,7 +67,7 @@ describe("Footer", () => {
       <Footer terminalWidth={80} shortcutsEnabled={false} />,
     );
 
-    stdin.write("n");
+    stdin.write("i");
     await tick();
 
     expect(lastFrame()).not.toContain("Notifications");
@@ -84,7 +94,7 @@ describe("Footer", () => {
       />,
     );
 
-    stdin.write("n");
+    stdin.write("i");
     await tick();
     stdin.write("u");
     await tick();

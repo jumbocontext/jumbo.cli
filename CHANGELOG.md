@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **TUI Mega Menu**: Restored the `m` / `M` footer shortcut and overlay navigation menu, with goal-status menu entries that route directly into filtered Goals views and a Settings placeholder route.
+- **TUI Goals browser**: Remodeled the Goals screen into a single-goal browser — up/down arrows move between goals in the active state filter, left/right arrows page through every goal-show section (metadata, objective, note, review issues, success criteria, progress, scope, and related components, dependencies, decisions, invariants, and guidelines). Related-entity sections render each entry as a highlighted name with its description, truncated and paginated to stay within the viewport; related decisions show labeled Context and Rationale fields in full at two per page. The CLI `goal show` output now renders those same labeled decision fields.
+- **TUI memory screens**: Remodeled the Decisions, Components, Dependencies, Invariants, and Guidelines screens into a single-entity browser matching the Goals screen — a header shows the screen title and a current/total position indicator, up/down arrows scroll through the memories with wraparound, and a detail pane below renders every attribute of the focused entity in full, unabridged.
+
+### Fixed
+
+- **TUI shortcut ownership**: The restored Mega Menu shortcut now stays disabled while another overlay, drawer, wizard, or text-entry flow owns input.
+- **TUI hotkey collisions**: The footer notification drawer moved from `n` to `i`, so `n` on the Goals screen opens only the new-goal authoring flow. While a screen-local form such as the Goals authoring flow is capturing text, all shell-level hotkeys (quit, search, Mega Menu, notification drawer) are suppressed so typed characters never trigger navigation; on an uninitialized project, `i` opens only the init flow.
+- **TUI Goals screen authoring**: Submitting the goal authoring flow opened with `n`/`a` on the Goals screen now actually creates the goal — the entered values are dispatched to the add-goal controller and the goals list refreshes so the new goal appears immediately. Failed submissions keep the flow open with the error shown, instead of closing silently.
+
 ## [3.11.0] - 2026-06-24
 
 ### Added

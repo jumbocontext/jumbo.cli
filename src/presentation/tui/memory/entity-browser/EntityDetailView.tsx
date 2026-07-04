@@ -1,32 +1,34 @@
 import React from "react";
-import { DetailPane } from "../../ui-primitives/DetailPane.js";
+import { Box, Text } from "ink";
+import { SemanticColors, TuiGlyphs } from "../../../shared/DesignTokens.js";
 import type {
   ComponentEntityRow,
   DecisionEntityRow,
   DependencyEntityRow,
   GuidelineEntityRow,
   InvariantEntityRow,
+  MemoryEntityRow,
   MemoryEntityType,
 } from "./MemoryEntityShapes.js";
 
-const LIST_SEPARATOR = "\n";
+const DETAIL_LABEL_WIDTH = 15;
 const ENTITY_DETAIL_VIEW_COPY = {
-  titles: {
-    decision: "Decision Detail",
-    invariant: "Invariant Detail",
-    component: "Component Detail",
-    dependency: "Dependency Detail",
-    guideline: "Guideline Detail",
+  headlinePrefixes: {
+    decision: "DECISION:",
+    invariant: "INVARIANT:",
+    component: "COMPONENT:",
+    dependency: "DEPENDENCY:",
+    guideline: "GUIDELINE:",
   },
+  detailsHeading: "DETAILS:",
+  emptyFieldValue: "None",
   labels: {
-    id: "ID",
-    title: "Title",
+    id: "Id",
     context: "Context",
     rationale: "Rationale",
     alternatives: "Alternatives",
     consequences: "Consequences",
     description: "Description",
-    name: "Name",
     type: "Type",
     responsibility: "Responsibility",
     ecosystem: "Ecosystem",
@@ -41,13 +43,8 @@ const ENTITY_DETAIL_VIEW_COPY = {
 
 interface EntityDetailViewProps {
   readonly entityType: MemoryEntityType;
-  readonly entity:
-    | DecisionEntityRow
-    | InvariantEntityRow
-    | ComponentEntityRow
-    | DependencyEntityRow
-    | GuidelineEntityRow;
-  readonly width?: number;
+  readonly entity: MemoryEntityRow;
+  readonly heading: string;
 }
 
 interface DetailEntry {
@@ -58,45 +55,61 @@ interface DetailEntry {
 export function EntityDetailView({
   entityType,
   entity,
-  width,
+  heading,
 }: EntityDetailViewProps): React.ReactElement {
   const entries = buildEntries(entityType, entity);
+
   return (
-    <DetailPane
-      title={detailTitle(entityType)}
-      entries={entries.map((entry) => ({
-        label: entry.label,
-        value: entry.value,
-      }))}
-      width={width}
-    />
+    <Box flexDirection="column">
+      <Box>
+        <Text color={SemanticColors.headline}>
+          {ENTITY_DETAIL_VIEW_COPY.headlinePrefixes[entityType]}{" "}
+        </Text>
+        <Text color={SemanticColors.headline}>{heading}</Text>
+      </Box>
+
+      <Box marginTop={1}>
+        <Text color={SemanticColors.h2} bold>
+          {ENTITY_DETAIL_VIEW_COPY.detailsHeading}
+        </Text>
+      </Box>
+
+      <Box flexDirection="column">
+        {entries.map((entry, entryIndex) => (
+          <Box key={entry.label} marginTop={entryIndex > 0 ? 1 : 0}>
+            <Box flexShrink={0}>
+              <Text color={SemanticColors.label}>{padLabel(entry.label)} </Text>
+            </Box>
+            <Text color={SemanticColors.primary}>
+              {entry.value.length === 0
+                ? ENTITY_DETAIL_VIEW_COPY.emptyFieldValue
+                : entry.value}
+            </Text>
+          </Box>
+        ))}
+      </Box>
+    </Box>
   );
 }
 
-function detailTitle(entityType: MemoryEntityType): string {
-  return ENTITY_DETAIL_VIEW_COPY.titles[entityType];
+function padLabel(label: string): string {
+  return label.padEnd(DETAIL_LABEL_WIDTH, TuiGlyphs.dot);
 }
 
 function buildEntries(
   entityType: MemoryEntityType,
-  entity:
-    | DecisionEntityRow
-    | InvariantEntityRow
-    | ComponentEntityRow
-    | DependencyEntityRow
-    | GuidelineEntityRow,
+  entity: MemoryEntityRow,
 ): readonly DetailEntry[] {
   switch (entityType) {
     case "decision": {
       const decision = entity as DecisionEntityRow;
       return [
         { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: decision.id },
-        { label: ENTITY_DETAIL_VIEW_COPY.labels.title, value: decision.title },
         { label: ENTITY_DETAIL_VIEW_COPY.labels.context, value: decision.context },
         { label: ENTITY_DETAIL_VIEW_COPY.labels.rationale, value: decision.rationale },
         {
           label: ENTITY_DETAIL_VIEW_COPY.labels.alternatives,
-          value: decision.alternatives.join(LIST_SEPARATOR),
+          value: decision.alternatives.join(` ${TuiGlyphs.bullet} `),
         },
         {
           label: ENTITY_DETAIL_VIEW_COPY.labels.consequences,
@@ -108,7 +121,6 @@ function buildEntries(
       const invariant = entity as InvariantEntityRow;
       return [
         { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: invariant.id },
-        { label: ENTITY_DETAIL_VIEW_COPY.labels.title, value: invariant.title },
         {
           label: ENTITY_DETAIL_VIEW_COPY.labels.description,
           value: invariant.description,
@@ -123,7 +135,6 @@ function buildEntries(
       const component = entity as ComponentEntityRow;
       return [
         { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: component.id },
-        { label: ENTITY_DETAIL_VIEW_COPY.labels.name, value: component.name },
         { label: ENTITY_DETAIL_VIEW_COPY.labels.type, value: component.type },
         {
           label: ENTITY_DETAIL_VIEW_COPY.labels.description,
@@ -139,7 +150,6 @@ function buildEntries(
       const dependency = entity as DependencyEntityRow;
       return [
         { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: dependency.id },
-        { label: ENTITY_DETAIL_VIEW_COPY.labels.name, value: dependency.name },
         {
           label: ENTITY_DETAIL_VIEW_COPY.labels.ecosystem,
           value: dependency.ecosystem,
@@ -163,7 +173,6 @@ function buildEntries(
       const guideline = entity as GuidelineEntityRow;
       return [
         { label: ENTITY_DETAIL_VIEW_COPY.labels.id, value: guideline.id },
-        { label: ENTITY_DETAIL_VIEW_COPY.labels.title, value: guideline.title },
         {
           label: ENTITY_DETAIL_VIEW_COPY.labels.category,
           value: guideline.category,
@@ -178,7 +187,7 @@ function buildEntries(
         },
         {
           label: ENTITY_DETAIL_VIEW_COPY.labels.examples,
-          value: guideline.examples.join(LIST_SEPARATOR),
+          value: guideline.examples.join(` ${TuiGlyphs.bullet} `),
         },
       ];
     }

@@ -6,7 +6,7 @@ export const SCREEN_DEFINITIONS = [
   { key: "components", label: "Components", shortcut: "5" },
   { key: "dependencies", label: "Dependencies", shortcut: "6" },
   { key: "guidelines", label: "Guidelines", shortcut: "7" },
-  { key: "session", label: "Session", shortcut: "8" },
+  { key: "settings", label: "Settings", shortcut: "8" },
 ] as const;
 
 export type ScreenKey = (typeof SCREEN_DEFINITIONS)[number]["key"];

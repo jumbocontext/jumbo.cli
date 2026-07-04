@@ -243,8 +243,16 @@ export class GoalShowOutputBuilder {
         band2.push(heading("Related Decisions"));
         for (let i = 0; i < context.decisions.length; i++) {
           if (i > 0) band2.push("");
-          band2.push(contentLine(BrandColors.accentCyan(context.decisions[i].entity.title)));
-          band2.push(...wrapContent(context.decisions[i].entity.rationale ?? ""));
+          const decision = context.decisions[i].entity;
+          band2.push(contentLine(BrandColors.accentCyan(decision.title)));
+          if (decision.context) {
+            band2.push(contentLine(Colors.bold("Context:")));
+            band2.push(...wrapContent(decision.context));
+          }
+          if (decision.rationale) {
+            band2.push(contentLine(Colors.bold("Rationale:")));
+            band2.push(...wrapContent(decision.rationale));
+          }
         }
       }
 

@@ -11,7 +11,11 @@ export const FooterShortcut = {
     char: "q",
     label: "quit",
   },
+  MEGA_MENU: {
+    char: "m",
+    label: "menu",
+  },
   NOTIFICATIONS: {
-    char: "n",
+    char: "i",
   },
 } as const satisfies Record<string, FooterShortcutDescriptor | FooterContextualShortcutDescriptor>;

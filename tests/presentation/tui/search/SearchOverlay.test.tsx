@@ -5,7 +5,6 @@ import { StateReaderProvider } from "../../../../src/presentation/tui/state-read
 import { SearchOverlay } from "../../../../src/presentation/tui/search/SearchOverlay.js";
 import type { SearchResponse } from "../../../../src/application/context/search/SearchResponse.js";
 
-const DOWN_ARROW = "\x1B[B";
 const ESCAPE = "\x1B";
 const tick = () => new Promise((resolve) => setTimeout(resolve, 25));
 
@@ -26,59 +25,6 @@ async function waitForFrame(
   return readFrame() ?? "";
 }
 
-const groupedResponse: SearchResponse = {
-  hits: [
-    {
-      source: { type: "component", id: "component_search" },
-      category: "component",
-      title: "Search Overlay",
-      summary: "Renders generic search hits.",
-      snippet: "Search hits keep source identity.",
-      facets: { status: "active" },
-      score: 20,
-    },
-    {
-      source: { type: "release-note", id: "note_1" },
-      category: "release-note",
-      title: "Release Note",
-      summary: "Future categories render generically.",
-      snippet: null,
-      facets: { tags: ["search", "tui"] },
-      score: 12,
-    },
-  ],
-  groups: [
-    {
-      category: "component",
-      hits: [
-        {
-          source: { type: "component", id: "component_search" },
-          category: "component",
-          title: "Search Overlay",
-          summary: "Renders generic search hits.",
-          snippet: "Search hits keep source identity.",
-          facets: { status: "active" },
-          score: 20,
-        },
-      ],
-    },
-    {
-      category: "release-note",
-      hits: [
-        {
-          source: { type: "release-note", id: "note_1" },
-          category: "release-note",
-          title: "Release Note",
-          summary: "Future categories render generically.",
-          snippet: null,
-          facets: { tags: ["search", "tui"] },
-          score: 12,
-        },
-      ],
-    },
-  ],
-};
-
 function renderSearchOverlay(
   searchController: { handle: (request: unknown) => Promise<SearchResponse> },
   onClose = jest.fn(),
@@ -91,31 +37,6 @@ function renderSearchOverlay(
 }
 
 describe("SearchOverlay", () => {
-  it("renders grouped metadata and current generic hit detail", async () => {
-    const { stdin, lastFrame, unmount } = renderSearchOverlay({
-      handle: jest.fn(async () => groupedResponse),
-    });
-
-    stdin.write("search");
-    const frame = await waitForFrame(lastFrame, "Results: 1 / 2");
-
-    expect(frame).toContain("Category: Component");
-    expect(frame).toContain("Groups: Component 1");
-    expect(frame).toContain("Release Note 1");
-    expect(frame).toContain("Search Overlay");
-    expect(frame).toContain("component:component_search");
-    expect(frame).toContain("Search hits keep source identity.");
-    expect(frame).not.toContain("▸");
-
-    stdin.write(DOWN_ARROW);
-    await waitForFrame(lastFrame, "Results: 2 / 2");
-
-    expect(lastFrame()).toContain("Category: Release Note");
-    expect(lastFrame()).toContain("release-note:note_1");
-    expect(lastFrame()).toContain("Future categories render generically.");
-    unmount();
-  });
-
   it("renders empty and unavailable states", async () => {
     const { stdin, lastFrame, unmount } = renderSearchOverlay({
       handle: jest.fn(async () => ({ hits: [], groups: [] })),

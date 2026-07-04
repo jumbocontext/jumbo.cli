@@ -15,7 +15,7 @@ export function KeyBadge({
   label,
   compact = false,
   color = SemanticColors.keyBadge,
-  labelColor = SemanticColors.muted,
+  labelColor = SemanticColors.label,
 }: KeyBadgeProps): React.ReactElement {
   return (
     <Box alignItems="center" gap={1}>
@@ -26,6 +26,7 @@ export function KeyBadge({
       >
         {compact ? char : ` ${char} `}
       </Text>
+      {label !== undefined && <Text color={labelColor}>•</Text>}
       {label !== undefined && <Text color={labelColor}>{label}</Text>}
     </Box>
   );

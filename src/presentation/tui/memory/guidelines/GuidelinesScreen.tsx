@@ -5,7 +5,6 @@ import type { GuidelineView } from "../../../../application/context/guidelines/G
 
 const GUIDELINES_SCREEN_COPY = {
   title: "Guidelines",
-  subtitle: "Focused guideline memory list and selected guideline detail",
 } as const;
 
 interface GuidelinesScreenProps {
@@ -21,7 +20,6 @@ export function GuidelinesScreen(
     <MemoryEntityScreen
       entityType="guideline"
       title={GUIDELINES_SCREEN_COPY.title}
-      subtitle={GUIDELINES_SCREEN_COPY.subtitle}
       rows={(guidelinesList.data?.guidelines ?? []).map(toGuidelineEntityRow)}
       loading={guidelinesList.loading}
       error={guidelinesList.error}

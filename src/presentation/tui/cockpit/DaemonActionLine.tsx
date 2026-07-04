@@ -25,12 +25,14 @@ export function DaemonActionLine({
       <KeyBadge
         char="s"
         label={action}
+        compact
         color={badgeColor}
         labelColor={BaseColors.shade4}
       />
       <KeyBadge
         char="@"
         label={CockpitDaemonPanelCopy.action.config}
+        compact
         color={badgeColor}
         labelColor={BaseColors.shade4}
       />
@@ -41,6 +43,7 @@ export function DaemonActionLine({
             ? CockpitDaemonPanelCopy.action.infoOpen
             : CockpitDaemonPanelCopy.action.info
         }
+        compact
         color={badgeColor}
         labelColor={BaseColors.shade4}
       />

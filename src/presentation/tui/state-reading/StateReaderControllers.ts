@@ -2,6 +2,7 @@ import type { GetComponentsController } from "../../../application/context/compo
 import type { GetDecisionsController } from "../../../application/context/decisions/get/GetDecisionsController.js";
 import type { GetDependenciesController } from "../../../application/context/dependencies/get/GetDependenciesController.js";
 import type { GetGoalsController } from "../../../application/context/goals/get/GetGoalsController.js";
+import type { ShowGoalController } from "../../../application/context/goals/get/ShowGoalController.js";
 import type { GetGuidelinesController } from "../../../application/context/guidelines/get/GetGuidelinesController.js";
 import type { GetInvariantsController } from "../../../application/context/invariants/get/GetInvariantsController.js";
 import type { ProjectStatsController } from "../../../application/context/project/stats/ProjectStatsController.js";
@@ -15,6 +16,7 @@ export interface StateReaderControllers {
     "execute"
   >;
   readonly getGoalsController?: Pick<GetGoalsController, "handle">;
+  readonly showGoalController?: Pick<ShowGoalController, "handle">;
   readonly getSessionsController?: Pick<GetSessionsController, "handle">;
   readonly getComponentsController?: Pick<GetComponentsController, "handle">;
   readonly getDecisionsController?: Pick<GetDecisionsController, "handle">;

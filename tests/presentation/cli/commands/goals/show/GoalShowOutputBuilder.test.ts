@@ -293,10 +293,10 @@ describe("GoalShowOutputBuilder", () => {
       expect(text).toContain("Handles authentication");
     });
 
-    it("should render related decisions with title and rationale", () => {
+    it("should render related decisions with title, context, and rationale", () => {
       const view = makeContextualView({}, {
         decisions: [{
-          entity: { decisionId: "dec_1", title: "Use REST over gRPC", rationale: "Simpler client integration" } as unknown as DecisionView,
+          entity: { decisionId: "dec_1", title: "Use REST over gRPC", context: "Clients span many platforms", rationale: "Simpler client integration" } as unknown as DecisionView,
           relationType: "must-respect",
           relationDescription: "Architecture constraint",
         }],
@@ -305,6 +305,9 @@ describe("GoalShowOutputBuilder", () => {
 
       expect(text).toContain(`${BAR} Related Decisions`);
       expect(text).toContain("Use REST over gRPC");
+      expect(text).toContain("Context:");
+      expect(text).toContain("Clients span many platforms");
+      expect(text).toContain("Rationale:");
       expect(text).toContain("Simpler client integration");
     });
 

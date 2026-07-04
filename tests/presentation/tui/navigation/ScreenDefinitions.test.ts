@@ -14,7 +14,7 @@ describe("ScreenDefinitions", () => {
       "components",
       "dependencies",
       "guidelines",
-      "session",
+      "settings",
     ]);
   });
 

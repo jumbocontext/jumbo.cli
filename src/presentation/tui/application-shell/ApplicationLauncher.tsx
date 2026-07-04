@@ -53,6 +53,7 @@ export class ApplicationLauncher {
         container.projectContextReader,
       ),
       getGoalsController: container.getGoalsController,
+      showGoalController: container.showGoalController,
       getSessionsController: container.getSessionsController,
       getComponentsController: container.getComponentsController,
       getDecisionsController: container.getDecisionsController,

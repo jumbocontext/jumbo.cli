@@ -11,6 +11,7 @@ import { useProjectStats } from "../../../../src/presentation/tui/state-reading/
 import { useGlobalSearch } from "../../../../src/presentation/tui/state-reading/useGlobalSearch.js";
 import type { GoalView } from "../../../../src/application/context/goals/GoalView.js";
 import type { SearchResponse } from "../../../../src/application/context/search/SearchResponse.js";
+import { GoalStatus } from "../../../../src/domain/goals/Constants.js";
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -44,6 +45,7 @@ const GOAL_VIEW: GoalView = {
   updatedAt: "2026-05-15T00:00:00.000Z",
   progress: [],
 };
+const REFINED_GOAL_STATUS_FILTER = [GoalStatus.REFINED] as const;
 
 function ProjectContextProbe(): React.ReactElement {
   const projectContext = useProjectContext();
@@ -51,7 +53,7 @@ function ProjectContextProbe(): React.ReactElement {
 }
 
 function GoalsListProbe(): React.ReactElement {
-  const goalsList = useGoalsList("refined");
+  const goalsList = useGoalsList(REFINED_GOAL_STATUS_FILTER);
   useInput((input) => {
     if (input === "r") {
       void goalsList.refresh();
