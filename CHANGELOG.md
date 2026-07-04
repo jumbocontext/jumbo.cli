@@ -7,11 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.12.0] - 2026-07-04
+
 ### Added
 
 - **TUI Mega Menu**: Restored the `m` / `M` footer shortcut and overlay navigation menu, with goal-status menu entries that route directly into filtered Goals views and a Settings placeholder route.
 - **TUI Goals browser**: Remodeled the Goals screen into a single-goal browser — up/down arrows move between goals in the active state filter, left/right arrows page through every goal-show section (metadata, objective, note, review issues, success criteria, progress, scope, and related components, dependencies, decisions, invariants, and guidelines). Related-entity sections render each entry as a highlighted name with its description, truncated and paginated to stay within the viewport; related decisions show labeled Context and Rationale fields in full at two per page. The CLI `goal show` output now renders those same labeled decision fields.
 - **TUI memory screens**: Remodeled the Decisions, Components, Dependencies, Invariants, and Guidelines screens into a single-entity browser matching the Goals screen — a header shows the screen title and a current/total position indicator, up/down arrows scroll through the memories with wraparound, and a detail pane below renders every attribute of the focused entity in full, unabridged.
+- **Evals replication driver (Outcome 5, 2/2)**: `eval run` gained a `--replicate <K>` option (default 1) that runs the A/B comparison K times per harness and aggregates the results into a `ReplicationReport` via `aggregateReplications()`, persisted by `runId` and printed with per-dimension mean lift +/- SD and a SIGNAL/none call. `K < 1` errors; `2 <= K < 5` warns that K>=5 is the minimum for a credible signal. `K=1` leaves existing single-run output unchanged.
+- **Evals parallel-replication design**: Added `evals/docs/parallel-replication-design.md`, a design doc for a bounded worker-pool `--concurrency N` primitive (`runWithConcurrency`), concluding parallelism does not bias the measurement since all scored dimensions are artefact/count-based rather than wall-clock, and recommending a default of N=1 given rate-limit contention on non-API agent harnesses.
+
+### Changed
+
+- **Project stats snapshot view**: Decomposed the monolithic `ProjectStatsSnapshotView` interface into focused per-domain view and count types (e.g. `GoalStatsView`, `MemoryStatsView`, `GraphStatsView`, and their constituent `*Count` types), each in its own file under `src/application/context/project/stats/`, with no change to the shape or values the CLI/TUI consume.
 
 ### Fixed
 
