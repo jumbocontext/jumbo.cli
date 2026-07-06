@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **TUI daemon cleanup**: Exiting or interrupting the TUI now routes daemon subprocess shutdown through the launcher, so cleanup is awaited and failures are surfaced instead of relying on fire-and-forget React unmount cleanup.
+
 ## [3.12.1] - 2026-07-05
 
 ### Fixed

@@ -280,7 +280,6 @@ function AppFrame({
 
     return () => {
       clearInterval(timer);
-      void subprocessManager.terminateAll();
     };
   }, [subprocessManager, subprocessManagerEnabled]);
 

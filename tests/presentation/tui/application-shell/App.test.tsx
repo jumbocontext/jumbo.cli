@@ -95,6 +95,27 @@ describe("App", () => {
     getStatus: (_name: DaemonName) => failedDaemonSnapshot,
     getAllStatuses: () => [failedDaemonSnapshot],
   };
+  const stoppedDaemonSnapshot: SubprocessSnapshot = {
+    name: "refiner",
+    status: "stopped",
+    config: {
+      agentId: "refiner-agent",
+      pollIntervalMs: 100,
+      maxRetries: 1,
+    },
+    stdout: [],
+    stderr: [],
+    events: [],
+  };
+  const subprocessManagerWithTerminateAll = (
+    terminateAll: jest.MockedFunction<() => Promise<void>>,
+  ): ISubprocessManager => ({
+    spawn: jest.fn(async () => stoppedDaemonSnapshot),
+    terminate: jest.fn(async () => stoppedDaemonSnapshot),
+    terminateAll,
+    getStatus: jest.fn((_name: DaemonName) => stoppedDaemonSnapshot),
+    getAllStatuses: jest.fn(() => [stoppedDaemonSnapshot]),
+  });
   const hiddenLaunchpadWelcomeSettingsReader = () => ({
     read: async (): Promise<Settings> => ({
       qa: { defaultTurnLimit: 3 },
@@ -341,6 +362,37 @@ describe("App", () => {
     expect(lastFrame()).toContain("Criterion survives daemon polling");
     unmount();
   }, 10000);
+
+  it("lets q exit flow through Ink without terminating daemon subprocesses in App", async () => {
+    const terminateAll = jest.fn<() => Promise<void>>().mockResolvedValue();
+    const { stdin, unmount } = render(
+      <App
+        settingsReader={hiddenLaunchpadWelcomeSettingsReader()}
+        subprocessManager={subprocessManagerWithTerminateAll(terminateAll)}
+      />,
+    );
+
+    stdin.write("q");
+    await tick();
+
+    expect(terminateAll).not.toHaveBeenCalled();
+    unmount();
+  });
+
+  it("does not fire-and-forget daemon cleanup during App unmount", async () => {
+    const terminateAll = jest.fn<() => Promise<void>>().mockResolvedValue();
+    const { unmount } = render(
+      <App
+        settingsReader={hiddenLaunchpadWelcomeSettingsReader()}
+        subprocessManager={subprocessManagerWithTerminateAll(terminateAll)}
+      />,
+    );
+
+    unmount();
+    await tick();
+
+    expect(terminateAll).not.toHaveBeenCalled();
+  });
 
   it("does not open goal authoring from uninitialized cockpit state", async () => {
     const { stdin, lastFrame, unmount } = render(
