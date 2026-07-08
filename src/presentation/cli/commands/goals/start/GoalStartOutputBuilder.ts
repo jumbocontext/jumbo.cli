@@ -40,6 +40,15 @@ export class GoalStartOutputBuilder {
       "INSTRUCTION: Your (the developer's) purpose for this goal is to fulfill this objective."
     );
 
+    // Review Issues section (if rejected goal is being restarted)
+    if (goal.reviewIssues) {
+      this.builder.addPrompt(
+        heading("Review Issues") + "\n" +
+        wrapContent(goal.reviewIssues).map(line => Colors.warning(line)).join('\n') + "\n\n" +
+        "INSTRUCTION: This goal was rejected during QA review. You (the developer) MUST address these issues before submitting the goal again."
+      );
+    }
+
     // Success Criteria section
     const successCriteriaLines = goal.successCriteria.flatMap(c => wrapBulletContinuation(c));
     this.builder.addPrompt(
