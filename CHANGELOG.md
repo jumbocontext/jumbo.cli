@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.15.0] - 2026-07-08
+
+### Added
+
+- **Rejected goal issues on start**: `jumbo goal start` now renders a "Review Issues" section when restarting a goal that was previously rejected during QA review, instructing the developer to address the issues before resubmitting.
+
 ## [3.14.0] - 2026-07-08
 
 ### Added
