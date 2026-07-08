@@ -18,7 +18,7 @@ jest.setTimeout(30_000);
 describe("AgentFileProtocol", () => {
   let tmpDir: string;
   let protocol: AgentFileProtocol;
-  const skillPlatforms = [".agents/skills", ".claude/skills", ".codex/skills", ".gemini/skills", ".vibe/skills"];
+  const skillPlatforms = [".agents/skills", ".claude/skills", ".gemini/skills", ".vibe/skills"];
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-agent-files-"));
@@ -226,7 +226,7 @@ describe("AgentFileProtocol", () => {
       }
     });
 
-    it("should distribute fine-grained managed skills from packaged assets", async () => {
+    it("should distribute fine-grained Codex managed skills to the documented repo skill location", async () => {
       protocol = new AgentFileProtocol();
 
       await protocol.ensureAgentConfigurations(tmpDir, ["codex"]);
@@ -239,8 +239,35 @@ describe("AgentFileProtocol", () => {
       ];
 
       for (const skillName of expectedSkillNames) {
-        expect(await fs.pathExists(path.join(tmpDir, ".codex", "skills", skillName, "SKILL.md"))).toBe(true);
+        expect(await fs.pathExists(path.join(tmpDir, ".agents", "skills", skillName, "SKILL.md"))).toBe(true);
+        expect(await fs.pathExists(path.join(tmpDir, ".codex", "skills", skillName, "SKILL.md"))).toBe(false);
       }
+    });
+
+    it("should remove obsolete Jumbo-managed Codex skill copies while preserving user-owned Codex skills", async () => {
+      const managedSkillContent =
+        "---\nname: managed-skill\ndescription: Managed.\n---\n\n# Managed\n\nCurrent.\n";
+      const templateSkillPath = path.join(tmpDir, "assets", "skills", "managed-skill");
+      await fs.ensureDir(templateSkillPath);
+      await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), managedSkillContent, "utf-8");
+
+      const obsoleteCodexSkillPath = path.join(tmpDir, ".codex", "skills", "managed-skill");
+      await fs.ensureDir(obsoleteCodexSkillPath);
+      await fs.writeFile(path.join(obsoleteCodexSkillPath, "SKILL.md"), managedSkillContent, "utf-8");
+
+      const userCodexSkillPath = path.join(tmpDir, ".codex", "skills", "my-custom-skill");
+      await fs.ensureDir(userCodexSkillPath);
+      await fs.writeFile(
+        path.join(userCodexSkillPath, "SKILL.md"),
+        "---\nname: my-custom-skill\ndescription: User owned.\n---\n\n# User\n\nKeep me.\n",
+        "utf-8"
+      );
+
+      await protocol.ensureAgentConfigurations(tmpDir, ["codex"]);
+
+      expect(await fs.pathExists(path.join(tmpDir, ".agents", "skills", "managed-skill", "SKILL.md"))).toBe(true);
+      expect(await fs.pathExists(obsoleteCodexSkillPath)).toBe(false);
+      expect(await fs.readFile(path.join(userCodexSkillPath, "SKILL.md"), "utf-8")).toContain("Keep me.");
     });
 
     it("should keep user-created skills and avoid overwriting managed skills during additive install", async () => {
@@ -567,6 +594,47 @@ describe("AgentFileProtocol", () => {
         expect(preservedUserContent).toContain("Keep me.");
       });
 
+      it("should remove obsolete Codex skill copies during repeated repair while preserving user-owned Codex skills", async () => {
+        const managedSkillContent =
+          "---\nname: managed-skill\ndescription: Managed.\n---\n\n# Managed\n\nTemplate current version.\n";
+        const templateSkillPath = path.join(tmpDir, "assets", "skills", "managed-skill");
+        await fs.ensureDir(templateSkillPath);
+        await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), managedSkillContent, "utf-8");
+
+        const userSameNameTemplatePath = path.join(tmpDir, "assets", "skills", "user-owned-same-name");
+        await fs.ensureDir(userSameNameTemplatePath);
+        await fs.writeFile(
+          path.join(userSameNameTemplatePath, "SKILL.md"),
+          "---\nname: user-owned-same-name\ndescription: Managed.\n---\n\n# Managed\n\nTemplate current version.\n",
+          "utf-8"
+        );
+
+        const obsoleteCodexSkillPath = path.join(tmpDir, ".codex", "skills", "managed-skill");
+        await fs.ensureDir(obsoleteCodexSkillPath);
+        await fs.writeFile(path.join(obsoleteCodexSkillPath, "SKILL.md"), managedSkillContent, "utf-8");
+
+        const userSameNameCodexSkillPath = path.join(tmpDir, ".codex", "skills", "user-owned-same-name");
+        await fs.ensureDir(userSameNameCodexSkillPath);
+        await fs.writeFile(
+          path.join(userSameNameCodexSkillPath, "SKILL.md"),
+          "---\nname: user-owned-same-name\ndescription: User owned.\n---\n\n# User\n\nKeep same-name user skill.\n",
+          "utf-8"
+        );
+
+        await protocol.repairAgentConfigurations(tmpDir, ["codex"]);
+        await protocol.repairAgentConfigurations(tmpDir, ["codex"]);
+
+        const repairedManagedContent = await fs.readFile(
+          path.join(tmpDir, ".agents", "skills", "managed-skill", "SKILL.md"),
+          "utf-8"
+        );
+        expect(repairedManagedContent).toContain("Template current version.");
+        expect(await fs.pathExists(obsoleteCodexSkillPath)).toBe(false);
+        expect(await fs.readFile(path.join(userSameNameCodexSkillPath, "SKILL.md"), "utf-8")).toContain(
+          "Keep same-name user skill."
+        );
+      });
+
       it("should call repair on each configurer", async () => {
         await protocol.repairAgentConfigurations(tmpDir);
 
@@ -742,10 +810,6 @@ describe("AgentFileProtocol", () => {
           }),
           expect.objectContaining({
             path: ".claude/skills/my-skill",
-            description: expect.stringContaining("assets/skills"),
-          }),
-          expect.objectContaining({
-            path: ".codex/skills/my-skill",
             description: expect.stringContaining("assets/skills"),
           }),
           expect.objectContaining({

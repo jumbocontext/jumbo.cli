@@ -87,7 +87,7 @@ Jumbo configures hooks for popular AI coding assistants:
 | Agent | Configuration |
 |-------|---------------|
 | **Claude Code** | `CLAUDE.md`, `.claude/settings.json`, and `.claude/skills` |
-| **Codex** | `.codex/hooks.json` and `.codex/skills` |
+| **Codex** | `.codex/hooks.json` and `.agents/skills` |
 | **GitHub Copilot** | `.github/copilot-instructions.md`, `.github/hooks/hooks.json`, and `.agents/skills` |
 | **Gemini CLI** | `GEMINI.md`, `.gemini/settings.json`, and `.gemini/skills` |
 | **Cursor** | `.cursor/rules/jumbo.mdc` and `.cursor/hooks.json` |
@@ -99,6 +99,8 @@ Interactive init only creates the agent-specific files and managed skill directo
 Managed instruction files are bootstrap-only. `JUMBO.md` tells agents to follow Jumbo command prompts and to run `jumbo session start` only when a Jumbo command has not already routed the task. Reference files point to `JUMBO.md`; command discovery, workflow details, context maintenance, and correction capture live in managed skills and Jumbo command output.
 
 Jumbo-owned markdown files and JSON hook/settings fragments are loaded from `assets/agent-files`. Managed skills are copied from `assets/skills`, with additive initialization preserving existing user-created skills and repair refreshing Jumbo-managed skill directories.
+
+For Codex, Jumbo uses the repository skill directory `.agents/skills` and keeps `.codex` for documented Codex hooks/configuration. During repair and evolve, obsolete Jumbo-managed skill copies under `.codex/skills` are removed only when they exactly match the current managed templates; customized skills and extra user files are preserved.
 
 ---
 

@@ -116,6 +116,15 @@ describe("EvolveController", () => {
     expect(response.steps.every((step) => step.status === "repaired")).toBe(true);
   });
 
+  it("routes repeated evolve runs through agent configuration repair for idempotent managed skill migration", async () => {
+    await controller.handle();
+    await controller.handle();
+
+    expect(agentFileProtocol.repairAgentConfigurations).toHaveBeenCalledTimes(2);
+    expect(agentFileProtocol.repairAgentConfigurations).toHaveBeenNthCalledWith(1, "C:/repo");
+    expect(agentFileProtocol.repairAgentConfigurations).toHaveBeenNthCalledWith(2, "C:/repo");
+  });
+
   it("skips database migrations and rebuild when schema migrations fail", async () => {
     runSchemaMigrations.mockRejectedValue(new Error("DDL failed"));
 

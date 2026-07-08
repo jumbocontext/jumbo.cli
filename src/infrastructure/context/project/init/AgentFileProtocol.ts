@@ -42,18 +42,19 @@ const DEFAULT_TEMPLATE_SKILLS_ROOT = path.resolve(
   "assets",
   "skills"
 );
-
 export class AgentFileProtocol implements IAgentFileProtocol {
-  private readonly configurers: IConfigurer[] = [
-    new ClaudeConfigurer(),
-    new GeminiConfigurer(),
-    new CopilotConfigurer(),
-    new VibeConfigurer(),
-    new CodexConfigurer(),
-    new CursorConfigurer(),
-  ];
+  private readonly configurers: IConfigurer[];
 
-  constructor(private readonly templateSkillsRoot: string = DEFAULT_TEMPLATE_SKILLS_ROOT) {}
+  constructor(private readonly templateSkillsRoot: string = DEFAULT_TEMPLATE_SKILLS_ROOT) {
+    this.configurers = [
+      new ClaudeConfigurer(),
+      new GeminiConfigurer(),
+      new CopilotConfigurer(),
+      new VibeConfigurer(),
+      new CodexConfigurer(templateSkillsRoot),
+      new CursorConfigurer(),
+    ];
+  }
 
   /**
    * Ensure JUMBO.md exists with full Jumbo instructions

@@ -41,4 +41,11 @@ describe("requiresProject metadata", () => {
     expect(command).toBeDefined();
     expect(command?.metadata.requiresProject).toBe(true);
   });
+
+  it("registers goal approve and no longer registers goal qualify", () => {
+    const paths = commands.map((c) => c.path);
+
+    expect(paths).toContain("goal approve");
+    expect(paths).not.toContain("goal qualify");
+  });
 });

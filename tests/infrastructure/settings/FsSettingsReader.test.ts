@@ -117,4 +117,32 @@ describe("FsSettingsReader", () => {
       session: { backlogPreviewSize: 2 },
     });
   });
+
+  it("preserves unknown top-level and nested entries when persisting known settings changes", async () => {
+    const tempDir = await createTempDir();
+    const settingsPath = path.join(tempDir, "settings.jsonc");
+    await fs.writeFile(
+      settingsPath,
+      JSON.stringify({
+        ...DEFAULT_SETTINGS,
+        qa: { defaultTurnLimit: 3, customField: "keep-me" },
+        experimental: { flagA: true },
+      }),
+      "utf-8",
+    );
+    const reader = new FsSettingsReader(tempDir);
+
+    await reader.write({
+      ...DEFAULT_SETTINGS,
+      tui: { showLaunchpadWelcome: false },
+    });
+
+    const rawContent = await fs.readFile(settingsPath, "utf-8");
+    const raw = JSON.parse(rawContent);
+    expect(raw.qa.customField).toBe("keep-me");
+    expect(raw.experimental).toEqual({ flagA: true });
+
+    const settings = await reader.read();
+    expect(settings.tui).toEqual({ showLaunchpadWelcome: false });
+  });
 });

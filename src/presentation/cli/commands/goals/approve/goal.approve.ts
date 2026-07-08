@@ -5,7 +5,6 @@
  * Transitions goal from 'in-review' to 'approved' status and renders codification instructions.
  *
  * This is the primary command for review approval.
- * See also: goal.qualify (deprecated alias).
  */
 
 import { CommandMetadata, CONTINUE_OPTION } from "../../registry/CommandMetadata.js";
@@ -49,7 +48,7 @@ export async function goalApprove(
   const outputBuilder = new GoalApproveOutputBuilder();
 
   try {
-    // 1. Execute via controller (delegates to same QualifyGoalController)
+    // 1. Execute via the existing approval workflow
     const response = await container.qualifyGoalController.handle({
       goalId: options.id,
     });

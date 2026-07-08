@@ -69,6 +69,8 @@ These hooks load the session router when an agent session begins and preserve wo
 
 Jumbo copies workflow and maintenance skills from `assets/skills` into the selected agents' skill directories, including bootstrap/session use, lifecycle hooks, command discovery, context maintenance, and correction capture. Additive initialization does not overwrite existing managed skill directories; repair refreshes Jumbo-managed skills from assets while preserving user-created skills.
 
+Codex skills are installed to `.agents/skills`. Jumbo may remove obsolete Codex skill copies from `.codex/skills` during repair or evolve, but only when the obsolete directory is byte-identical to the current managed template and contains no extra user files.
+
 ---
 
 ## How the event store works
@@ -106,6 +108,7 @@ The `.jumbo/` directory is **local project memory**. It is not yet designed for 
 ## Configuration
 
 Jumbo stores project-level settings in `.jumbo/settings.jsonc`. The file supports comments (JSONC format).
+When `jumbo evolve --yes` or settings persistence updates this file, Jumbo preserves explicit values and unknown entries while adding any missing defaults.
 
 Default contents:
 

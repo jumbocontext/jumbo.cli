@@ -4,6 +4,7 @@ import * as jsonc from "jsonc-parser";
 import { ISettingsReader } from "../../application/settings/ISettingsReader.js";
 import { Settings } from "../../application/settings/Settings.js";
 import { DEFAULT_SETTINGS } from "./DefaultSettings.js";
+import { JsonValue, setJsoncValue } from "./JsoncSettingsEditor.js";
 
 /**
  * JsoncSettingsReader - File system implementation for reading settings.
@@ -55,8 +56,56 @@ export class FsSettingsReader implements ISettingsReader {
 
   async write(settings: Settings): Promise<void> {
     const normalizedSettings = this.mergeWithDefaults(settings);
-    const content = this.buildSettingsFileContent(normalizedSettings);
-    await fs.writeFile(this.settingsFilePath, content, "utf-8");
+
+    if (!(await fs.pathExists(this.settingsFilePath))) {
+      const content = this.buildSettingsFileContent(normalizedSettings);
+      await fs.writeFile(this.settingsFilePath, content, "utf-8");
+      return;
+    }
+
+    const existingContent = await fs.readFile(this.settingsFilePath, "utf-8");
+    const errors: jsonc.ParseError[] = [];
+    jsonc.parse(existingContent, errors, { allowTrailingComma: true });
+    if (errors.length > 0) {
+      throw new Error(
+        `Invalid JSON in settings file: ${this.formatParseErrors(errors)}`
+      );
+    }
+
+    let updated = existingContent;
+    for (const { path: fieldPath, value } of this.knownValueEntries(normalizedSettings)) {
+      updated = setJsoncValue(updated, fieldPath, value);
+    }
+    await fs.writeFile(this.settingsFilePath, updated, "utf-8");
+  }
+
+  /**
+   * Known settings leaf paths and their values, used to persist changes onto
+   * an existing settings file without disturbing unknown entries elsewhere
+   * in the document.
+   */
+  private knownValueEntries(
+    settings: Settings
+  ): Array<{ path: jsonc.JSONPath; value: JsonValue }> {
+    return [
+      { path: ["project", "id"], value: settings.project!.id },
+      { path: ["qa", "defaultTurnLimit"], value: settings.qa.defaultTurnLimit },
+      {
+        path: ["claims", "claimDurationMinutes"],
+        value: settings.claims.claimDurationMinutes,
+      },
+      { path: ["telemetry", "enabled"], value: settings.telemetry.enabled },
+      { path: ["telemetry", "anonymousId"], value: settings.telemetry.anonymousId },
+      { path: ["telemetry", "consentGiven"], value: settings.telemetry.consentGiven },
+      {
+        path: ["tui", "showLaunchpadWelcome"],
+        value: settings.tui!.showLaunchpadWelcome,
+      },
+      {
+        path: ["session", "backlogPreviewSize"],
+        value: settings.session!.backlogPreviewSize,
+      },
+    ];
   }
 
   async hasTelemetryConfiguration(): Promise<boolean> {

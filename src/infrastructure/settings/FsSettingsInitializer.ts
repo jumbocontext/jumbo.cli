@@ -2,12 +2,15 @@ import fs from "fs-extra";
 import path from "path";
 import { ISettingsInitializer } from "../../application/settings/ISettingsInitializer.js";
 import { PlannedFileChange } from "../../application/context/project/init/PlannedFileChange.js";
+import { DEFAULT_SETTINGS } from "./DefaultSettings.js";
+import { JsonObject, applyMissingDefaults, assertValidJsonc } from "./JsoncSettingsEditor.js";
 
 /**
- * FsSettingsInitializer - Creates settings file with defaults if it doesn't exist.
+ * FsSettingsInitializer - Creates settings file with defaults if it doesn't exist,
+ * and additively fills in any missing default sections or fields if it does.
  *
- * Called during bootstrap to ensure settings infrastructure is ready.
- * Only creates the file if missing - doesn't overwrite existing settings.
+ * Called during bootstrap and evolve to ensure settings infrastructure is current.
+ * Existing explicit values and unknown entries are always preserved.
  */
 export class FsSettingsInitializer implements ISettingsInitializer {
   private readonly settingsFilePath: string;
@@ -17,8 +20,8 @@ export class FsSettingsInitializer implements ISettingsInitializer {
   }
 
   async ensureSettingsFileExists(): Promise<void> {
-    // Only create if it doesn't exist
     if (await fs.pathExists(this.settingsFilePath)) {
+      await this.applyMissingDefaults();
       return;
     }
 
@@ -68,6 +71,20 @@ export class FsSettingsInitializer implements ISettingsInitializer {
 `;
 
     await fs.writeFile(this.settingsFilePath, content, "utf-8");
+  }
+
+  /**
+   * Fill in any missing default sections or fields on an existing settings
+   * file, leaving explicit values and unknown entries untouched.
+   */
+  private async applyMissingDefaults(): Promise<void> {
+    const content = await fs.readFile(this.settingsFilePath, "utf-8");
+    assertValidJsonc(content, this.settingsFilePath);
+
+    const updated = applyMissingDefaults(content, DEFAULT_SETTINGS as unknown as JsonObject);
+    if (updated !== content) {
+      await fs.writeFile(this.settingsFilePath, updated, "utf-8");
+    }
   }
 
   async getPlannedFileChange(): Promise<PlannedFileChange | null> {

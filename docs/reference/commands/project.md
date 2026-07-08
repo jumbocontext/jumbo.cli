@@ -42,7 +42,7 @@ jumbo project init --non-interactive --name <name> [options]
 4. Always creates bootstrap-only `JUMBO.md` and reference-only `AGENTS.md`
 5. In non-interactive mode, configures all supported agents
 
-Managed agent markdown and JSON hook/settings fragments are loaded from `assets/agent-files`. Managed skills are copied from `assets/skills` to the selected agents' skill directories.
+Managed agent markdown and JSON hook/settings fragments are loaded from `assets/agent-files`. Managed skills are copied from `assets/skills` to the selected agents' skill directories. Codex skills are installed to `.agents/skills`; `.codex` is used for Codex hooks/configuration.
 
 ### Examples
 

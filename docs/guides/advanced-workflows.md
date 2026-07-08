@@ -27,7 +27,7 @@ Tips:
 
 - Use `jumbo goal update-progress --id <goalId> --task-description "..."` after each meaningful sub-task.
 - If QA finds issues, use `jumbo goal reject --id <goalId> --audit-findings "..."`, fix, then `submit` again.
-- `jumbo goal qualify --id <goalId>` exists for backward compatibility but is deprecated in favor of `goal approve`.
+- Use `jumbo goal approve --id <goalId>` after QA review passes.
 
 ## Control phase handoffs with --continue
 

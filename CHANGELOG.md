@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Codex initialization**: `jumbo init`, repair, and `jumbo evolve --yes` now install Codex-managed skills to the documented repository skill location `.agents/skills` while keeping `.codex` limited to Codex hooks/configuration.
+
+### Fixed
+
+- **Codex managed artifact preservation**: Obsolete Jumbo-managed Codex skill copies under `.codex/skills` are removed only when byte-identical to the current managed templates, preserving customized skill content, user files, hook comments, unknown hook settings, and unrelated `.codex` configuration.
+
+## [3.13.0] - 2026-07-07
+
+### Removed
+
+- **Deprecated goal qualification command**: Removed the `jumbo goal qualify` command surface. Use `jumbo goal approve` for successful QA review approvals.
+
+## [3.12.2] - 2026-07-06
+
+### Fixed
+
+- **TUI daemon cleanup**: Exiting or interrupting the TUI now routes daemon subprocess shutdown through the launcher, so cleanup is awaited and failures are surfaced instead of relying on fire-and-forget React unmount cleanup.
+
+## [3.12.1] - 2026-07-05
+
+### Fixed
+
+- **Settings preservation during evolve**: `jumbo evolve --yes` now additively inserts missing `.jumbo/settings.jsonc` defaults without overwriting customized known values or unknown user settings, and invalid JSONC settings files fail clearly instead of being partially rewritten.
+
 ## [3.12.0] - 2026-07-04
 
 ### Added
