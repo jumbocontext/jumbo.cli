@@ -16,6 +16,7 @@ import { GoalContext } from "../../../../../../src/application/context/goals/get
 import { ComponentView } from "../../../../../../src/application/context/components/ComponentView.js";
 import { DecisionView } from "../../../../../../src/application/context/decisions/DecisionView.js";
 import { InvariantView } from "../../../../../../src/application/context/invariants/InvariantView.js";
+import { stripAnsi } from "../../../../../../src/presentation/cli/rendering/StyleConfig.js";
 
 describe("GoalStartOutputBuilder", () => {
   let builder: GoalStartOutputBuilder;
@@ -104,6 +105,19 @@ describe("GoalStartOutputBuilder", () => {
       expect(text).toContain("Current Progress");
       expect(text).toContain("Completed step 1");
       expect(text).toContain("Completed step 2");
+    });
+
+    it("should render review issues when restarting a rejected goal", () => {
+      const view = makeView({
+        status: "doing",
+        reviewIssues: "Missing test coverage for rejected goal rework",
+      });
+      const output = builder.build(view);
+      const text = stripAnsi(output.toHumanReadable());
+
+      expect(text).toContain("Review Issues");
+      expect(text).toContain("Missing test coverage for rejected goal rework");
+      expect(text).toContain("MUST address these issues before submitting the goal again");
     });
 
     it("should include submit instruction with goal ID", () => {
