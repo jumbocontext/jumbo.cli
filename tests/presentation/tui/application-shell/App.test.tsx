@@ -54,6 +54,30 @@ const waitForFrame = async (
   throw new Error(`Timed out waiting for frame:\n${lastFrame() ?? ""}`);
 };
 
+const navigateFromCockpitToGoals = async (
+  stdin: { write(input: string): void },
+  lastFrame: () => string | undefined,
+) => {
+  stdin.write("m");
+  await waitForFrame(lastFrame, (frame) => frame.includes("Navigate"));
+  stdin.write("\u001B[B");
+  await tick();
+  stdin.write("\r");
+  await waitForFrame(lastFrame, (frame) => frame.includes("GOALS//"));
+};
+
+const navigateFromGoalsToCockpit = async (
+  stdin: { write(input: string): void },
+  lastFrame: () => string | undefined,
+) => {
+  stdin.write("m");
+  await waitForFrame(lastFrame, (frame) => frame.includes("Navigate"));
+  stdin.write("\u001B[A");
+  await tick();
+  stdin.write("\r");
+  await waitForFrame(lastFrame, (frame) => frame.includes("EVENTS//"));
+};
+
 function App(
   props: React.ComponentProps<typeof ProductionApp>,
 ): React.ReactElement {
@@ -393,6 +417,159 @@ describe("App", () => {
 
     expect(terminateAll).not.toHaveBeenCalled();
   });
+
+  it("preserves one running daemon across navigation and stops it exactly once on request", async () => {
+    let refinerSnapshot: SubprocessSnapshot = {
+      name: "refiner",
+      status: "running",
+      pid: 4101,
+      config: stoppedDaemonSnapshot.config,
+      stdout: [],
+      stderr: [],
+      events: [{
+        daemon: "refiner",
+        status: "working",
+        category: "activity",
+        goalId: "goal_single_navigation",
+        phase: "agent",
+        elapsedMs: 1_000,
+        timestampMs: 1_000,
+        message: "single navigation activity",
+      }],
+    };
+    const terminate = jest.fn(async (name: DaemonName) => {
+      refinerSnapshot = { ...refinerSnapshot, name, status: "stopped" };
+      return refinerSnapshot;
+    });
+    const terminateAll = jest.fn(async () => {});
+    const manager: ISubprocessManager = {
+      spawn: jest.fn(async () => refinerSnapshot),
+      terminate,
+      terminateAll,
+      getStatus: jest.fn(() => refinerSnapshot),
+      getAllStatuses: jest.fn(() => [refinerSnapshot]),
+    };
+    const { stdin, lastFrame, unmount } = render(
+      <App
+        settingsReader={hiddenLaunchpadWelcomeSettingsReader()}
+        stateReaderControllers={{
+          getProjectSummaryQueryHandler: projectSummaryController("primed"),
+        }}
+        subprocessManager={manager}
+      />,
+    );
+
+    try {
+      await waitForFrame(lastFrame, (frame) => frame.includes("EVENTS//"));
+      await navigateFromCockpitToGoals(stdin, lastFrame);
+
+      refinerSnapshot = {
+        ...refinerSnapshot,
+        events: [
+          ...refinerSnapshot.events,
+          {
+            daemon: "refiner",
+            status: "working",
+            category: "heartbeat",
+            goalId: "goal_single_navigation",
+            elapsedMs: 6_000,
+            timestampMs: 6_000,
+            message: "still working",
+          },
+        ],
+      };
+
+      await navigateFromGoalsToCockpit(stdin, lastFrame);
+      await waitForFrame(lastFrame, (frame) =>
+        frame.includes("single navigation activity") && frame.includes("6s"),
+      );
+
+      expect(manager.spawn).not.toHaveBeenCalled();
+      expect(terminate).not.toHaveBeenCalled();
+      expect(terminateAll).not.toHaveBeenCalled();
+      expect(manager.getStatus("refiner").pid).toBe(4101);
+
+      stdin.write("s");
+      await waitForFrame(lastFrame, () => terminate.mock.calls.length === 1);
+      await tick();
+
+      expect(terminate).toHaveBeenCalledTimes(1);
+      expect(terminate).toHaveBeenCalledWith("refiner");
+      expect(terminateAll).not.toHaveBeenCalled();
+    } finally {
+      unmount();
+    }
+  }, 10000);
+
+  it("preserves multiple independently updating daemons across navigation", async () => {
+    const snapshots = new Map<DaemonName, SubprocessSnapshot>([
+      ["refiner", {
+        name: "refiner", status: "running", pid: 5101,
+        config: stoppedDaemonSnapshot.config, stdout: [], stderr: [],
+        events: [{ daemon: "refiner", status: "working", category: "activity", goalId: "goal_refiner", timestampMs: 7_000, message: "refiner resumed" }],
+      }],
+      ["reviewer", {
+        name: "reviewer", status: "running", pid: 5102,
+        config: stoppedDaemonSnapshot.config, stdout: [], stderr: [],
+        events: [{ daemon: "reviewer", status: "working", category: "activity", goalId: "goal_reviewer", timestampMs: 8_000, message: "reviewer resumed" }],
+      }],
+      ["codifier", {
+        name: "codifier", status: "running", pid: 5103,
+        config: stoppedDaemonSnapshot.config, stdout: [], stderr: [],
+        events: [{ daemon: "codifier", status: "working", category: "activity", goalId: "goal_codifier", timestampMs: 9_000, message: "codifier resumed" }],
+      }],
+    ]);
+    const manager: ISubprocessManager = {
+      spawn: jest.fn(async (name) => snapshots.get(name)!),
+      terminate: jest.fn(async (name) => snapshots.get(name)!),
+      terminateAll: jest.fn(async () => {}),
+      getStatus: jest.fn((name) => snapshots.get(name)!),
+      getAllStatuses: jest.fn(() => [...snapshots.values()]),
+    };
+    const { stdin, lastFrame, unmount } = render(
+      <App
+        settingsReader={hiddenLaunchpadWelcomeSettingsReader()}
+        stateReaderControllers={{
+          getProjectSummaryQueryHandler: projectSummaryController("primed"),
+        }}
+        subprocessManager={manager}
+      />,
+    );
+
+    try {
+      await waitForFrame(lastFrame, (frame) => frame.includes("EVENTS//"));
+      await navigateFromCockpitToGoals(stdin, lastFrame);
+
+      for (const [name, snapshot] of snapshots) {
+        snapshots.set(name, {
+          ...snapshot,
+          events: snapshot.events.map((event) => ({
+            ...event,
+            elapsedMs: name === "refiner" ? 7_000 : name === "reviewer" ? 8_000 : 9_000,
+          })),
+        });
+      }
+
+      await navigateFromGoalsToCockpit(stdin, lastFrame);
+      const frame = await waitForFrame(lastFrame, (currentFrame) =>
+        currentFrame.includes("refiner resumed") &&
+        currentFrame.includes("reviewer resumed") &&
+        currentFrame.includes("codifier resumed"),
+      );
+
+      expect(frame).toContain("7s");
+      expect(frame).toContain("8s");
+      expect(frame).toContain("9s");
+      expect(manager.getStatus("refiner").pid).toBe(5101);
+      expect(manager.getStatus("reviewer").pid).toBe(5102);
+      expect(manager.getStatus("codifier").pid).toBe(5103);
+      expect(manager.spawn).not.toHaveBeenCalled();
+      expect(manager.terminate).not.toHaveBeenCalled();
+      expect(manager.terminateAll).not.toHaveBeenCalled();
+    } finally {
+      unmount();
+    }
+  }, 10000);
 
   it("does not open goal authoring from uninitialized cockpit state", async () => {
     const { stdin, lastFrame, unmount } = render(

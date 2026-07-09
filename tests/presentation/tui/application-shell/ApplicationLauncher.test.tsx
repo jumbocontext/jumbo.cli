@@ -137,7 +137,7 @@ describe("ApplicationLauncher", () => {
     expect(element.props.subprocessManager).toBe(manager);
   });
 
-  it("creates one subprocess manager per launch and terminates it after Ink exits", async () => {
+  it("keeps one launcher-owned subprocess manager for the App lifetime and terminates it exactly once after Ink exits", async () => {
     const terminateAll = jest.fn<() => Promise<void>>().mockResolvedValue();
     const manager = subprocessManager(terminateAll);
     const factory = jest.fn(() => manager);

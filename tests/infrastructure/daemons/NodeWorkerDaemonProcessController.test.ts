@@ -55,6 +55,28 @@ describe("NodeWorkerDaemonProcessController", () => {
     );
   });
 
+  it("passes an explicitly configured environment to the daemon child", () => {
+    const child = new EventEmitter();
+    spawnMock.mockReturnValue(child);
+    const environment = {
+      PATH: "C:\\fake-agent-bin",
+      JUMBO_AGENT_COMMAND_VIBE: process.execPath,
+    };
+    const controller = new NodeWorkerDaemonProcessController(environment);
+
+    controller.spawnDaemonProcess("codifier", {
+      agentId: "vibe",
+      pollIntervalMs: 10_000,
+      maxRetries: 1,
+    });
+
+    expect(spawnMock).toHaveBeenCalledWith(
+      process.execPath,
+      expect.any(Array),
+      expect.objectContaining({ env: environment }),
+    );
+  });
+
   it("defines Unix process-group signaling for non-Windows hosts", () => {
     expect(getNodeWorkerDaemonTerminationStrategy("linux", 456)).toEqual({
       kind: "unix-process-group",
@@ -68,7 +90,7 @@ describe("NodeWorkerDaemonProcessController", () => {
     expect(getNodeWorkerDaemonTerminationStrategy("win32", 456)).toEqual({
       kind: "windows-tree",
       command: "taskkill",
-      args: ["/T", "/PID", "456"],
+      args: ["/F", "/T", "/PID", "456"],
       escalationArgs: ["/F", "/T", "/PID", "456"],
     });
   });
@@ -107,7 +129,7 @@ describe("NodeWorkerDaemonProcessController", () => {
     jest.spyOn(controller, "getTerminationStrategy").mockReturnValue({
       kind: "windows-tree",
       command: "taskkill",
-      args: ["/T", "/PID", "789"],
+      args: ["/F", "/T", "/PID", "789"],
       escalationArgs: ["/F", "/T", "/PID", "789"],
     });
 
@@ -117,17 +139,17 @@ describe("NodeWorkerDaemonProcessController", () => {
     await expect(termination).resolves.toEqual({
       status: "closed",
       strategy: {
-        kind: "windows-tree",
-        command: "taskkill",
-        args: ["/T", "/PID", "789"],
-        escalationArgs: ["/F", "/T", "/PID", "789"],
+      kind: "windows-tree",
+      command: "taskkill",
+      args: ["/F", "/T", "/PID", "789"],
+      escalationArgs: ["/F", "/T", "/PID", "789"],
       },
       exitCode: null,
       exitSignal: "SIGTERM",
     });
     expect(execFileMock).toHaveBeenCalledWith(
       "taskkill",
-      ["/T", "/PID", "789"],
+      ["/F", "/T", "/PID", "789"],
       expect.any(Function),
     );
   });
@@ -138,7 +160,7 @@ describe("NodeWorkerDaemonProcessController", () => {
     jest.spyOn(controller, "getTerminationStrategy").mockReturnValue({
       kind: "windows-tree",
       command: "taskkill",
-      args: ["/T", "/PID", "790"],
+      args: ["/F", "/T", "/PID", "790"],
       escalationArgs: ["/F", "/T", "/PID", "790"],
     });
     execFileMock.mockImplementation((_file, _args, callback) => callback(new Error("taskkill failed"), "", ""));
@@ -187,7 +209,7 @@ describe("NodeWorkerDaemonProcessController", () => {
     jest.spyOn(controller, "getTerminationStrategy").mockReturnValue({
       kind: "windows-tree",
       command: "taskkill",
-      args: ["/T", "/PID", "791"],
+      args: ["/F", "/T", "/PID", "791"],
       escalationArgs: ["/F", "/T", "/PID", "791"],
     });
 
@@ -199,7 +221,7 @@ describe("NodeWorkerDaemonProcessController", () => {
       strategy: {
         kind: "windows-tree",
         command: "taskkill",
-        args: ["/T", "/PID", "791"],
+        args: ["/F", "/T", "/PID", "791"],
         escalationArgs: ["/F", "/T", "/PID", "791"],
       },
       timeoutMs: 25,
@@ -211,7 +233,7 @@ describe("NodeWorkerDaemonProcessController", () => {
     });
     expect(execFileMock).toHaveBeenCalledWith(
       "taskkill",
-      ["/T", "/PID", "791"],
+      ["/F", "/T", "/PID", "791"],
       expect.any(Function),
     );
     expect(execFileMock).toHaveBeenCalledWith(

@@ -19,7 +19,10 @@ function format(
       : event.message.trim(),
     event.goalId === undefined ? undefined : shortGoalId(event.goalId),
     formatAttemptDetails(event),
+    event.phase === undefined ? undefined : `[${event.phase}]`,
+    formatElapsed(event.elapsedMs),
     formatExitDetails(event),
+    event.errorType,
     event.errorMessage ?? snapshot.stderr[snapshot.stderr.length - 1],
   ].filter((part): part is string => part !== undefined && part.length > 0);
 
@@ -36,6 +39,15 @@ function formatAttemptDetails(event: DaemonEventSnapshot): string | undefined {
 
 function formatExitDetails(event: DaemonEventSnapshot): string | undefined {
   return event.exitCode === undefined ? undefined : `exit ${event.exitCode}`;
+}
+
+function formatElapsed(elapsedMs: number | undefined): string | undefined {
+  if (elapsedMs === undefined) {
+    return undefined;
+  }
+
+  const seconds = Math.max(0, Math.floor(elapsedMs / 1000));
+  return `${seconds}s`;
 }
 
 function shortGoalId(goalId: string | undefined): string {

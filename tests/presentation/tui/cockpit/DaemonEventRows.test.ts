@@ -41,9 +41,26 @@ describe("DaemonEventRows", () => {
     expect(DaemonEventRows.append(current, next).map((row) => row.message)).toEqual(["new", "old"]);
     expect(DaemonEventRows.append(current, current)).toBe(current);
   });
+
+  it("keeps terminal outcomes visible when newer idle rows exceed the rendered limit", () => {
+    const terminal = snapshot("goal failed", 1000, "failed", "failed");
+    const idleRows = Array.from({ length: 11 }, (_, index) =>
+      snapshot(`idle-${index}`, 2000 + index, "idle", "waiting")
+    );
+
+    const rows = DaemonEventRows.fromSnapshots([terminal, ...idleRows], 3000);
+
+    expect(rows.map((row) => row.message)).toContain("goal failed");
+    expect(rows).toHaveLength(10);
+  });
 });
 
-function snapshot(message: string, timestampMs: number): SubprocessSnapshot {
+function snapshot(
+  message: string,
+  timestampMs: number,
+  status = "processing",
+  category = "work",
+): SubprocessSnapshot {
   return {
     name: "refiner",
     status: "running",
@@ -52,7 +69,8 @@ function snapshot(message: string, timestampMs: number): SubprocessSnapshot {
     stderr: [],
     events: [{
       daemon: "refiner",
-      status: "processing",
+      status,
+      category,
       message,
       timestampMs,
     }],

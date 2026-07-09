@@ -47,10 +47,14 @@ describe("ReviewerProcessManager", () => {
     });
     expect(goalStatusReader.findByStatus).toHaveBeenCalledWith(GoalStatus.SUBMITTED);
     expect(reviewGoalController.handle).toHaveBeenCalledWith({ goalId: "goal_1" });
-    expect(agentGateway.invoke).toHaveBeenCalledWith({
+    expect(agentGateway.invoke).toHaveBeenCalledWith(expect.objectContaining({
       agentId: "codex",
-      prompt: "Run the Jumbo review workflow for goal goal_1. Execute: jumbo goal review --id goal_1",
-    });
+      prompt: expect.stringContaining("jumbo goal approve --id goal_1"),
+      onActivity: expect.any(Function),
+    }));
+    expect(agentGateway.invoke.mock.calls[0][0].prompt).toContain(
+      'jumbo goal reject --id goal_1 --review-issues "describe the issues"',
+    );
   });
 
   it("emits a structured waiting event when no goals are eligible", async () => {
@@ -72,15 +76,22 @@ describe("ReviewerProcessManager", () => {
       emit: (event) => emittedEvents.push(event),
     })).resolves.toEqual({ status: "idle", attempts: 0 });
 
-    expect(emittedEvents).toEqual([
-      {
+    expect(emittedEvents).toEqual(expect.arrayContaining([
+      expect.objectContaining({
         daemon: "reviewer",
         status: "idle",
         source: "reviewer",
         category: "waiting",
         message: "awaiting submitted goals",
-      },
-    ]);
+        phase: "idle",
+      }),
+      expect.objectContaining({
+        daemon: "reviewer",
+        status: "processing",
+        category: "polling",
+        phase: "polling",
+      }),
+    ]));
   });
 
   it("emits a structured failure event when review cannot start", async () => {
@@ -136,8 +147,8 @@ describe("ReviewerProcessManager", () => {
       emit: (event) => emittedEvents.push(event),
     });
 
-    expect(emittedEvents).toEqual([
-      {
+    expect(emittedEvents).toEqual(expect.arrayContaining([
+      expect.objectContaining({
         daemon: "reviewer",
         status: "processing",
         source: "reviewer",
@@ -146,24 +157,25 @@ describe("ReviewerProcessManager", () => {
         goalId: "goal_1",
         attempt: 1,
         maxRetries: 1,
-      },
-      {
+        phase: "working",
+      }),
+      expect.objectContaining({
         daemon: "reviewer",
         status: "processing",
-        source: "reviewer",
+        source: "agent",
         category: "model-output",
         message: "Review found a missing assertion.",
         goalId: "goal_1",
-      },
-      {
+      }),
+      expect.objectContaining({
         daemon: "reviewer",
         status: "processing",
-        source: "reviewer",
+        source: "agent",
         category: "model-output",
         message: "Recommend changes before approval.",
         goalId: "goal_1",
-      },
-      {
+      }),
+      expect.objectContaining({
         daemon: "reviewer",
         status: "completed",
         source: "reviewer",
@@ -173,8 +185,9 @@ describe("ReviewerProcessManager", () => {
         attempt: 1,
         maxRetries: 1,
         exitCode: 0,
-      },
-    ]);
+        phase: "completed",
+      }),
+    ]));
   });
 
   it("caps reviewer model-output event messages from oversized agent stdout", async () => {

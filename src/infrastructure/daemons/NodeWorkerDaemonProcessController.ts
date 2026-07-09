@@ -20,6 +20,8 @@ const __dirname = path.dirname(__filename);
 const PRESENTATION_WORK_DAEMON_DIRECTORY_SEGMENTS = ["..", "..", "presentation", "work"] as const;
 
 export class NodeWorkerDaemonProcessController implements IWorkerDaemonProcessController {
+  constructor(private readonly environment?: NodeJS.ProcessEnv) {}
+
   spawnDaemonProcess(
     name: WorkerDaemonName,
     config: WorkerDaemonConfig,
@@ -36,6 +38,7 @@ export class NodeWorkerDaemonProcessController implements IWorkerDaemonProcessCo
       cwd: process.cwd(),
       stdio: ["ignore", "pipe", "pipe"],
       detached: process.platform !== "win32",
+      ...(this.environment === undefined ? {} : { env: this.environment }),
     });
   }
 
@@ -83,7 +86,7 @@ export function getNodeWorkerDaemonTerminationStrategy(
     return {
       kind: "windows-tree",
       command: "taskkill",
-      args: ["/T", "/PID", String(pid)],
+      args: ["/F", "/T", "/PID", String(pid)],
       escalationArgs: ["/F", "/T", "/PID", String(pid)],
     };
   }

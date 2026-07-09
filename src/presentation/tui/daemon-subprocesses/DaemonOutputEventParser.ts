@@ -42,7 +42,9 @@ export class DaemonOutputEventParser {
       source: this.boundOptionalTextField(event.source),
       category: this.boundOptionalTextField(event.category),
       message: this.boundOptionalTextField(event.message),
+      phase: this.boundOptionalTextField(event.phase),
       goalId: this.boundOptionalTextField(event.goalId),
+      errorType: this.boundOptionalTextField(event.errorType),
       errorMessage: this.boundOptionalTextField(event.errorMessage),
     };
   }

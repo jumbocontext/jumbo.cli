@@ -5,6 +5,7 @@ import type {
   ProcessManagerResult,
   ProcessManagerStatus,
 } from "../../../daemons/IProcessManager.js";
+import { ProcessManagerEventEmitter } from "../../../daemons/ProcessManagerEventEmitter.js";
 import { IAgentGateway } from "../../../agents/IAgentGateway.js";
 import { ITelemetryClient } from "../../../telemetry/ITelemetryClient.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
@@ -68,25 +69,26 @@ export class CodifierProcessManager implements IProcessManager {
 
   async processNext(options: CodifierProcessOptions): Promise<CodifierProcessResult> {
     const startedAt = process.hrtime.bigint();
+    const events = new ProcessManagerEventEmitter(CODIFIER_EVENT_SOURCE, options, startedAt);
+    events.emit("processing", "polling", "polling for approved goals", { phase: "polling" });
     const goals = await this.selectEligibleGoals();
 
     if (goals.length === 0) {
-      this.emit(options, {
-        daemon: CODIFIER_EVENT_SOURCE,
-        status: "idle",
-        source: CODIFIER_EVENT_SOURCE,
-        ...CODIFIER_EVENT_COPY.noWork,
-      });
+      events.emit("idle", CODIFIER_EVENT_COPY.noWork.category, CODIFIER_EVENT_COPY.noWork.message, { phase: "idle" });
       this.track("codifier_process_completed", startedAt, { status: "idle", attempts: 0 });
       return { status: "idle", attempts: 0 };
     }
 
     const goal = goals[0];
+    events.emit("processing", "selection", "selected goal for codification", {
+      phase: "selection",
+      goalId: goal.goalId,
+    });
 
     try {
       await this.codifyGoalController.handle({ goalId: goal.goalId });
     } catch (error) {
-      this.emitFailure(options, goal.goalId, error);
+      this.emitFailure(events, goal.goalId, error);
       this.track("codifier_process_completed", startedAt, {
         status: "failed",
         attempts: 0,
@@ -97,31 +99,35 @@ export class CodifierProcessManager implements IProcessManager {
     }
 
     for (let attempt = 1; attempt <= options.maxRetries; attempt++) {
-      this.emit(options, {
-        daemon: CODIFIER_EVENT_SOURCE,
-        status: "processing",
-        source: CODIFIER_EVENT_SOURCE,
+      const attemptContext = {
         goalId: goal.goalId,
         attempt,
         maxRetries: options.maxRetries,
-        ...CODIFIER_EVENT_COPY.workStarted,
+      };
+      events.emit("processing", CODIFIER_EVENT_COPY.workStarted.category, CODIFIER_EVENT_COPY.workStarted.message, {
+        phase: "working",
+        ...attemptContext,
       });
 
-      const result = await this.agentGateway.invoke({
+      let sawAgentActivity = false;
+      const invocation = {
         agentId: options.agentId,
         prompt: this.buildPrompt(goal.goalId),
-      });
+        onActivity: (activity: { readonly stream: "stdout" | "stderr"; readonly text: string }) => {
+          sawAgentActivity = true;
+          events.emitAgentActivity(activity.stream, activity.text, attemptContext);
+        },
+      };
+      const result = await this.agentGateway.invoke(invocation);
+      if (!sawAgentActivity) {
+        this.emitReturnedAgentOutput(events, result, attemptContext);
+      }
 
       if (await this.isGoalDone(goal.goalId)) {
-        this.emit(options, {
-          daemon: CODIFIER_EVENT_SOURCE,
-          status: "completed",
-          source: CODIFIER_EVENT_SOURCE,
-          goalId: goal.goalId,
-          attempt,
-          maxRetries: options.maxRetries,
+        events.emit("completed", CODIFIER_EVENT_COPY.completed.category, CODIFIER_EVENT_COPY.completed.message, {
+          phase: "completed",
+          ...attemptContext,
           exitCode: result.exitCode,
-          ...CODIFIER_EVENT_COPY.completed,
         });
         this.track("codifier_process_completed", startedAt, {
           status: "completed",
@@ -133,16 +139,17 @@ export class CodifierProcessManager implements IProcessManager {
       }
 
       const retryExhausted = attempt === options.maxRetries;
-      this.emit(options, {
-        daemon: CODIFIER_EVENT_SOURCE,
-        status: retryExhausted ? "exhausted" : "skipped",
-        source: CODIFIER_EVENT_SOURCE,
-        goalId: goal.goalId,
-        attempt,
-        maxRetries: options.maxRetries,
+      events.emit(retryExhausted ? "exhausted" : "skipped", retryExhausted ? CODIFIER_EVENT_COPY.exhausted.category : CODIFIER_EVENT_COPY.skipped.category, retryExhausted ? CODIFIER_EVENT_COPY.exhausted.message : CODIFIER_EVENT_COPY.skipped.message, {
+        phase: retryExhausted ? "exhausted" : "retry",
+        ...attemptContext,
         exitCode: result.exitCode,
-        ...(retryExhausted ? CODIFIER_EVENT_COPY.exhausted : CODIFIER_EVENT_COPY.skipped),
       });
+      if (!retryExhausted) {
+        events.emit("processing", "retry", "retrying codification", {
+          phase: "retry",
+          ...attemptContext,
+        });
+      }
     }
 
     this.track("codifier_process_completed", startedAt, {
@@ -176,21 +183,14 @@ export class CodifierProcessManager implements IProcessManager {
     return goal?.status === GoalStatus.DONE;
   }
 
-  private emit(options: CodifierProcessOptions, event: CodifierProcessEvent): void {
-    options.emit?.(event);
-  }
-
   private emitFailure(
-    options: CodifierProcessOptions,
+    events: ProcessManagerEventEmitter,
     goalId: string,
     error: unknown,
   ): void {
-    this.emit(options, {
-      daemon: CODIFIER_EVENT_SOURCE,
-      status: "failed",
-      source: CODIFIER_EVENT_SOURCE,
+    events.emit("failed", CODIFIER_EVENT_COPY.failed.category, CODIFIER_EVENT_COPY.failed.message, {
+      phase: "failed",
       goalId,
-      ...CODIFIER_EVENT_COPY.failed,
       ...this.errorProperties(error),
     });
   }
@@ -205,6 +205,19 @@ export class CodifierProcessManager implements IProcessManager {
       durationMs: Number((process.hrtime.bigint() - startedAt) / BigInt(1_000_000)),
       ...properties,
     });
+  }
+
+  private emitReturnedAgentOutput(
+    events: ProcessManagerEventEmitter,
+    result: { readonly stdout?: string; readonly stderr?: string },
+    context: { readonly goalId: string; readonly attempt: number; readonly maxRetries: number },
+  ): void {
+    if (result.stdout !== undefined) {
+      events.emitAgentActivity("stdout", result.stdout, context);
+    }
+    if (result.stderr !== undefined) {
+      events.emitAgentActivity("stderr", result.stderr, context);
+    }
   }
 
   private errorProperties(error: unknown): {

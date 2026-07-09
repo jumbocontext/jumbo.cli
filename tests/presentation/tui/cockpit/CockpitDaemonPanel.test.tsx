@@ -70,4 +70,47 @@ describe("CockpitDaemonPanel", () => {
     expect(lastFrame()).toContain(CockpitDaemonPanelCopy.pidLabel);
     unmount();
   });
+
+  it("uses heartbeat elapsed time while retaining the latest meaningful activity", () => {
+    const { lastFrame, unmount } = render(
+      <CockpitDaemonPanel
+        daemonConstants={RefinerDaemonConstants}
+        snapshot={{
+          ...createSnapshot("running"),
+          events: [
+            {
+              daemon: "refiner",
+              status: "working",
+              category: "activity",
+              goalId: "goal_heartbeat",
+              phase: "agent",
+              elapsedMs: 1_000,
+              message: "inspecting goal",
+            },
+            {
+              daemon: "refiner",
+              status: "working",
+              category: "heartbeat",
+              goalId: "goal_heartbeat",
+              elapsedMs: 6_000,
+              message: "still working",
+            },
+          ],
+        }}
+        pendingConfig={daemonConfig}
+        selected={true}
+        configuring={false}
+        infoVisible={false}
+      >
+        <Text>daemon frame</Text>
+      </CockpitDaemonPanel>,
+    );
+
+    expect(lastFrame()).toContain("goal_hea");
+    expect(lastFrame()).toContain("agent");
+    expect(lastFrame()).toContain("6s");
+    expect(lastFrame()).toContain("inspecting goal");
+    expect(lastFrame()).not.toContain("still working");
+    unmount();
+  });
 });

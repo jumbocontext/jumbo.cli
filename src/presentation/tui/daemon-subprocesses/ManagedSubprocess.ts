@@ -12,10 +12,12 @@ export interface ManagedSubprocess {
   readonly stdout: string[];
   readonly stderr: string[];
   readonly events: DaemonEventSnapshot[];
+  readonly startedAtMs: number;
   status: SubprocessStatusValue;
   exitCode?: number | null;
   exitSignal?: string | null;
   stopRequested: boolean;
   terminationTimedOut: boolean;
   termination?: Promise<SubprocessSnapshot>;
+  heartbeatTimer?: ReturnType<typeof setInterval>;
 }
