@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.16.0] - 2026-07-09
+
 ### Changed
 
 - **Antigravity agent support**: Replaced Gemini CLI initialization and worker-agent support with Antigravity CLI support using the documented `agy` executable, `.agents/skills`, and `.agents/hooks.json` hook surface.
@@ -14,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - **Gemini agent support**: Removed Gemini as a selectable initialization and worker agent target, including obsolete Gemini settings fragments, configurers, command mappings, and logo assets.
+- **Co-located evals project**: Removed the `evals/` directory from this repository; the eval framework now lives in its own repository rather than as a nested npm project here.
 
 ## [3.15.0] - 2026-07-08
 
