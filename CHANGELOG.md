@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Antigravity agent support**: Replaced Gemini CLI initialization and worker-agent support with Antigravity CLI support using the documented `agy` executable, `.agents/skills`, and `.agents/hooks.json` hook surface.
+
+### Removed
+
+- **Gemini agent support**: Removed Gemini as a selectable initialization and worker agent target, including obsolete Gemini settings fragments, configurers, command mappings, and logo assets.
+
 ## [3.15.0] - 2026-07-08
 
 ### Added

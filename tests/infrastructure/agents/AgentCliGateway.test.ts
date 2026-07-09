@@ -93,6 +93,28 @@ describe("AgentCliGateway", () => {
     );
   });
 
+  it("spawns Antigravity through the documented agy executable", async () => {
+    const child = childProcess();
+    spawnMock.mockReturnValue(child);
+
+    const promise = new AgentCliGateway(telemetryClient).invoke({
+      agentId: "antigravity",
+      prompt: "run review",
+    });
+    child.emit("close", 0);
+
+    await expect(promise).resolves.toEqual({ exitCode: 0, stdout: "", stderr: "" });
+    expect(spawnMock).toHaveBeenCalledWith(
+      'agy -p "run review"',
+      [],
+      expect.objectContaining({ shell: true }),
+    );
+    expect(telemetryClient.track).toHaveBeenCalledWith(
+      "agent_invocation_completed",
+      expect.objectContaining({ agentId: "antigravity", exitCode: 0, success: true }),
+    );
+  });
+
   it("captures bounded agent stdout and stderr tails without mirroring raw output to daemon stderr", async () => {
     const child = childProcess();
     spawnMock.mockReturnValue(child);
@@ -148,6 +170,16 @@ describe("AgentCliGateway", () => {
         prompt: "run codify",
       }),
     ).rejects.toThrow("Unsupported agent: unknown");
+    expect(spawnMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects the retired Gemini agent before spawning", async () => {
+    await expect(
+      new AgentCliGateway(telemetryClient).invoke({
+        agentId: "gemini",
+        prompt: "run codify",
+      }),
+    ).rejects.toThrow("Unsupported agent: gemini");
     expect(spawnMock).not.toHaveBeenCalled();
   });
 });

@@ -7,7 +7,7 @@
 
 import { spawn } from "node:child_process";
 
-export const SUPPORTED_AGENTS = ["claude", "gemini", "copilot", "codex", "cursor", "vibe"] as const;
+export const SUPPORTED_AGENTS = ["claude", "antigravity", "copilot", "codex", "cursor", "vibe"] as const;
 export type AgentId = typeof SUPPORTED_AGENTS[number];
 
 export interface AgentCommand {
@@ -18,7 +18,7 @@ export interface AgentCommand {
 
 export const AGENT_COMMANDS: Record<AgentId, AgentCommand> = {
   claude:  { executable: "claude",     promptFlag: "-p" },
-  gemini:  { executable: "gemini",     promptFlag: "-p" },
+  antigravity: { executable: "agy",    promptFlag: "-p" },
   copilot: { executable: "gh copilot", promptFlag: "-p" },
   codex:   { executable: "codex",      args: ["exec"] },
   cursor:  { executable: "cursor",     promptFlag: "-p" },

@@ -47,7 +47,7 @@ Jumbo creates or updates several files outside `.jumbo/` to integrate with AI co
 | `JUMBO.md` | Bootstrap-only Jumbo instruction file |
 | `AGENTS.md` | Points agents to `JUMBO.md` |
 | `CLAUDE.md` | Points Claude Code to `JUMBO.md` |
-| `GEMINI.md` | Points Gemini CLI to `JUMBO.md` |
+| `GEMINI.md` | Points Antigravity-compatible Gemini context loading to `JUMBO.md` |
 | `.github/copilot-instructions.md` | Points GitHub Copilot to `../JUMBO.md` |
 | `.cursor/rules/jumbo.mdc` | Points Cursor to `JUMBO.md` with always-apply rules frontmatter |
 
@@ -59,17 +59,18 @@ Jumbo creates or updates several files outside `.jumbo/` to integrate with AI co
 |---|---|
 | `.claude/settings.json` | Claude Code hooks for session start and compaction |
 | `.codex/hooks.json` | Codex hooks for session start and compaction using text-mode Jumbo output |
-| `.gemini/settings.json` | Gemini CLI hooks for session start and compression |
+| `.agents/hooks.json` | Antigravity hooks for session bootstrap |
+| `.agents/jumbo/antigravity-hook.mjs` | Antigravity hook runner that returns documented JSON hook envelopes |
 | `.github/hooks/hooks.json` | GitHub Copilot hooks for session start |
 | `.cursor/hooks.json` | Cursor hook for session start |
 
-These hooks load the session router when an agent session begins and preserve work state before compaction or compression.
+These hooks load the session router when an agent session begins and preserve work state before supported lifecycle events.
 
 **Managed skills:**
 
 Jumbo copies workflow and maintenance skills from `assets/skills` into the selected agents' skill directories, including bootstrap/session use, lifecycle hooks, command discovery, context maintenance, and correction capture. Additive initialization does not overwrite existing managed skill directories; repair refreshes Jumbo-managed skills from assets while preserving user-created skills.
 
-Codex skills are installed to `.agents/skills`. Jumbo may remove obsolete Codex skill copies from `.codex/skills` during repair or evolve, but only when the obsolete directory is byte-identical to the current managed template and contains no extra user files.
+Codex and Antigravity skills are installed to `.agents/skills`. Jumbo may remove obsolete Codex skill copies from `.codex/skills` during repair or evolve, but only when the obsolete directory is byte-identical to the current managed template and contains no extra user files.
 
 ---
 

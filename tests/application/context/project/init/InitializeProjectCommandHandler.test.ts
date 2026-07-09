@@ -120,7 +120,7 @@ describe("InitializeProjectCommandHandler", () => {
         purpose: "LLM context management",
       };
 
-      const result = await handler.execute(command, "/repo", ["claude", "gemini"]);
+      const result = await handler.execute(command, "/repo", ["claude", "antigravity"]);
 
       expect(result.projectId).toBe(generatedProjectId);
       expect(projectIdentityResolver.generateProjectId).toHaveBeenCalledTimes(1);
@@ -137,7 +137,7 @@ describe("InitializeProjectCommandHandler", () => {
       expect(settingsInitializer.ensureSettingsFileExists).toHaveBeenCalledTimes(1);
       expect(projectIdentityResolver.persistProjectId).toHaveBeenCalledWith(generatedProjectId);
       expect(agentFileProtocol.ensureAgentsMd).toHaveBeenCalledWith("/repo");
-      expect(agentFileProtocol.ensureAgentConfigurations).toHaveBeenCalledWith("/repo", ["claude", "gemini"]);
+      expect(agentFileProtocol.ensureAgentConfigurations).toHaveBeenCalledWith("/repo", ["claude", "antigravity"]);
       expect(gitignoreProtocol.ensureExclusions).toHaveBeenCalledWith("/repo");
     });
   });

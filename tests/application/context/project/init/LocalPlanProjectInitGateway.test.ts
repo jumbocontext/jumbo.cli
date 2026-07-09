@@ -96,12 +96,12 @@ describe("LocalPlanProjectInitGateway", () => {
   it("should pass selected agent ids to the agent file protocol", async () => {
     await gateway.planProjectInit({
       projectRoot: "/test/project",
-      selectedAgentIds: ["gemini", "copilot"],
+      selectedAgentIds: ["antigravity", "copilot"],
     });
 
     expect(mockAgentFileProtocol.getPlannedFileChanges).toHaveBeenCalledWith(
       "/test/project",
-      ["gemini", "copilot"]
+      ["antigravity", "copilot"]
     );
   });
 });

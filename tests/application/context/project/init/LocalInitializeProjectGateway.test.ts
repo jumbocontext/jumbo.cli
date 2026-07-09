@@ -93,7 +93,7 @@ describe("LocalInitializeProjectGateway", () => {
       name: "my-project",
       purpose: undefined,
       projectRoot: "/home/user/project",
-      selectedAgentIds: ["gemini"],
+      selectedAgentIds: ["antigravity"],
     };
 
     mockPlanGateway.planProjectInit.mockResolvedValue({ availableAgents: [], plannedChanges: [] });
@@ -103,7 +103,7 @@ describe("LocalInitializeProjectGateway", () => {
 
     expect(mockPlanGateway.planProjectInit).toHaveBeenCalledWith({
       projectRoot: "/home/user/project",
-      selectedAgentIds: ["gemini"],
+      selectedAgentIds: ["antigravity"],
     });
   });
 

@@ -23,7 +23,7 @@ Long-running daemon that continuously polls for goals in `defined` state and del
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `--agent <agentId>` | Yes | — | Agent to delegate refinement to. Supported: `claude`, `gemini`, `copilot`, `codex`, `cursor`, `vibe` |
+| `--agent <agentId>` | Yes | — | Agent to delegate refinement to. Supported: `claude`, `antigravity`, `copilot`, `codex`, `cursor`, `vibe` |
 | `--poll-interval <seconds>` | No | `30` | Seconds to wait between polling for new goals |
 | `--max-retries <number>` | No | `3` | Max retry attempts per goal before skipping |
 
@@ -69,7 +69,7 @@ Long-running daemon that continuously polls for goals in `submitted` state and d
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `--agent <agentId>` | Yes | — | Agent to delegate review to. Supported: `claude`, `gemini`, `copilot`, `codex`, `cursor`, `vibe` |
+| `--agent <agentId>` | Yes | — | Agent to delegate review to. Supported: `claude`, `antigravity`, `copilot`, `codex`, `cursor`, `vibe` |
 | `--poll-interval <seconds>` | No | `30` | Seconds to wait between polling for new goals |
 | `--max-retries <number>` | No | `3` | Max retry attempts per goal before skipping |
 

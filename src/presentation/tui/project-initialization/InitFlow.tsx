@@ -773,7 +773,7 @@ function summarizePlannedChangeGroups(
     InitFlowConfirmationGroupLabel.shared,
     InitFlowConfirmationGroupLabel.claude,
     InitFlowConfirmationGroupLabel.codex,
-    InitFlowConfirmationGroupLabel.gemini,
+    InitFlowConfirmationGroupLabel.antigravity,
     InitFlowConfirmationGroupLabel.copilot,
     InitFlowConfirmationGroupLabel.cursor,
     InitFlowConfirmationGroupLabel.vibe,
@@ -787,8 +787,8 @@ function classifyPlannedChangeGroup(path: string): string {
     return InitFlowConfirmationGroupLabel.claude;
   }
   if (path.startsWith(".codex/")) return InitFlowConfirmationGroupLabel.codex;
-  if (path === "GEMINI.md" || path.startsWith(".gemini/")) {
-    return InitFlowConfirmationGroupLabel.gemini;
+  if (path === "GEMINI.md" || path === ".agents/hooks.json" || path.startsWith(".agents/jumbo/")) {
+    return InitFlowConfirmationGroupLabel.antigravity;
   }
   if (path.startsWith(".github/")) {
     return InitFlowConfirmationGroupLabel.copilot;

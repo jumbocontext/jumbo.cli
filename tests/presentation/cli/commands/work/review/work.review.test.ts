@@ -14,7 +14,7 @@ jest.unstable_mockModule("../../../../../../src/presentation/cli/commands/work/s
 }));
 
 jest.unstable_mockModule("../../../../../../src/presentation/cli/commands/work/shared/AgentSpawner.js", () => ({
-  SUPPORTED_AGENTS: ["claude", "gemini"],
+  SUPPORTED_AGENTS: ["claude", "antigravity"],
   spawnAgent: jest.fn().mockResolvedValue(0),
 }));
 

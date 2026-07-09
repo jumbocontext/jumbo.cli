@@ -9,12 +9,13 @@ describe("AgentSpawner", () => {
   describe("SUPPORTED_AGENTS", () => {
     it("includes all expected agent identifiers", () => {
       expect(SUPPORTED_AGENTS).toContain("claude");
-      expect(SUPPORTED_AGENTS).toContain("gemini");
+      expect(SUPPORTED_AGENTS).toContain("antigravity");
       expect(SUPPORTED_AGENTS).toContain("copilot");
       expect(SUPPORTED_AGENTS).toContain("codex");
       expect(SUPPORTED_AGENTS).toContain("cursor");
       expect(SUPPORTED_AGENTS).toContain("vibe");
       expect(SUPPORTED_AGENTS).toHaveLength(6);
+      expect(SUPPORTED_AGENTS).not.toContain("gemini");
     });
   });
 
@@ -47,8 +48,8 @@ describe("AgentSpawner", () => {
       expect(AGENT_COMMANDS.claude.executable).toBe("claude");
     });
 
-    it("maps gemini to gemini executable", () => {
-      expect(AGENT_COMMANDS.gemini.executable).toBe("gemini");
+    it("maps antigravity to the documented agy executable", () => {
+      expect(AGENT_COMMANDS.antigravity.executable).toBe("agy");
     });
   });
 });

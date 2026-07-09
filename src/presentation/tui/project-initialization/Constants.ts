@@ -146,7 +146,7 @@ export const InitFlowConfirmationGroupLabel = {
   shared: "Shared",
   claude: "Claude",
   codex: "Codex",
-  gemini: "Gemini",
+  antigravity: "Antigravity",
   copilot: "Copilot",
   cursor: "Cursor",
   vibe: "Vibe",

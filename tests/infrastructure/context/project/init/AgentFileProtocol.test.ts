@@ -4,6 +4,7 @@
 
 import fs from "fs-extra";
 import * as path from "path";
+import { spawnSync } from "node:child_process";
 import { AgentFileProtocol } from "../../../../../src/infrastructure/context/project/init/AgentFileProtocol";
 import { JumboMdContent } from "../../../../../src/domain/project/JumboMdContent";
 import { AgentsMdContent } from "../../../../../src/domain/project/AgentsMdContent";
@@ -18,7 +19,7 @@ jest.setTimeout(30_000);
 describe("AgentFileProtocol", () => {
   let tmpDir: string;
   let protocol: AgentFileProtocol;
-  const skillPlatforms = [".agents/skills", ".claude/skills", ".gemini/skills", ".vibe/skills"];
+  const skillPlatforms = [".agents/skills", ".claude/skills", ".vibe/skills"];
 
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "test-agent-files-"));
@@ -33,7 +34,7 @@ describe("AgentFileProtocol", () => {
     it("should return the configured agent list derived from configurers", () => {
       expect(protocol.getAvailableAgents()).toEqual([
         { id: "claude", name: "Claude" },
-        { id: "gemini", name: "Gemini" },
+        { id: "antigravity", name: "Antigravity" },
         { id: "copilot", name: "Copilot" },
         { id: "vibe", name: "Vibe" },
         { id: "codex", name: "Codex" },
@@ -186,6 +187,7 @@ describe("AgentFileProtocol", () => {
       expect(await fs.pathExists(path.join(tmpDir, ".github", "hooks", "hooks.json"))).toBe(true);
 
       expect(await fs.pathExists(path.join(tmpDir, "GEMINI.md"))).toBe(false);
+      expect(await fs.pathExists(path.join(tmpDir, ".agents", "hooks.json"))).toBe(false);
       expect(await fs.pathExists(path.join(tmpDir, ".gemini", "settings.json"))).toBe(false);
 
       expect(await fs.pathExists(path.join(tmpDir, ".claude", "skills", "my-skill", "SKILL.md"))).toBe(true);
@@ -305,8 +307,8 @@ describe("AgentFileProtocol", () => {
       expect(content).toContain("# CLAUDE.md");
     });
 
-    it("should create GEMINI.md with thin reference to JUMBO.md", async () => {
-      await protocol.ensureAgentConfigurations(tmpDir);
+    it("should create GEMINI.md with thin reference to JUMBO.md for Antigravity compatibility", async () => {
+      await protocol.ensureAgentConfigurations(tmpDir, ["antigravity"]);
 
       const geminiMdPath = path.join(tmpDir, "GEMINI.md");
       const exists = await fs.pathExists(geminiMdPath);
@@ -342,29 +344,35 @@ describe("AgentFileProtocol", () => {
       expect(settings.permissions.allow).toContain("Bash(jumbo --help)");
     });
 
-    it("should create .gemini/settings.json with jumbo --help permission", async () => {
-      await protocol.ensureAgentConfigurations(tmpDir);
+    it("should clean up legacy Antigravity hooks", async () => {
+      // Pre-create legacy hook runner and hooks
+      const hookRunnerPath = path.join(tmpDir, ".agents", "jumbo", "antigravity-hook.mjs");
+      await fs.ensureDir(path.dirname(hookRunnerPath));
+      await fs.writeFile(hookRunnerPath, "JUMBO_MANAGED_ANTIGRAVITY_HOOK_RUNNER_V1", "utf-8");
 
-      const settingsPath = path.join(tmpDir, ".gemini", "settings.json");
-      const content = await fs.readFile(settingsPath, "utf-8");
-      const settings = JSON.parse(content);
-      expect(settings.tools?.allowed).toBeDefined();
-      expect(settings.tools.allowed).toContain("run_shell_command(jumbo --help)");
-    });
+      const hooksPath = path.join(tmpDir, ".agents", "hooks.json");
+      await fs.writeFile(
+        hooksPath,
+        JSON.stringify({
+          "jumbo-session-bootstrap": {
+            PreInvocation: [{ type: "command", command: "node ..." }]
+          },
+          "user-linter": {
+            enabled: false
+          }
+        }, null, 2),
+        "utf-8"
+      );
 
-    it("should create .gemini/settings.json with SessionStart hook", async () => {
-      await protocol.ensureAgentConfigurations(tmpDir);
+      await protocol.ensureAgentConfigurations(tmpDir, ["antigravity"]);
 
-      const settingsPath = path.join(tmpDir, ".gemini", "settings.json");
-      const exists = await fs.pathExists(settingsPath);
-      expect(exists).toBe(true);
+      expect(await fs.pathExists(hookRunnerPath)).toBe(false);
+      expect(await fs.pathExists(path.join(tmpDir, ".agents", "jumbo"))).toBe(false);
 
-      const content = await fs.readFile(settingsPath, "utf-8");
-      const settings = JSON.parse(content);
-      expect(settings.hooks?.SessionStart).toBeDefined();
-      expect(settings.hooks.SessionStart[0].matcher).toBe("startup");
-      expect(settings.hooks.SessionStart[0].hooks[0].command).toBe("jumbo session start");
-      expect(settings.hooks?.SessionEnd).toBeUndefined();
+      const content = await fs.readFile(hooksPath, "utf-8");
+      const hooks = JSON.parse(content);
+      expect(hooks["jumbo-session-bootstrap"]).toBeUndefined();
+      expect(hooks["user-linter"].enabled).toBe(false);
     });
 
     it("should create .github/copilot-instructions.md with thin reference", async () => {
@@ -422,9 +430,10 @@ describe("AgentFileProtocol", () => {
       const claudeSettingsExists = await fs.pathExists(claudeSettingsPath);
       expect(claudeSettingsExists).toBe(true);
 
-      const geminiSettingsPath = path.join(tmpDir, ".gemini", "settings.json");
-      const geminiSettingsExists = await fs.pathExists(geminiSettingsPath);
-      expect(geminiSettingsExists).toBe(true);
+      const antigravityHooksPath = path.join(tmpDir, ".agents", "hooks.json");
+      const antigravityHooksExists = await fs.pathExists(antigravityHooksPath);
+      expect(antigravityHooksExists).toBe(false);
+      expect(await fs.pathExists(path.join(tmpDir, ".gemini", "settings.json"))).toBe(false);
 
       const copilotPath = path.join(tmpDir, ".github", "copilot-instructions.md");
       const copilotExists = await fs.pathExists(copilotPath);
@@ -643,6 +652,8 @@ describe("AgentFileProtocol", () => {
 
         const geminiMdPath = path.join(tmpDir, "GEMINI.md");
         expect(await fs.pathExists(geminiMdPath)).toBe(true);
+      expect(await fs.pathExists(path.join(tmpDir, ".agents", "hooks.json"))).toBe(false);
+      expect(await fs.pathExists(path.join(tmpDir, ".agents", "jumbo", "antigravity-hook.mjs"))).toBe(false);
 
         const copilotPath = path.join(tmpDir, ".github", "copilot-instructions.md");
         expect(await fs.pathExists(copilotPath)).toBe(true);
@@ -760,6 +771,8 @@ describe("AgentFileProtocol", () => {
       const geminiOccurrences = (geminiContent.match(/See JUMBO\.md and follow all instructions/g) || []).length;
       expect(geminiOccurrences).toBe(1);
 
+      expect(await fs.pathExists(path.join(tmpDir, ".agents", "hooks.json"))).toBe(false);
+
       const claudeSettingsPath = path.join(tmpDir, ".claude", "settings.json");
       const claudeSettings = JSON.parse(await fs.readFile(claudeSettingsPath, "utf-8"));
       expect(claudeSettings.hooks.SessionStart.length).toBe(2);
@@ -813,10 +826,6 @@ describe("AgentFileProtocol", () => {
             description: expect.stringContaining("assets/skills"),
           }),
           expect.objectContaining({
-            path: ".gemini/skills/my-skill",
-            description: expect.stringContaining("assets/skills"),
-          }),
-          expect.objectContaining({
             path: ".vibe/skills/my-skill",
             description: expect.stringContaining("assets/skills"),
           }),
@@ -829,17 +838,15 @@ describe("AgentFileProtocol", () => {
       await fs.ensureDir(templateSkillPath);
       await fs.writeFile(path.join(templateSkillPath, "SKILL.md"), "# My Skill\n", "utf-8");
 
-      const changes = await protocol.getPlannedFileChanges(tmpDir, ["gemini", "copilot"]);
+      const changes = await protocol.getPlannedFileChanges(tmpDir, ["antigravity", "copilot"]);
 
       expect(changes).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ path: "JUMBO.md" }),
           expect.objectContaining({ path: "AGENTS.md" }),
           expect.objectContaining({ path: "GEMINI.md" }),
-          expect.objectContaining({ path: ".gemini/settings.json" }),
           expect.objectContaining({ path: ".github/copilot-instructions.md" }),
           expect.objectContaining({ path: ".github/hooks/hooks.json" }),
-          expect.objectContaining({ path: ".gemini/skills/my-skill" }),
           expect.objectContaining({ path: ".agents/skills/my-skill" }),
         ])
       );

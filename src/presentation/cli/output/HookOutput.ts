@@ -1,6 +1,6 @@
 /**
  * JSON output structure for hook integration.
- * Must match Gemini CLI hook specification.
+ * Must match the hook contract expected by the invoking agent harness.
  */
 export interface HookOutput {
   decision: 'allow' | 'deny' | 'modify';

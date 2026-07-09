@@ -23,7 +23,7 @@ import { JumboMdContent } from "../../../../domain/project/JumboMdContent.js";
 import { AgentsMdContent } from "../../../../domain/project/AgentsMdContent.js";
 import { IConfigurer } from "./IConfigurer.js";
 import { ClaudeConfigurer } from "./ClaudeConfigurer.js";
-import { GeminiConfigurer } from "./GeminiConfigurer.js";
+import { AntigravityConfigurer } from "./AntigravityConfigurer.js";
 import { CopilotConfigurer } from "./CopilotConfigurer.js";
 import { VibeConfigurer } from "./VibeConfigurer.js";
 import { CodexConfigurer } from "./CodexConfigurer.js";
@@ -48,7 +48,7 @@ export class AgentFileProtocol implements IAgentFileProtocol {
   constructor(private readonly templateSkillsRoot: string = DEFAULT_TEMPLATE_SKILLS_ROOT) {
     this.configurers = [
       new ClaudeConfigurer(),
-      new GeminiConfigurer(),
+      new AntigravityConfigurer(),
       new CopilotConfigurer(),
       new VibeConfigurer(),
       new CodexConfigurer(templateSkillsRoot),

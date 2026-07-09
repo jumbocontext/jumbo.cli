@@ -39,7 +39,7 @@ import type { AddValuePropositionController } from "../../../../../../src/applic
 describe("project.init command", () => {
   const availableAgents = [
     { id: "claude", name: "Claude" },
-    { id: "gemini", name: "Gemini" },
+    { id: "antigravity", name: "Antigravity" },
     { id: "copilot", name: "Copilot" },
   ] as const;
   let mockContainer: Partial<IApplicationContainer>;
@@ -560,7 +560,7 @@ describe("project.init command", () => {
       mockInteractiveSkipAllPrimitives(
         {},
         { enabled: true },
-        { selectedAgentIds: ["gemini", "copilot"] },
+        { selectedAgentIds: ["antigravity", "copilot"] },
       );
 
       await projectInit({ yolo: true }, mockContainer as IApplicationContainer);
@@ -574,7 +574,7 @@ describe("project.init command", () => {
         mockContainer.planProjectInitController!.handle,
       ).toHaveBeenNthCalledWith(2, {
         projectRoot: process.cwd(),
-        selectedAgentIds: ["gemini", "copilot"],
+        selectedAgentIds: ["antigravity", "copilot"],
       });
       expect(
         mockContainer.initializeProjectController!.handle,
@@ -582,7 +582,7 @@ describe("project.init command", () => {
         name: "TestProject",
         purpose: undefined,
         projectRoot: process.cwd(),
-        selectedAgentIds: ["gemini", "copilot"],
+        selectedAgentIds: ["antigravity", "copilot"],
       });
     });
 

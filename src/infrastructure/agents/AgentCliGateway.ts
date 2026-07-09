@@ -3,7 +3,7 @@ import { IAgentGateway } from "../../application/agents/IAgentGateway.js";
 import { AgentInvocation, AgentInvocationResult } from "../../application/agents/AgentInvocation.js";
 import { ITelemetryClient } from "../../application/telemetry/ITelemetryClient.js";
 
-export const SUPPORTED_AGENT_IDS = ["claude", "gemini", "copilot", "codex", "cursor", "vibe"] as const;
+export const SUPPORTED_AGENT_IDS = ["claude", "antigravity", "copilot", "codex", "cursor", "vibe"] as const;
 export type SupportedAgentId = typeof SUPPORTED_AGENT_IDS[number];
 
 interface AgentCommand {
@@ -17,7 +17,7 @@ const AGENT_OUTPUT_TAIL_MAX_LENGTH = 16_384;
 
 const AGENT_COMMANDS: Record<SupportedAgentId, AgentCommand> = {
   claude: { executable: "claude", promptFlag: "-p" },
-  gemini: { executable: "gemini", promptFlag: "-p" },
+  antigravity: { executable: "agy", promptFlag: "-p" },
   copilot: { executable: "gh copilot", promptFlag: "-p" },
   codex: { executable: "codex", args: CODEX_NON_INTERACTIVE_EXEC_ARGS },
   cursor: { executable: "cursor", promptFlag: "-p" },

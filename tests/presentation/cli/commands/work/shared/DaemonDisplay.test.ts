@@ -128,9 +128,9 @@ describe("DaemonDisplay", () => {
 
   describe("renderUnknownAgent", () => {
     it("outputs the unknown agent and supported list", () => {
-      display.renderUnknownAgent("badagent", ["claude", "gemini"]);
+      display.renderUnknownAgent("badagent", ["claude", "antigravity"]);
       expect(captured).toContain("badagent");
-      expect(captured).toContain("claude, gemini");
+      expect(captured).toContain("claude, antigravity");
     });
   });
 

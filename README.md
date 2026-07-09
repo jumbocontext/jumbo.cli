@@ -3,7 +3,7 @@
 </p>
 
 # Jumbo Context
-### Tired of repeating yourself to Claude, Codex, Gemini, Copilot and their cohorts?
+### Tired of repeating yourself to Claude, Codex, Antigravity, Copilot and their cohorts?
 
 Agents shouldn't have to be re-taught your project every session.
 Jumbo gives them the context they're missing, so you don't have to. 
@@ -70,7 +70,7 @@ Those solve the core problems. These make Jumbo pleasant to use:
 ```
 Jumbo will guide you in getting started.
 
-3. Run your agent as normal (claude, codex, gemini, vibe)  
+3. Run your agent as normal (claude, codex, agy, vibe)
 
 ``` bash
 > claude
@@ -212,7 +212,7 @@ Change agents and models at will. Jumbo just picks up where you left off.
 <details>
 <summary>What coding agents does jumbo work with?</summary>
 
-Jumbo has been battle-tested with Claude Code, GitHub Copilot, and Gemini. More are to be verified soon...
+Jumbo has been battle-tested with Claude Code, GitHub Copilot, Codex, and Antigravity. More are to be verified soon...
 </details>
 
 <details>

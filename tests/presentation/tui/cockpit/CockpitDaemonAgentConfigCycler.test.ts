@@ -12,6 +12,16 @@ describe("CockpitDaemonAgentConfigCycler", () => {
     });
   });
 
+  it("cycles from Claude to Antigravity instead of retired Gemini", () => {
+    const config = { agentId: "claude", pollIntervalMs: 30_000, maxRetries: 3 };
+
+    expect(getNextCockpitDaemonAgentConfig(config)).toEqual({
+      agentId: "antigravity",
+      pollIntervalMs: 30_000,
+      maxRetries: 3,
+    });
+  });
+
   it("starts at the first agent when the current agent is not configured", () => {
     expect(getNextCockpitDaemonAgentConfig({
       agentId: "unknown-agent",

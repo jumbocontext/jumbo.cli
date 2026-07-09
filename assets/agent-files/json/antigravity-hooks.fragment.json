@@ -1,0 +1,11 @@
+{
+  "jumbo-session-bootstrap": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "node .agents/jumbo/antigravity-hook.mjs pre-invocation-bootstrap",
+        "timeout": 30
+      }
+    ]
+  }
+}
