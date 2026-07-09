@@ -13,7 +13,16 @@ describe('CodexCliAdapter', () => {
 
   it('builds a codex command without a positional prompt (prompt goes via stdin)', () => {
     const command = adapter.buildCommand();
-    expect(command).toEqual(['codex', '--quiet', '--json']);
+    expect(command).toEqual([
+      'codex',
+      '--ask-for-approval',
+      'never',
+      '--sandbox',
+      'workspace-write',
+      'exec',
+      '--json',
+      '--skip-git-repo-check',
+    ]);
   });
 
   it('parses JSON output with response field', () => {
@@ -71,6 +80,33 @@ describe('CodexCliAdapter', () => {
     expect(result.outputTokens).toBe(800);
   });
 
+  it('parses Codex exec JSONL events', () => {
+    const result = adapter.parseOutput({
+      stdout: [
+        JSON.stringify({ type: 'session.started', id: 'session-1' }),
+        JSON.stringify({
+          type: 'item.completed',
+          item: {
+            type: 'message',
+            role: 'assistant',
+            content: [{ type: 'output_text', text: 'Implemented the inventory events.' }],
+          },
+        }),
+        JSON.stringify({
+          type: 'turn.completed',
+          usage: { input_tokens: 2400, output_tokens: 900 },
+        }),
+      ].join('\n'),
+      stderr: '',
+      exitCode: 0,
+    });
+
+    expect(result.agentOutput).toBe('Implemented the inventory events.');
+    expect(result.filesModified).toEqual([]);
+    expect(result.inputTokens).toBe(2400);
+    expect(result.outputTokens).toBe(900);
+  });
+
   it('returns undefined tokens for non-JSON output', () => {
     const result = adapter.parseOutput({
       stdout: 'plain text',
@@ -97,7 +133,7 @@ describe('CodexCliAdapter', () => {
   it('does not embed any prompt in argv (identical-prompts invariant via stdin delivery)', () => {
     const command = adapter.buildCommand();
     expect(command).not.toContain('Build a REST API with authentication');
-    expect(command).toEqual(['codex', '--quiet', '--json']);
+    expect(command.at(-1)).toBe('--skip-git-repo-check');
   });
 
   describe('seedToolPermissions', () => {

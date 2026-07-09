@@ -150,7 +150,7 @@ All commands support `--help` for full usage details.
 | Harness | CLI | Adapter |
 |---------|-----|---------|
 | Claude Code | `claude -p --output-format json` | `ClaudeCodeAdapter` |
-| Codex CLI | `codex --quiet --json` | `CodexCliAdapter` |
+| Codex CLI | `codex --ask-for-approval never --sandbox workspace-write exec --json --skip-git-repo-check` | `CodexCliAdapter` |
 | Gemini CLI | `gemini --json` | `GeminiCliAdapter` |
 
 ## Report Output
