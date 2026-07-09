@@ -237,6 +237,73 @@ describe("SubprocessManager", () => {
     expect(events[49]).toEqual(expect.objectContaining({ goalId: "goal_54" }));
   });
 
+  it("coalesces alternating idle polls without evicting the latest terminal outcome", async () => {
+    const child = childProcess();
+    const manager = new SubprocessManager(processController(child));
+
+    await manager.spawn("refiner");
+    child.stdout?.emit("data", Buffer.from(`${JSON.stringify({
+      daemon: "refiner",
+      status: "completed",
+      category: "completed",
+      message: "goal completed",
+      goalId: "goal_done",
+    })}\n`));
+
+    const idleCycle = [
+      JSON.stringify({ daemon: "refiner", status: "processing", category: "polling", message: "polling for goals" }),
+      JSON.stringify({ daemon: "refiner", status: "idle", category: "waiting", message: "no eligible goals" }),
+    ].join("\n");
+    for (let index = 0; index < 60; index++) {
+      child.stdout?.emit("data", Buffer.from(`${idleCycle}\n`));
+    }
+
+    const events = manager.getStatus("refiner").events;
+    expect(events).toHaveLength(3);
+    expect(events).toEqual(expect.arrayContaining([
+      expect.objectContaining({ category: "completed", goalId: "goal_done" }),
+      expect.objectContaining({ category: "polling" }),
+      expect.objectContaining({ category: "waiting" }),
+    ]));
+  });
+
+  it("emits a heartbeat with advancing elapsed time when daemon activity pauses", async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(1767272400000);
+    const child = childProcess();
+    const manager = new SubprocessManager(processController(child));
+
+    await manager.spawn("reviewer");
+    child.stdout?.emit("data", Buffer.from(`${JSON.stringify({
+      daemon: "reviewer",
+      status: "processing",
+      category: "selection",
+      message: "selected goal",
+      phase: "selection",
+      goalId: "goal_heartbeat",
+      elapsedMs: 125,
+      timestampMs: 1767272400000,
+    })}\n`));
+
+    jest.advanceTimersByTime(5_000);
+    const firstHeartbeat = manager.getStatus("reviewer").events.at(-1);
+    expect(firstHeartbeat).toEqual(expect.objectContaining({
+      category: "heartbeat",
+      phase: "selection",
+      goalId: "goal_heartbeat",
+      elapsedMs: 5_125,
+    }));
+
+    jest.advanceTimersByTime(5_000);
+    expect(manager.getStatus("reviewer").events.at(-1)).toEqual(expect.objectContaining({
+      category: "heartbeat",
+      elapsedMs: 10_125,
+    }));
+
+    child.emit("close", 0, null);
+    jest.useRealTimers();
+  });
+
   it("logs daemon stderr and child process failures through ILogger", async () => {
     const child = childProcess();
     const testLogger = logger();
@@ -256,8 +323,17 @@ describe("SubprocessManager", () => {
       expect.any(Error),
       { daemon: "refiner", stopRequested: false, status: "failed" },
     );
-    expect(manager.getStatus("refiner").events).toEqual([
-      {
+    expect(manager.getStatus("refiner").events).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        daemon: "refiner",
+        status: "processing",
+        source: "refiner",
+        category: "stderr",
+        message: "refiner failed",
+        timestampMs: 1767272400000,
+        errorMessage: "refiner failed",
+      }),
+      expect.objectContaining({
         daemon: "refiner",
         status: "failed",
         source: "refiner",
@@ -265,8 +341,8 @@ describe("SubprocessManager", () => {
         message: "process failed",
         timestampMs: 1767272400000,
         errorMessage: "spawn failed",
-      },
-    ]);
+      }),
+    ]));
   });
 
   it("delegates process termination and records stopping and stopped lifecycle events", async () => {

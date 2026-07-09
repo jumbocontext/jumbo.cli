@@ -3,13 +3,14 @@ import { IAgentGateway } from "../../application/agents/IAgentGateway.js";
 import { AgentInvocation, AgentInvocationResult } from "../../application/agents/AgentInvocation.js";
 import { ITelemetryClient } from "../../application/telemetry/ITelemetryClient.js";
 
-export const SUPPORTED_AGENT_IDS = ["claude", "antigravity", "copilot", "codex", "cursor", "vibe"] as const;
+export const SUPPORTED_AGENT_IDS = ["claude", "antigravity", "copilot", "codex", "vibe"] as const;
 export type SupportedAgentId = typeof SUPPORTED_AGENT_IDS[number];
 
 interface AgentCommand {
   readonly executable: string;
   readonly args?: readonly string[];
   readonly promptFlag?: string;
+  readonly direct?: boolean;
 }
 
 const CODEX_NON_INTERACTIVE_EXEC_ARGS = ["exec", "--skip-git-repo-check"] as const;
@@ -20,7 +21,6 @@ const AGENT_COMMANDS: Record<SupportedAgentId, AgentCommand> = {
   antigravity: { executable: "agy", promptFlag: "-p" },
   copilot: { executable: "gh copilot", promptFlag: "-p" },
   codex: { executable: "codex", args: CODEX_NON_INTERACTIVE_EXEC_ARGS },
-  cursor: { executable: "cursor", promptFlag: "-p" },
   vibe: { executable: "vibe", promptFlag: "-p" },
 };
 
@@ -30,22 +30,30 @@ export class AgentCliGateway implements IAgentGateway {
   async invoke(invocation: AgentInvocation): Promise<AgentInvocationResult> {
     const startedAt = process.hrtime.bigint();
     const command = this.resolveCommand(invocation.agentId);
-    const commandLine = this.buildCommandLine(command, invocation.prompt);
 
     return new Promise((resolve) => {
       const stdout = new BoundedTextTail(AGENT_OUTPUT_TAIL_MAX_LENGTH);
       const stderr = new BoundedTextTail(AGENT_OUTPUT_TAIL_MAX_LENGTH);
-      const child = spawn(commandLine, [], {
+      const child = command.direct
+        ? spawn(command.executable, this.buildCommandArguments(command, invocation.prompt), {
+            stdio: ["ignore", "pipe", "pipe"],
+            shell: false,
+          })
+        : spawn(this.buildCommandLine(command, invocation.prompt), [], {
         stdio: ["ignore", "pipe", "pipe"],
         shell: true,
       });
 
       child.stdout?.on("data", (chunk: Buffer) => {
-        stdout.append(chunk.toString());
+        const text = chunk.toString();
+        stdout.append(text);
+        invocation.onActivity?.({ stream: "stdout", text });
       });
 
       child.stderr?.on("data", (chunk: Buffer) => {
-        stderr.append(chunk.toString());
+        const text = chunk.toString();
+        stderr.append(text);
+        invocation.onActivity?.({ stream: "stderr", text });
       });
 
       child.on("close", (code) => {
@@ -70,7 +78,18 @@ export class AgentCliGateway implements IAgentGateway {
       throw new Error(`Unsupported agent: ${agentId}`);
     }
 
-    return AGENT_COMMANDS[agentId];
+    const command = AGENT_COMMANDS[agentId];
+    const override = process.env[`JUMBO_AGENT_COMMAND_${agentId.toUpperCase()}`];
+    if (override !== undefined && override.trim().length > 0) {
+      const overrideArgs = this.resolveOverrideArgs(agentId);
+      return {
+        ...command,
+        executable: override.trim(),
+        ...(overrideArgs === undefined ? {} : { args: overrideArgs, direct: true }),
+      };
+    }
+
+    return command;
   }
 
   private buildCommandLine(command: AgentCommand, prompt: string): string {
@@ -81,6 +100,28 @@ export class AgentCliGateway implements IAgentGateway {
       ...(command.promptFlag === undefined ? [] : [command.promptFlag]),
       `"${escapedPrompt}"`,
     ].join(" ");
+  }
+
+  private buildCommandArguments(command: AgentCommand, prompt: string): string[] {
+    return [
+      ...(command.args ?? []),
+      ...(command.promptFlag === undefined ? [] : [command.promptFlag]),
+      prompt,
+    ];
+  }
+
+  private resolveOverrideArgs(agentId: SupportedAgentId): readonly string[] | undefined {
+    const value = process.env[`JUMBO_AGENT_ARGS_${agentId.toUpperCase()}`];
+    if (value === undefined) {
+      return undefined;
+    }
+
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed) || !parsed.every((argument) => typeof argument === "string")) {
+      throw new Error(`Invalid agent argument override for ${agentId}`);
+    }
+
+    return parsed;
   }
 
   private isSupportedAgent(agentId: string): agentId is SupportedAgentId {

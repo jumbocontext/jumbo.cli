@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **TUI daemon reliability**: Cockpit refiner, reviewer, and codifier workers now stream bounded activity and errors while running, retain meaningful outcomes and elapsed-time heartbeats, survive navigation between TUI screens, and stop exactly once on request or application shutdown.
+
 ## [3.16.0] - 2026-07-09
 
 ### Changed

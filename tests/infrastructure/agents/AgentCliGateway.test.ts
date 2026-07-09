@@ -32,6 +32,8 @@ describe("AgentCliGateway", () => {
   });
 
   afterEach(() => {
+    delete process.env.JUMBO_AGENT_COMMAND_VIBE;
+    delete process.env.JUMBO_AGENT_ARGS_VIBE;
     stderrSpy.mockRestore();
   });
 
@@ -140,6 +142,78 @@ describe("AgentCliGateway", () => {
     expect(stderrSpy).not.toHaveBeenCalled();
   });
 
+  it("allows a supported agent executable to be overridden for deterministic daemon automation", async () => {
+    const child = childProcess();
+    spawnMock.mockReturnValue(child);
+    process.env.JUMBO_AGENT_COMMAND_VIBE = '"C:\\Tools\\fake-agent.exe" --mode success';
+
+    const promise = new AgentCliGateway(telemetryClient).invoke({
+      agentId: "vibe",
+      prompt: "run review",
+    });
+    child.emit("close", 0);
+
+    await expect(promise).resolves.toEqual({ exitCode: 0, stdout: "", stderr: "" });
+    expect(spawnMock).toHaveBeenCalledWith(
+      '"C:\\Tools\\fake-agent.exe" --mode success -p "run review"',
+      [],
+      expect.objectContaining({ shell: true }),
+    );
+  });
+
+  it("launches structured override arguments directly without shell interpretation", async () => {
+    const child = childProcess();
+    spawnMock.mockReturnValue(child);
+    process.env.JUMBO_AGENT_COMMAND_VIBE = "C:\\Program Files\\nodejs\\node.exe";
+    process.env.JUMBO_AGENT_ARGS_VIBE = JSON.stringify([
+      "C:\\fixtures\\fake-agent.js",
+      "--fake-mode",
+      "failure",
+    ]);
+
+    const promise = new AgentCliGateway(telemetryClient).invoke({
+      agentId: "vibe",
+      prompt: "run review",
+    });
+    child.emit("close", 1);
+
+    await expect(promise).resolves.toEqual({ exitCode: 1, stdout: "", stderr: "" });
+    expect(spawnMock).toHaveBeenCalledWith(
+      "C:\\Program Files\\nodejs\\node.exe",
+      ["C:\\fixtures\\fake-agent.js", "--fake-mode", "failure", "-p", "run review"],
+      {
+        stdio: ["ignore", "pipe", "pipe"],
+        shell: false,
+      },
+    );
+  });
+
+  it("streams stdout and stderr activity while the agent child is still running", async () => {
+    const child = childProcess();
+    spawnMock.mockReturnValue(child);
+    const activity: unknown[] = [];
+
+    const promise = new AgentCliGateway(telemetryClient).invoke({
+      agentId: "codex",
+      prompt: "run codify",
+      onActivity: (event: unknown) => activity.push(event),
+    });
+    child.stdout.emit("data", Buffer.from("first stdout line\n"));
+    child.stderr.emit("data", Buffer.from("first stderr line\n"));
+
+    expect(activity).toEqual([
+      { stream: "stdout", text: "first stdout line\n" },
+      { stream: "stderr", text: "first stderr line\n" },
+    ]);
+
+    child.emit("close", 0);
+    await expect(promise).resolves.toEqual({
+      exitCode: 0,
+      stdout: "first stdout line\n",
+      stderr: "first stderr line\n",
+    });
+  });
+
   it("returns a failed invocation result when the child process errors", async () => {
     const child = childProcess();
     spawnMock.mockReturnValue(child);
@@ -180,6 +254,16 @@ describe("AgentCliGateway", () => {
         prompt: "run codify",
       }),
     ).rejects.toThrow("Unsupported agent: gemini");
+    expect(spawnMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects Cursor because editor integrations are not daemon agent CLIs", async () => {
+    await expect(
+      new AgentCliGateway(telemetryClient).invoke({
+        agentId: "cursor",
+        prompt: "run codify",
+      }),
+    ).rejects.toThrow("Unsupported agent: cursor");
     expect(spawnMock).not.toHaveBeenCalled();
   });
 });

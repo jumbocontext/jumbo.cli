@@ -97,10 +97,11 @@ describe("CodifierProcessManager", () => {
 
     expect(result).toEqual({ status: "completed", goalId: "goal_1", attempts: 1 });
     expect(codifyGoalController.handle).toHaveBeenCalledWith({ goalId: "goal_1" });
-    expect(agentGateway.invoke).toHaveBeenCalledWith({
+    expect(agentGateway.invoke).toHaveBeenCalledWith(expect.objectContaining({
       agentId: "codex",
       prompt: expect.stringContaining("jumbo goal codify --id goal_1"),
-    });
+      onActivity: expect.any(Function),
+    }));
     expect(agentGateway.invoke.mock.calls[0][0].prompt).toContain("jumbo goal close --id goal_1");
     expect(events).toContainEqual(expect.objectContaining({
       status: "processing",
@@ -179,15 +180,22 @@ describe("CodifierProcessManager", () => {
     });
 
     expect(result).toEqual({ status: "idle", attempts: 0 });
-    expect(events).toEqual([
-      {
+    expect(events).toEqual(expect.arrayContaining([
+      expect.objectContaining({
         daemon: "codifier",
         status: "idle",
         source: "codifier",
         category: "waiting",
         message: "awaiting approved goals",
-      },
-    ]);
+        phase: "idle",
+      }),
+      expect.objectContaining({
+        daemon: "codifier",
+        status: "processing",
+        category: "polling",
+        phase: "polling",
+      }),
+    ]));
     expect(codifyGoalController.handle).not.toHaveBeenCalled();
     expect(agentGateway.invoke).not.toHaveBeenCalled();
   });

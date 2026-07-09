@@ -22,6 +22,16 @@ describe("CockpitDaemonAgentConfigCycler", () => {
     });
   });
 
+  it("cycles from Copilot to Vibe without offering Cursor", () => {
+    const config = { agentId: "copilot", pollIntervalMs: 30_000, maxRetries: 3 };
+
+    expect(getNextCockpitDaemonAgentConfig(config)).toEqual({
+      agentId: "vibe",
+      pollIntervalMs: 30_000,
+      maxRetries: 3,
+    });
+  });
+
   it("starts at the first agent when the current agent is not configured", () => {
     expect(getNextCockpitDaemonAgentConfig({
       agentId: "unknown-agent",

@@ -1,5 +1,6 @@
 import { IAgentGateway } from "../../../agents/IAgentGateway.js";
-import { IProcessManager, ProcessManagerEvent, ProcessManagerOptions, ProcessManagerResult } from "../../../daemons/IProcessManager.js";
+import { IProcessManager, ProcessManagerOptions, ProcessManagerResult } from "../../../daemons/IProcessManager.js";
+import { ProcessManagerEventEmitter } from "../../../daemons/ProcessManagerEventEmitter.js";
 import { IWorkerIdentityReader } from "../../../host/workers/IWorkerIdentityReader.js";
 import { ITelemetryClient } from "../../../telemetry/ITelemetryClient.js";
 import { GoalStatus } from "../../../../domain/goals/Constants.js";
@@ -51,31 +52,29 @@ export class RefinerProcessManager implements IProcessManager {
 
   async processNext(options: ProcessManagerOptions): Promise<ProcessManagerResult> {
     const startedAt = process.hrtime.bigint();
+    const events = new ProcessManagerEventEmitter(REFINER_EVENT_SOURCE, options, startedAt);
+    events.emit("processing", "polling", "polling for defined goals", { phase: "polling" });
     const goals = await this.selectEligibleGoals();
 
     if (goals.length === 0) {
-      this.emit(options, {
-        daemon: REFINER_EVENT_SOURCE,
-        status: "idle",
-        source: REFINER_EVENT_SOURCE,
-        ...REFINER_EVENT_COPY.noWork,
-      });
+      events.emit("idle", REFINER_EVENT_COPY.noWork.category, REFINER_EVENT_COPY.noWork.message, { phase: "idle" });
       this.track(startedAt, { status: "idle", attempts: 0 });
       return { status: "idle", attempts: 0 };
     }
 
     const goal = goals[0];
+    events.emit("processing", "selection", "selected goal for refinement", {
+      phase: "selection",
+      goalId: goal.goalId,
+    });
 
     try {
       await this.refineGoalController.handle({ goalId: goal.goalId });
     } catch (error) {
       const errorProperties = this.errorProperties(error);
-      this.emit(options, {
-        daemon: REFINER_EVENT_SOURCE,
-        status: "failed",
-        source: REFINER_EVENT_SOURCE,
+      events.emit("failed", REFINER_EVENT_COPY.failed.category, REFINER_EVENT_COPY.failed.message, {
+        phase: "failed",
         goalId: goal.goalId,
-        ...REFINER_EVENT_COPY.failed,
         ...errorProperties,
       });
       this.track(startedAt, { status: "failed", attempts: 0, goalId: goal.goalId, ...errorProperties });
@@ -83,44 +82,52 @@ export class RefinerProcessManager implements IProcessManager {
     }
 
     for (let attempt = 1; attempt <= options.maxRetries; attempt++) {
-      this.emit(options, {
-        daemon: REFINER_EVENT_SOURCE,
-        status: "processing",
-        source: REFINER_EVENT_SOURCE,
+      const attemptContext = {
         goalId: goal.goalId,
         attempt,
         maxRetries: options.maxRetries,
-        ...REFINER_EVENT_COPY.workStarted,
+      };
+      events.emit("processing", REFINER_EVENT_COPY.workStarted.category, REFINER_EVENT_COPY.workStarted.message, {
+        phase: "working",
+        ...attemptContext,
       });
-      const result = await this.agentGateway.invoke({ agentId: options.agentId, prompt: this.buildPrompt(goal.goalId) });
+      let sawAgentActivity = false;
+      const invocation = {
+        agentId: options.agentId,
+        prompt: this.buildPrompt(goal.goalId),
+        onActivity: (activity: { readonly stream: "stdout" | "stderr"; readonly text: string }) => {
+          sawAgentActivity = true;
+          events.emitAgentActivity(activity.stream, activity.text, attemptContext);
+        },
+      };
+      const result = await this.agentGateway.invoke(invocation);
+      if (!sawAgentActivity) {
+        this.emitReturnedAgentOutput(events, result, attemptContext);
+      }
 
       if (await this.isGoalRefined(goal.goalId)) {
-        this.emit(options, {
-          daemon: REFINER_EVENT_SOURCE,
-          status: "completed",
-          source: REFINER_EVENT_SOURCE,
-          goalId: goal.goalId,
-          attempt,
-          maxRetries: options.maxRetries,
+        events.emit("completed", REFINER_EVENT_COPY.completed.category, REFINER_EVENT_COPY.completed.message, {
+          phase: "completed",
+          ...attemptContext,
           exitCode: result.exitCode,
-          ...REFINER_EVENT_COPY.completed,
         });
         this.track(startedAt, { status: "completed", attempts: attempt, goalId: goal.goalId, agentExitCode: result.exitCode });
         return { status: "completed", goalId: goal.goalId, attempts: attempt };
       }
 
       const retryExhausted = attempt === options.maxRetries;
-      this.emit(options, {
-        daemon: REFINER_EVENT_SOURCE,
-        status: retryExhausted ? "exhausted" : "skipped",
-        source: REFINER_EVENT_SOURCE,
-        goalId: goal.goalId,
-        attempt,
-        maxRetries: options.maxRetries,
+      events.emit(retryExhausted ? "exhausted" : "skipped", retryExhausted ? REFINER_EVENT_COPY.exhausted.category : REFINER_EVENT_COPY.skipped.category, retryExhausted ? REFINER_EVENT_COPY.exhausted.message : REFINER_EVENT_COPY.skipped.message, {
+        phase: retryExhausted ? "exhausted" : "retry",
+        ...attemptContext,
         exitCode: result.exitCode,
-        ...(retryExhausted ? REFINER_EVENT_COPY.exhausted : REFINER_EVENT_COPY.skipped),
         ...this.agentFailureProperties(result),
       });
+      if (!retryExhausted) {
+        events.emit("processing", "retry", "retrying refinement", {
+          phase: "retry",
+          ...attemptContext,
+        });
+      }
     }
 
     this.track(startedAt, { status: "exhausted", attempts: options.maxRetries, goalId: goal.goalId });
@@ -136,16 +143,16 @@ export class RefinerProcessManager implements IProcessManager {
   }
 
   buildPrompt(goalId: string): string {
-    return `Run the Jumbo refinement workflow for goal ${goalId}. Execute: jumbo goal refine --id ${goalId}`;
+    return [
+      `Continue the Jumbo refinement workflow for goal ${goalId}.`,
+      "The daemon has already moved the goal into refinement.",
+      `Update the goal context as needed, then complete refinement with: jumbo goal commit --id ${goalId}`,
+    ].join(" ");
   }
 
   private async isGoalRefined(goalId: string): Promise<boolean> {
     const goal = await this.goalReader.findById(goalId);
     return goal?.status === GoalStatus.REFINED;
-  }
-
-  private emit(options: ProcessManagerOptions, event: ProcessManagerEvent): void {
-    options.emit?.(event);
   }
 
   private track(startedAt: bigint, properties: Record<string, unknown>): void {
@@ -154,6 +161,19 @@ export class RefinerProcessManager implements IProcessManager {
       durationMs: Number((process.hrtime.bigint() - startedAt) / BigInt(1_000_000)),
       ...properties,
     });
+  }
+
+  private emitReturnedAgentOutput(
+    events: ProcessManagerEventEmitter,
+    result: { readonly stdout?: string; readonly stderr?: string },
+    context: { readonly goalId: string; readonly attempt: number; readonly maxRetries: number },
+  ): void {
+    if (result.stdout !== undefined) {
+      events.emitAgentActivity("stdout", result.stdout, context);
+    }
+    if (result.stderr !== undefined) {
+      events.emitAgentActivity("stderr", result.stderr, context);
+    }
   }
 
   private errorProperties(error: unknown): { errorType: string; errorMessage: string; errorStack?: string } {

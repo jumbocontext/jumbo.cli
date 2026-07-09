@@ -23,6 +23,8 @@ import { SubprocessNoOpLogger } from "./SubprocessNoOpLogger.js";
 import { SubprocessOutputRingBuffer } from "./SubprocessOutputRingBuffer.js";
 import { SubprocessSnapshotMapper } from "./SubprocessSnapshotMapper.js";
 
+const DAEMON_HEARTBEAT_INTERVAL_MS = 5_000;
+
 export class SubprocessManager implements ISubprocessManager {
   private readonly processes = new Map<DaemonName, ManagedSubprocess>();
   private readonly configResolver = new SubprocessConfigResolver();
@@ -64,6 +66,7 @@ export class SubprocessManager implements ISubprocessManager {
       stdout: [],
       stderr: [],
       events: [],
+      startedAtMs: Date.now(),
       status: SubprocessStatus.RUNNING,
       stopRequested: false,
       terminationTimedOut: false,
@@ -73,6 +76,7 @@ export class SubprocessManager implements ISubprocessManager {
       daemon: name,
       pid: child.pid,
     });
+    this.startHeartbeat(managed);
 
     child.stdout?.on("data", (chunk) => {
       const text = this.outputRingBuffer.limitChunk(chunk.toString());
@@ -85,10 +89,22 @@ export class SubprocessManager implements ISubprocessManager {
     });
     child.stderr?.on("data", (chunk) => {
       const text = this.outputRingBuffer.limitChunk(chunk.toString());
-      this.outputRingBuffer.appendLines(managed.stderr, text);
+      const lines = this.outputRingBuffer.appendLines(managed.stderr, text);
       this.logger.warn(SubprocessCopy.stderrLog, { daemon: name, text });
+      for (const line of lines) {
+        this.lifecycleEventRecorder.recordDaemonEvent(managed, {
+          daemon: name,
+          status: "processing",
+          source: name,
+          category: "stderr",
+          message: line,
+          timestampMs: Date.now(),
+          errorMessage: line,
+        });
+      }
     });
     child.on("close", (code, signal) => {
+      this.stopHeartbeat(managed);
       managed.exitCode = code;
       managed.exitSignal = signal;
       managed.status = this.resolveClosedStatus(managed, code);
@@ -102,6 +118,7 @@ export class SubprocessManager implements ISubprocessManager {
       });
     });
     child.on("error", (error) => {
+      this.stopHeartbeat(managed);
       const errorMessage = this.outputEventParser.boundTextField(error.message);
       this.outputRingBuffer.appendLines(managed.stderr, errorMessage);
       if (!managed.stopRequested || managed.terminationTimedOut) {
@@ -211,6 +228,7 @@ export class SubprocessManager implements ISubprocessManager {
     }
 
     if (result.status === "no-pid") {
+      this.stopHeartbeat(managed);
       managed.status = SubprocessStatus.STOPPED;
       this.lifecycleEventRecorder.recordStopped(managed);
     }
@@ -234,6 +252,7 @@ export class SubprocessManager implements ISubprocessManager {
     managed: ManagedSubprocess,
     result: Extract<WorkerDaemonTerminationResult, { readonly status: "timeout" }>,
   ): void {
+    this.stopHeartbeat(managed);
     managed.terminationTimedOut = true;
     managed.status = SubprocessStatus.FAILED;
     const errorMessage = this.outputEventParser.boundTextField(
@@ -249,5 +268,61 @@ export class SubprocessManager implements ISubprocessManager {
       strategy: result.strategy,
       escalation: result.escalation,
     });
+  }
+
+  private startHeartbeat(managed: ManagedSubprocess): void {
+    managed.heartbeatTimer = setInterval(() => {
+      if (managed.status !== SubprocessStatus.RUNNING) {
+        return;
+      }
+
+      const latestEvent = managed.events[managed.events.length - 1];
+      const now = Date.now();
+      if (
+        latestEvent?.timestampMs !== undefined &&
+        now - latestEvent.timestampMs < DAEMON_HEARTBEAT_INTERVAL_MS
+      ) {
+        return;
+      }
+
+      this.lifecycleEventRecorder.recordDaemonEvent(managed, {
+        daemon: managed.name,
+        status: "processing",
+        source: managed.name,
+        category: "heartbeat",
+        message: "daemon still running",
+        timestampMs: now,
+        phase: latestEvent?.phase ?? "running",
+        goalId: latestEvent?.goalId,
+        attempt: latestEvent?.attempt,
+        maxRetries: latestEvent?.maxRetries,
+        elapsedMs: this.resolveHeartbeatElapsedMs(managed, latestEvent, now),
+      });
+    }, DAEMON_HEARTBEAT_INTERVAL_MS);
+
+    if (typeof managed.heartbeatTimer === "object" && "unref" in managed.heartbeatTimer) {
+      managed.heartbeatTimer.unref();
+    }
+  }
+
+  private stopHeartbeat(managed: ManagedSubprocess): void {
+    if (managed.heartbeatTimer === undefined) {
+      return;
+    }
+
+    clearInterval(managed.heartbeatTimer);
+    managed.heartbeatTimer = undefined;
+  }
+
+  private resolveHeartbeatElapsedMs(
+    managed: ManagedSubprocess,
+    latestEvent: ManagedSubprocess["events"][number] | undefined,
+    now: number,
+  ): number {
+    if (latestEvent?.elapsedMs !== undefined && latestEvent.timestampMs !== undefined) {
+      return latestEvent.elapsedMs + Math.max(0, now - latestEvent.timestampMs);
+    }
+
+    return Math.max(0, now - managed.startedAtMs);
   }
 }

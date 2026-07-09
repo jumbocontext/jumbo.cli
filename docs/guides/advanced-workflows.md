@@ -65,6 +65,12 @@ Tune the daemon for your workflow:
 
 See the [work refine reference](/reference/commands/work/#jumbo-work-refine) for full option details.
 
+## Run unattended workflows from Cockpit
+
+The TUI Cockpit can run the refiner, reviewer, and codifier as independent background workers. Use **Tab** to focus a daemon panel and **S** to start or stop it. Open the panel configuration with **@** to cycle the agent, poll interval, and retry count before starting.
+
+Running workers continue polling while you navigate to Goals, Memory, or Settings. Returning to Cockpit shows each worker's process status, active goal, attempt, current phase, latest meaningful activity, elapsed time, and recent events. Completion and failure outcomes remain visible across idle polls, and exiting the TUI shuts down every worker through the application lifecycle.
+
 ## Run multiple agents in parallel safely
 
 Jumbo supports concurrent workers in separate terminals.

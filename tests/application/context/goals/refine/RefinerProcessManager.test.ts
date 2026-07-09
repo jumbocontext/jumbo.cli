@@ -47,10 +47,11 @@ describe("RefinerProcessManager", () => {
     });
     expect(goalStatusReader.findByStatus).toHaveBeenCalledWith(GoalStatus.TODO);
     expect(refineGoalController.handle).toHaveBeenCalledWith({ goalId: "goal_1" });
-    expect(agentGateway.invoke).toHaveBeenCalledWith({
+    expect(agentGateway.invoke).toHaveBeenCalledWith(expect.objectContaining({
       agentId: "codex",
-      prompt: "Run the Jumbo refinement workflow for goal goal_1. Execute: jumbo goal refine --id goal_1",
-    });
+      prompt: expect.stringContaining("jumbo goal commit --id goal_1"),
+      onActivity: expect.any(Function),
+    }));
   });
 
   it("emits a structured foraging event when no goals are eligible", async () => {
@@ -72,15 +73,24 @@ describe("RefinerProcessManager", () => {
       emit: (event) => events.push(event),
     })).resolves.toEqual({ status: "idle", attempts: 0 });
 
-    expect(events).toEqual([
-      {
+    expect(events).toEqual(expect.arrayContaining([
+      expect.objectContaining({
         daemon: "refiner",
         status: "idle",
         source: "refiner",
         category: "foraging",
         message: "foraging for defined goals",
-      },
-    ]);
+        phase: "idle",
+      }),
+    ]));
+    expect(events).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        daemon: "refiner",
+        status: "processing",
+        category: "polling",
+        phase: "polling",
+      }),
+    ]));
   });
 
   it("emits a structured failure event when refinement cannot start", async () => {
@@ -141,13 +151,14 @@ describe("RefinerProcessManager", () => {
       attempts: 2,
     });
 
-    expect(events).toEqual([
+    expect(events).toEqual(expect.arrayContaining([
       expect.objectContaining({
         status: "processing",
         source: "refiner",
         category: "work-started",
         message: "refining goal",
         attempt: 1,
+        phase: "working",
       }),
       expect.objectContaining({
         status: "skipped",
@@ -155,7 +166,14 @@ describe("RefinerProcessManager", () => {
         category: "skipped",
         message: "goal not refined after agent attempt",
         attempt: 1,
+        phase: "retry",
         errorMessage: "Error loading configuration: config profile `prompt` not found",
+      }),
+      expect.objectContaining({
+        status: "processing",
+        category: "retry",
+        message: "retrying refinement",
+        attempt: 1,
       }),
       expect.objectContaining({
         status: "processing",
@@ -163,6 +181,7 @@ describe("RefinerProcessManager", () => {
         category: "work-started",
         message: "refining goal",
         attempt: 2,
+        phase: "working",
       }),
       expect.objectContaining({
         status: "exhausted",
@@ -170,9 +189,10 @@ describe("RefinerProcessManager", () => {
         category: "exhausted",
         message: "refinement attempts exhausted",
         attempt: 2,
+        phase: "exhausted",
         errorMessage: "Error loading configuration: config profile `prompt` not found",
       }),
-    ]);
+    ]));
   });
 
   it("caps agent stderr in skipped and exhausted event error messages", async () => {
