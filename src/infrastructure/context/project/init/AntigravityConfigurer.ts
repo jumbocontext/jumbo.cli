@@ -219,25 +219,32 @@ export class AntigravityConfigurer implements IConfigurer {
       try {
         const content = await fs.readFile(settingsPath, "utf-8");
         if (content.trim()) {
-          const settings = JSON.parse(content);
+          const parsedSettings = JSON.parse(content) as unknown;
+          if (!AntigravityConfigurer.isObject(parsedSettings)) {
+            return;
+          }
+          const settings = parsedSettings;
 
           // Remove jumbo-specific hooks
-          if (settings.hooks) {
+          if (AntigravityConfigurer.isObject(settings.hooks)) {
             for (const eventType of Object.keys(settings.hooks)) {
               const matchers = settings.hooks[eventType];
               if (Array.isArray(matchers)) {
-                settings.hooks[eventType] = matchers
-                  .map((matcher: any) => {
-                    if (matcher && Array.isArray(matcher.hooks)) {
-                      matcher.hooks = matcher.hooks.filter((hook: any) => {
-                        return hook && !(typeof hook.command === "string" && hook.command.includes("jumbo"));
+                const cleanedMatchers = matchers
+                  .map((matcher: unknown) => {
+                    if (AntigravityConfigurer.isObject(matcher) && Array.isArray(matcher.hooks)) {
+                      matcher.hooks = matcher.hooks.filter((hook: unknown) => {
+                        return AntigravityConfigurer.shouldKeepLegacyHook(hook);
                       });
                     }
                     return matcher;
                   })
-                  .filter((matcher: any) => matcher && Array.isArray(matcher.hooks) && matcher.hooks.length > 0);
+                  .filter((matcher: unknown) => {
+                    return AntigravityConfigurer.isObject(matcher) && Array.isArray(matcher.hooks) && matcher.hooks.length > 0;
+                  });
+                settings.hooks[eventType] = cleanedMatchers;
 
-                if (settings.hooks[eventType].length === 0) {
+                if (cleanedMatchers.length === 0) {
                   delete settings.hooks[eventType];
                 }
               }
@@ -248,11 +255,12 @@ export class AntigravityConfigurer implements IConfigurer {
           }
 
           // Remove jumbo-specific allowed tools
-          if (settings.tools && Array.isArray(settings.tools.allowed)) {
-            settings.tools.allowed = settings.tools.allowed.filter((tool: string) => {
+          if (AntigravityConfigurer.isObject(settings.tools) && Array.isArray(settings.tools.allowed)) {
+            const allowedTools = settings.tools.allowed.filter((tool: unknown) => {
               return typeof tool === "string" && !tool.includes("jumbo") && !tool.includes("antigravity-hook.mjs");
             });
-            if (settings.tools.allowed.length === 0) {
+            settings.tools.allowed = allowedTools;
+            if (allowedTools.length === 0) {
               delete settings.tools.allowed;
             }
           }
@@ -322,5 +330,21 @@ export class AntigravityConfigurer implements IConfigurer {
 
   private getHookRunnerPath(projectRoot: string): string {
     return path.join(projectRoot, ".agents", "jumbo", "antigravity-hook.mjs");
+  }
+
+  private static isObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
+  private static shouldKeepLegacyHook(hook: unknown): boolean {
+    if (!hook) {
+      return false;
+    }
+
+    if (AntigravityConfigurer.isObject(hook) && typeof hook.command === "string") {
+      return !hook.command.includes("jumbo");
+    }
+
+    return true;
   }
 }
