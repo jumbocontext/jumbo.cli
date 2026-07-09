@@ -559,7 +559,7 @@ export async function projectInit(
 
   // Determine project details and primitives based on mode
   let projectDetails: ProjectInitOptions;
-  let primitives: PrimitiveOptions = {
+  const primitives: PrimitiveOptions = {
     audiences: [],
     audiencePains: [],
     valuePropositions: [],

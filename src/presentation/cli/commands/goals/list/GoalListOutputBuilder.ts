@@ -128,7 +128,7 @@ export class GoalListOutputBuilder {
       }
     }
 
-    let output = lines.join("\n");
+    const output = lines.join("\n");
 
     this.builder.addPrompt(output);
     return this.builder.build();
