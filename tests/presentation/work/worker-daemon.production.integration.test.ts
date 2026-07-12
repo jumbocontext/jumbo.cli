@@ -24,6 +24,7 @@ const COMPILED_CONTROLLER = path.join(
   "NodeWorkerDaemonProcessController.js",
 );
 const COMPILED_CLI = path.join(PROJECT_ROOT, "dist", "cli.js");
+const TEST_HOST_SESSION_ID = "jumbo-worker-daemon-production-integration";
 
 let workspaceRoot: string;
 let originalPath: string | undefined;
@@ -143,6 +144,7 @@ async function createProductionManager(): Promise<SubprocessManager> {
     Path: `${fakeAgentBin}${path.delimiter}${inheritedPath}`,
     PATH: `${fakeAgentBin}${path.delimiter}${inheritedPath}`,
     JUMBO_FAKE_AGENT_CLI: COMPILED_CLI,
+    TERM_SESSION_ID: TEST_HOST_SESSION_ID,
     JUMBO_AGENT_COMMAND_VIBE: process.execPath,
     JUMBO_AGENT_ARGS_VIBE: JSON.stringify([
       fakeAgentScript,
