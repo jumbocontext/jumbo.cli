@@ -4,13 +4,6 @@
 
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 
-// Mock IdGenerator
-jest.unstable_mockModule("../../../../../src/application/identity/IdGenerator", () => ({
-  IdGenerator: {
-    generate: jest.fn(() => "test-uuid-123"),
-  },
-}));
-
 const { AddRelationCommandHandler } = await import("../../../../../src/application/context/relations/add/AddRelationCommandHandler");
 const { AddRelationCommand } = await import("../../../../../src/application/context/relations/add/AddRelationCommand");
 import type { IRelationAddedEventWriter } from "../../../../../src/application/context/relations/add/IRelationAddedEventWriter";
@@ -61,7 +54,9 @@ describe("AddRelationCommandHandler", () => {
     const result = await handler.execute(command);
 
     // Assert
-    expect(result.relationId).toBe("test-uuid-123");
+    expect(result.relationId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
 
     // Verify relation uniqueness check
     expect(reader.findByEntities).toHaveBeenCalledWith(
@@ -75,6 +70,7 @@ describe("AddRelationCommandHandler", () => {
     // Verify event was appended to event store
     expect(eventWriter.append).toHaveBeenCalledTimes(1);
     const appendedEvent = (eventWriter.append as jest.Mock).mock.calls[0][0];
+    expect(appendedEvent.aggregateId).toBe(result.relationId);
     expect(appendedEvent.type).toBe(RelationEventType.ADDED);
     expect(appendedEvent.payload.fromEntityType).toBe(EntityType.GOAL);
     expect(appendedEvent.payload.fromEntityId).toBe("goal-1");

@@ -10,6 +10,7 @@ import {
   AggregateState,
 } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
+import { ProjectId } from "./ProjectId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { ProjectEvent, ProjectInitializedEvent, ProjectUpdatedEvent } from "./EventIndex.js";
 import { ProjectEventType, ProjectErrorMessages } from "./Constants.js";
@@ -20,7 +21,7 @@ import { PURPOSE_RULES } from "./rules/PurposeRules.js";
  * Domain state: business properties + aggregate metadata
  */
 export interface ProjectState extends AggregateState {
-  id: UUID; // Aggregate identity
+  id: ProjectId; // Aggregate identity
   name: string; // Required: project name
   purpose: string | null; // Optional: high-level what
   version: number; // Aggregate version for event sourcing
@@ -57,7 +58,7 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
    * Creates a new Project aggregate.
    * Use this when starting a new aggregate that will emit its first event.
    */
-  static create(id: UUID): Project {
+  static create(id: ProjectId = ProjectId.create()): Project {
     const state: ProjectState = {
       id,
       name: "",
@@ -73,7 +74,7 @@ export class Project extends BaseAggregate<ProjectState, ProjectEvent> {
    */
   static rehydrate(id: UUID, history: ProjectEvent[]): Project {
     const state: ProjectState = {
-      id,
+      id: ProjectId.fromLegacy(id),
       name: "",
       purpose: null,
       version: 0,

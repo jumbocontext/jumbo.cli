@@ -4,7 +4,6 @@ import { IComponentAddReader } from "./IComponentAddReader.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Component } from "../../../../domain/components/Component.js";
 import { ComponentEvent } from "../../../../domain/components/EventIndex.js";
-import { IdGenerator } from "../../../identity/IdGenerator.js";
 
 export class AddComponentCommandHandler {
   constructor(
@@ -34,8 +33,8 @@ export class AddComponentCommandHandler {
       );
     } else {
       // Create new component
-      componentId = IdGenerator.generate();
-      const component = Component.create(componentId);
+      const component = Component.create();
+      componentId = component.snapshot.id;
 
       event = component.add(
         command.name,

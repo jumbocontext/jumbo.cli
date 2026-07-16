@@ -1,5 +1,6 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
+import { AudiencePainId } from "./AudiencePainId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { AudiencePainEvent, AudiencePainAddedEvent, AudiencePainUpdatedEvent } from "./EventIndex.js";
 import { AudiencePainEventType, AudiencePainErrorMessages, AudiencePainStatus, AudiencePainStatusType } from "./Constants.js";
@@ -7,7 +8,7 @@ import { TITLE_RULES } from "./rules/TitleRules.js";
 import { DESCRIPTION_RULES } from "./rules/DescriptionRules.js";
 
 export interface AudiencePainState extends AggregateState {
-  id: UUID;
+  id: AudiencePainId;
   title: string;
   description: string;
   status: AudiencePainStatusType;
@@ -47,7 +48,7 @@ export class AudiencePain extends BaseAggregate<AudiencePainState, AudiencePainE
     }
   }
 
-  static create(id: UUID): AudiencePain {
+  static create(id: AudiencePainId = AudiencePainId.create()): AudiencePain {
     const state: AudiencePainState = {
       id,
       title: "",
@@ -64,7 +65,7 @@ export class AudiencePain extends BaseAggregate<AudiencePainState, AudiencePainE
    */
   static rehydrate(id: UUID, history: AudiencePainEvent[]): AudiencePain {
     const state: AudiencePainState = {
-      id,
+      id: AudiencePainId.fromLegacy(id),
       title: "",
       description: "",
       status: AudiencePainStatus.ACTIVE,

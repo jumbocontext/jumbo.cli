@@ -12,7 +12,6 @@ import { AddAudienceCommand } from "./AddAudienceCommand.js";
 import { IAudienceAddedEventWriter } from "./IAudienceAddedEventWriter.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Audience } from "../../../../domain/audiences/Audience.js";
-import { IdGenerator } from "../../../identity/IdGenerator.js";
 
 export class AddAudienceCommandHandler {
   constructor(
@@ -21,11 +20,9 @@ export class AddAudienceCommandHandler {
   ) {}
 
   async execute(command: AddAudienceCommand): Promise<{ audienceId: string }> {
-    // Generate unique ID for new audience
-    const audienceId = IdGenerator.generate();
-
     // 1. Create new aggregate
-    const audience = Audience.create(audienceId);
+    const audience = Audience.create();
+    const audienceId = audience.snapshot.id;
 
     // 2. Domain logic produces event
     const event = audience.add(

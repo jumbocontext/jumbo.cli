@@ -1,5 +1,6 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID, ISO8601 } from "../BaseEvent.js";
+import { ComponentId } from "./ComponentId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import {
   ComponentEvent,
@@ -25,7 +26,7 @@ import { PATH_RULES } from "./rules/PathRules.js";
 import { DEPRECATION_REASON_RULES } from "./rules/DeprecationReasonRules.js";
 
 export interface ComponentState extends AggregateState {
-  id: UUID;
+  id: ComponentId;
   name: string;
   type: ComponentTypeValue;
   description: string;
@@ -96,7 +97,7 @@ export class Component extends BaseAggregate<ComponentState, ComponentEvent> {
     }
   }
 
-  static create(id: UUID): Component {
+  static create(id: ComponentId = ComponentId.create()): Component {
     const state: ComponentState = {
       id,
       name: "",
@@ -117,7 +118,7 @@ export class Component extends BaseAggregate<ComponentState, ComponentEvent> {
    */
   static rehydrate(id: UUID, history: ComponentEvent[]): Component {
     const state: ComponentState = {
-      id,
+      id: ComponentId.fromLegacy(id),
       name: "",
       type: "service" as ComponentTypeValue,
       description: "",

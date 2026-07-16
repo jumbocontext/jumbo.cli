@@ -17,7 +17,6 @@
  */
 
 import { Database } from "better-sqlite3";
-import { randomUUID } from "crypto";
 import { IWorkerIdentityReader } from "../../../application/host/workers/IWorkerIdentityReader.js";
 import { IWorkerModeAccessor } from "../../../application/host/workers/IWorkerModeAccessor.js";
 import { IWorkerIdentifiedEventWriter } from "../../../application/host/workers/identify/IWorkerIdentifiedEventWriter.js";
@@ -25,6 +24,7 @@ import { IEventBus } from "../../../application/messaging/IEventBus.js";
 import { WorkerId } from "../../../application/host/workers/WorkerId.js";
 import { WorkerMode } from "../../../application/host/workers/WorkerMode.js";
 import { WorkerIdentifiedEvent, WorkerEventType } from "../../../domain/workers/identify/WorkerIdentifiedEvent.js";
+import { WorkerId as DomainWorkerId } from "../../../domain/workers/WorkerId.js";
 import { HostSessionKeyResolver } from "../session/HostSessionKeyResolver.js";
 import { WorkerRecord } from "./WorkerRecord.js";
 import { WorkerRecordMapper } from "./WorkerRecordMapper.js";
@@ -151,7 +151,7 @@ export class SqliteWorkerIdentityRegistry implements IWorkerIdentityReader, IWor
     }
 
     // Create new worker entry via event
-    const newWorkerId = randomUUID();
+    const newWorkerId = DomainWorkerId.create();
     const now = new Date().toISOString();
 
     const event: WorkerIdentifiedEvent = {

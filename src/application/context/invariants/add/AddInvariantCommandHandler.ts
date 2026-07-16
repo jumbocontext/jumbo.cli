@@ -14,7 +14,6 @@ import { IInvariantAddedEventWriter } from "./IInvariantAddedEventWriter.js";
 import { IInvariantAddReader } from "./IInvariantAddReader.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Invariant } from "../../../../domain/invariants/Invariant.js";
-import { IdGenerator } from "../../../identity/IdGenerator.js";
 
 export class AddInvariantCommandHandler {
   constructor(
@@ -31,8 +30,8 @@ export class AddInvariantCommandHandler {
     }
 
     // 1. Create new aggregate
-    const invariantId = IdGenerator.generate();
-    const invariant = Invariant.create(invariantId);
+    const invariant = Invariant.create();
+    const invariantId = invariant.snapshot.id;
 
     // 2. Domain logic produces event
     const event = invariant.add(

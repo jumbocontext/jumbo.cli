@@ -10,6 +10,7 @@ import {
   AggregateState,
 } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
+import { GuidelineId } from "./GuidelineId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import {
   GuidelineEvent,
@@ -32,7 +33,7 @@ import { EXAMPLES_RULES } from "./rules/ExamplesRules.js";
  * Domain state: business properties + aggregate metadata
  */
 export interface GuidelineState extends AggregateState {
-  id: UUID;
+  id: GuidelineId;
   category: GuidelineCategoryValue;
   title: string;
   description: string;
@@ -85,7 +86,7 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
    * Creates a new Guideline aggregate.
    * Use this when starting a new aggregate that will emit its first event.
    */
-  static create(id: UUID): Guideline {
+  static create(id: GuidelineId = GuidelineId.create()): Guideline {
     const state: GuidelineState = {
       id,
       category: "other" as GuidelineCategoryValue,
@@ -105,7 +106,7 @@ export class Guideline extends BaseAggregate<GuidelineState, GuidelineEvent> {
    */
   static rehydrate(id: UUID, history: GuidelineEvent[]): Guideline {
     const state: GuidelineState = {
-      id,
+      id: GuidelineId.fromLegacy(id),
       category: "other" as GuidelineCategoryValue,
       title: "",
       description: "",

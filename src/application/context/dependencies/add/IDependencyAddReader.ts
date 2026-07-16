@@ -6,4 +6,8 @@ import { DependencyView } from "../DependencyView.js";
  */
 export interface IDependencyAddReader {
   findById(dependencyId: string): Promise<DependencyView | null>;
+  findByIdentity(
+    ecosystem: string,
+    packageName: string,
+  ): Promise<DependencyView | null>;
 }

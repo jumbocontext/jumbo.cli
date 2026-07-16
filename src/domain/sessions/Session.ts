@@ -3,6 +3,7 @@ import {
   AggregateState,
 } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
+import { SessionId } from "./SessionId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { SessionEvent, SessionStartedEvent, SessionEndedEvent } from "./EventIndex.js";
 import {
@@ -16,7 +17,7 @@ import { SUMMARY_RULES } from "./rules/SummaryRules.js";
 
 // Domain state: business properties + aggregate metadata
 export interface SessionState extends AggregateState {
-  id: UUID; // Session ID
+  id: SessionId; // Session ID
   focus: string; // Theme of the work accomplished (set at session end)
   status: SessionStatusType; // Current session status
   version: number; // Aggregate version for event sourcing
@@ -48,7 +49,7 @@ export class Session extends BaseAggregate<SessionState, SessionEvent> {
     }
   }
 
-  static create(id: UUID): Session {
+  static create(id: SessionId = SessionId.create()): Session {
     const state: SessionState = {
       id,
       focus: "",
@@ -64,7 +65,7 @@ export class Session extends BaseAggregate<SessionState, SessionEvent> {
    */
   static rehydrate(id: UUID, history: SessionEvent[]): Session {
     const state: SessionState = {
-      id,
+      id: SessionId.fromLegacy(id),
       focus: "",
       status: SessionStatus.ACTIVE,
       version: 0,

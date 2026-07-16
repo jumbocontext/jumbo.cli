@@ -10,6 +10,7 @@ import {
   AggregateState,
 } from "../BaseAggregate.js";
 import { UUID, ISO8601 } from "../BaseEvent.js";
+import { InvariantId } from "./InvariantId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { InvariantEvent, InvariantAddedEvent, InvariantUpdatedEvent, InvariantRemovedEvent } from "./EventIndex.js";
 import { InvariantEventType, InvariantErrorMessages } from "./Constants.js";
@@ -21,7 +22,7 @@ import { RATIONALE_RULES } from "./rules/RationaleRules.js";
  * Domain state: business properties + aggregate metadata
  */
 export interface InvariantState extends AggregateState {
-  id: UUID;
+  id: InvariantId;
   title: string;
   description: string;
   rationale: string | null;
@@ -66,7 +67,7 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
    * Creates a new Invariant aggregate.
    * Use this when starting a new aggregate that will emit its first event.
    */
-  static create(id: UUID): Invariant {
+  static create(id: InvariantId = InvariantId.create()): Invariant {
     const state: InvariantState = {
       id,
       title: "",
@@ -83,7 +84,7 @@ export class Invariant extends BaseAggregate<InvariantState, InvariantEvent> {
    */
   static rehydrate(id: UUID, history: InvariantEvent[]): Invariant {
     const state: InvariantState = {
-      id,
+      id: InvariantId.fromLegacy(id),
       title: "",
       description: "",
       rationale: null,

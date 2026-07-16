@@ -47,8 +47,8 @@ export class InitializeProjectCommandHandler {
     }
 
     // 1. Create new aggregate
-    const projectId = this.projectIdentityResolver.generateProjectId();
-    const project = Project.create(projectId);
+    const project = Project.create();
+    const projectId = project.snapshot.id;
 
     // 2. Domain logic produces event
     const event = project.initialize(

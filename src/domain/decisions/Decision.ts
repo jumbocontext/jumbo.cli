@@ -1,5 +1,6 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID, ISO8601 } from "../BaseEvent.js";
+import { DecisionId } from "./DecisionId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { DecisionEvent, DecisionAddedEvent, DecisionUpdatedEvent, DecisionReversedEvent, DecisionSupersededEvent, DecisionRestoredEvent } from "./EventIndex.js";
 import { DecisionEventType, DecisionStatus, DecisionStatusType, DecisionErrorMessages } from "./Constants.js";
@@ -13,7 +14,7 @@ import { SUPERSEDED_BY_RULES } from "./rules/SupersededByRules.js";
 
 // Domain state: business properties + aggregate metadata
 export interface DecisionState extends AggregateState {
-  id: UUID;
+  id: DecisionId;
   title: string;
   context: string;
   rationale: string | null;
@@ -85,7 +86,7 @@ export class Decision extends BaseAggregate<DecisionState, DecisionEvent> {
     }
   }
 
-  static create(id: UUID): Decision {
+  static create(id: DecisionId = DecisionId.create()): Decision {
     const state: DecisionState = {
       id,
       title: "",
@@ -108,7 +109,7 @@ export class Decision extends BaseAggregate<DecisionState, DecisionEvent> {
    */
   static rehydrate(id: UUID, history: DecisionEvent[]): Decision {
     const state: DecisionState = {
-      id,
+      id: DecisionId.fromLegacy(id),
       title: "",
       context: "",
       rationale: null,

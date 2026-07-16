@@ -1,5 +1,6 @@
 import { BaseAggregate } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
+import { ValuePropositionId } from "./ValuePropositionId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { ValuePropositionAddedEvent } from "./add/ValuePropositionAddedEvent.js";
 import { ValuePropositionUpdatedEvent } from "./update/ValuePropositionUpdatedEvent.js";
@@ -22,7 +23,9 @@ export class ValueProposition extends BaseAggregate<
     super(state); // Call BaseAggregate constructor
   }
 
-  static create(id: UUID): ValueProposition {
+  static create(
+    id: ValuePropositionId = ValuePropositionId.create(),
+  ): ValueProposition {
     const state: ValuePropositionState = {
       id,
       title: "",
@@ -38,7 +41,10 @@ export class ValueProposition extends BaseAggregate<
     id: UUID,
     history: ValuePropositionEvent[]
   ): ValueProposition {
-    const state = ValuePropositionProjection.rehydrate(id, history);
+    const state = ValuePropositionProjection.rehydrate(
+      ValuePropositionId.fromLegacy(id),
+      history,
+    );
     return new ValueProposition(state);
   }
 

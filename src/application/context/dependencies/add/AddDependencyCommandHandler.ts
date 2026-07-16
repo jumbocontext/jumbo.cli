@@ -17,17 +17,18 @@ export class AddDependencyCommandHandler {
 
   async execute(command: AddDependencyCommand): Promise<{ dependencyId: string }> {
     const identity = this.resolveIdentity(command);
-    const dependencyId = `dep_${identity.ecosystem}_${identity.packageName}`.toLowerCase().replace(/[^a-z0-9_]/g, '_');
 
-    // Check if dependency already exists (idempotent behavior)
-    const existingDependency = await this.dependencyReader.findById(dependencyId);
+    const existingDependency = await this.dependencyReader.findByIdentity(
+      identity.ecosystem,
+      identity.packageName,
+    );
     if (existingDependency) {
-      // Silently succeed - idempotent operation
-      return { dependencyId };
+      return { dependencyId: existingDependency.dependencyId };
     }
 
     // 1. Create new aggregate
-    const dependency = Dependency.create(dependencyId);
+    const dependency = Dependency.create();
+    const dependencyId = dependency.snapshot.id;
 
     // 2. Domain logic produces event
     const event = dependency.add(
