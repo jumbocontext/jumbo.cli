@@ -1,4 +1,3 @@
-import { IdGenerator } from "../../../identity/IdGenerator.js";
 import { AddGoalCommand } from "./AddGoalCommand.js";
 import { IGoalAddedEventWriter } from "./IGoalAddedEventWriter.js";
 import { IGoalUpdatedEventWriter } from "../update/IGoalUpdatedEventWriter.js";
@@ -26,11 +25,9 @@ export class AddGoalCommandHandler {
   ) {}
 
   async execute(command: AddGoalCommand): Promise<{ goalId: string }> {
-    // Generate new goal ID (handler owns ID generation)
-    const goalId = IdGenerator.generate();
-
     // Create new aggregate
-    const goal = Goal.create(goalId);
+    const goal = Goal.create();
+    const goalId = goal.snapshot.id;
 
     // Domain logic produces event
     const event = goal.add(

@@ -1,5 +1,6 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
+import { RelationId } from "./RelationId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { RelationAddedEvent } from "./add/RelationAddedEvent.js";
 import { RelationDeactivatedEvent } from "./deactivate/RelationDeactivatedEvent.js";
@@ -18,7 +19,7 @@ export type RelationEvent =
   | RelationRemovedEvent;
 
 export interface RelationState extends AggregateState {
-  id: UUID;
+  id: RelationId;
   fromEntityType: EntityTypeValue;
   fromEntityId: string;
   toEntityType: EntityTypeValue;
@@ -72,7 +73,7 @@ export class Relation extends BaseAggregate<RelationState, RelationEvent> {
     }
   }
 
-  static create(id: UUID): Relation {
+  static create(id: RelationId = RelationId.create()): Relation {
     const state: RelationState = {
       id,
       fromEntityType: '' as EntityTypeValue,
@@ -94,7 +95,7 @@ export class Relation extends BaseAggregate<RelationState, RelationEvent> {
    */
   static rehydrate(id: UUID, history: RelationEvent[]): Relation {
     const state: RelationState = {
-      id,
+      id: RelationId.fromLegacy(id),
       fromEntityType: '' as EntityTypeValue,
       fromEntityId: '',
       toEntityType: '' as EntityTypeValue,

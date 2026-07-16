@@ -20,13 +20,14 @@ describe("AddDependencyCommandHandler", () => {
     } as unknown as jest.Mocked<IEventBus>;
     dependencyReader = {
       findById: jest.fn(),
+      findByIdentity: jest.fn(),
     } as unknown as jest.Mocked<IDependencyAddReader>;
 
     handler = new AddDependencyCommandHandler(eventWriter, eventBus, dependencyReader);
   });
 
   it("creates external dependencies from name/ecosystem/packageName identity", async () => {
-    dependencyReader.findById.mockResolvedValue(null);
+    dependencyReader.findByIdentity.mockResolvedValue(null);
 
     const result = await handler.execute({
       name: "Express",
@@ -37,9 +38,27 @@ describe("AddDependencyCommandHandler", () => {
       contract: "IAuthApi",
     });
 
-    expect(result).toEqual({ dependencyId: "dep_npm_express" });
+    expect(result.dependencyId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
+    expect(dependencyReader.findByIdentity).toHaveBeenCalledWith("npm", "express");
     expect(eventWriter.append).toHaveBeenCalledTimes(1);
     expect(eventBus.publish).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns an existing legacy identifier for an idempotent add", async () => {
+    dependencyReader.findByIdentity.mockResolvedValue({
+      dependencyId: "dep_npm_express",
+    } as never);
+
+    const result = await handler.execute({
+      name: "Express",
+      ecosystem: "npm",
+      packageName: "express",
+    });
+
+    expect(result).toEqual({ dependencyId: "dep_npm_express" });
+    expect(eventWriter.append).not.toHaveBeenCalled();
   });
 
   it("throws when external identity flags are missing", async () => {

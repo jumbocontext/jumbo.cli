@@ -2,6 +2,7 @@ import { ValuePropositionAddedEvent } from "./add/ValuePropositionAddedEvent.js"
 import { ValuePropositionUpdatedEvent } from "./update/ValuePropositionUpdatedEvent.js";
 import { ValuePropositionRemovedEvent } from "./remove/ValuePropositionRemovedEvent.js";
 import { UUID } from "../BaseEvent.js";
+import { ValuePropositionId } from "./ValuePropositionId.js";
 import { AggregateState } from "../BaseAggregate.js";
 import { ValuePropositionEventType } from "./Constants.js";
 
@@ -13,7 +14,7 @@ export type ValuePropositionEvent =
 
 // Domain state: business properties + aggregate metadata
 export interface ValuePropositionState extends AggregateState {
-  id: UUID; // Aggregate identity
+  id: ValuePropositionId; // Aggregate identity
   title: string; // Required: short value description
   description: string; // Required: detailed explanation
   benefit: string; // Required: how this improves situation
@@ -64,7 +65,7 @@ export class ValuePropositionProjection {
    * Used by Aggregate.rehydrate() to rebuild from event store.
    */
   static rehydrate(
-    id: UUID,
+    id: ValuePropositionId,
     history: ValuePropositionEvent[]
   ): ValuePropositionState {
     const state: ValuePropositionState = {

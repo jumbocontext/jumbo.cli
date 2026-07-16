@@ -26,7 +26,6 @@ describe("InitializeProjectCommandHandler", () => {
   let settingsInitializer: jest.Mocked<ISettingsInitializer>;
   let gitignoreProtocol: jest.Mocked<IGitignoreProtocol>;
   let projectIdentityResolver: jest.Mocked<IProjectIdentityResolver>;
-  const generatedProjectId = "11111111-1111-4111-8111-111111111111";
 
   beforeEach(() => {
     eventWriter = {
@@ -65,7 +64,9 @@ describe("InitializeProjectCommandHandler", () => {
     };
 
     projectIdentityResolver = {
-      generateProjectId: jest.fn().mockReturnValue(generatedProjectId),
+      generateProjectId: jest.fn().mockReturnValue(
+        "11111111-1111-4111-8111-111111111111",
+      ),
       persistProjectId: jest.fn().mockResolvedValue(undefined),
       resolveExistingProjectId: jest.fn(),
     };
@@ -122,20 +123,22 @@ describe("InitializeProjectCommandHandler", () => {
 
       const result = await handler.execute(command, "/repo", ["claude", "antigravity"]);
 
-      expect(result.projectId).toBe(generatedProjectId);
-      expect(projectIdentityResolver.generateProjectId).toHaveBeenCalledTimes(1);
+      expect(result.projectId).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      );
+      expect(projectIdentityResolver.generateProjectId).not.toHaveBeenCalled();
       expect(eventWriter.append).toHaveBeenCalledTimes(1);
 
       const appendedEvent = eventWriter.append.mock.calls[0][0] as ProjectInitializedEvent;
       expect(appendedEvent.type).toBe(ProjectEventType.INITIALIZED);
-      expect(appendedEvent.aggregateId).toBe(generatedProjectId);
+      expect(appendedEvent.aggregateId).toBe(result.projectId);
       expect(appendedEvent.version).toBe(1);
       expect(appendedEvent.payload.name).toBe(command.name);
       expect(appendedEvent.payload.purpose).toBe(command.purpose);
 
       expect(eventBus.publish).toHaveBeenCalledWith(appendedEvent);
       expect(settingsInitializer.ensureSettingsFileExists).toHaveBeenCalledTimes(1);
-      expect(projectIdentityResolver.persistProjectId).toHaveBeenCalledWith(generatedProjectId);
+      expect(projectIdentityResolver.persistProjectId).toHaveBeenCalledWith(result.projectId);
       expect(agentFileProtocol.ensureAgentsMd).toHaveBeenCalledWith("/repo");
       expect(agentFileProtocol.ensureAgentConfigurations).toHaveBeenCalledWith("/repo", ["claude", "antigravity"]);
       expect(gitignoreProtocol.ensureExclusions).toHaveBeenCalledWith("/repo");

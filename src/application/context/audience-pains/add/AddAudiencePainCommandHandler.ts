@@ -12,7 +12,6 @@ import { AddAudiencePainCommand } from "./AddAudiencePainCommand.js";
 import { IAudiencePainAddedEventWriter } from "./IAudiencePainAddedEventWriter.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { AudiencePain } from "../../../../domain/audience-pains/AudiencePain.js";
-import { IdGenerator } from "../../../identity/IdGenerator.js";
 
 export class AddAudiencePainCommandHandler {
   constructor(
@@ -21,11 +20,9 @@ export class AddAudiencePainCommandHandler {
   ) {}
 
   async execute(command: AddAudiencePainCommand): Promise<{ painId: string }> {
-    // Generate unique ID for new pain
-    const painId = IdGenerator.generate();
-
     // 1. Create new aggregate
-    const pain = AudiencePain.create(painId);
+    const pain = AudiencePain.create();
+    const painId = pain.snapshot.id;
 
     // 2. Domain logic produces event
     const event = pain.add(command.title, command.description);

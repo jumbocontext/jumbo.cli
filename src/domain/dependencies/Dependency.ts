@@ -1,5 +1,6 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
+import { DependencyId } from "./DependencyId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import {
   DependencyEvent,
@@ -20,7 +21,7 @@ import { STATUS_RULES } from "./rules/StatusRules.js";
 
 // Domain state: business properties + aggregate metadata
 export interface DependencyState extends AggregateState {
-  id: UUID;
+  id: DependencyId;
   name: string;
   ecosystem: string;
   packageName: string;
@@ -71,7 +72,7 @@ export class Dependency extends BaseAggregate<DependencyState, DependencyEvent> 
     }
   }
 
-  static create(id: UUID): Dependency {
+  static create(id: DependencyId = DependencyId.create()): Dependency {
     const state: DependencyState = {
       id,
       name: "",
@@ -92,7 +93,7 @@ export class Dependency extends BaseAggregate<DependencyState, DependencyEvent> 
    */
   static rehydrate(id: UUID, history: DependencyEvent[]): Dependency {
     const state: DependencyState = {
-      id,
+      id: DependencyId.fromLegacy(id),
       name: "",
       ecosystem: "",
       packageName: "",

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Domain primitive identities**: Newly created audiences, audience pains, components, decisions, dependencies, goals, guidelines, invariants, projects, relations, sessions, value propositions, and workers now receive domain-owned UUID identities. Existing persisted identifiers remain supported during replay and through CLI operations without migration.
+
 ## [3.16.1] - 2026-07-10
 
 ### Fixed

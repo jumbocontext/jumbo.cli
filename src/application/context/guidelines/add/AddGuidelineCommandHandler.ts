@@ -9,7 +9,6 @@ import { AddGuidelineCommand } from "./AddGuidelineCommand.js";
 import { IGuidelineAddedEventWriter } from "./IGuidelineAddedEventWriter.js";
 import { IEventBus } from "../../../messaging/IEventBus.js";
 import { Guideline } from "../../../../domain/guidelines/Guideline.js";
-import { IdGenerator } from "../../../identity/IdGenerator.js";
 
 export class AddGuidelineCommandHandler {
   constructor(
@@ -19,8 +18,8 @@ export class AddGuidelineCommandHandler {
 
   async execute(command: AddGuidelineCommand): Promise<{ guidelineId: string }> {
     // 1. Create new aggregate
-    const guidelineId = IdGenerator.generate();
-    const guideline = Guideline.create(guidelineId);
+    const guideline = Guideline.create();
+    const guidelineId = guideline.snapshot.id;
 
     // 2. Domain logic produces event
     const event = guideline.add(

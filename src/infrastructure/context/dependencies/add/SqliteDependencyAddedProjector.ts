@@ -56,6 +56,19 @@ export class SqliteDependencyAddedProjector implements IDependencyAddedProjector
     return row ? this.mapRowToView(row as Record<string, unknown>) : null;
   }
 
+  async findByIdentity(
+    ecosystem: string,
+    packageName: string,
+  ): Promise<DependencyView | null> {
+    const row = this.db.prepare(`
+      SELECT * FROM dependency_views
+      WHERE ecosystem = ? AND packageName = ? AND status != 'removed'
+      ORDER BY createdAt DESC
+      LIMIT 1
+    `).get(ecosystem, packageName);
+    return row ? this.mapRowToView(row as Record<string, unknown>) : null;
+  }
+
   async findByConsumerId(consumerId: string): Promise<DependencyView[]> {
     const rows = this.db
       .prepare('SELECT * FROM dependency_views WHERE consumerId = ? ORDER BY createdAt DESC')

@@ -1,5 +1,6 @@
 import { BaseAggregate, AggregateState } from "../BaseAggregate.js";
 import { UUID } from "../BaseEvent.js";
+import { GoalId } from "./GoalId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import { GoalEvent, GoalAddedEvent, GoalRefinedEvent, GoalStartedEvent, GoalUpdatedEvent, GoalBlockedEvent, GoalUnblockedEvent, GoalCompletedEvent, GoalResetEvent, GoalRemovedEvent, GoalPausedEvent, GoalResumedEvent, GoalProgressUpdatedEvent, GoalSubmittedForReviewEvent, GoalQualifiedEvent, GoalRefinementStartedEvent, GoalCommittedEvent, GoalRejectedEvent, GoalSubmittedEvent, GoalCodifyingStartedEvent, GoalClosedEvent, GoalApprovedEvent, GoalStatusMigratedEvent } from "./EventIndex.js";
 import { GoalEventType, GoalStatus, GoalStatusType, WAITING_STATES, IN_PROGRESS_STATES, TERMINAL_STATES, DETERMINISTIC_RESET_TARGETS } from "./Constants.js";
@@ -32,7 +33,7 @@ import { CanCloseRule } from "./rules/CanCloseRule.js";
 
 // Domain state: business properties + aggregate metadata
 export interface GoalState extends AggregateState {
-  id: UUID;
+  id: GoalId;
   title: string;
   objective: string;
   successCriteria: string[];
@@ -283,7 +284,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
     }
   }
 
-  static create(id: UUID): Goal {
+  static create(id: GoalId = GoalId.create()): Goal {
     const state: GoalState = {
       id,
       title: "",
@@ -304,7 +305,7 @@ export class Goal extends BaseAggregate<GoalState, GoalEvent> {
    */
   static rehydrate(id: UUID, history: GoalEvent[]): Goal {
     const state: GoalState = {
-      id,
+      id: GoalId.fromLegacy(id),
       title: "",
       objective: "",
       successCriteria: [],

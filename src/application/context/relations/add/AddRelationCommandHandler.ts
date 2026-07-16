@@ -1,4 +1,3 @@
-import { IdGenerator } from "../../../identity/IdGenerator.js";
 import { AddRelationCommand } from "./AddRelationCommand.js";
 import { IRelationAddedEventWriter } from "./IRelationAddedEventWriter.js";
 import { IRelationAddedReader } from "./IRelationAddedReader.js";
@@ -32,11 +31,9 @@ export class AddRelationCommandHandler {
       return { relationId: existingRelation.relationId };
     }
 
-    // Generate new relation ID
-    const relationId = IdGenerator.generate();
-
     // Create new aggregate
-    const relation = Relation.create(relationId);
+    const relation = Relation.create();
+    const relationId = relation.snapshot.id;
 
     // Domain logic produces event
     const event = relation.add(

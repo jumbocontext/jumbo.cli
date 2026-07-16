@@ -10,6 +10,7 @@ import {
   AggregateState,
 } from "../BaseAggregate.js";
 import { UUID, BaseEvent } from "../BaseEvent.js";
+import { AudienceId } from "./AudienceId.js";
 import { ValidationRuleSet } from "../validation/ValidationRule.js";
 import {
   AudienceEvent,
@@ -30,7 +31,7 @@ import { PRIORITY_RULES } from "./rules/PriorityRules.js";
  * Domain state: business properties + aggregate metadata
  */
 export interface AudienceState extends AggregateState {
-  id: UUID; // Aggregate identity
+  id: AudienceId; // Aggregate identity
   name: string; // Required: audience name
   description: string; // Required: who they are
   priority: AudiencePriorityType; // Required: primary/secondary/tertiary
@@ -80,7 +81,7 @@ export class Audience extends BaseAggregate<AudienceState, AudienceEvent> {
    * Creates a new Audience aggregate.
    * Use this when starting a new aggregate that will emit its first event.
    */
-  static create(id: UUID): Audience {
+  static create(id: AudienceId = AudienceId.create()): Audience {
     const state: AudienceState = {
       id,
       name: "",
@@ -98,7 +99,7 @@ export class Audience extends BaseAggregate<AudienceState, AudienceEvent> {
    */
   static rehydrate(id: UUID, history: AudienceEvent[]): Audience {
     const state: AudienceState = {
-      id,
+      id: AudienceId.fromLegacy(id),
       name: "",
       description: "",
       priority: "primary",
