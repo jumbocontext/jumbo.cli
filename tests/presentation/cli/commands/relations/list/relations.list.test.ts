@@ -57,8 +57,13 @@ describe("relations.list command", () => {
     await relationsList({}, mockContainer as IApplicationContainer);
 
     expect(mockController.handle).toHaveBeenCalledWith({
+      entity: undefined,
       entityType: undefined,
       entityId: undefined,
+      direction: undefined,
+      relationType: undefined,
+      relatedEntityType: undefined,
+      strength: undefined,
       status: "active",
     });
     expect(consoleSpy).toHaveBeenCalled();
@@ -142,5 +147,25 @@ describe("relations.list command", () => {
     expect(mockController.handle).toHaveBeenCalledWith(
       expect.objectContaining({ status: "deactivated" })
     );
+  });
+
+  it("passes direction, relation, related entity, and strength filters", async () => {
+    mockController.handle.mockResolvedValue({ relations: [] });
+
+    await relationsList({
+      entityType: "goal",
+      entityId: "goal_1",
+      direction: "out",
+      relationType: "requires",
+      relatedEntityType: "component",
+      strength: "strong",
+    }, mockContainer as IApplicationContainer);
+
+    expect(mockController.handle).toHaveBeenCalledWith(expect.objectContaining({
+      direction: "out",
+      relationType: "requires",
+      relatedEntityType: "component",
+      strength: "strong",
+    }));
   });
 });

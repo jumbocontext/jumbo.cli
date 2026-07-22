@@ -23,7 +23,7 @@ Complete command documentation.
 | [Audience Commands](commands/audiences.md) | add, list, update, remove |
 | [Audience Pain Commands](commands/audience-pains.md) | add, list, update |
 | [Value Proposition Commands](commands/value-propositions.md) | add, list, update, remove |
-| [Relation Commands](commands/relations.md) | add, list, remove |
+| [Relation Commands](commands/relations.md) | add, list, traverse, remove |
 | [Work Commands](commands/work.md) | pause, resume |
 | [Maintenance Commands](commands/maintenance.md) | heal, evolve |
 | [Worker Commands](commands/worker.md) | view |

@@ -3,14 +3,9 @@
  * Used by ListRelationsQueryHandler to retrieve relation list with optional filtering.
  */
 
-import { RelationView } from "../RelationView.js";
 import { EntityTypeValue } from "../../../../domain/relations/Constants.js";
-
-export interface RelationListFilter {
-  entityType?: EntityTypeValue;
-  entityId?: string;
-  status?: "active" | "deactivated" | "removed" | "all";
-}
+import { RelationView } from "../RelationView.js";
+import { RelationListFilter } from "./RelationListFilter.js";
 
 export interface IRelationViewReader {
   /**
@@ -19,4 +14,7 @@ export interface IRelationViewReader {
    * @returns Array of relation views ordered by creation date
    */
   findAll(filter?: RelationListFilter): Promise<RelationView[]>;
+
+  /** Returns the distinct projection endpoint types associated with an entity ID. */
+  findEndpointTypes(entityId: string): Promise<EntityTypeValue[]>;
 }

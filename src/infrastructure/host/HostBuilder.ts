@@ -408,6 +408,8 @@ import { LocalRemoveRelationGateway } from "../../application/context/relations/
 import { RemoveRelationController } from "../../application/context/relations/remove/RemoveRelationController.js";
 import { GetRelationsController } from "../../application/context/relations/get/GetRelationsController.js";
 import { LocalGetRelationsGateway } from "../../application/context/relations/get/LocalGetRelationsGateway.js";
+import { LocalTraverseRelationsGateway } from "../../application/context/relations/traverse/LocalTraverseRelationsGateway.js";
+import { TraverseRelationsController } from "../../application/context/relations/traverse/TraverseRelationsController.js";
 // Context
 import { GoalContextQueryHandler } from "../../application/context/goals/get/GoalContextQueryHandler.js";
 import { GoalBacklogPreviewQueryHandler } from "../../application/context/goals/query/GoalBacklogPreviewQueryHandler.js";
@@ -1805,6 +1807,8 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const getRelationsController = new GetRelationsController(
       getRelationsGateway
     );
+    const traverseRelationsGateway = new LocalTraverseRelationsGateway(relationViewReader);
+    const traverseRelationsController = new TraverseRelationsController(traverseRelationsGateway);
 
     // ============================================================
     // STEP 5: Create Projection Handlers (Event Subscribers)
@@ -2336,6 +2340,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       addRelationController,
       removeRelationController,
       getRelationsController,
+      traverseRelationsController,
       // Relations Category - decomposed by use case
       relationAddedEventStore,
       relationRemovedEventStore,

@@ -3,12 +3,21 @@ import { TerminalOutput } from '../../../output/TerminalOutput.js';
 import { RelationView } from '../../../../../application/context/relations/RelationView.js';
 import { Colors, BrandColors, Symbols } from '../../../rendering/StyleConfig.js';
 import { heading, contentLine, metaField, wrapContent } from '../../../rendering/OutputLayout.js';
+import { GetRelationsRequest } from '../../../../../application/context/relations/get/GetRelationsRequest.js';
 
 export class RelationListOutputBuilder {
   private builder = new TerminalOutputBuilder();
 
   build(relations: RelationView[], filter?: string): TerminalOutput {
     this.builder.reset();
+    if (relations.length === 0) {
+      const filterLabel = filter ? ` involving ${filter}` : "";
+      this.builder.addPrompt(
+        Colors.muted(`No relations found${filterLabel}. Use 'jumbo relation add' to add one.`)
+      );
+      return this.builder.build();
+    }
+
     const filterLabel = filter ? ` (${filter})` : "";
     const lines: string[] = [];
 
@@ -32,11 +41,19 @@ export class RelationListOutputBuilder {
     return this.builder.build();
   }
 
-  buildStructuredOutput(relations: RelationView[], filter?: { entityType?: string | null; entityId?: string | null; status?: string }): TerminalOutput {
+  buildStructuredOutput(relations: RelationView[], filter: GetRelationsRequest): TerminalOutput {
     this.builder.reset();
     this.builder.addData({
       count: relations.length,
-      filter: filter ?? null,
+      filter: {
+        entityType: filter.entity?.entityType ?? filter.entityType ?? null,
+        entityId: filter.entity?.entityId ?? filter.entityId ?? null,
+        direction: filter.direction ?? "both",
+        relationType: filter.relationType ?? null,
+        relatedEntityType: filter.relatedEntityType ?? null,
+        strength: filter.strength ?? null,
+        status: filter.status,
+      },
       relations: relations.map((r) => ({
         relationId: r.relationId,
         fromEntityType: r.fromEntityType,
@@ -58,6 +75,7 @@ export class RelationListOutputBuilder {
     this.builder.reset();
     this.builder.addPrompt(`${Symbols.cross} ${Colors.error("Failed to list relations")}`);
     this.builder.addData({
+      error: "Failed to list relations",
       message: error instanceof Error ? error.message : error,
     });
     return this.builder.build();

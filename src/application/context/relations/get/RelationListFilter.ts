@@ -3,7 +3,7 @@ import { RelationDirection } from "./RelationDirection.js";
 import { RelationStatusFilter } from "./RelationStatusFilter.js";
 import { RelationNodeReference } from "./RelationNodeReference.js";
 
-export interface GetRelationsRequest {
+export interface RelationListFilter {
   readonly entity?: RelationNodeReference;
   readonly entityType?: EntityTypeValue;
   readonly entityId?: string;
@@ -11,5 +11,5 @@ export interface GetRelationsRequest {
   readonly relationType?: string;
   readonly relatedEntityType?: EntityTypeValue;
   readonly strength?: RelationStrengthValue;
-  readonly status: RelationStatusFilter;
+  readonly status?: RelationStatusFilter;
 }

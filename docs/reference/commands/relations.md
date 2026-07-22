@@ -5,7 +5,7 @@ sidebar:
   order: 12
 ---
 
-Add, list, and remove relationships between entities in the knowledge graph — linking goals, components, decisions, and other entities.
+Add, list, traverse, and remove relationships between entities in the knowledge graph — linking goals, components, decisions, and other entities.
 
 ---
 
@@ -67,8 +67,12 @@ List all knowledge graph relations.
 | Option | Description |
 |--------|-------------|
 | `--entity-type <type>` | Filter by entity type, e.g. `goal`, `decision`, `component` |
-| `--entity-id <id>` | Filter by entity ID (requires `--entity-type`) |
-| `-s, --status <status>` | Filter by status: `active`, `removed`, `all` (default: `active`) |
+| `--entity-id <id>` | Filter by entity ID |
+| `-d, --direction <direction>` | Filter relative to the entity: `in`, `out`, or `both` (default: `both`) |
+| `--relation-type <type>` | Filter by relation type |
+| `--related-entity-type <type>` | Filter by the type at the opposite endpoint |
+| `--strength <strength>` | Filter by strength: `strong`, `medium`, or `weak` |
+| `-s, --status <status>` | Filter by status: `active`, `deactivated`, `removed`, or `all` (default: `active`) |
 
 ### Examples
 
@@ -76,7 +80,46 @@ List all knowledge graph relations.
 > jumbo relations list
 > jumbo relations list --entity-type goal
 > jumbo relations list --entity-type component --entity-id comp_abc123
+> jumbo relations list --entity-id comp_abc123 --direction out --relation-type requires
+> jumbo relations list --related-entity-type decision --strength strong
 > jumbo relations list --status all
+```
+
+---
+
+## jumbo relations traverse
+
+Traverse a bounded portion of the relation graph from one entity. Traversal uses deterministic breadth-first search and preserves every relation's original direction.
+
+### Synopsis
+
+```bash
+> jumbo relations traverse --id <id> [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `-i, --id <id>` | Entity ID at the traversal root (required) |
+| `--entity-type <type>` | Root entity type; inferred when the ID identifies one endpoint type |
+| `--depth <depth>` | Traversal depth from `1` through `5` (default: `1`) |
+| `-d, --direction <direction>` | Traversal direction: `in`, `out`, or `both` (default: `both`) |
+| `--relation-type <type>` | Filter by relation type |
+| `--related-entity-type <type>` | Filter each expansion by the opposite endpoint type |
+| `--strength <strength>` | Filter by strength: `strong`, `medium`, or `weak` |
+| `-s, --status <status>` | Filter by status: `active`, `deactivated`, `removed`, or `all` (default: `active`) |
+| `--limit <limit>` | Maximum distinct edges from `1` through `1000` (default: `100`) |
+
+If an ID appears under multiple entity types, specify `--entity-type`. Results include the resolved root, distinct nodes with their minimum hop distance, directed edges, reached depth, limit, and truncation state. Text output groups results by hop; `--format json` returns the stable structured graph result.
+
+### Examples
+
+```bash
+> jumbo relations traverse --id goal_abc123
+> jumbo relations traverse --id goal_abc123 --entity-type goal --depth 3
+> jumbo relations traverse --id comp_abc123 --direction out --relation-type requires --limit 250
+> jumbo relations traverse --id comp_abc123 --depth 2 --format json
 ```
 
 ---

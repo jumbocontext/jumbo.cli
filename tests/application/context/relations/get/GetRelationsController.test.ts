@@ -44,11 +44,23 @@ describe("GetRelationsController", () => {
   it("should pass all filter fields through to gateway", async () => {
     mockGateway.getRelations.mockResolvedValue({ relations: [] });
 
-    await controller.handle({ entityType: "goal", entityId: "goal_123", status: "all" });
+    await controller.handle({
+      entityType: "goal",
+      entityId: "goal_123",
+      direction: "in",
+      relationType: "requires",
+      relatedEntityType: "component",
+      strength: "medium",
+      status: "all",
+    });
 
     expect(mockGateway.getRelations).toHaveBeenCalledWith({
       entityType: "goal",
       entityId: "goal_123",
+      direction: "in",
+      relationType: "requires",
+      relatedEntityType: "component",
+      strength: "medium",
       status: "all",
     });
   });

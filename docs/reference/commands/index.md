@@ -24,7 +24,7 @@ Complete reference for all Jumbo CLI commands.
 | [Audience Commands](audiences.md) | add, list, update, remove |
 | [Audience Pain Commands](audience-pains.md) | add, list, update |
 | [Value Proposition Commands](value-propositions.md) | add, list, update, remove |
-| [Relation Commands](relations.md) | add, list, remove |
+| [Relation Commands](relations.md) | add, list, traverse, remove |
 | [Work Commands](work.md) | pause, resume |
 | [Maintenance Commands](maintenance.md) | heal, evolve |
 | [Telemetry Commands](telemetry.md) | status, enable, disable |

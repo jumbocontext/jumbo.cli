@@ -54,7 +54,7 @@ Memory and context orchestration for coding agents.
 | [Audience Commands](reference/commands/audiences.md) | add, list, update, remove |
 | [Audience Pain Commands](reference/commands/audience-pains.md) | add, list, update |
 | [Value Proposition Commands](reference/commands/value-propositions.md) | add, list, update, remove |
-| [Relation Commands](reference/commands/relations.md) | add, list, remove |
+| [Relation Commands](reference/commands/relations.md) | add, list, traverse, remove |
 | [Work Commands](reference/commands/work.md) | pause, resume |
 | [Maintenance Commands](reference/commands/maintenance.md) | heal, evolve |
 | [Worker Commands](reference/commands/worker.md) | view |
