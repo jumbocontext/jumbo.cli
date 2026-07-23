@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.18.0] - 2026-07-23
+
 ### Added
 
 - **Bounded relation traversal**: Added `jumbo relations traverse` with deterministic breadth-first traversal, typed root inference, directed graph semantics, depth and edge limits, relation filters, hop-grouped text output, and stable structured output.
