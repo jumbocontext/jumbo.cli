@@ -108,4 +108,22 @@ describe("SqliteRelationViewReader", () => {
     await expect(reader.findEndpointTypes("shared"))
       .resolves.toEqual(["component", "decision", "goal"]);
   });
+
+  it("retains original edge orientation and description for incoming path expansion", async () => {
+    insert("rel_in", "goal", "goal_1", "component", "component_1", "involves", "strong", "active", "2026-01-01");
+
+    const result = await reader.findAll({
+      entity: { entityType: "component", entityId: "component_1" },
+      direction: "in",
+    });
+
+    expect(result).toEqual([expect.objectContaining({
+      relationId: "rel_in",
+      fromEntityType: "goal",
+      fromEntityId: "goal_1",
+      toEntityType: "component",
+      toEntityId: "component_1",
+      description: "rel_in",
+    })]);
+  });
 });

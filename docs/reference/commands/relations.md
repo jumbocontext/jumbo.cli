@@ -5,7 +5,7 @@ sidebar:
   order: 12
 ---
 
-Add, list, traverse, and remove relationships between entities in the knowledge graph — linking goals, components, decisions, and other entities.
+Add, list, traverse, find paths through, and remove relationships between entities in the knowledge graph — linking goals, components, decisions, and other entities.
 
 ---
 
@@ -120,6 +120,44 @@ If an ID appears under multiple entity types, specify `--entity-type`. Results i
 > jumbo relations traverse --id goal_abc123 --entity-type goal --depth 3
 > jumbo relations traverse --id comp_abc123 --direction out --relation-type requires --limit 250
 > jumbo relations traverse --id comp_abc123 --depth 2 --format json
+```
+
+---
+
+## jumbo relations path
+
+Find one deterministic, unweighted shortest path between two relation endpoints. The query uses bounded breadth-first search, preserves each relation's original direction and description, and treats strength as filter metadata rather than path cost.
+
+### Synopsis
+
+```bash
+> jumbo relations path --from-id <id> --to-id <id> [options]
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--from-id <id>` | Starting entity ID (required) |
+| `--to-id <id>` | Destination entity ID (required) |
+| `--from-type <type>` | Starting entity type; inferred when the ID identifies one endpoint type |
+| `--to-type <type>` | Destination entity type; inferred when the ID identifies one endpoint type |
+| `--max-depth <depth>` | Maximum path depth from `1` through `5` (default: `5`) |
+| `-d, --direction <direction>` | Traversal direction: `in`, `out`, or `both` (default: `both`) |
+| `--relation-type <type>` | Filter by relation type |
+| `--entity-type <type>` | Filter each traversed opposite endpoint by entity type |
+| `--strength <strength>` | Filter by strength: `strong`, `medium`, or `weak` |
+| `-s, --status <status>` | Filter by status: `active`, `deactivated`, `removed`, or `all` (default: `active`) |
+
+If either ID appears under multiple entity types, specify its matching type option. A disconnected pair is a successful query with `found: false` and empty path data. Text output renders typed endpoint IDs with arrows that retain original relation orientation; `--format json` returns resolved endpoints, hop count, ordered nodes and edges, and query metadata.
+
+### Examples
+
+```bash
+> jumbo relations path --from-type goal --from-id goal_abc123 --to-type dependency --to-id dep_def456
+> jumbo relations path --from-id goal_abc123 --to-id comp_def456 --direction out --max-depth 3
+> jumbo relations path --from-id goal_abc123 --to-id comp_def456 --relation-type involves --strength strong
+> jumbo relations path --from-id goal_abc123 --to-id comp_def456 --format json
 ```
 
 ---

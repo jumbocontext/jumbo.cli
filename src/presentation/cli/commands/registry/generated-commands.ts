@@ -80,6 +80,7 @@ import { projectStats, metadata as projectStatsMeta } from '../../commands/proje
 import { projectUpdate, metadata as projectUpdateMeta } from '../../commands/project/update/project.update.js';
 import { relationAdd, metadata as relationAddMeta } from '../../commands/relations/add/relation.add.js';
 import { relationsList, metadata as relationsListMeta } from '../../commands/relations/list/relations.list.js';
+import { relationsPath, metadata as relationsPathMeta } from '../../commands/relations/path/relations.path.js';
 import { relationRemove, metadata as relationRemoveMeta } from '../../commands/relations/remove/relation.remove.js';
 import { relationsTraverse, metadata as relationsTraverseMeta } from '../../commands/relations/traverse/relations.traverse.js';
 import { search, metadata as searchMeta } from '../../commands/search/search.js';
@@ -454,6 +455,11 @@ export const commands: RegisteredCommand[] = [
     path: 'relations list',
     metadata: relationsListMeta,
     handler: relationsList
+  },
+  {
+    path: 'relations path',
+    metadata: relationsPathMeta,
+    handler: relationsPath
   },
   {
     path: 'relation remove',

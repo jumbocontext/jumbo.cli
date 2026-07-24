@@ -42,6 +42,13 @@ describe("requiresProject metadata", () => {
     expect(command?.metadata.requiresProject).toBe(true);
   });
 
+  it("includes relations path as an explicitly project-scoped generated command", () => {
+    const command = commands.find((c) => c.path === "relations path");
+
+    expect(command).toBeDefined();
+    expect(command?.metadata.requiresProject).toBe(true);
+  });
+
   it("registers goal approve and no longer registers goal qualify", () => {
     const paths = commands.map((c) => c.path);
 

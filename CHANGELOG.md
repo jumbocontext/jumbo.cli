@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Shortest relation paths**: Added `jumbo relations path` with typed or uniquely inferred endpoints, deterministic bounded breadth-first search, direction and relation filters, provenance-preserving text output, and a stable structured result for connected or disconnected memories.
+
 ## [3.18.0] - 2026-07-23
 
 ### Added
