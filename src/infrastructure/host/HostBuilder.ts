@@ -410,6 +410,12 @@ import { GetRelationsController } from "../../application/context/relations/get/
 import { LocalGetRelationsGateway } from "../../application/context/relations/get/LocalGetRelationsGateway.js";
 import { LocalTraverseRelationsGateway } from "../../application/context/relations/traverse/LocalTraverseRelationsGateway.js";
 import { TraverseRelationsController } from "../../application/context/relations/traverse/TraverseRelationsController.js";
+import { RelationNodeReferenceResolver } from "../../application/context/relations/traverse/RelationNodeReferenceResolver.js";
+import { RelationTraversalPolicy } from "../../application/context/relations/traverse/RelationTraversalPolicy.js";
+import { RelationTraversalQueryNormalizer } from "../../application/context/relations/traverse/RelationTraversalQueryNormalizer.js";
+import { FindRelationPathController } from "../../application/context/relations/path/FindRelationPathController.js";
+import { LocalFindRelationPathGateway } from "../../application/context/relations/path/LocalFindRelationPathGateway.js";
+import { RelationShortestPathFinder } from "../../application/context/relations/path/RelationShortestPathFinder.js";
 // Context
 import { GoalContextQueryHandler } from "../../application/context/goals/get/GoalContextQueryHandler.js";
 import { GoalBacklogPreviewQueryHandler } from "../../application/context/goals/query/GoalBacklogPreviewQueryHandler.js";
@@ -1807,8 +1813,26 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
     const getRelationsController = new GetRelationsController(
       getRelationsGateway
     );
-    const traverseRelationsGateway = new LocalTraverseRelationsGateway(relationViewReader);
+    const relationNodeReferenceResolver = new RelationNodeReferenceResolver(relationViewReader);
+    const relationTraversalQueryNormalizer = new RelationTraversalQueryNormalizer();
+    const relationTraversalPolicy = new RelationTraversalPolicy();
+    const traverseRelationsGateway = new LocalTraverseRelationsGateway(
+      relationViewReader,
+      relationNodeReferenceResolver,
+      relationTraversalQueryNormalizer,
+      relationTraversalPolicy
+    );
     const traverseRelationsController = new TraverseRelationsController(traverseRelationsGateway);
+    const relationShortestPathFinder = new RelationShortestPathFinder(
+      relationViewReader,
+      relationTraversalPolicy
+    );
+    const findRelationPathGateway = new LocalFindRelationPathGateway(
+      relationNodeReferenceResolver,
+      relationTraversalQueryNormalizer,
+      relationShortestPathFinder
+    );
+    const findRelationPathController = new FindRelationPathController(findRelationPathGateway);
 
     // ============================================================
     // STEP 5: Create Projection Handlers (Event Subscribers)
@@ -2341,6 +2365,7 @@ const audiencePainContextReader = new SqliteAudiencePainContextReader(this.db);
       removeRelationController,
       getRelationsController,
       traverseRelationsController,
+      findRelationPathController,
       // Relations Category - decomposed by use case
       relationAddedEventStore,
       relationRemovedEventStore,

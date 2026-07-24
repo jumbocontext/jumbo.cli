@@ -329,6 +329,7 @@ import { AddRelationController } from "../context/relations/add/AddRelationContr
 import { RemoveRelationController } from "../context/relations/remove/RemoveRelationController.js";
 import { GetRelationsController } from "../context/relations/get/GetRelationsController.js";
 import { TraverseRelationsController } from "../context/relations/traverse/TraverseRelationsController.js";
+import { FindRelationPathController } from "../context/relations/path/FindRelationPathController.js";
 import { AddGuidelineController } from "../context/guidelines/add/AddGuidelineController.js";
 import { UpdateGuidelineController } from "../context/guidelines/update/UpdateGuidelineController.js";
 import { RemoveGuidelineController } from "../context/guidelines/remove/RemoveGuidelineController.js";
@@ -641,6 +642,7 @@ export interface IApplicationContainer {
   removeRelationController: RemoveRelationController;
   getRelationsController: GetRelationsController;
   traverseRelationsController: TraverseRelationsController;
+  findRelationPathController: FindRelationPathController;
 
   // Relations Category - Event Stores - decomposed by use case
   relationAddedEventStore: IRelationAddedEventWriter;
